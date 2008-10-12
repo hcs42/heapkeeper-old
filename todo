@@ -1,0 +1,3 @@
+* The UNSEEN in this line should be replaced:
+    emails = server.search(None, '(UNSEEN)')[1][0]
+
