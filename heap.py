@@ -83,7 +83,7 @@ mail_dir = 'mail'
 server = IMAP4_SSL(host, port)
 server.login(username, password)
 server.select("INBOX")[1]
-emails = server.search(None, '(UNSEEN)')[1][0]
+emails = server.search(None, '(ALL)')[1][0]
 
 if not os.path.exists(mail_dir):
     os.mkdir(mail_dir)
