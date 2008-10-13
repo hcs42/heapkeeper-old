@@ -7,6 +7,9 @@ import os
 import os.path
 import re
 
+# global variables
+mail_dir = 'mail'
+
 class Msg:
     """A filename-like object for passing a string to rfc822.Message"""
     def __init__(self, text):
@@ -43,11 +46,12 @@ def get_next_file(dir):
 
 def getheader_str(m, header):
     """Reads the header from the given message. If the message does not contain
-    that header, the result will be a 'None' string."""
-    return str(m.getheader(header))
+    that header, the result will be a '' string."""
+    value = m.getheader(header)
+    return (value if value != None else '')
 
-def download_email(email_index):
-    """Writes the email with the given index to file index.mail."""
+def download_email(server, email_index, output_file):
+    """Writes the email with the given index to given file."""
 
     header = server.fetch(
             email_index,
@@ -57,6 +61,7 @@ def download_email(email_index):
     subject = getheader_str(m, 'subject')
     message_id = getheader_str(m, 'message-id')
     in_reply_to = getheader_str(m, 'in-reply-to')
+    orig_date = getheader_str(m, 'orig-date')
     text = server.fetch(email_index,'(BODY[TEXT])')[1][0][1]
     nl = "\n"
     output = \
@@ -64,35 +69,50 @@ def download_email(email_index):
         "Subject: " + subject + nl + \
         "Message-ID: " + message_id + nl + \
         "In-Reply-To: " + in_reply_to + nl + \
+        "Date: " + orig_date + nl + \
         "------------------------------------------------------------------------" + nl + \
         str(text)
     output = re.sub(r'\r\n',r'\n',output)
-    string_to_file(output, get_next_file(mail_dir))
+    string_to_file(output, output_file)
 
 
-# Login settings
 def get_setting(name):
     return file_to_string(name).strip()
 
-host = get_setting('host')
-port = int(get_setting('port'))
-username = get_setting('username')
-password = get_setting('pw')
-mail_dir = 'mail'
+def get_email_file(email_index):
+    return os.path.join(mail_dir, "%d.mail" % email_index)
 
-server = IMAP4_SSL(host, port)
-server.login(username, password)
-server.select("INBOX")[1]
-emails = server.search(None, '(ALL)')[1][0]
+def email_exists(email_index):
+    return os.path.exists(get_email_file(email_index))
 
-if not os.path.exists(mail_dir):
-    os.mkdir(mail_dir)
+def download_emails(only_new = True, log = True):
+    if log:
+        print 'Reading settings...'
+    host = get_setting('host')
+    port = int(get_setting('port'))
+    username = get_setting('username')
+    password = get_setting('pw')
 
-for email_index in emails.split(' '):
-    email_index = int(email_index)
-    if not os.path.exists(os.path.join(mail_dir, "%d.mail" % email_index)):
-        print 'Downloading mail #%d' % email_index
-        download_email(email_index)
+    if log:
+        print 'Connecting...'
+    server = IMAP4_SSL(host, port)
+    server.login(username, password)
+    server.select("INBOX")[1]
+    emails = server.search(None, '(ALL)')[1][0]
 
-server.close()
+    if not os.path.exists(mail_dir):
+        os.mkdir(mail_dir)
+
+    for email_index in emails.split(' '):
+        email_index = int(email_index)
+        if not (only_new and email_exists(email_index)):
+            print 'Downloading mail #%d' % email_index
+            download_email(server, email_index, get_email_file(email_index))
+
+    server.close()
+    if log:
+        print 'Downloading finished.'
+
+if __name__ == '__main__':
+    download_emails()
 
