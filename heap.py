@@ -50,6 +50,9 @@ def getheader_str(m, header):
     value = m.getheader(header)
     return (value if value != None else '')
 
+def cut(s):
+    return re.sub('[\n\r].*', '', s)
+
 def download_email(server, email_index, output_file):
     """Writes the email with the given index to given file."""
 
@@ -66,7 +69,7 @@ def download_email(server, email_index, output_file):
     nl = "\n"
     output = \
         "From: " + from_ + nl + \
-        "Subject: " + subject + nl + \
+        "Subject: " + cut(subject) + nl + \
         "Message-ID: " + message_id + nl + \
         "In-Reply-To: " + in_reply_to + nl + \
         "Date: " + orig_date + nl + \
@@ -112,6 +115,63 @@ def download_emails(only_new = True, log = True):
     server.close()
     if log:
         print 'Downloading finished.'
+
+def generate_html():
+    emails_i = {} # index -> headers
+    emails_m = {} # message_id -> index
+    hmessid = 'Message-ID'
+    hinrepto = 'In-Reply-To'
+    hsubject = 'Subject'
+
+    def get_field(f, headers):
+        line = f.readline()[:-1]
+        m = re.match('([^:]+): (.*)', line)
+        headers[m.group(1)] = m.group(2)
+
+    def read_headers(f):
+        # TODO: generalize to read until "----------"
+        headers = {}
+        for i in range(1,6): # 5 header lines
+            get_field(f, headers)
+        return headers
+
+    # TODO: now it is fixed that there are 37 emails
+    for email_index in range(1, 38):
+        email_file = get_email_file(email_index)
+        f = open(email_file)
+        headers = read_headers(f)
+        f.close()
+        emails_i[email_index] = headers
+        emails_m[headers[hmessid]] = email_index
+
+    answers = {} # index -> [answered::index]
+    for email_index, headers in emails_i.items():
+        # prev_mid: PREVious Message ID
+        # prev_ei: PREVious Email Index
+        prev_mid = headers[hinrepto]
+        if prev_mid in emails_m:
+            prev_ei = emails_m[prev_mid]
+        else:
+            prev_ei = 0
+        if prev_ei in answers:
+            answers[prev_ei].append(email_index)
+        else:
+            answers[prev_ei] = [email_index]
+
+    def write_thread(answers, email_index, f, indent):
+        if email_index != 0:
+            headers = emails_i[email_index]
+            subject = headers[hsubject] if hsubject in headers else ''
+            f.write('%s <a href="%s">%d.mail: %s</a><br>' % \
+                    ('-' * indent * 4, get_email_file(email_index), email_index, \
+                    subject))
+        if email_index in answers:
+            for i in answers[email_index]:
+                write_thread(answers, i, f, indent+1)
+
+    f = open('mail.html','w')
+    write_thread(answers, 0, f, 0)
+    f.close()
 
 if __name__ == '__main__':
     download_emails()
