@@ -8,6 +8,7 @@ import re
 import email
 import email.header
 import base64
+import quopri
 
 # global variables
 mail_dir = 'mail'
@@ -46,6 +47,10 @@ def utf8(s, charset):
     else:
         return s
 
+def remove_google_stuff(text):
+    r = re.compile(r'--~--~---------~--~----~------------~-------~--~----~\n.*?\n-~----------~----~----~----~------~----~------~--~---\n', re.DOTALL)
+    return r.sub('', text)
+
 def download_email(server, email_index, output_file):
     """Writes the email with the given index to given file."""
 
@@ -63,13 +68,18 @@ def download_email(server, email_index, output_file):
                 value += utf8(v[0], v[1])
             output += attr + ': ' + value + '\n'
     encoding = message['Content-Transfer-Encoding']
-    if encoding != None and encoding.lower() == 'base64':
-        text = base64.b64decode(text)
+    if encoding != None:
+        if encoding.lower() == 'base64':
+            text = base64.b64decode(text)
+        elif encoding.lower() == 'quoted-printable':
+            text = quopri.decodestring(text)
     charset = message.get_content_charset()
     text = utf8(text, charset)
 
-    output += '\n' + text
+    text = re.sub(r'\r\n',r'\n',text)
+    text = remove_google_stuff(text)
     output = re.sub(r'\r\n',r'\n',output)
+    output += '\n' + text
     string_to_file(output, output_file)
 
 
@@ -77,7 +87,7 @@ def get_setting(name):
     return file_to_string(name).strip()
 
 def get_email_file(email_index):
-    return os.path.join(mail_dir, "%d.mail" % email_index)
+    return os.path.join(mail_dir, "%08d.mail" % email_index)
 
 def email_exists(email_index):
     return os.path.exists(get_email_file(email_index))
@@ -95,8 +105,8 @@ def download_emails(only_new = True, log = True):
     server = IMAP4_SSL(host, port)
     server.login(username, password)
     server.select("INBOX")[1]
-#    emails = server.search(None, '(ALL)')[1][0] # XXX
-    emails = '2 3 4' #XXX
+    emails = server.search(None, '(ALL)')[1][0] # XXX
+#    emails = '29' #XXX
 
     if not os.path.exists(mail_dir):
         os.mkdir(mail_dir)
