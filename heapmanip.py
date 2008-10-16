@@ -1,23 +1,16 @@
 #!/usr/bin/python
 
 from imaplib import IMAP4_SSL
-import rfc822
 import string
 import os
 import os.path
 import re
+import email
+import email.header
+import base64
 
 # global variables
 mail_dir = 'mail'
-
-class Msg:
-    """A filename-like object for passing a string to rfc822.Message"""
-    def __init__(self, text):
-        self.lines = string.split(text, '\015\012')
-        self.lines.reverse()
-    def readline(self):
-        try: return self.lines.pop() + '\n'
-        except: return ''
 
 def file_to_string(file_name):
     """Reads a file's content to a string."""
@@ -44,37 +37,32 @@ def get_next_file(dir):
             i = 0
     return filename
 
-def getheader_str(m, header):
-    """Reads the header from the given message. If the message does not contain
-    that header, the result will be a '' string."""
-    value = m.getheader(header)
-    return (value if value != None else '')
-
 def cut(s):
     return re.sub('[\n\r].*', '', s)
 
 def download_email(server, email_index, output_file):
     """Writes the email with the given index to given file."""
 
-    header = server.fetch(
-            email_index,
-            '(BODY[HEADER.FIELDS (SUBJECT FROM MESSAGE-ID IN-REPLY-TO)])')[1][0][1]
-    m = rfc822.Message(Msg(header), 0)
-    from_ =  getheader_str(m, 'from')
-    subject = getheader_str(m, 'subject')
-    message_id = getheader_str(m, 'message-id')
-    in_reply_to = getheader_str(m, 'in-reply-to')
-    orig_date = getheader_str(m, 'orig-date')
-    text = server.fetch(email_index,'(BODY[TEXT])')[1][0][1]
-    nl = "\n"
-    output = \
-        "From: " + from_ + nl + \
-        "Subject: " + cut(subject) + nl + \
-        "Message-ID: " + message_id + nl + \
-        "In-Reply-To: " + in_reply_to + nl + \
-        "Date: " + orig_date + nl + \
-        "------------------------------------------------------------------------" + nl + \
-        str(text)
+    header = server.fetch(email_index, '(BODY[HEADER])')[1][0][1]
+    text = server.fetch(email_index, '(BODY[TEXT])')[1][0][1]
+    message = email.message_from_string(header+text)
+    output = ""
+    for attr in ['From', 'Subject', 'Message-Id', 'In-Reply-To', 'Content-Transfer-Encoding']:
+        value = message[attr]
+        if value != None:
+            valuelist = email.header.decode_header(value)
+            value = ''
+            for v in valuelist:
+                value += v[0]
+            output += attr + ': ' + value + '\n'
+    charset = message.get_content_charset()
+    if charset != None:
+        output += 'Charset:' + charset + '\n'
+    encoding = message['Content-Transfer-Encoding']
+    if encoding != None and encoding.lower() == 'base64':
+        text = base64.b64decode(text)
+
+    output += '\n' + text
     output = re.sub(r'\r\n',r'\n',output)
     string_to_file(output, output_file)
 
@@ -101,7 +89,8 @@ def download_emails(only_new = True, log = True):
     server = IMAP4_SSL(host, port)
     server.login(username, password)
     server.select("INBOX")[1]
-    emails = server.search(None, '(ALL)')[1][0]
+#    emails = server.search(None, '(ALL)')[1][0] # XXX
+    emails = '2 3 4 5 6 7 8 9 10'
 
     if not os.path.exists(mail_dir):
         os.mkdir(mail_dir)
