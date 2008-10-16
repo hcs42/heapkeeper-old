@@ -66,6 +66,8 @@ def download_email(server, email_index, output_file):
             value = ''
             for v in valuelist:
                 value += utf8(v[0], v[1])
+            value = re.sub(r'\r\n',r'\n',value)
+            value = re.sub(r'\n',r'\n ',value)
             output += attr + ': ' + value + '\n'
     encoding = message['Content-Transfer-Encoding']
     if encoding != None:
@@ -78,7 +80,6 @@ def download_email(server, email_index, output_file):
 
     text = re.sub(r'\r\n',r'\n',text)
     text = remove_google_stuff(text)
-    output = re.sub(r'\r\n',r'\n',output)
     output += '\n' + text
     string_to_file(output, output_file)
 
@@ -105,8 +106,8 @@ def download_emails(only_new = True, log = True):
     server = IMAP4_SSL(host, port)
     server.login(username, password)
     server.select("INBOX")[1]
-    emails = server.search(None, '(ALL)')[1][0] # XXX
-#    emails = '29' #XXX
+#    emails = server.search(None, '(ALL)')[1][0] # XXX
+    emails = '1 2 3 29' #XXX
 
     if not os.path.exists(mail_dir):
         os.mkdir(mail_dir)
@@ -124,37 +125,36 @@ def download_emails(only_new = True, log = True):
 def generate_html():
     emails_i = {} # index -> headers
     emails_m = {} # message_id -> index
-    hmessid = 'Message-ID'
-    hinrepto = 'In-Reply-To'
-    hsubject = 'Subject'
-
-    def get_field(f, headers):
-        line = f.readline()[:-1]
-        m = re.match('([^:]+): (.*)', line)
-        headers[m.group(1)] = m.group(2)
 
     def read_headers(f):
-        # TODO: generalize to read until "----------"
         headers = {}
-        for i in range(1,6): # 5 header lines
-            get_field(f, headers)
+        line = f.readline()
+        while line != '\n':
+            m = re.match('([^:]+): (.*)', line)
+            key = m.group(1)
+            value = m.group(2)
+            line = f.readline()
+            while line != '\n' and line[0] == ' ':
+                value += '\n' + line[1:-1]
+                line = f.readline()
+            headers[key] = value
         return headers
 
     # TODO: now it is fixed that there are 37 emails
-    for email_index in range(1, 38):
+    for email_index in range(1, 80):
         email_file = get_email_file(email_index)
         f = open(email_file)
         headers = read_headers(f)
         f.close()
         emails_i[email_index] = headers
-        emails_m[headers[hmessid]] = email_index
+        emails_m[headers['Message-Id']] = email_index
 
     answers = {} # index -> [answered::index]
     for email_index, headers in emails_i.items():
         # prev_mid: PREVious Message ID
         # prev_ei: PREVious Email Index
-        prev_mid = headers[hinrepto]
-        if prev_mid in emails_m:
+        prev_mid = headers.get('In-Reply-To')
+        if prev_mid != None and prev_mid in emails_m:
             prev_ei = emails_m[prev_mid]
         else:
             prev_ei = 0
@@ -166,10 +166,12 @@ def generate_html():
     def write_thread(answers, email_index, f, indent):
         if email_index != 0:
             headers = emails_i[email_index]
-            subject = headers[hsubject] if hsubject in headers else ''
-            f.write('%s <a href="%s">%d.mail: %s</a><br>' % \
-                    ('-' * indent * 4, get_email_file(email_index), email_index, \
-                    subject))
+            subject = headers['Subject'] if 'Subject' in headers else ''
+            author = re.sub('<.*?>','',headers['From'])
+            email_file = get_email_file(email_index)
+            f.write('%s <a href="%s">%s</a>&nbsp;&nbsp;<i>%s</i><br>' % \
+                    ('&nbsp;&nbsp;' * indent * 4, email_file, \
+                    subject, author))
         if email_index in answers:
             for i in answers[email_index]:
                 write_thread(answers, i, f, indent+1)
