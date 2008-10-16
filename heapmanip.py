@@ -40,6 +40,12 @@ def get_next_file(dir):
 def cut(s):
     return re.sub('[\n\r].*', '', s)
 
+def utf8(s, charset):
+    if charset != None:
+        return s.decode(charset).encode('utf-8')
+    else:
+        return s
+
 def download_email(server, email_index, output_file):
     """Writes the email with the given index to given file."""
 
@@ -47,20 +53,20 @@ def download_email(server, email_index, output_file):
     text = server.fetch(email_index, '(BODY[TEXT])')[1][0][1]
     message = email.message_from_string(header+text)
     output = ""
-    for attr in ['From', 'Subject', 'Message-Id', 'In-Reply-To', 'Content-Transfer-Encoding']:
+    for attr in ['From', 'Subject', 'Message-Id', 'In-Reply-To']:
         value = message[attr]
         if value != None:
+            # valuelist::[(string, encoding)]
             valuelist = email.header.decode_header(value)
             value = ''
             for v in valuelist:
-                value += v[0]
+                value += utf8(v[0], v[1])
             output += attr + ': ' + value + '\n'
-    charset = message.get_content_charset()
-    if charset != None:
-        output += 'Charset:' + charset + '\n'
     encoding = message['Content-Transfer-Encoding']
     if encoding != None and encoding.lower() == 'base64':
         text = base64.b64decode(text)
+    charset = message.get_content_charset()
+    text = utf8(text, charset)
 
     output += '\n' + text
     output = re.sub(r'\r\n',r'\n',output)
@@ -90,7 +96,7 @@ def download_emails(only_new = True, log = True):
     server.login(username, password)
     server.select("INBOX")[1]
 #    emails = server.search(None, '(ALL)')[1][0] # XXX
-    emails = '2 3 4 5 6 7 8 9 10'
+    emails = '2 3 4' #XXX
 
     if not os.path.exists(mail_dir):
         os.mkdir(mail_dir)
