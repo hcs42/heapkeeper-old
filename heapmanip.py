@@ -9,6 +9,7 @@ import email
 import email.header
 import base64
 import quopri
+import email.utils
 
 # global variables
 mail_dir = 'mail'
@@ -58,7 +59,7 @@ def download_email(server, email_index, output_file):
     text = server.fetch(email_index, '(BODY[TEXT])')[1][0][1]
     message = email.message_from_string(header+text)
     output = ""
-    for attr in ['From', 'Subject', 'Message-Id', 'In-Reply-To']:
+    for attr in ['From', 'Subject', 'Message-Id', 'In-Reply-To', 'Date']:
         value = message[attr]
         if value != None:
             # valuelist::[(string, encoding)]
@@ -69,6 +70,8 @@ def download_email(server, email_index, output_file):
             value = re.sub(r'\r\n',r'\n',value)
             value = re.sub(r'\n',r'\n ',value)
             output += attr + ': ' + value + '\n'
+
+   
     encoding = message['Content-Transfer-Encoding']
     if encoding != None:
         if encoding.lower() == 'base64':
@@ -140,17 +143,16 @@ def generate_html():
             headers[key] = value
         return headers
 
-    # TODO: now it is fixed that there are 37 emails
-    for email_index in range(1, 80):
-        email_file = get_email_file(email_index)
-        f = open(email_file)
+    for email_file in os.listdir(mail_dir):
+        f = open(os.path.join(mail_dir,email_file))
         headers = read_headers(f)
         f.close()
-        emails_i[email_index] = headers
-        emails_m[headers['Message-Id']] = email_index
+        emails_i[email_file] = headers
+        emails_m[headers['Message-Id']] = email_file
 
     answers = {} # index -> [answered::index]
-    for email_index, headers in emails_i.items():
+
+    for email_file, headers in emails_i.items():
         # prev_mid: PREVious Message ID
         # prev_ei: PREVious Email Index
         prev_mid = headers.get('In-Reply-To')
@@ -159,21 +161,21 @@ def generate_html():
         else:
             prev_ei = 0
         if prev_ei in answers:
-            answers[prev_ei].append(email_index)
+            answers[prev_ei].append(email_file)
         else:
-            answers[prev_ei] = [email_index]
+            answers[prev_ei] = [email_file]
 
-    def write_thread(answers, email_index, f, indent):
-        if email_index != 0:
-            headers = emails_i[email_index]
+    def write_thread(answers, email_file, f, indent):
+        if email_file != 0:
+            headers = emails_i[email_file]
             subject = headers['Subject'] if 'Subject' in headers else ''
+            date_str =  ("&nbsp; (%s)" % headers['Date']) if 'Date' in headers else ''
             author = re.sub('<.*?>','',headers['From'])
-            email_file = get_email_file(email_index)
-            f.write('%s <a href="%s">%s</a>&nbsp;&nbsp;<i>%s</i><br>' % \
+            f.write('%s <a href="%s">%s</a>&nbsp;&nbsp;<i>%s</i>%s<br>' % \
                     ('&nbsp;&nbsp;' * indent * 4, email_file, \
-                    subject, author))
-        if email_index in answers:
-            for i in answers[email_index]:
+                    subject, author, date_str))
+        if email_file in answers:
+            for i in answers[email_file]:
                 write_thread(answers, i, f, indent+1)
 
     f = open('mail.html','w')
