@@ -115,11 +115,13 @@ def download_emails(only_new = True, log = True):
     if not os.path.exists(mail_dir):
         os.mkdir(mail_dir)
 
-    for email_index in emails.split(' '):
-        email_index = int(email_index)
-        if not (only_new and email_exists(email_index)):
-            print 'Downloading mail #%d' % email_index
-            download_email(server, email_index, get_email_file(email_index))
+    emails = emails.strip()
+    if emails != '':
+        for email_index in emails.split(' '):
+            email_index = int(email_index)
+            if not (only_new and email_exists(email_index)):
+                print 'Downloading mail #%d' % email_index
+                download_email(server, email_index, get_email_file(email_index))
 
     server.close()
     if log:
@@ -197,7 +199,12 @@ def generate_html():
                 write_thread(answers, email_file_2, f, indent+1)
 
     f = open('mail.html','w')
+    f.write("""<html><head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<title>Emails</title></head><body>
+""")
     write_thread(answers, 0, f, 0)
+    f.write("</body></html>")
     f.close()
 
 if __name__ == '__main__':
