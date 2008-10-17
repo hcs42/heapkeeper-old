@@ -109,8 +109,8 @@ def download_emails(only_new = True, log = True):
     server = IMAP4_SSL(host, port)
     server.login(username, password)
     server.select("INBOX")[1]
-#    emails = server.search(None, '(ALL)')[1][0] # XXX
-    emails = '1 2 3 29' #XXX
+    emails = server.search(None, '(ALL)')[1][0] # XXX
+#    emails = '1 2 3 29' #XXX
 
     if not os.path.exists(mail_dir):
         os.mkdir(mail_dir)
@@ -125,23 +125,40 @@ def download_emails(only_new = True, log = True):
     if log:
         print 'Downloading finished.'
 
-def generate_html():
-    emails_i = {} # index -> headers
-    emails_m = {} # message_id -> index
+def mysort(x,y):
+    if x[0] > y[0]:
+        return 1
+    elif x[0] == y[0]:
+        return 0
+    else:
+        return -1
 
-    def read_headers(f):
-        headers = {}
+def read_headers(f):
+    headers = {}
+    line = f.readline()
+    while line != '\n':
+        m = re.match('([^:]+): (.*)', line)
+        key = m.group(1)
+        value = m.group(2)
         line = f.readline()
-        while line != '\n':
-            m = re.match('([^:]+): (.*)', line)
-            key = m.group(1)
-            value = m.group(2)
+        while line != '\n' and line[0] == ' ':
+            value += '\n' + line[1:-1]
             line = f.readline()
-            while line != '\n' and line[0] == ' ':
-                value += '\n' + line[1:-1]
-                line = f.readline()
-            headers[key] = value
-        return headers
+        headers[key] = value
+    return headers
+
+def add_timestamp(email_file, emails_i):
+    date = emails_i[email_file].get('Date')
+    if date == None:
+        return 0
+    else:
+        tz = email.utils.parsedate_tz(date)
+        timestamp = email.utils.mktime_tz(tz)
+        return (timestamp, email_file)
+
+def generate_html():
+    emails_i = {} # email_file -> headers
+    emails_m = {} # message_id -> email_file
 
     for email_file in os.listdir(mail_dir):
         f = open(os.path.join(mail_dir,email_file))
@@ -150,7 +167,7 @@ def generate_html():
         emails_i[email_file] = headers
         emails_m[headers['Message-Id']] = email_file
 
-    answers = {} # index -> [answered::index]
+    answers = {} # email_file -> [answered::(timestamp, email_file)]
 
     for email_file, headers in emails_i.items():
         # prev_mid: PREVious Message ID
@@ -161,9 +178,9 @@ def generate_html():
         else:
             prev_ei = 0
         if prev_ei in answers:
-            answers[prev_ei].append(email_file)
+            answers[prev_ei].append(add_timestamp(email_file, emails_i))
         else:
-            answers[prev_ei] = [email_file]
+            answers[prev_ei] = [add_timestamp(email_file, emails_i)]
 
     def write_thread(answers, email_file, f, indent):
         if email_file != 0:
@@ -171,12 +188,13 @@ def generate_html():
             subject = headers['Subject'] if 'Subject' in headers else ''
             date_str =  ("&nbsp; (%s)" % headers['Date']) if 'Date' in headers else ''
             author = re.sub('<.*?>','',headers['From'])
-            f.write('%s <a href="%s">%s</a>&nbsp;&nbsp;<i>%s</i>%s<br>' % \
-                    ('&nbsp;&nbsp;' * indent * 4, email_file, \
+            f.write('%s <a href="%s/%s">%s</a>&nbsp;&nbsp;<i>%s</i>%s<br>' % \
+                    ('&nbsp;&nbsp;' * indent * 4, mail_dir, email_file, \
                     subject, author, date_str))
         if email_file in answers:
-            for i in answers[email_file]:
-                write_thread(answers, i, f, indent+1)
+            answers[email_file].sort(mysort)
+            for timestamp, email_file_2 in answers[email_file]:
+                write_thread(answers, email_file_2, f, indent+1)
 
     f = open('mail.html','w')
     write_thread(answers, 0, f, 0)
