@@ -4,6 +4,7 @@ from imaplib import IMAP4_SSL
 import string
 import os
 import os.path
+import shutil
 import re
 import email
 import email.header
@@ -158,6 +159,9 @@ def add_timestamp(email_file, emails_i):
         timestamp = email.utils.mktime_tz(tz)
         return (timestamp, email_file)
 
+def email_txt_file(email_file):
+    return email_file[:-5]+'.txt'
+
 def generate_html():
     emails_i = {} # email_file -> headers
     emails_m = {} # message_id -> email_file
@@ -186,12 +190,21 @@ def generate_html():
 
     def write_thread(answers, email_file, f, indent):
         if email_file != 0:
+
+            # copying *.mail -> *.txt
+            email_file_new = email_txt_file(email_file)
+            email_file_full = os.path.join(mail_dir, email_file)
+            email_file_new_full = os.path.join(mail_dir, email_file_new)
+            if not os.path.exists(email_file_new_full):
+                shutil.copyfile(email_file_full, email_file_new_full)
+
+            # writing into mail.html
             headers = emails_i[email_file]
             subject = headers['Subject'] if 'Subject' in headers else ''
             date_str =  ("&nbsp; (%s)" % headers['Date']) if 'Date' in headers else ''
             author = re.sub('<.*?>','',headers['From'])
-            f.write('%s <a href="%s/%s">%s</a>&nbsp;&nbsp;<i>%s</i>%s<br>' % \
-                    ('&nbsp;&nbsp;' * indent * 4, mail_dir, email_file, \
+            f.write('%s <a href="%s/%s">%s</a>&nbsp;&nbsp;<i>%s</i>%s<br>\n' % \
+                    ('&nbsp;&nbsp;' * indent * 4, mail_dir, email_file_new, \
                     subject, author, date_str))
         if email_file in answers:
             answers[email_file].sort(mysort)
@@ -204,7 +217,7 @@ def generate_html():
 <title>Emails</title></head><body>
 """)
     write_thread(answers, 0, f, 0)
-    f.write("</body></html>")
+    f.write("</body></html>\n")
     f.close()
 
 if __name__ == '__main__':
