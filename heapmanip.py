@@ -167,11 +167,12 @@ def generate_html():
     emails_m = {} # message_id -> email_file
 
     for email_file in os.listdir(mail_dir):
-        f = open(os.path.join(mail_dir,email_file))
-        headers = read_headers(f)
-        f.close()
-        emails_i[email_file] = headers
-        emails_m[headers['Message-Id']] = email_file
+        if email_file[-5:] == '.mail':
+            f = open(os.path.join(mail_dir,email_file))
+            headers = read_headers(f)
+            f.close()
+            emails_i[email_file] = headers
+            emails_m[headers['Message-Id']] = email_file
 
     answers = {} # email_file -> [answered::(timestamp, email_file)]
 
@@ -195,8 +196,8 @@ def generate_html():
             email_file_new = email_txt_file(email_file)
             email_file_full = os.path.join(mail_dir, email_file)
             email_file_new_full = os.path.join(mail_dir, email_file_new)
-            if not os.path.exists(email_file_new_full):
-                shutil.copyfile(email_file_full, email_file_new_full)
+#            if not os.path.exists(email_file_new_full):
+            shutil.copyfile(email_file_full, email_file_new_full)
 
             # writing into mail.html
             headers = emails_i[email_file]
