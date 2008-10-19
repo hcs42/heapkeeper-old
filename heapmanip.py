@@ -153,7 +153,7 @@ def read_headers(f):
 def add_timestamp(email_file, emails_i):
     date = emails_i[email_file].get('Date')
     if date == None:
-        return 0
+        return (0, email_file)
     else:
         tz = email.utils.parsedate_tz(date)
         timestamp = email.utils.mktime_tz(tz)
