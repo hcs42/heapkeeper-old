@@ -66,7 +66,12 @@ def download_email(server, email_index, output_file):
             # valuelist::[(string, encoding)]
             valuelist = email.header.decode_header(value)
             value = ''
+            first = True
             for v in valuelist:
+                if first:
+                    first = False
+                else:
+                    value += ' '
                 value += utf8(v[0], v[1])
             value = re.sub(r'\r\n',r'\n',value)
             value = re.sub(r'\n',r'\n ',value)
@@ -110,8 +115,7 @@ def download_emails(only_new = True, log = True):
     server = IMAP4_SSL(host, port)
     server.login(username, password)
     server.select("INBOX")[1]
-    emails = server.search(None, '(ALL)')[1][0] # XXX
-#    emails = '1 2 3 29' #XXX
+    emails = server.search(None, '(ALL)')[1][0]
 
     if not os.path.exists(mail_dir):
         os.mkdir(mail_dir)
