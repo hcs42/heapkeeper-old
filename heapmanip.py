@@ -163,8 +163,38 @@ def add_timestamp(email_file, emails_i):
         timestamp = email.utils.mktime_tz(tz)
         return (timestamp, email_file)
 
+def email_file_index(email_file):
+    return email_file[:-5]
+
 def email_txt_file(email_file):
     return email_file[:-5]+'.txt'
+
+html_header = """\
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Heap Index</title>
+    <link rel=stylesheet href="heapindex.css" type="text/css">
+  </head>
+  <body>
+    <h1 id="header">UMS Heap</h1>
+
+"""
+
+html_footer = """
+  </body>
+</html>
+"""
+
+html_one_mail = """\
+<div class="mail">
+<a href="mail/%s">
+<span class="subject">%s</span>
+<span class="index">&lt;%s&gt;</span>
+<span class="author">"%s"</span>
+<span class="timestamp">%s</span>
+</a>
+"""
 
 def generate_html():
     emails_i = {} # email_file -> headers
@@ -203,26 +233,28 @@ def generate_html():
 #            if not os.path.exists(email_file_new_full):
             shutil.copyfile(email_file_full, email_file_new_full)
 
+            index = email_file_index(email_file)
             # writing into mail.html
             headers = emails_i[email_file]
             subject = headers['Subject'] if 'Subject' in headers else ''
             date_str =  ("&nbsp; (%s)" % headers['Date']) if 'Date' in headers else ''
             author = re.sub('<.*?>','',headers['From'])
-            f.write('%s <a href="%s/%s">%s</a>&nbsp;&nbsp;<i>%s</i>%s<br>\n' % \
-                    ('&nbsp;&nbsp;' * indent * 4, mail_dir, email_file_new, \
-                    subject, author, date_str))
+            f.write(html_one_mail % \
+                    (email_file_new, subject, index, author, date_str))
+
+            #f.write('%s <a href="%s/%s">%s</a>&nbsp;&nbsp;<i>%s</i>%s<br>\n' % \
+            #        ('&nbsp;&nbsp;' * indent * 4, mail_dir, email_file_new, \
+            #        subject, author, date_str))
         if email_file in answers:
             answers[email_file].sort(mysort)
             for timestamp, email_file_2 in answers[email_file]:
                 write_thread(answers, email_file_2, f, indent+1)
+        f.write("</div>\n")
 
     f = open('mail.html','w')
-    f.write("""<html><head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-<title>Emails</title></head><body>
-""")
+    f.write(html_header)
     write_thread(answers, 0, f, 0)
-    f.write("</body></html>\n")
+    f.write(html_footer)
     f.close()
 
 if __name__ == '__main__':
