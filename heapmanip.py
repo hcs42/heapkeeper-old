@@ -28,12 +28,12 @@ def string_to_file(s,file_name):
     f.write(s)
     f.close()
 
-def get_next_file(dir):
+def get_next_mailfile():
     """Returns a filename with a *.mail form, such that there is no file with
     that name."""
     i = 1
     while i != 0:
-        filename = os.path.join(dir,('%d.mail' % i))
+        filename = os.path.join(mail_dir,('%d.mail' % i))
         if os.path.exists(filename):
             i += 1
         else:
@@ -97,12 +97,12 @@ def get_setting(name):
     return file_to_string(name).strip()
 
 def get_email_file(email_index):
-    return os.path.join(mail_dir, "%08d.mail" % email_index)
+    return os.path.join(mail_dir, "%d.mail" % email_index)
 
 def email_exists(email_index):
     return os.path.exists(get_email_file(email_index))
 
-def download_emails(only_new = True, log = True):
+def connect(log = True):
     if log:
         print 'Reading settings...'
     host = get_setting('host')
@@ -114,19 +114,51 @@ def download_emails(only_new = True, log = True):
         print 'Connecting...'
     server = IMAP4_SSL(host, port)
     server.login(username, password)
-    server.select("INBOX")[1]
-    emails = server.search(None, '(ALL)')[1][0]
+
+    if log:
+        print 'Connected'
+
+    return server
+
+def read_mailfiles():
+    emails_i = {} # mailfile -> headers
+    emails_m = {} # message_id -> mailfile
+
+    for email_file in os.listdir(mail_dir):
+        if email_file[-5:] == '.mail':
+            f = open(os.path.join(mail_dir,email_file))
+            headers = read_headers(f)
+            f.close()
+            emails_i[email_file] = headers
+            emails_m[headers['Message-Id']] = email_file
+
+    return emails_i, emails_m
+
+def download_emails(log = True):
 
     if not os.path.exists(mail_dir):
         os.mkdir(mail_dir)
+    emails_i, emails_m = read_mailfiles()
+
+    server = connect(log)
+    server.select("INBOX")[1]
+    emails = server.search(None, '(ALL)')[1][0]
+
 
     emails = emails.strip()
     if emails != '':
         for email_index in emails.split(' '):
-            email_index = int(email_index)
-            if not (only_new and email_exists(email_index)):
-                print 'Downloading mail #%d' % email_index
-                download_email(server, email_index, get_email_file(email_index))
+            header = server.fetch(email_index, '(BODY[HEADER.FIELDS (MESSAGE-ID)])')[1][0][1]
+            message_id = email.message_from_string(header)['Message-Id']
+            if message_id not in emails_m:
+                mailfile = get_next_mailfile()
+                if log:
+                    print 'Downloading mail #%s.' % mailfile
+                download_email(server, email_index, mailfile)
+            else:
+                mailfile = emails_m[message_id]
+                if log:
+                    print 'Mail #%s found.' % strip_mailfile(mailfile)
 
     server.close()
     if log:
@@ -163,7 +195,7 @@ def add_timestamp(email_file, emails_i):
         timestamp = email.utils.mktime_tz(tz)
         return (timestamp, email_file)
 
-def email_file_index(email_file):
+def strip_mailfile(email_file):
     return email_file[:-5]
 
 def email_txt_file(email_file):
@@ -197,17 +229,7 @@ html_one_mail = """\
 """
 
 def generate_html():
-    emails_i = {} # email_file -> headers
-    emails_m = {} # message_id -> email_file
-
-    for email_file in os.listdir(mail_dir):
-        if email_file[-5:] == '.mail':
-            f = open(os.path.join(mail_dir,email_file))
-            headers = read_headers(f)
-            f.close()
-            emails_i[email_file] = headers
-            emails_m[headers['Message-Id']] = email_file
-
+    emails_i, emails_m = read_mailfiles()
     answers = {} # email_file -> [answered::(timestamp, email_file)]
 
     for email_file, headers in emails_i.items():
@@ -233,7 +255,7 @@ def generate_html():
 #            if not os.path.exists(email_file_new_full):
             shutil.copyfile(email_file_full, email_file_new_full)
 
-            index = email_file_index(email_file)
+            index = strip_mailfile(email_file)
             # writing into mail.html
             headers = emails_i[email_file]
             subject = headers['Subject'] if 'Subject' in headers else ''
