@@ -390,6 +390,7 @@ class Generator(object):
             f.write(html_header)
             self.write_thread(answers, None, f, 0)
             f.write(html_footer)
+        log('HTML generated')
 
     def write_thread(self, answers, heapid, f, indent):
         if heapid != None:
@@ -412,11 +413,11 @@ class Generator(object):
 
 ##### Interface functions #####
 
-def download_emails():
+def download_emails(from_ = 0):
     maildb = MailDB()
     server = Server(maildb)
     server.connect()
-    server.download_new(330)
+    server.download_new(int(from_))
     server.close()
     maildb.save()
 
@@ -427,6 +428,11 @@ def generate_html():
     g.mail_to_txt()
 
 if __name__ == '__main__':
-#    download_emails()
-    generate_html()
+    argv = sys.argv[1:]
+    if argv == []:
+        download_emails()
+        generate_html()
+    else:
+        funname = argv.pop(0)
+        getattr(sys.modules[__name__], funname)(*argv)
 
