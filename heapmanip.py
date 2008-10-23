@@ -317,11 +317,11 @@ html_header = """\
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <title>Heap Index</title>
-    <link rel=stylesheet href="heapindex.css" type="text/css">
+    <title>%s</title>
+    <link rel=stylesheet href="%s" type="text/css">
   </head>
   <body>
-    <h1 id="header">UMS Heap</h1>
+    <h1 id="header">%s</h1>
 
 """
 
@@ -348,6 +348,13 @@ def sort_with_timestamp(x, y):
     else:
         return -1
 
+def sub_gtlt(matchobject):
+    whole = matchobject.group(0)
+    if whole == '<':
+        return '&lt;'
+    elif whole == '>':
+        return '&gt;'
+
 class Generator(object):
 
     def __init__(self, maildb):
@@ -357,6 +364,17 @@ class Generator(object):
     def mail_to_txt(self):
         for mail in self.maildb.get_mails():
             shutil.copyfile(mail.get_mailfile(), mail.get_txtfile())
+
+    def mail_to_html(self):
+        for mail in self.maildb.get_mails():
+            with open(mail.get_htmlfile(), 'w') as f:
+                h1 = mail.get_from() + ': ' + mail.get_subject()
+                f.write(html_header % (h1, 'heapindex.css', h1))
+                f.write('<pre>')
+                body = re.sub(r'[<>]', sub_gtlt, mail.get_body())
+                f.write(body)
+                f.write('</pre>')
+                f.write(html_footer)
 
     def add_timestamp(self, mail):
         heapid = mail.get_heapid()
@@ -387,10 +405,10 @@ class Generator(object):
                 answers[prev_heapid] = [self.add_timestamp(mail)]
 
         with open('mail.html','w') as f:
-            f.write(html_header)
+            f.write(html_header % ('Heap Index', 'heapindex.css', 'UMS Heap'))
             self.write_thread(answers, None, f, 0)
             f.write(html_footer)
-        log('HTML generated')
+        log('HTML generated.')
 
     def write_thread(self, answers, heapid, f, indent):
         if heapid != None:
@@ -399,7 +417,7 @@ class Generator(object):
             if date != '':
                 date = ("&nbsp; (%s)" % date) 
             from_ = re.sub('<.*?>','', mail.get_from())
-            f.write(html_one_mail % (mail.get_txtfile(), \
+            f.write(html_one_mail % (mail.get_htmlfile(), \
                                      mail.get_subject(), \
                                      mail.get_heapid(), \
                                      from_, \
@@ -425,7 +443,7 @@ def generate_html():
     maildb = MailDB()
     g = Generator(maildb)
     g.db_to_html()
-    g.mail_to_txt()
+    g.mail_to_html()
 
 if __name__ == '__main__':
     argv = sys.argv[1:]
