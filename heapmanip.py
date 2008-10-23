@@ -380,17 +380,19 @@ class Generator(object):
 
     def mail_to_txt(self):
         for mail in self.maildb.get_mails():
-            shutil.copyfile(mail.get_mailfile(), mail.get_txtfile())
+            if not mail.get_deleted():
+                shutil.copyfile(mail.get_mailfile(), mail.get_txtfile())
 
     def mail_to_html(self):
         for mail in self.maildb.get_mails():
-            with open(mail.get_htmlfile(), 'w') as f:
-                h1 = quote_html(mail.get_from()) + ': ' + quote_html(mail.get_subject())
-                f.write(html_header % (h1, 'heapindex.css', h1))
-                f.write('<pre>')
-                f.write(quote_html(mail.get_body()))
-                f.write('</pre>')
-                f.write(html_footer)
+            if not mail.get_deleted():
+                with open(mail.get_htmlfile(), 'w') as f:
+                    h1 = quote_html(mail.get_from()) + ': ' + quote_html(mail.get_subject())
+                    f.write(html_header % (h1, 'heapindex.css', h1))
+                    f.write('<pre>')
+                    f.write(quote_html(mail.get_body()))
+                    f.write('</pre>')
+                    f.write(html_footer)
 
     def add_timestamp(self, mail):
         heapid = mail.get_heapid()
