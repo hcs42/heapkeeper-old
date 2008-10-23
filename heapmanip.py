@@ -357,6 +357,9 @@ def sub_html(matchobject):
     elif whole == '&':
         return '&amp;'
 
+def quote_html(text):
+    return re.sub(r'[<>&]', sub_html, text)
+
 class Generator(object):
 
     def __init__(self, maildb):
@@ -370,11 +373,10 @@ class Generator(object):
     def mail_to_html(self):
         for mail in self.maildb.get_mails():
             with open(mail.get_htmlfile(), 'w') as f:
-                h1 = mail.get_from() + ': ' + mail.get_subject()
+                h1 = quote_html(mail.get_from()) + ': ' + quote_html(mail.get_subject())
                 f.write(html_header % (h1, 'heapindex.css', h1))
                 f.write('<pre>')
-                body = re.sub(r'[<>&]', sub_html, mail.get_body())
-                f.write(body)
+                f.write(quote_html(mail.get_body()))
                 f.write('</pre>')
                 f.write(html_footer)
 
@@ -420,9 +422,9 @@ class Generator(object):
                 date = ("&nbsp; (%s)" % date) 
             from_ = re.sub('<.*?>','', mail.get_from())
             f.write(html_one_mail % (mail.get_htmlfile(), \
-                                     mail.get_subject(), \
+                                     quote_html(mail.get_subject()), \
                                      mail.get_heapid(), \
-                                     from_, \
+                                     quote_html(from_), \
                                      date))
 
         if heapid in answers:
