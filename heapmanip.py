@@ -72,17 +72,14 @@ class Mail(object):
 
     def get_body(self):
         if self._body == None:
-             self.load() # could be optimized
+            with open(self.get_mailfile()) as f:
+                Mail.read_headers(f) # only read, don't store
+                self._body = f.read()
         return self._body
     
     def set_body(self, body):
         self._body = body.strip()+'\n'
         self._up_to_date = False
-
-    def load(self):
-        with open(self.get_mailfile()) as f:
-            self._headers = Mail.read_headers(f)
-            self._body = f.read()
 
     def get_heapid(self):
         return self._heapid
@@ -117,16 +114,26 @@ class Mail(object):
         except KeyError:
             return ''
 
+    def get_deleted(self):
+        try:
+            return self.get_headers()['Flags'] == 'deleted' # TODO: ugly
+        except KeyError:
+            return False
+
+    def set_deleted(self, deleted):
+        self.get_headers()['Flags'] = 'deleted' # TODO: ugly
+        self._up_to_date = False
+
     @staticmethod
     def read_headers(f):
         headers = {}
         line = f.readline()
-        while line != '\n':
+        while line not in ['', '\n']:
             m = re.match('([^:]+): (.*)', line)
             key = m.group(1)
             value = m.group(2)
             line = f.readline()
-            while line != '\n' and line[0] == ' ':
+            while line not in ['', '\n'] and line[0] == ' ':
                 value += '\n' + line[1:-1]
                 line = f.readline()
             headers[key] = value
@@ -134,14 +141,19 @@ class Mail(object):
 
     def save(self):
         if not self._up_to_date:
+            mailfile = self.get_mailfile()
             headers = self.get_headers()
             body = self.get_body()
-            with open(self.get_mailfile(), 'w') as f:
-                for attr in ['From', 'Subject', 'Message-Id', 'In-Reply-To', 'Date']:
-                    if attr in headers:
-                        f.write('%s: %s\n' % (attr, re.sub(r'\n', r'\n ', headers[attr])))
-                f.write('\n')
-                f.write(body)
+            with open(mailfile, 'w') as f:
+                if self.get_deleted():
+                    f.write('Message-Id: %s\n' % self.get_messid())
+                    f.write('Flags: deleted\n')
+                else:
+                    for attr in ['From', 'Subject', 'Message-Id', 'In-Reply-To', 'Date', 'Flags']:
+                        if attr in headers:
+                            f.write('%s: %s\n' % (attr, re.sub(r'\n', r'\n ', headers[attr])))
+                    f.write('\n')
+                    f.write(body)
             self._up_to_date = True
 
     def remove_google_stuff(self):
@@ -206,7 +218,7 @@ class MailDB(object):
             return None
 
     def save(self):
-        for heapid, mail in self.heapid_to_mail.items():
+        for mail in self.heapid_to_mail.values():
             mail.save()
 
     def create_new_mail(self):
@@ -396,17 +408,18 @@ class Generator(object):
         messid_to_heapid = self.maildb.messid_to_heapid
 
         for mail in self.maildb.get_mails():
-            prev = mail.get_inreplyto()
-            prev_heapid = None
-            if prev != None:
-                if prev in messid_to_heapid:
-                    prev_heapid = messid_to_heapid[prev]
-                elif prev in heapid_to_mail:
-                    prev_heapid = prev
-            if prev_heapid in answers:
-                answers[prev_heapid].append(self.add_timestamp(mail))
-            else:
-                answers[prev_heapid] = [self.add_timestamp(mail)]
+            if not mail.get_deleted():
+                prev = mail.get_inreplyto()
+                prev_heapid = None
+                if prev != None:
+                    if prev in messid_to_heapid:
+                        prev_heapid = messid_to_heapid[prev]
+                    elif prev in heapid_to_mail:
+                        prev_heapid = prev
+                if prev_heapid in answers:
+                    answers[prev_heapid].append(self.add_timestamp(mail))
+                else:
+                    answers[prev_heapid] = [self.add_timestamp(mail)]
 
         with open('mail.html','w') as f:
             f.write(html_header % ('Heap Index', 'heapindex.css', 'UMS Heap'))
@@ -435,7 +448,7 @@ class Generator(object):
 
 ##### Interface functions #####
 
-def download_emails(from_ = 0):
+def download_mail(from_ = 0):
     maildb = MailDB()
     server = Server(maildb)
     server.connect()
@@ -449,10 +462,17 @@ def generate_html():
     g.db_to_html()
     g.mail_to_html()
 
+def delete_mail(*heapids):
+    l = list(heapids)
+    maildb = MailDB()
+    for heapid in l:
+        maildb.get_mail(heapid).set_deleted(True)
+    maildb.save()
+
 if __name__ == '__main__':
     argv = sys.argv[1:]
     if argv == []:
-        download_emails()
+        download_mail()
         generate_html()
     else:
         funname = argv.pop(0)
