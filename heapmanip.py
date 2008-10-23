@@ -348,12 +348,14 @@ def sort_with_timestamp(x, y):
     else:
         return -1
 
-def sub_gtlt(matchobject):
+def sub_html(matchobject):
     whole = matchobject.group(0)
     if whole == '<':
         return '&lt;'
     elif whole == '>':
         return '&gt;'
+    elif whole == '&':
+        return '&amp;'
 
 class Generator(object):
 
@@ -371,7 +373,7 @@ class Generator(object):
                 h1 = mail.get_from() + ': ' + mail.get_subject()
                 f.write(html_header % (h1, 'heapindex.css', h1))
                 f.write('<pre>')
-                body = re.sub(r'[<>]', sub_gtlt, mail.get_body())
+                body = re.sub(r'[<>&]', sub_html, mail.get_body())
                 f.write(body)
                 f.write('</pre>')
                 f.write(html_footer)
