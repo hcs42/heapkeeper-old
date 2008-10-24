@@ -347,7 +347,7 @@ html_one_mail = """\
 <a href="%s">
 <span class="subject">%s</span>
 <span class="index">&lt;%s&gt;</span>
-<span class="author">"%s"</span>
+<span class="author">%s</span>
 <span class="timestamp">%s</span>
 </a>
 """
