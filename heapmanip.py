@@ -17,7 +17,6 @@ import ConfigParser
 
 ##### global variables #####
 
-mail_dir = 'mail'
 log_on = True
 
 def set_log(log_):
@@ -170,13 +169,10 @@ class Mail(object):
         self.set_body(r.sub('', body))
 
     def get_mailfile(self):
-        return os.path.join(mail_dir, self._heapid + '.mail')
+        return os.path.join(config.get('paths','mail'), self._heapid + '.mail')
 
     def get_htmlfile(self):
-        return os.path.join(mail_dir, self._heapid + '.html')
-
-    def get_txtfile(self):
-        return os.path.join(mail_dir, self._heapid + '.txt')
+        return os.path.join(config.get('paths','html'), self._heapid + '.html')
 
     def mailfile_exists(self):
         return os.path.exists(self.get_mailfile())
@@ -189,9 +185,9 @@ class MailDB(object):
         self.heapid_to_mail = {}
         self.messid_to_heapid = {}
         heapids = []
-        if not os.path.exists(mail_dir):
-            os.mkdir(mail_dir)
-        for file in os.listdir(mail_dir):
+        if not os.path.exists(config.get('paths','mail')):
+            os.mkdir(config.get('paths','mail'))
+        for file in os.listdir(config.get('paths','mail')):
             if file[-5:] == '.mail':
                 heapid = file[:-5]
                 self._add_mail_to_dicts(Mail(heapid), heapid)
@@ -391,11 +387,6 @@ class Generator(object):
     def __init__(self, maildb):
         super(Generator, self).__init__()
         self.maildb = maildb
-
-    def mail_to_txt(self):
-        for mail in self.maildb.get_mails():
-            if not mail.get_deleted():
-                shutil.copyfile(mail.get_mailfile(), mail.get_txtfile())
 
     def mail_to_html(self):
         for mail in self.maildb.get_mails():
