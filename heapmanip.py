@@ -239,6 +239,36 @@ class MailDB(object):
         self.heapid_to_mail[heapid] = mail
         self.messid_to_heapid[mail.get_messid()] = heapid
 
+    def add_timestamp(self, mail):
+        heapid = mail.get_heapid()
+        date = mail.get_date()
+        if date == '':
+            return (0, heapid)
+        else:
+            tz = email.utils.parsedate_tz(date)
+            timestamp = email.utils.mktime_tz(tz)
+            return (timestamp, heapid)
+
+    def get_threads(self):
+        threads = {} # heapid -> [answered::(timestamp, heapid)]
+        for mail in self.get_mails():
+            if not mail.get_deleted():
+                prev = mail.get_inreplyto()
+                prev_heapid = None
+                if prev != None:
+                    if prev in self.messid_to_heapid:
+                        prev_heapid = self.messid_to_heapid[prev]
+                    elif prev in self.heapid_to_mail:
+                        prev_heapid = prev
+                if prev_heapid in threads:
+                    threads[prev_heapid].append(self.add_timestamp(mail))
+                else:
+                    threads[prev_heapid] = [self.add_timestamp(mail)]
+        t = {}
+        for heapid in threads:
+            threads[heapid].sort(sort_with_timestamp)
+            t[heapid] = [ heapid2 for timestamp, heapid2 in threads[heapid] ]
+        return t
 
 class Server(object):
 
@@ -399,42 +429,15 @@ class Generator(object):
                     f.write('</pre>')
                     f.write(html_footer)
 
-    def add_timestamp(self, mail):
-        heapid = mail.get_heapid()
-        date = mail.get_date()
-        if date == '':
-            return (0, heapid)
-        else:
-            tz = email.utils.parsedate_tz(date)
-            timestamp = email.utils.mktime_tz(tz)
-            return (timestamp, heapid)
-
     def db_to_html(self):
-        answers = {} # heapid -> [answered::(timestamp, heapid)]
-        heapid_to_mail = self.maildb.heapid_to_mail
-        messid_to_heapid = self.maildb.messid_to_heapid
-
-        for mail in self.maildb.get_mails():
-            if not mail.get_deleted():
-                prev = mail.get_inreplyto()
-                prev_heapid = None
-                if prev != None:
-                    if prev in messid_to_heapid:
-                        prev_heapid = messid_to_heapid[prev]
-                    elif prev in heapid_to_mail:
-                        prev_heapid = prev
-                if prev_heapid in answers:
-                    answers[prev_heapid].append(self.add_timestamp(mail))
-                else:
-                    answers[prev_heapid] = [self.add_timestamp(mail)]
-
+        threads = self.maildb.get_threads()
         with open('mail.html','w') as f:
             f.write(html_header % ('Heap Index', 'heapindex.css', 'UMS Heap'))
-            self.write_thread(answers, None, f, 0)
+            self.write_thread(threads, None, f, 0)
             f.write(html_footer)
         log('HTML generated.')
 
-    def write_thread(self, answers, heapid, f, indent):
+    def write_thread(self, threads, heapid, f, indent):
         if heapid != None:
             mail = self.maildb.heapid_to_mail[heapid]
             date = mail.get_date()
@@ -447,10 +450,9 @@ class Generator(object):
                                      quote_html(from_), \
                                      date))
 
-        if heapid in answers:
-            answers[heapid].sort(sort_with_timestamp)
-            for timestamp, heapid2 in answers[heapid]:
-                self.write_thread(answers, heapid2, f, indent+1)
+        if heapid in threads:
+            for heapid2 in threads[heapid]:
+                self.write_thread(threads, heapid2, f, indent+1)
 
         if heapid != None:
             f.write("</div>\n")
