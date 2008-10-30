@@ -446,7 +446,9 @@ class Generator(object):
             answers[heapid].sort(sort_with_timestamp)
             for timestamp, heapid2 in answers[heapid]:
                 self.write_thread(answers, heapid2, f, indent+1)
-        f.write("</div>\n")
+
+        if heapid != None:
+            f.write("</div>\n")
 
 ##### Interface functions #####
 
