@@ -87,11 +87,15 @@ class Mail(object):
     def get_heapid(self):
         return self._heapid
 
-    def get_from(self):
+    def get_author(self):
         try:
             return self.get_headers()['From']
         except KeyError:
             return ''
+
+    def set_author(self, author):
+        self.get_headers()['From'] = author
+        self._up_to_date = False
 
     def get_subject(self):
         try:
@@ -307,6 +311,12 @@ class Server(object):
         mail.set_body(text)
         mail.remove_google_stuff()
 
+        for entry, author_regex in config.items('nicknames'):
+            [author, regex] = config.get('nicknames', entry).split(' ',1)
+            if re.match(regex, mail.get_author()):
+                mail.set_author(author)
+                break
+
     def download_new(self, lower_value=0):
         self.server.select("INBOX")[1]
         emails = self.server.search(None, '(ALL)')[1][0].strip()
@@ -391,7 +401,7 @@ class Generator(object):
         for mail in self.maildb.get_mails():
             if not mail.get_deleted():
                 with open(mail.get_htmlfile(), 'w') as f:
-                    h1 = quote_html(mail.get_from()) + ': ' + quote_html(mail.get_subject())
+                    h1 = quote_html(mail.get_author()) + ': ' + quote_html(mail.get_subject())
                     f.write(html_header % (h1, 'heapindex.css', h1))
                     f.write('<pre>')
                     f.write(quote_html(mail.get_body()))
@@ -439,7 +449,7 @@ class Generator(object):
             date = mail.get_date()
             if date != '':
                 date = ("&nbsp; (%s)" % date) 
-            from_ = re.sub('<.*?>','', mail.get_from())
+            from_ = re.sub('<.*?>','', mail.get_author())
             f.write(html_one_mail % (mail.get_htmlfile(), \
                                      quote_html(mail.get_subject()), \
                                      mail.get_heapid(), \
@@ -475,6 +485,15 @@ def delete_mail(*heapids):
     maildb = MailDB()
     for heapid in l:
         maildb.get_mail(heapid).set_deleted(True)
+    maildb.save()
+
+def change_nick(author_regex, new_author):
+    author_regex = re.compile(author_regex)
+    maildb = MailDB()
+    for heapid in maildb.get_heapids():
+        mail = maildb.get_mail(heapid)
+        if author_regex.match(mail.get_author()):
+            mail.set_author(new_author)
     maildb.save()
 
 if __name__ == '__main__':
