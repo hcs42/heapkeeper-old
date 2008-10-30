@@ -102,6 +102,10 @@ class Mail(object):
         except KeyError:
             return ''
 
+    def set_subject(self, subject):
+        self.get_headers()['Subject'] = subject
+        self._up_to_date = False
+
     def get_messid(self):
         try:
             return self.get_headers()['Message-Id']
@@ -487,6 +491,28 @@ def change_nick(author_regex, new_author):
         mail = maildb.get_mail(heapid)
         if author_regex.match(mail.get_author()):
             mail.set_author(new_author)
+    maildb.save()
+
+def rename_thread2(maildb, threads, heapid, new_subject, re_from_second):
+    maildb.get_mail(heapid).set_subject(new_subject)
+    new_subject2 = ("Re: " + new_subject) if re_from_second else new_subject 
+    if heapid in threads:
+        for heapid2 in threads[heapid]:
+            rename_thread2(maildb, threads, heapid2, new_subject2, False)
+
+def rename_thread(heapid, new_subject, re_from_second=True):
+    if type(re_from_second) == bool:
+        pass
+    elif re_from_second == 'True':
+        re_from_second = True
+    elif re_from_second == 'False':
+        re_from_second = False
+    else:
+        raise Exception, 're_from_second argument is not a boolean'
+
+    maildb = MailDB()
+    threads = maildb.get_threads()
+    rename_thread2(maildb, threads, heapid, new_subject, re_from_second)
     maildb.save()
 
 if __name__ == '__main__':
