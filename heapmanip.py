@@ -13,6 +13,7 @@ import base64
 import quopri
 import email.utils
 import sys
+import ConfigParser
 
 ##### global variables #####
 
@@ -25,6 +26,9 @@ def set_log(log_):
 def log(str):
     if log_on:
         print str
+
+config = ConfigParser.ConfigParser()
+config.read('heap.cfg')
 
 ##### utility functions #####
 
@@ -48,7 +52,6 @@ def utf8(s, charset):
         return s
 
 ##### Mail #####
-
 
 class Mail(object):
 
@@ -249,10 +252,11 @@ class Server(object):
 
     def connect(self):
         log('Reading settings...')
-        host = self.get_setting('host')
-        port = int(self.get_setting('port'))
-        username = self.get_setting('username')
-        password = self.get_setting('pw')
+        
+        host = config.get('server', 'host')
+        port = int(config.get('server', 'port'))
+        username = config.get('server', 'username')
+        password = config.get('server', 'password')
 
         log('Connecting...')
         self.server = IMAP4_SSL(host, port)
