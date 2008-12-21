@@ -14,6 +14,7 @@ import quopri
 import email.utils
 import sys
 import ConfigParser
+import time
 
 ##### global variables #####
 
@@ -49,6 +50,9 @@ def utf8(s, charset):
         return s.decode(charset).encode('utf-8')
     else:
         return s
+
+def calc_timestamp(date):
+    return email.utils.mktime_tz(email.utils.parsedate_tz(date))
 
 ##### Mail #####
 
@@ -249,9 +253,7 @@ class MailDB(object):
         if date == '':
             return (0, heapid)
         else:
-            tz = email.utils.parsedate_tz(date)
-            timestamp = email.utils.mktime_tz(tz)
-            return (timestamp, heapid)
+            return (calc_timestamp(date), heapid)
 
     def get_threads(self):
         threads = {} # heapid -> [answered::(timestamp, heapid)]
@@ -446,10 +448,16 @@ class Generator(object):
             mail = self.maildb.heapid_to_mail[heapid]
             date = mail.get_date()
             if date != '':
+                date = time.localtime(calc_timestamp(date))
+                date = time.strftime('%Y.%m.%d. %H:%M', date)
                 date = ("&nbsp; (%s)" % date) 
             from_ = re.sub('<.*?>','', mail.get_author())
+            subject = quote_html(mail.get_subject())
+            if re.match('[Rr]e:', subject):
+                subject = subject[3:]
+            subject = subject.strip()
             f.write(html_one_mail % (mail.get_htmlfile(), \
-                                     quote_html(mail.get_subject()), \
+                                     subject, \
                                      mail.get_heapid(), \
                                      quote_html(from_), \
                                      date))
