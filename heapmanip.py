@@ -102,7 +102,10 @@ class Mail(object):
 
     def get_subject(self):
         try:
-            return self.get_headers()['Subject']
+            subject = self.get_headers()['Subject']
+            if re.match('[Rr]e:', subject):
+                subject = subject[3:]
+            return subject.strip()
         except KeyError:
             return ''
 
@@ -127,6 +130,14 @@ class Mail(object):
             return self.get_headers()['Date']
         except KeyError:
             return ''
+
+    def get_date_str(self):
+        date = self.get_date()
+        if date == '':
+            return ''
+        else:
+            date_local = time.localtime(calc_timestamp(date))
+            return time.strftime('%Y.%m.%d. %H:%M', date_local)
 
     def get_deleted(self):
         try:
@@ -430,6 +441,7 @@ class Generator(object):
                 with open(mail.get_htmlfile(), 'w') as f:
                     h1 = quote_html(mail.get_author()) + ': ' + quote_html(mail.get_subject())
                     f.write(html_header % (h1, 'heapindex.css', h1))
+                    f.write('(' + mail.get_date_str() + ')')
                     f.write('<pre>')
                     f.write(quote_html(mail.get_body()))
                     f.write('</pre>')
@@ -446,21 +458,13 @@ class Generator(object):
     def write_thread(self, threads, heapid, f, indent):
         if heapid != None:
             mail = self.maildb.heapid_to_mail[heapid]
-            date = mail.get_date()
-            if date != '':
-                date = time.localtime(calc_timestamp(date))
-                date = time.strftime('%Y.%m.%d. %H:%M', date)
-                date = ("&nbsp; (%s)" % date) 
+            date_str = ("&nbsp; (%s)" % mail.get_date_str()) 
             from_ = re.sub('<.*?>','', mail.get_author())
-            subject = quote_html(mail.get_subject())
-            if re.match('[Rr]e:', subject):
-                subject = subject[3:]
-            subject = subject.strip()
             f.write(html_one_mail % (mail.get_htmlfile(), \
-                                     subject, \
+                                     quote_html(mail.get_subject()), \
                                      mail.get_heapid(), \
                                      quote_html(from_), \
-                                     date))
+                                     date_str))
 
         if heapid in threads:
             for heapid2 in threads[heapid]:
