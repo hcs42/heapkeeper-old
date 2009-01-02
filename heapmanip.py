@@ -174,17 +174,21 @@ class Mail(object):
                     f.write('Message-Id: %s\n' % self.get_messid())
                     f.write('Flags: deleted\n')
                 else:
-                    for attr in ['From', 'Subject', 'Message-Id', 'In-Reply-To', 'Date', 'Flags']:
+                    for attr in ['From', 'Subject', 'Message-Id', \
+                                 'In-Reply-To', 'Date', 'Flags']:
                         if attr in headers:
-                            f.write('%s: %s\n' % (attr, re.sub(r'\n', r'\n ', headers[attr])))
+                            f.write('%s: %s\n' % (attr, \
+                                    re.sub(r'\n', r'\n ', headers[attr])))
                     f.write('\n')
                     f.write(body)
             self._up_to_date = True
 
     def remove_google_stuff(self):
         body = self.get_body()
-        r = re.compile(r'--~--~---------~--~----~------------~-------~--~----~\n.*?\n' \
-                        '-~----------~----~----~----~------~----~------~--~---\n', re.DOTALL)
+        r = re.compile(r'--~--~---------~--~----~------------~-------~--~' + \
+                       r'----~\n.*?\n' + \
+                       r'-~----------~----~----~----~------~----~------~-' + \
+                       r'-~---\n', re.DOTALL)
         self.set_body(r.sub('', body))
 
     def get_mailfile(self):
@@ -366,7 +370,8 @@ class Server(object):
         if emails != '':
             for email_index in emails.split(' '):
                 if int(email_index) >= lower_value:
-                    header = self.server.fetch(email_index, '(BODY[HEADER.FIELDS (MESSAGE-ID)])')[1][0][1]
+                    header = self.server.fetch(email_index, \
+                             '(BODY[HEADER.FIELDS (MESSAGE-ID)])')[1][0][1]
                     messid = email.message_from_string(header)['Message-Id']
                     # mail: the mail in the database if already exists
                     mail = self.maildb.get_mail_by_messid(messid)
@@ -439,7 +444,8 @@ class Generator(object):
         for mail in self.maildb.get_mails():
             if not mail.get_deleted():
                 with open(mail.get_htmlfile(), 'w') as f:
-                    h1 = quote_html(mail.get_author()) + ': ' + quote_html(mail.get_subject())
+                    h1 = quote_html(mail.get_author()) + ': ' + \
+                         quote_html(mail.get_subject())
                     f.write(html_header % (h1, 'heapindex.css', h1))
                     f.write('(' + mail.get_date_str() + ')')
                     f.write('<pre>')
