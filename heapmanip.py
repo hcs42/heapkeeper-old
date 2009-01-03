@@ -158,25 +158,25 @@ class Mail(object):
 
     @staticmethod
     def create_headers(d):
-        def copy_one(d3, h, key):
+        def copy_one(key):
             try:
-                [value] = d3.pop(key, [''])
+                [value] = d.pop(key, [''])
             except ValueError:
                 raise HeapException, ('Multiple "%s" keys.' % key)
             h[key] = value
-        def copy_list(d3, h, key):
-            h[key] = d3.pop(key, [])
-        d2 = d.copy()
+        def copy_list(key):
+            h[key] = d.pop(key, [])
+        d = d.copy()
         h = {}
-        copy_one(d2, h, 'From')
-        copy_one(d2, h, 'Subject')
-        copy_list(d2, h, 'Tag')
-        copy_one(d2, h, 'Message-Id')
-        copy_one(d2, h, 'In-Reply-To')
-        copy_one(d2, h, 'Date')
-        copy_list(d2, h, 'Flag')
+        copy_one('From')
+        copy_one('Subject')
+        copy_list('Tag')
+        copy_one('Message-Id')
+        copy_one('In-Reply-To')
+        copy_one('Date')
+        copy_list('Flag')
         # compatibility code {
-        flags = d2.pop('Flags', None)
+        flags = d.pop('Flags', None)
         if flags == ['deleted']:
             h['Flag'].append('deleted')
         elif flags == None:
@@ -185,23 +185,23 @@ class Mail(object):
             raise HeapException, ('Unknown "Flags" tag: ' % (flags,))
         # }
 
-        if d2 != {}:
-            raise HeapException, ('Additional keys: "%s".' % d2)
+        if d != {}:
+            raise HeapException, ('Additional keys: "%s".' % d)
         return h
 
     def dump(self, f, refresh=True):
 
-        def write_line(f2, key, value):
+        def write_line(key, value):
             t = (key, re.sub(r'\n', r'\n ', value))
-            f2.write('%s: %s\n' % t)
+            f.write('%s: %s\n' % t)
 
-        def write_one(headers, f2, attr):
+        def write_one(attr):
             if headers[attr] != '':
-                write_line(f2, attr, headers[attr])
+                write_line(attr, headers[attr])
 
-        def write_list(headers, f2, attr):
+        def write_list(attr):
             for line in headers[attr]:
-                write_line(f2, attr, line)
+                write_line(attr, line)
 
         if refresh:
             headers = self.get_headers()
@@ -210,13 +210,13 @@ class Mail(object):
             headers = self._headers
             body = self._body
 
-        write_one(headers, f, 'From')
-        write_one(headers, f, 'Subject')
-        write_list(headers, f, 'Tag')
-        write_one(headers, f, 'Message-Id')
-        write_one(headers, f, 'In-Reply-To')
-        write_one(headers, f, 'Date')
-        write_list(headers, f, 'Flag')
+        write_one('From')
+        write_one('Subject')
+        write_list('Tag')
+        write_one('Message-Id')
+        write_one('In-Reply-To')
+        write_one('Date')
+        write_list('Flag')
         f.write('\n')
         f.write(body)
 
