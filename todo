@@ -2,19 +2,19 @@ Implementation
 --------------
 
 * Using match instead of search when matching when reading nicknames.
-* Parsing Flags and Tags attributes in headers.
-* new-thead flag to indicate that the email begins a new thread.
+* New-thead flag to indicate that the email begins a new thread.
 * Downloading emails since given date.
-* recognizing heap-id-s in in-reply-to fields
-* the Generator should be able to determine the width of the generated HTML page (to discuss)
-* arguments for the constructors of Mail and MailDB whether they should read the files from the disk
+* Recognizing heap-id-s in in-reply-to fields.
+* The Generator should be able to determine the width of the generated HTML
+  page (to discuss).
+* Arguments for the constructors of Mail and MailDB whether they should read
+  the files from the disk.
 
 Maintanance
 -----------
 
-* Writing meta-programming stuff instead of get-set methods in the Mail class.
 * Comments into the program about its philosophy. More developer documentation.
-* writing unit tests
+* Writing unit tests.
 
 Discussion
 ----------

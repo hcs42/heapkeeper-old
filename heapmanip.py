@@ -30,7 +30,7 @@ def log(str):
 config = ConfigParser.ConfigParser()
 config.read('heap.cfg')
 
-##### utility functions #####
+##### utility functions and classes #####
 
 def file_to_string(file_name):
     """Reads a file's content to a string."""
@@ -54,6 +54,12 @@ def utf8(s, charset):
 def calc_timestamp(date):
     return email.utils.mktime_tz(email.utils.parsedate_tz(date))
 
+class HeapException(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
 ##### Mail #####
 
 class Mail(object):
@@ -69,7 +75,7 @@ class Mail(object):
     def get_headers(self):
         if self._headers == None:
             with open(self.get_mailfile()) as f:
-                self._headers = Mail.read_headers(f)
+                self._headers = Mail.create_headers(Mail.parse_headers(f))
         return self._headers
 
     def set_headers(self, headers):
@@ -79,7 +85,7 @@ class Mail(object):
     def get_body(self):
         if self._body == None:
             with open(self.get_mailfile()) as f:
-                Mail.read_headers(f) # only read, don't store
+                Mail.parse_headers(f) # only read, don't store
                 self._body = f.read()
         return self._body
     
@@ -91,45 +97,30 @@ class Mail(object):
         return self._heapid
 
     def get_author(self):
-        try:
-            return self.get_headers()['From']
-        except KeyError:
-            return ''
+        return self.get_headers()['From']
 
     def set_author(self, author):
         self.get_headers()['From'] = author
         self._up_to_date = False
 
     def get_subject(self):
-        try:
-            subject = self.get_headers()['Subject']
-            if re.match('[Rr]e:', subject):
-                subject = subject[3:]
-            return subject.strip()
-        except KeyError:
-            return ''
+        subject = self.get_headers()['Subject']
+        if re.match('[Rr]e:', subject):
+            subject = subject[3:]
+        return subject.strip()
 
     def set_subject(self, subject):
         self.get_headers()['Subject'] = subject
         self._up_to_date = False
 
     def get_messid(self):
-        try:
-            return self.get_headers()['Message-Id']
-        except KeyError:
-            return None
+        return self.get_headers()['Message-Id']
 
     def get_inreplyto(self):
-        try:
-            return self.get_headers()['In-Reply-To']
-        except KeyError:
-            return None
+        return self.get_headers()['In-Reply-To']
 
     def get_date(self):
-        try:
-            return self.get_headers()['Date']
-        except KeyError:
-            return ''
+        return self.get_headers()['Date']
 
     def get_date_str(self):
         date = self.get_date()
@@ -140,17 +131,15 @@ class Mail(object):
             return time.strftime('%Y.%m.%d. %H:%M', date_local)
 
     def get_deleted(self):
-        try:
-            return self.get_headers()['Flags'] == 'deleted' # TODO: ugly
-        except KeyError:
-            return False
+        return 'deleted' in self.get_headers()['Flag']
 
     def set_deleted(self, deleted):
-        self.get_headers()['Flags'] = 'deleted' # TODO: ugly
+        self._headers = {'Message-Id' : get_messid(), 
+                         'Flag': ['deleted']}
         self._up_to_date = False
 
     @staticmethod
-    def read_headers(f):
+    def parse_headers(f):
         headers = {}
         line = f.readline()
         while line not in ['', '\n']:
@@ -161,27 +150,84 @@ class Mail(object):
             while line not in ['', '\n'] and line[0] == ' ':
                 value += '\n' + line[1:-1]
                 line = f.readline()
-            headers[key] = value
+            if key not in headers:
+                headers[key] = [value]
+            else:
+                headers[key].append(value)
         return headers
+
+    @staticmethod
+    def create_headers(d):
+        def copy_one(d3, h, key):
+            try:
+                [value] = d3.pop(key, [''])
+            except ValueError:
+                raise HeapException, ('Multiple "%s" keys.' % key)
+            h[key] = value
+        def copy_list(d3, h, key):
+            h[key] = d3.pop(key, [])
+        d2 = d.copy()
+        h = {}
+        copy_one(d2, h, 'From')
+        copy_one(d2, h, 'Subject')
+        copy_list(d2, h, 'Tag')
+        copy_one(d2, h, 'Message-Id')
+        copy_one(d2, h, 'In-Reply-To')
+        copy_one(d2, h, 'Date')
+        copy_list(d2, h, 'Flag')
+        # compatibility code {
+        flags = d2.pop('Flags', None)
+        if flags == ['deleted']:
+            h['Flag'].append('deleted')
+        elif flags == None:
+            pass
+        else:
+            raise HeapException, ('Unknown "Flags" tag: ' % (flags,))
+        # }
+
+        if d2 != {}:
+            raise HeapException, ('Additional keys: "%s".' % d2)
+        return h
+
+    def dump(self, f, refresh=True):
+
+        def write_line(f2, key, value):
+            t = (key, re.sub(r'\n', r'\n ', value))
+            f2.write('%s: %s\n' % t)
+
+        def write_one(headers, f2, attr):
+            if headers[attr] != '':
+                write_line(f2, attr, headers[attr])
+
+        def write_list(headers, f2, attr):
+            for line in headers[attr]:
+                write_line(f2, attr, line)
+
+        if refresh:
+            headers = self.get_headers()
+            body = self.get_body()
+        else:
+            headers = self._headers
+            body = self._body
+
+        write_one(headers, f, 'From')
+        write_one(headers, f, 'Subject')
+        write_list(headers, f, 'Tag')
+        write_one(headers, f, 'Message-Id')
+        write_one(headers, f, 'In-Reply-To')
+        write_one(headers, f, 'Date')
+        write_list(headers, f, 'Flag')
+        f.write('\n')
+        f.write(body)
 
     def save(self):
         if not self._up_to_date:
-            mailfile = self.get_mailfile()
             headers = self.get_headers()
             body = self.get_body()
+            mailfile = self.get_mailfile()
             with open(mailfile, 'w') as f:
-                if self.get_deleted():
-                    f.write('Message-Id: %s\n' % self.get_messid())
-                    f.write('Flags: deleted\n')
-                else:
-                    for attr in ['From', 'Subject', 'Message-Id', \
-                                 'In-Reply-To', 'Date', 'Flags']:
-                        if attr in headers:
-                            f.write('%s: %s\n' % (attr, \
-                                    re.sub(r'\n', r'\n ', headers[attr])))
-                    f.write('\n')
-                    f.write(body)
-            self._up_to_date = True
+                self.dump(f, False)
+                self._up_to_date = True
 
     def remove_google_stuff(self):
         body = self.get_body()
