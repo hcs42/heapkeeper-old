@@ -1,5 +1,14 @@
 #!/usr/bin/python
 
+"""Manipulates the Heap data structure.
+
+Usage:
+
+    python heapmanip.py download_mail
+    python heapmanip.py generate_html
+    python heapmanip.py rename_thread _heapid_ _new_subject_\
+"""
+
 from __future__ import with_statement
 from imaplib import IMAP4_SSL
 import string
@@ -15,6 +24,7 @@ import email.utils
 import sys
 import ConfigParser
 import time
+import StringIO
 
 ##### global variables #####
 
@@ -33,96 +43,163 @@ config.read('heap.cfg')
 ##### utility functions and classes #####
 
 def file_to_string(file_name):
-    """Reads a file's content to a string."""
+    """Reads a file's content into a string."""
     f = open(file_name)
     s = f.read()
     f.close()
     return s
 
-def string_to_file(s,file_name):
+def string_to_file(s, file_name):
     """Writes a string to a file."""
     f = open(file_name,'w')
     f.write(s)
     f.close()
 
 def utf8(s, charset):
+    """Encodes the given string in the charset into utf-8.
+
+    If the charset is None, the original string will be returned.
+    """
     if charset != None:
         return s.decode(charset).encode('utf-8')
     else:
         return s
 
 def calc_timestamp(date):
+    """Calculates a timestamp from a date.
+
+    The date argument should conform to RFC 2822.
+    The timestamp will be an UTC timestamp.
+    """
     return email.utils.mktime_tz(email.utils.parsedate_tz(date))
 
 class HeapException(Exception):
+
+    """A very simple exception class used by this module."""
+
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
 
-##### Mail #####
+##### Post #####
 
-class Mail(object):
+class Post(object):
 
-    def __init__(self, heapid):
-        super(Mail, self).__init__()
+    """Represents a posted message.
+
+    A Post object is in the memory, but usually it represents a file that is in
+    the filesystem.
+
+    Data attributes:
+    _header -- The header of the post.
+        Type: dict(str, (str | [str])).
+    _body -- The body of the post. The first character of the body is not a
+        whitespace. The last character is a newline character, and the but one
+        character is not a whitespace. It does not contain any '\\r'
+        characters, newlines are stored as '\\n'.
+        In regexp: (|\\S|\\S[^\\r]*\\S)\\n
+        The set_body function converts any given string into this format.
+        Type: str.
+    _heapid -- The identifier of the post.
+        Type: NoneType | str.
+    _maildb -- The MailDB object that contains the post.
+        If _maildb is None, _heapid must not be None.
+        Type: NoneType | MailDB.
+    _modified -- It is false if the file on the disk that represents the post
+        is up-to-date. It is true if there is no such file or the post
+        has been modified since the last synchronization.
+        Type: bool.
+    """
+
+    # Constructors
+
+    def __init__(self, f, heapid=None, maildb=None):
+        """Constructor.
+
+        Arguments:
+        f -- A file descriptor from which the header and the body of the post
+             will be read. It will not be closed.
+        heapid -- See _heapid.
+        maildb -- See _maildb.
+        """
+
+        assert(not (maildb != None and heapid == None))
+        super(Post, self).__init__()
+        self._header, self._body = Post.parse(f)
         self._heapid = heapid
-        #_up_to_date: the mailfile is up-to-date
-        self._up_to_date = self.mailfile_exists()
-        self._headers = None
-        self._body = None
+        self._maildb = maildb
+        self._modified = not self.postfile_exists()
 
-    def get_headers(self):
-        if self._headers == None:
-            with open(self.get_mailfile()) as f:
-                self._headers = Mail.create_headers(Mail.parse_headers(f))
-        return self._headers
+    @staticmethod
+    def from_str(s, heapid=None, maildb=None):
+        """Creates a Post object from the given string."""
+        sio = StringIO.StringIO(s)
+        p = Post(sio, heapid, maildb)
+        sio.close()
+        return p
 
-    def set_headers(self, headers):
-        self._headers = headers
-        self._up_to_date = False
+    @staticmethod
+    def from_file(fname, heapid=None, maildb=None):
+        """Creates a Post object from a file."""
+        with open(fname, 'r') as f:
+            return Post(f, heapid, maildb)
 
-    def get_body(self):
-        if self._body == None:
-            with open(self.get_mailfile()) as f:
-                Mail.parse_headers(f) # only read, don't store
-                self._body = f.read()
-        return self._body
-    
-    def set_body(self, body):
-        self._body = body.strip()+'\n'
-        self._up_to_date = False
+    # Modifications
 
-    def get_heapid(self):
+    def touch(self):
+        """Should be called each time after the post is modified."""
+        self._modified = True
+        if self._maildb != None:
+            self._maildb.touch()
+
+    def is_modified(self):
+        return self._modified
+
+    def add_to_maildb(self, heapid, maildb):
+        """Adds the post to the maildb."""
+        assert(self._maildb == None)
+        self._heapid = heapid
+        self._maildb = maildb
+
+    # Get-set functions
+
+    def heapid(self):
         return self._heapid
 
-    def get_author(self):
-        return self.get_headers()['From']
+    def author(self):
+        return self._header['From']
 
     def set_author(self, author):
-        self.get_headers()['From'] = author
-        self._up_to_date = False
+        self._header['From'] = author
+        self.touch()
 
-    def get_subject(self):
-        subject = self.get_headers()['Subject']
+    def real_subject(self):
+        return self._header['Subject']
+
+    def subject(self):
+        """The subject with the 'Re:' prefix removed."""
+        subject = self._header['Subject']
         if re.match('[Rr]e:', subject):
             subject = subject[3:]
         return subject.strip()
 
     def set_subject(self, subject):
-        self.get_headers()['Subject'] = subject
-        self._up_to_date = False
+        self._header['Subject'] = subject
+        self.touch()
 
-    def get_messid(self):
-        return self.get_headers()['Message-Id']
+    def messid(self):
+        return self._header['Message-Id']
 
-    def get_inreplyto(self):
-        return self.get_headers()['In-Reply-To']
+    def inreplyto(self):
+        return self._header['In-Reply-To']
 
-    def get_date(self):
-        return self.get_headers()['Date']
+    def date(self):
+        return self._header['Date']
 
-    def get_date_str(self):
+    def date_str(self):
+        """The date converted to a string in local time."""
         date = self.get_date()
         if date == '':
             return ''
@@ -130,16 +207,71 @@ class Mail(object):
             date_local = time.localtime(calc_timestamp(date))
             return time.strftime('%Y.%m.%d. %H:%M', date_local)
 
-    def get_deleted(self):
-        return 'deleted' in self.get_headers()['Flag']
+    def tags(self):
+        # The list is copied so that the original cannot be modified by the
+        # caller.
+        return self._header['Tag'][:]
+    
+    def tags_iter(self):
+        """Iterator that iterates on the tags."""
+        return self._header['Tag'].__iter__()
 
-    def set_deleted(self, deleted):
-        self._headers = {'Message-Id' : get_messid(), 
+    def set_tags(self, tags):
+        self._header['Tag'] = tags
+        self.touch()
+        
+    def flags(self):
+        # The list is copied so that the original cannot be modified by the
+        # caller.
+        return self._header['Flag'][:]
+
+    def set_flags(self, flags):
+        assert(isinstance(flags, list))
+        self._header['Flag'] = sorted(flags)
+        self.touch()
+        
+    def is_deleted(self):
+        return 'deleted' in self._header['Flag']
+
+    def delete(self):
+        self._header = {'Message-Id': self.messid(), 
                          'Flag': ['deleted']}
-        self._up_to_date = False
+        self.touch()
+
+    def body(self):
+        return self._body
+
+    def set_body(self, body):
+        self._body = body.strip() + '\n'
+        self.touch()
+
+    # Parsing and printing
 
     @staticmethod
-    def parse_headers(f):
+    def parse(f):
+        """Parses f.
+
+        Arguments:
+        f -- A file descriptor. It will not be closed.
+        
+        Returns a tuple of a header and a body read from f.
+        """
+
+        headers = Post.create_header(Post.parse_header(f))
+        body = f.read().strip() + '\n'
+        return headers, body
+
+    @staticmethod
+    def parse_header(f):
+        """Parses the header from f.
+
+        Arguments:
+        f -- A file descriptor.
+
+        Returns:
+        dict(str, [str]).
+        """
+
         headers = {}
         line = f.readline()
         while line not in ['', '\n']:
@@ -148,7 +280,8 @@ class Mail(object):
             value = m.group(2)
             line = f.readline()
             while line not in ['', '\n'] and line[0] == ' ':
-                value += '\n' + line[1:-1]
+                line.rstrip('\n')
+                value += '\n' + line[1:]
                 line = f.readline()
             if key not in headers:
                 headers[key] = [value]
@@ -157,15 +290,26 @@ class Mail(object):
         return headers
 
     @staticmethod
-    def create_headers(d):
+    def create_header(d):
+        """Transforms the dict(str, [str]) returned by the parse_header
+        function to a str->(str | [str]) dictionary.
+
+        Strings will be assigned to the 'From', 'Subject', etc. attributes,
+        while dictionaries to the 'Tag' and 'Flag' strings. If an attribute is
+        not present in the input, an empty string or an empty list will be
+        assigned to it. The list that is assigned to 'Flag' is sorted.
+        """
+
         def copy_one(key):
             try:
                 [value] = d.pop(key, [''])
             except ValueError:
                 raise HeapException, ('Multiple "%s" keys.' % key)
             h[key] = value
+
         def copy_list(key):
             h[key] = d.pop(key, [])
+            
         d = d.copy()
         h = {}
         copy_one('From')
@@ -175,59 +319,86 @@ class Mail(object):
         copy_one('In-Reply-To')
         copy_one('Date')
         copy_list('Flag')
-        # compatibility code {
+        h['Flag'].sort()
+
+        # compatibility code for the "Flags" attribute {
         flags = d.pop('Flags', None)
         if flags == ['deleted']:
             h['Flag'].append('deleted')
         elif flags == None:
             pass
         else:
-            raise HeapException, ('Unknown "Flags" tag: ' % (flags,))
+            raise HeapException, ('Unknown "Flags" tag: "%s"' % (flags,))
         # }
 
         if d != {}:
             raise HeapException, ('Additional keys: "%s".' % d)
         return h
 
-    def dump(self, f, refresh=True):
+    def write(self, f):
+        """Writes the post to a stream."""
 
-        def write_line(key, value):
+        def write_attr(key, value):
+            """Writes an attribute to the output."""
             t = (key, re.sub(r'\n', r'\n ', value))
             f.write('%s: %s\n' % t)
 
-        def write_one(attr):
-            if headers[attr] != '':
-                write_line(attr, headers[attr])
+        def write_str(attr):
+            """Writes a string attribute to the output."""
+            if self._header[attr] != '':
+                write_attr(attr, self._header[attr])
 
         def write_list(attr):
-            for line in headers[attr]:
-                write_line(attr, line)
+            """Writes a list attribute to the output."""
+            for line in self._header[attr]:
+                write_attr(attr, line)
 
-        if refresh:
-            headers = self.get_headers()
-            body = self.get_body()
-        else:
-            headers = self._headers
-            body = self._body
-
-        write_one('From')
-        write_one('Subject')
+        write_str('From')
+        write_str('Subject')
         write_list('Tag')
-        write_one('Message-Id')
-        write_one('In-Reply-To')
-        write_one('Date')
+        write_str('Message-Id')
+        write_str('In-Reply-To')
+        write_str('Date')
         write_list('Flag')
         f.write('\n')
-        f.write(body)
+        f.write(self._body)
 
     def save(self):
-        if not self._up_to_date:
-            headers = self.get_headers()
-            body = self.get_body()
-            mailfile = self.get_mailfile()
-            with open(mailfile, 'w') as f:
-                self.dump(f, False)
-                self._up_to_date = True
+        assert(self._maildb != None)
+        if self._modified:
+            with open(self.postfilename(), 'w') as f:
+                self.write(f)
+                self._modified = False
+
+    # Filenames
+
+    def postfilename(self):
+        """The name of the postfile in which the post is (or can be) stored."""
+        assert(self._maildb != None)
+        return os.path.join(self._maildb.postfile_dir(), \
+                            self._heapid + '.mail')
+
+    def htmlfilename(self):
+        """The name of the HTML file that can be generated from the post."""
+        assert(self._maildb != None)
+        return os.path.join(self._maildb.html_dir(), self._heapid + '.html')
+
+    def postfile_exists(self):
+        if self._maildb == None:
+            return False
+        else:
+            return os.path.exists(self.postfilename())
+
+    # Python operators
+
+    def __eq__(self, other):
+        if isinstance(other, Post):
+            return self._header == other._header and \
+                   self._body == other._body
+        else:
+            return False
+
+    # Misc
 
     def remove_google_stuff(self):
         body = self.get_body()
@@ -237,105 +408,174 @@ class Mail(object):
                        r'-~---\n', re.DOTALL)
         self.set_body(r.sub('', body))
 
-    def get_mailfile(self):
-        return os.path.join(config.get('paths','mail'), self._heapid + '.mail')
-
-    def get_htmlfile(self):
-        return os.path.join(config.get('paths','html'), self._heapid + '.html')
-
-    def mailfile_exists(self):
-        return os.path.exists(self.get_mailfile())
 
 
 class MailDB(object):
 
-    def __init__(self):
+    """The mail database that stores and handles the posts.
+
+    Data attributes:
+    heapid_to_post -- Stores the posts assigned to their heapid-s.
+        Type: dict(str, Post)
+    messid_to_heapid -- Stores which messid and heapid belong together.
+        Type: dict(str, str)
+    _postfile_dir -- The directory that contains the post files.
+        Type: str
+    _html_dir -- The directory that contains the generated HTML files.
+        Type: str
+    _next_heapid -- The next free heapid. There is neither a post with this
+        heap id nor with any larger heapid.
+        Type: int
+    _threadstruct -- Assigns the posts to a p post that are replies to p.
+        If it is None, then it should be recalculated when needed.
+        Type: dict(heapid, [heapid])
+    """
+
+    # Constructors
+
+    def __init__(self, postfile_dir, html_dir):
+        """Constructor.
+
+        Arguments:
+        postfile_dir: See _postfile_dir.
+        html_dir: See _html_dir.
+        """
+
         super(MailDB, self).__init__()
-        self.heapid_to_mail = {}
+        self.heapid_to_post = {}
         self.messid_to_heapid = {}
+        self._postfile_dir = postfile_dir
+        self._html_dir = html_dir
         heapids = []
-        if not os.path.exists(config.get('paths','mail')):
-            os.mkdir(config.get('paths','mail'))
-        for file in os.listdir(config.get('paths','mail')):
-            if file[-5:] == '.mail':
+        if not os.path.exists(self._postfile_dir):
+            os.mkdir(self._postfile_dir)
+        for file in os.listdir(self._postfile_dir):
+            if file.endswith('.mail'):
                 heapid = file[:-5]
-                self._add_mail_to_dicts(Mail(heapid), heapid)
+                absname = os.path.join(self._postfile_dir, file)
+                self._add_post_to_dicts(Post.from_file(absname, heapid, self))
                 try:
                     heapids.append(int(heapid))
                 except ValueError:
                     pass
-        self._next_heapid = max(heapids) + 1
+        self._next_heapid = max(heapids) + 1 if heapids != [] else 0
+        self._threadstruct = None
 
-    def get_heapids(self):
-        return self.heapid_to_mail.keys()
+    # Modifications
+
+    def touch(self):
+        self._threadstruct = None
+
+    # Get-set functions
+
+    def heapids(self):
+        return self.heapid_to_post.keys()
 
     def next_heapid(self):
+        """Calculated the next free heapid."""
         next = self._next_heapid
         self._next_heapid += 1
         return str(next)
 
-    def get_mails(self):
-        return self.heapid_to_mail.values()
+    def posts(self):
+        return self.heapid_to_post.values()
 
-    def get_mail(self, heapid):
+    def post(self, heapid):
         try:
-            return self.heapid_to_mail[heapid]
+            return self.heapid_to_post[heapid]
         except KeyError:
             return None
 
-    def get_mail_by_messid(self, messid):
+    def post_by_messid(self, messid):
         try:
-            return self.get_mail(self.messid_to_heapid[messid])
+            return self.post(self.messid_to_heapid[messid])
         except KeyError:
             return None
+
+    # Save
 
     def save(self):
-        for mail in self.heapid_to_mail.values():
-            mail.save()
+        """Saves all the posts that needs to be saved."""
+        for post in self.heapid_to_post.values():
+            post.save()
 
-    def create_new_mail(self):
+    # New posts
+
+    def add_new_post(self, post):
+        """Adds a new post to the maildb.
+        
+        The heapid of the post will be changed to the next free heapid of the
+        maildb."""
+
         heapid = self.next_heapid()
-        mail = Mail(heapid)
-        self.heapid_to_mail[heapid] = mail
-        return mail
+        post.add_to_maildb(heapid, self)
+        self._add_post_to_dicts(post)
+        return post
 
-    def index_mail(self, mail):
-        self.messid_to_heapid[mail.get_messid()] = mail.get_heapid()
+    def _add_post_to_dicts(self, post):
+        """Adds the post to the heapid_to_post and messid_to_heapid
+        dictionaries. """
+        heapid = post.heapid()
+        self.heapid_to_post[heapid] = post
+        if post.messid() != '':
+            self.messid_to_heapid[post.messid()] = heapid
 
-    def _add_mail_to_dicts(self, mail, heapid=None):
-        if heapid == None:
-            heapid = mail.get_heapid()
-        self.heapid_to_mail[heapid] = mail
-        self.messid_to_heapid[mail.get_messid()] = heapid
+    # Thread structure
 
-    def add_timestamp(self, mail):
-        heapid = mail.get_heapid()
-        date = mail.get_date()
-        if date == '':
-            return (0, heapid)
-        else:
-            return (calc_timestamp(date), heapid)
+    def threadstruct(self):
+        """Returns the calculated _threadstruct.
+        
+        The object returned by this function should not be modified."""
+        if self._threadstruct == None:
+            self._recalc_threadstruct()
+        return self._threadstruct
 
-    def get_threads(self):
-        threads = {} # heapid -> [answered::(timestamp, heapid)]
-        for mail in self.get_mails():
-            if not mail.get_deleted():
-                prev = mail.get_inreplyto()
+    def _recalc_threadstruct(self):
+
+        def add_timestamp(post):
+            """Creates a (timestamp, heapid) pair from the post."""
+            heapid = post.heapid()
+            date = post.date()
+            timestamp = calc_timestamp(date) if date != '' else 0
+            return (timestamp, heapid)
+
+        def cmp_with_timestamp(x, y):
+            """Compares two (timestamp, heapid) objects by their timestamps."""
+            if x[0] > y[0]:
+                return 1
+            elif x[0] == y[0]:
+                return 0
+            else:
+                return -1
+
+        threads = {} # dict(heapid, [answered:(timestamp, heapid)])
+        for post in self.posts():
+            if not post.is_deleted():
+                prev = post.inreplyto()
                 prev_heapid = None
-                if prev != None:
+                if prev != '':
                     if prev in self.messid_to_heapid:
                         prev_heapid = self.messid_to_heapid[prev]
-                    elif prev in self.heapid_to_mail:
+                    elif prev in self.heapid_to_post:
                         prev_heapid = prev
                 if prev_heapid in threads:
-                    threads[prev_heapid].append(self.add_timestamp(mail))
+                    threads[prev_heapid].append(add_timestamp(post))
                 else:
-                    threads[prev_heapid] = [self.add_timestamp(mail)]
+                    threads[prev_heapid] = [add_timestamp(post)]
         t = {}
         for heapid in threads:
-            threads[heapid].sort(sort_with_timestamp)
+            threads[heapid].sort(cmp_with_timestamp)
             t[heapid] = [ heapid2 for timestamp, heapid2 in threads[heapid] ]
-        return t
+        self._threadstruct = t
+
+    # Filenames
+
+    def postfile_dir(self):
+        return self._postfile_dir
+
+    def html_dir(self):
+        return self._html_dir
+
 
 class Server(object):
 
@@ -365,7 +605,7 @@ class Server(object):
     def close(self):
         self.server.close()
 
-    def download_email(self, email_index, mail):
+    def download_email(self, email_index):
 
         header = self.server.fetch(email_index, '(BODY[HEADER])')[1][0][1]
         text = self.server.fetch(email_index, '(BODY[TEXT])')[1][0][1]
@@ -400,15 +640,18 @@ class Server(object):
         text = utf8(text, charset)
 
         text = re.sub(r'\r\n',r'\n',text)
-        mail.set_headers(headers)
-        mail.set_body(text)
-        mail.remove_google_stuff()
+        post = Post()
+        post.set_header(headers)
+        post.set_body(text)
+        post.remove_google_stuff()
 
         for entry, author_regex in config.items('nicknames'):
             [author, regex] = config.get('nicknames', entry).split(' ',1)
-            if re.match(regex, mail.get_author()):
-                mail.set_author(author)
+            if re.match(regex, post.get_author()):
+                post.set_author(author)
                 break
+
+        return post
 
     def download_new(self, lower_value=0):
         self.server.select("INBOX")[1]
@@ -420,14 +663,13 @@ class Server(object):
                              '(BODY[HEADER.FIELDS (MESSAGE-ID)])')[1][0][1]
                     messid = email.message_from_string(header)['Message-Id']
                     # mail: the mail in the database if already exists
-                    mail = self.maildb.get_mail_by_messid(messid)
+                    mail = self.maildb.post_by_messid(messid)
                     if mail == None:
-                        mail = self.maildb.create_new_mail()
-                        log('Downloading mail #%s.' % mail.get_heapid())
-                        self.download_email(email_index, mail)
-                        self.maildb.index_mail(mail)
+                        post = self.download_email(email_index)
+                        self.maildb.add_new_post(post)
+                        log('Mail #%s downloaded.' % post.heapid())
                     else:
-                        log('Mail #%s found.' % mail.get_heapid())
+                        log('Post #%s found.' % mail.get_heapid())
         log('Downloading finished.')
 
 
@@ -460,14 +702,6 @@ html_one_mail = """\
 </a>
 """
 
-def sort_with_timestamp(x, y):
-    if x[0] > y[0]:
-        return 1
-    elif x[0] == y[0]:
-        return 0
-    else:
-        return -1
-
 def sub_html(matchobject):
     whole = matchobject.group(0)
     if whole == '<':
@@ -487,9 +721,9 @@ class Generator(object):
         self.maildb = maildb
 
     def mail_to_html(self):
-        for mail in self.maildb.get_mails():
+        for mail in self.maildb.posts():
             if not mail.get_deleted():
-                with open(mail.get_htmlfile(), 'w') as f:
+                with open(mail.htmlfilename(), 'w') as f:
                     h1 = quote_html(mail.get_author()) + ': ' + \
                          quote_html(mail.get_subject())
                     f.write(html_header % (h1, 'heapindex.css', h1))
@@ -509,10 +743,10 @@ class Generator(object):
 
     def write_thread(self, threads, heapid, f, indent):
         if heapid != None:
-            mail = self.maildb.heapid_to_mail[heapid]
+            mail = self.maildb.heapid_to_post[heapid]
             date_str = ("&nbsp; (%s)" % mail.get_date_str()) 
             from_ = re.sub('<.*?>','', mail.get_author())
-            f.write(html_one_mail % (mail.get_htmlfile(), \
+            f.write(html_one_mail % (mail.htmlfilename(), \
                                      quote_html(mail.get_subject()), \
                                      mail.get_heapid(), \
                                      quote_html(from_), \
@@ -545,20 +779,20 @@ def delete_mail(*heapids):
     l = list(heapids)
     maildb = MailDB()
     for heapid in l:
-        maildb.get_mail(heapid).set_deleted(True)
+        maildb.post(heapid).set_deleted(True)
     maildb.save()
 
 def change_nick(author_regex, new_author):
     author_regex = re.compile(author_regex)
     maildb = MailDB()
-    for heapid in maildb.get_heapids():
-        mail = maildb.get_mail(heapid)
+    for heapid in maildb.heapids():
+        mail = maildb.post(heapid)
         if author_regex.match(mail.get_author()):
             mail.set_author(new_author)
     maildb.save()
 
 def rename_thread2(maildb, threads, heapid, new_subject, re_from_second):
-    maildb.get_mail(heapid).set_subject(new_subject)
+    maildb.post(heapid).set_subject(new_subject)
     new_subject2 = ("Re: " + new_subject) if re_from_second else new_subject 
     if heapid in threads:
         for heapid2 in threads[heapid]:
@@ -581,9 +815,8 @@ def rename_thread(heapid, new_subject, re_from_second=True):
 
 if __name__ == '__main__':
     argv = sys.argv[1:]
-    if argv == []:
-        download_mail()
-        generate_html()
+    if argv == [] or argv[0] in ['-h', '-help', '--help']:
+        print __doc__
     else:
         funname = argv.pop(0)
         getattr(sys.modules[__name__], funname)(*argv)
