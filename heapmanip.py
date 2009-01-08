@@ -8,8 +8,8 @@ Usage:
     python heapmanip.py generate_html
     python heapmanip.py rename_thread _heapid_ _new_subject_
 
-A config file has to be created in the current directory with the name "heap.cfg".
-An example config file:
+A config file has to be created in the current directory with the name
+"heap.cfg". An example config file:
 
     [server]
     host=imap.gmail.com
@@ -45,13 +45,13 @@ import StringIO
 
 ##### global variables #####
 
-log_on = True
+log_on = [True]
 
 def set_log(log_):
-    log_on = log_
+    log_on[0] = log_
 
 def log(str):
-    if log_on:
+    if log_on[0]:
         print str
 
 ##### utility functions and classes #####

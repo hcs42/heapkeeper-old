@@ -380,5 +380,63 @@ html=%s
     def tearDown(self):
         shutil.rmtree(self._dir)
 
+
+
+class TestGenerator(unittest.TestCase):
+
+    """Tests the Generator class."""
+
+    def setUp(self):
+        self._dir = tempfile.mkdtemp()
+        self._postfile_dir = os.path.join(self._dir, 'mail')
+        self._html_dir = os.path.join(self._dir, 'html')
+        os.mkdir(self._postfile_dir)
+        os.mkdir(self._html_dir)
+
+    def createMailDB(self):
+        return MailDB(self._postfile_dir, self._html_dir)
+
+    def postFileName(self, fname):
+        return os.path.join(self._postfile_dir, fname)
+
+    def indexHtml(self):
+        index_html_name = os.path.join(self._html_dir, 'index.html')
+        return file_to_string(index_html_name)
+
+    def testEmpty(self):
+        """Tests the empty MailDB."""
+        maildb = self.createMailDB()
+        g = Generator(maildb)
+        g.index_html()
+        s = html_header % ('Heap Index', 'heapindex.css', 'UMS Heap') + \
+            html_footer
+        self.assertEquals(self.indexHtml(), s)
+
+    def test1(self):
+        """Tests the MailDB with two posts."""
+
+        # Initialisation
+        postfile1 = self.postFileName('1.mail')
+        postfile2 = self.postFileName('x.mail')
+        string_to_file('Message-Id: mess1', postfile1)
+        string_to_file('Message-Id: mess2\nIn-Reply-To: mess1', postfile2)
+        maildb = self.createMailDB()
+        p1 = maildb.post('1')
+        p2 = maildb.post('2')
+
+        maildb = self.createMailDB()
+        g = Generator(maildb)
+        g.index_html()
+        s = html_header % ('Heap Index', 'heapindex.css', 'UMS Heap') + \
+            html_one_mail % ('1.html', '', '1', '', '&nbsp; ()') + \
+            html_one_mail % ('x.html', '', 'x', '', '&nbsp; ()') + \
+            '</div>\n</div>\n' + \
+            html_footer
+        self.assertEquals(self.indexHtml(), s)
+
+    def tearDown(self):
+        shutil.rmtree(self._dir)
+
 if __name__ == '__main__':
+    set_log(False)
     unittest.main()
