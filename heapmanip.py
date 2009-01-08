@@ -214,7 +214,7 @@ class Post(object):
 
     def date_str(self):
         """The date converted to a string in local time."""
-        date = self.get_date()
+        date = self.date()
         if date == '':
             return ''
         else:
@@ -359,12 +359,12 @@ class Post(object):
 
         def write_str(attr):
             """Writes a string attribute to the output."""
-            if self._header[attr] != '':
+            if self._header.get(attr, '') != '':
                 write_attr(attr, self._header[attr])
 
         def write_list(attr):
             """Writes a list attribute to the output."""
-            for line in self._header[attr]:
+            for line in self._header.get(attr, []):
                 write_attr(attr, line)
 
         write_str('From')
@@ -391,6 +391,11 @@ class Post(object):
         assert(self._maildb != None)
         return os.path.join(self._maildb.postfile_dir(), \
                             self._heapid + '.mail')
+
+    def htmlfilebasename(self):
+        """The base name of the HTML file that can be generated from the
+        post."""
+        return self._heapid + '.html'
 
     def htmlfilename(self):
         """The name of the HTML file that can be generated from the post."""
@@ -517,6 +522,11 @@ class MailDB(object):
         return str(next)
 
     def posts(self):
+        """Returns the list of posts that are not deleted."""
+        return [ p for p in self.real_posts() if not p.is_deleted() ]
+
+    def real_posts(self):
+        """Returns the list of all posts, even the deleted ones."""
         return self.heapid_to_post.values()
 
     def post(self, heapid):
@@ -589,18 +599,17 @@ class MailDB(object):
 
         threads = {} # dict(heapid, [answered:(timestamp, heapid)])
         for post in self.posts():
-            if not post.is_deleted():
-                prev = post.inreplyto()
-                prev_heapid = None
-                if prev != '':
-                    if prev in self.messid_to_heapid:
-                        prev_heapid = self.messid_to_heapid[prev]
-                    elif prev in self.heapid_to_post:
-                        prev_heapid = prev
-                if prev_heapid in threads:
-                    threads[prev_heapid].append(add_timestamp(post))
-                else:
-                    threads[prev_heapid] = [add_timestamp(post)]
+            prev = post.inreplyto()
+            prev_heapid = None
+            if prev != '':
+                if prev in self.messid_to_heapid:
+                    prev_heapid = self.messid_to_heapid[prev]
+                elif prev in self.heapid_to_post:
+                    prev_heapid = prev
+            if prev_heapid in threads:
+                threads[prev_heapid].append(add_timestamp(post))
+            else:
+                threads[prev_heapid] = [add_timestamp(post)]
         t = {}
         for heapid in threads:
             threads[heapid].sort(cmp_with_timestamp)
@@ -622,9 +631,9 @@ class Server(object):
     posts.
     
     Data attributes:
-    _maildb -- The mail database that will be used by the server.
+    _maildb -- The mail database..
         Type: MailDB
-    _config -- The configuration that will be used.
+    _config -- The configuration.
         Type: ConfigParser
     _server -- The object that represents the IMAP server.
         Type: IMAP4_SSL | NoneType
@@ -788,48 +797,71 @@ def quote_html(text):
 
 class Generator(object):
 
+    """A Generator object can generate HTML from the posts.
+    
+    It can generate an index page that contains all posts, and an HTML file
+    for each post.
+
+    Data attributes:
+    _maildb -- The mail database.
+        Type: MailDB
+    """
+
     def __init__(self, maildb):
+        """Constructor
+
+        Arguments:
+        maildb -- Initialises self._maildb.
+            Type: MailDB
+        """
+
         super(Generator, self).__init__()
-        self.maildb = maildb
+        self._maildb = maildb
 
-    def mail_to_html(self):
-        for mail in self.maildb.posts():
-            if not mail.get_deleted():
-                with open(mail.htmlfilename(), 'w') as f:
-                    h1 = quote_html(mail.get_author()) + ': ' + \
-                         quote_html(mail.get_subject())
-                    f.write(html_header % (h1, 'heapindex.css', h1))
-                    f.write('(' + mail.get_date_str() + ')')
-                    f.write('<pre>')
-                    f.write(quote_html(mail.get_body()))
-                    f.write('</pre>')
-                    f.write(html_footer)
+    def posts_to_html(self):
+        """Creates an HTML file for each post that are not deleted."""
+        for post in self._maildb.posts():
+            with open(post.htmlfilename(), 'w') as f:
+                h1 = quote_html(post.author()) + ': ' + \
+                     quote_html(post.subject())
+                f.write(html_header % (h1, 'heapindex.css', h1))
+                f.write('(' + post.date_str() + ')')
+                f.write('<pre>')
+                f.write(quote_html(post.body()))
+                f.write('</pre>')
+                f.write(html_footer)
 
-    def db_to_html(self):
-        threads = self.maildb.get_threads()
-        with open('mail.html','w') as f:
+    def index_html(self):
+        """Creates the index HTML file.
+        
+        The created file is named 'index.html' and is placed in the html_dir
+        directory."""
+
+        def write_thread(heapid, indent):
+            """Writes a post and all its followers into the output."""
+            if heapid != None:
+                post = self._maildb.heapid_to_post[heapid]
+                author = re.sub('<.*?>','', post.author())
+                date_str = ("&nbsp; (%s)" % post.date_str()) 
+                f.write(html_one_mail % (post.htmlfilebasename(), \
+                                         quote_html(post.subject()), \
+                                         post.heapid(), \
+                                         quote_html(author), \
+                                         date_str))
+            if heapid in threadst:
+                for heapid2 in threadst[heapid]:
+                    write_thread(heapid2, indent+1)
+            if heapid != None:
+                f.write("</div>\n")
+
+        threadst = self._maildb.threadstruct()
+        filename = os.path.join(self._maildb.html_dir(), 'index.html')
+        with open(filename, 'w') as f:
             f.write(html_header % ('Heap Index', 'heapindex.css', 'UMS Heap'))
-            self.write_thread(threads, None, f, 0)
+            write_thread(None, 0)
             f.write(html_footer)
         log('HTML generated.')
 
-    def write_thread(self, threads, heapid, f, indent):
-        if heapid != None:
-            mail = self.maildb.heapid_to_post[heapid]
-            date_str = ("&nbsp; (%s)" % mail.get_date_str()) 
-            from_ = re.sub('<.*?>','', mail.get_author())
-            f.write(html_one_mail % (mail.htmlfilename(), \
-                                     quote_html(mail.get_subject()), \
-                                     mail.get_heapid(), \
-                                     quote_html(from_), \
-                                     date_str))
-
-        if heapid in threads:
-            for heapid2 in threads[heapid]:
-                self.write_thread(threads, heapid2, f, indent+1)
-
-        if heapid != None:
-            f.write("</div>\n")
 
 ##### Interface functions #####
 
@@ -840,37 +872,37 @@ def read_config():
     config.read('heap.cfg')
     return config
 
+def read_maildb():
+    return MailDB.from_config(read_config())
+
 def download_mail(from_ = 0):
     config = read_config()
-    maildb = MailDB()
-    server = Server(maildb)
+    maildb = MailDB.from_config(config)
+    server = Server(maildb, config)
     server.connect()
     server.download_new(int(from_))
     server.close()
     maildb.save()
 
 def generate_html():
-    config = read_config()
-    maildb = MailDB()
+    maildb = read_maildb()
     g = Generator(maildb)
-    g.db_to_html()
-    g.mail_to_html()
+    g.index_html()
+    g.posts_to_html()
 
 def delete_mail(*heapids):
-    config = read_config()
     l = list(heapids)
-    maildb = MailDB()
+    maildb = read_maildb()
     for heapid in l:
-        maildb.post(heapid).set_deleted(True)
+        maildb.post(heapid).delete()
     maildb.save()
 
 def change_nick(author_regex, new_author):
-    config = read_config()
+    maildb = read_maildb()
     author_regex = re.compile(author_regex)
-    maildb = MailDB()
     for heapid in maildb.heapids():
         mail = maildb.post(heapid)
-        if author_regex.match(mail.get_author()):
+        if author_regex.search(mail.author()) != None:
             mail.set_author(new_author)
     maildb.save()
 
@@ -882,8 +914,7 @@ def rename_thread_core(maildb, threadst, heapid, new_subject):
 
 def rename_thread(heapid, new_subject):
     """Renames the subject of a post and all of its following posts."""
-    config = read_config()
-    maildb = MailDB.from_config(config)
+    maildb = read_maildb()
     threadst = maildb.threadstruct()
     rename_thread_core(maildb, threadst, heapid, new_subject)
     maildb.save()

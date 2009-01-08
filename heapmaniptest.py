@@ -338,6 +338,13 @@ html=%s
         maildb.save()
         self.assert_(os.path.exists(postfile3))
 
+        # Deleting a post
+        self.assertEquals(set([p1, p2, p3]), set(maildb.posts()))
+        self.assertEquals(set([p1, p2, p3]), set(maildb.real_posts()))
+        p1.delete()
+        self.assertEquals(set([p2, p3]), set(maildb.posts()))
+        self.assertEquals(set([p1, p2, p3]), set(maildb.real_posts()))
+
     def testThreadstruct(self):
         """Tests the thread structure computing method."""
 
