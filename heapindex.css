@@ -1,0 +1,57 @@
+body
+{
+	background-color: #dda;
+}
+
+a
+{
+	text-decoration: none;
+}
+
+#header
+{
+	margin: 0.5em;
+	margin-bottom: 1em;
+	border-bottom: 1px solid #f22;
+	font-family: Arial, sans-serif;
+	font-style: italic;
+	color: #ffc;
+}
+
+.mail
+{
+	display: block;
+	border: 1px solid #ffc;
+
+	margin: 1em;
+	margin-bottom: 1em;
+	padding: 0.7em 1em;
+}
+
+.mail .mail
+{
+	border: none;
+	margin-left: 2em;
+	margin-top: 0.3em;
+	padding-top: 0;
+	padding-bottom: 0;
+	margin-bottom: 0;
+}
+
+span
+{
+	color: #f22;
+	font-family: Arial, sans-serif;
+}
+
+.subject
+{
+	font-weight: bold;
+}
+
+.author
+{
+	margin: 0 1em;
+	font-style: italic;
+}
+
