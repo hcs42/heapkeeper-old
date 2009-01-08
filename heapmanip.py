@@ -6,7 +6,24 @@ Usage:
 
     python heapmanip.py download_mail
     python heapmanip.py generate_html
-    python heapmanip.py rename_thread _heapid_ _new_subject_\
+    python heapmanip.py rename_thread _heapid_ _new_subject_
+
+A config file has to be created in the current directory with the name "heap.cfg".
+An example config file:
+
+    [server]
+    host=imap.gmail.com
+    port=993
+    username=our.heap@gmail.com
+    password=examplepassword
+
+    [paths]
+    mail=mail
+    html=html
+
+    [nicknames]
+    1=Somebody somebody@gmail.com
+    2=Somebody_else somebody.else@else.com
 """
 
 from __future__ import with_statement
@@ -36,9 +53,6 @@ def set_log(log_):
 def log(str):
     if log_on:
         print str
-
-config = ConfigParser.ConfigParser()
-config.read('heap.cfg')
 
 ##### utility functions and classes #####
 
@@ -437,15 +451,34 @@ class MailDB(object):
         """Constructor.
 
         Arguments:
-        postfile_dir: See _postfile_dir.
-        html_dir: See _html_dir.
+        postfile_dir: Initialises self._postfile_dir.
+        html_dir: Initialises self._html_dir.
         """
 
         super(MailDB, self).__init__()
-        self.heapid_to_post = {}
-        self.messid_to_heapid = {}
         self._postfile_dir = postfile_dir
         self._html_dir = html_dir
+        self._init()
+
+    @staticmethod
+    def from_config(config):
+        """Creates a MailDB with the given configuration.
+
+        Arguments:
+        config -- Configuration object. The paths/mail and paths/html options
+            will be read.
+            Type: ConfigParser
+        """
+        
+        postfile_dir = config.get('paths', 'mail')
+        html_dir = config.get('paths', 'html')
+        return MailDB(postfile_dir, html_dir)
+
+    def _init(self):
+        """Initialisation."""
+
+        self.heapid_to_post = {}
+        self.messid_to_heapid = {}
         heapids = []
         if not os.path.exists(self._postfile_dir):
             os.mkdir(self._postfile_dir)
@@ -464,6 +497,12 @@ class MailDB(object):
     # Modifications
 
     def touch(self):
+        """If something in the database changes, this function should be
+        called.
+        
+        If a post in the database is changed, this function will be invoked
+        automatically, so there is no need to call it again."""
+
         self._threadstruct = None
 
     # Get-set functions
@@ -578,37 +617,61 @@ class MailDB(object):
 
 
 class Server(object):
+    
+    """A Server object can be used to connect to the server and download new
+    posts.
+    
+    Data attributes:
+    _maildb -- The mail database that will be used by the server.
+        Type: MailDB
+    _config -- The configuration that will be used.
+        Type: ConfigParser
+    _server -- The object that represents the IMAP server.
+        Type: IMAP4_SSL | NoneType
+    """
 
-    def __init__(self, maildb):
+    def __init__(self, maildb, config):
+        """Constructor.
+
+        Arguments:
+        maildb: Initialises self._maildb.
+        config: Initialises self._config.
+        """
+
         super(Server, self).__init__()
-        self.maildb = maildb
-
-    @staticmethod
-    def get_setting(name):
-        return file_to_string(name).strip()
+        self._maildb = maildb
+        self._config = config
+        self._server = None
 
     def connect(self):
+        """Connects to the IMAP server."""
+
         log('Reading settings...')
-        
-        host = config.get('server', 'host')
-        port = int(config.get('server', 'port'))
-        username = config.get('server', 'username')
-        password = config.get('server', 'password')
-
+        host = self._config.get('server', 'host')
+        port = int(self._config.get('server', 'port'))
+        username = self._config.get('server', 'username')
+        password = self._config.get('server', 'password')
         log('Connecting...')
-        self.server = IMAP4_SSL(host, port)
-        self.server.login(username, password)
-
+        self._server = IMAP4_SSL(host, port)
+        self._server.login(username, password)
         log('Connected')
-        return self.server
 
     def close(self):
-        self.server.close()
+        """Closes the connection with the IMAP server."""
+
+        self._server.close()
+        self._server = None
 
     def download_email(self, email_index):
+        """Downloads an email and returns it as a Post.
+        
+        Arguments:
+        email_index -- The index of the email to download.
+            Type: int
+        """
 
-        header = self.server.fetch(email_index, '(BODY[HEADER])')[1][0][1]
-        text = self.server.fetch(email_index, '(BODY[TEXT])')[1][0][1]
+        header = self._server.fetch(email_index, '(BODY[HEADER])')[1][0][1]
+        text = self._server.fetch(email_index, '(BODY[TEXT])')[1][0][1]
         message = email.message_from_string(header + text)
 
         # processing the header
@@ -645,31 +708,40 @@ class Server(object):
         post.set_body(text)
         post.remove_google_stuff()
 
-        for entry, author_regex in config.items('nicknames'):
-            [author, regex] = config.get('nicknames', entry).split(' ',1)
-            if re.match(regex, post.get_author()):
+        for entry, author_regex in self._config.items('nicknames'):
+            [author, regex] = self._config.get('nicknames', entry).split(' ',1)
+            if re.search(regex, post.get_author()) != None:
                 post.set_author(author)
                 break
 
         return post
 
     def download_new(self, lower_value=0):
-        self.server.select("INBOX")[1]
-        emails = self.server.search(None, '(ALL)')[1][0].strip()
+        """Downloads the new emails from the INBOX of the IMAP server and adds
+        them to the mail database.
+
+        Arguments:
+        lower_value -- Only the email indices that are greater or equal to the
+            lower_value are examined.
+            Type: int.
+        """
+
+        self._server.select("INBOX")[1]
+        emails = self._server.search(None, '(ALL)')[1][0].strip()
         if emails != '':
             for email_index in emails.split(' '):
                 if int(email_index) >= lower_value:
-                    header = self.server.fetch(email_index, \
+                    header = self._server.fetch(email_index, \
                              '(BODY[HEADER.FIELDS (MESSAGE-ID)])')[1][0][1]
                     messid = email.message_from_string(header)['Message-Id']
-                    # mail: the mail in the database if already exists
-                    mail = self.maildb.post_by_messid(messid)
-                    if mail == None:
+                    # post: the post in the database if already exists
+                    post = self._maildb.post_by_messid(messid)
+                    if post == None:
                         post = self.download_email(email_index)
-                        self.maildb.add_new_post(post)
-                        log('Mail #%s downloaded.' % post.heapid())
+                        self._maildb.add_new_post(post)
+                        log('Post #%s downloaded.' % post.heapid())
                     else:
-                        log('Post #%s found.' % mail.get_heapid())
+                        log('Post #%s found.' % post.heapid())
         log('Downloading finished.')
 
 
@@ -761,7 +833,15 @@ class Generator(object):
 
 ##### Interface functions #####
 
+def read_config():
+    """Reads and returns the configuration object."""
+
+    config = ConfigParser.ConfigParser()
+    config.read('heap.cfg')
+    return config
+
 def download_mail(from_ = 0):
+    config = read_config()
     maildb = MailDB()
     server = Server(maildb)
     server.connect()
@@ -770,12 +850,14 @@ def download_mail(from_ = 0):
     maildb.save()
 
 def generate_html():
+    config = read_config()
     maildb = MailDB()
     g = Generator(maildb)
     g.db_to_html()
     g.mail_to_html()
 
 def delete_mail(*heapids):
+    config = read_config()
     l = list(heapids)
     maildb = MailDB()
     for heapid in l:
@@ -783,6 +865,7 @@ def delete_mail(*heapids):
     maildb.save()
 
 def change_nick(author_regex, new_author):
+    config = read_config()
     author_regex = re.compile(author_regex)
     maildb = MailDB()
     for heapid in maildb.heapids():
@@ -791,26 +874,18 @@ def change_nick(author_regex, new_author):
             mail.set_author(new_author)
     maildb.save()
 
-def rename_thread2(maildb, threads, heapid, new_subject, re_from_second):
+def rename_thread_core(maildb, threadst, heapid, new_subject):
     maildb.post(heapid).set_subject(new_subject)
-    new_subject2 = ("Re: " + new_subject) if re_from_second else new_subject 
-    if heapid in threads:
-        for heapid2 in threads[heapid]:
-            rename_thread2(maildb, threads, heapid2, new_subject2, False)
+    if heapid in threadst:
+        for heapid2 in threadst[heapid]:
+            rename_thread_core(maildb, threadst, heapid2, new_subject)
 
-def rename_thread(heapid, new_subject, re_from_second=True):
-    if type(re_from_second) == bool:
-        pass
-    elif re_from_second == 'True':
-        re_from_second = True
-    elif re_from_second == 'False':
-        re_from_second = False
-    else:
-        raise Exception, 're_from_second argument is not a boolean'
-
-    maildb = MailDB()
-    threads = maildb.get_threads()
-    rename_thread2(maildb, threads, heapid, new_subject, re_from_second)
+def rename_thread(heapid, new_subject):
+    """Renames the subject of a post and all of its following posts."""
+    config = read_config()
+    maildb = MailDB.from_config(config)
+    threadst = maildb.threadstruct()
+    rename_thread_core(maildb, threadst, heapid, new_subject)
     maildb.save()
 
 if __name__ == '__main__':

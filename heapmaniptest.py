@@ -13,6 +13,7 @@ import unittest
 import tempfile
 import os
 import os.path
+import ConfigParser
 
 from heapmanip import *
 
@@ -257,6 +258,7 @@ class TestMailDB(unittest.TestCase):
         return os.path.join(self._postfile_dir, fname)
 
     def testEmpty(self):
+        """Tests the empty MailDB."""
         maildb = self.createMailDB()
         self.assert_(os.path.exists(self._postfile_dir))
         self.assertEquals(maildb.postfile_dir(), self._postfile_dir)
@@ -274,7 +276,24 @@ class TestMailDB(unittest.TestCase):
         self.assertEquals(set(maildb.heapids()), set(['1', 'xy']))
         self.assertEquals(maildb.next_heapid(), '2')
 
+    def testConfig(self):
+        """Tests the MailDB.__init__ which has a ConfigParser argument."""
+        self.createDirs()
+        string_to_file('Subject: s1', self.postFileName('1.mail'))
+        configFileText = '''\
+[paths]
+mail=%s
+html=%s
+''' % (self._postfile_dir, self._html_dir)
+        configFileName = os.path.join(self._dir, 'heap.cfg')
+        string_to_file(configFileText, configFileName)
+        config = ConfigParser.ConfigParser()
+        config.read(configFileName)
+        maildb = MailDB.from_config(config)
+        self.assertEquals(set(maildb.heapids()), set(['1']))
+
     def testGetMethods(self):
+        """Tests the 'get' methods of MailDB."""
         self.createDirs()
         string_to_file('Message-Id: mess1', self.postFileName('1.mail'))
         string_to_file('Message-Id: mess2', self.postFileName('2.mail'))
@@ -289,6 +308,7 @@ class TestMailDB(unittest.TestCase):
         self.assert_(p2 is maildb.post_by_messid('mess2'))
 
     def testModifications(self):
+        """Tests the 'set' methods of MailDB."""
 
         # Initialisation
         self.createDirs()
@@ -319,6 +339,7 @@ class TestMailDB(unittest.TestCase):
         self.assert_(os.path.exists(postfile3))
 
     def testThreadstruct(self):
+        """Tests the thread structure computing method."""
 
         def add_post(index, inreplyto=None):
             messid = str(index) + '@'
