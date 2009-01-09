@@ -102,6 +102,8 @@ class TestPost(unittest.TestCase):
         self.assertEquals(p.is_deleted(), False)
         self.assertEquals(p.is_modified(), True)
         self.assertEquals(p.body(), '\n')
+        p2 = Post.create_empty()
+        self.assertEquals(p, p2)
 
     def testInit(self):
         p = Post.from_str(post4_text)
@@ -123,6 +125,16 @@ class TestPost(unittest.TestCase):
 
         p.set_subject('subject2')
         self.assertEquals(p.subject(), 'subject2')
+
+        p.set_messid('@')
+        self.assertEquals(p.messid(), '@')
+
+        p.set_inreplyto('@@')
+        self.assertEquals(p.inreplyto(), '@@')
+
+        p.set_date('Wed, 20 Aug 2008 17:41:31 +0200')
+        self.assertEquals(p.date(), \
+                          'Wed, 20 Aug 2008 17:41:31 +0200')
 
         p.set_body('newbody')
         self.assertEquals(p.body(), 'newbody\n')

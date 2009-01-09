@@ -43,6 +43,7 @@ import ConfigParser
 import time
 import StringIO
 
+
 ##### global variables #####
 
 log_on = [True]
@@ -53,6 +54,7 @@ def set_log(log_):
 def log(str):
     if log_on[0]:
         print str
+
 
 ##### utility functions and classes #####
 
@@ -96,6 +98,7 @@ class HeapException(Exception):
 
     def __str__(self):
         return repr(self.value)
+
 
 ##### Post #####
 
@@ -160,6 +163,14 @@ class Post(object):
         with open(fname, 'r') as f:
             return Post(f, heapid, maildb)
 
+    @staticmethod
+    def create_empty(heapid=None, maildb=None):
+        """Creates an empty Post object."""
+        sio = StringIO.StringIO('')
+        p = Post(sio, heapid, maildb)
+        sio.close()
+        return p
+
     # Modifications
 
     def touch(self):
@@ -176,6 +187,7 @@ class Post(object):
         assert(self._maildb == None)
         self._heapid = heapid
         self._maildb = maildb
+        self.touch()
 
     # Get-set functions
 
@@ -206,11 +218,23 @@ class Post(object):
     def messid(self):
         return self._header['Message-Id']
 
+    def set_messid(self, messid):
+        self._header['Message-Id'] = messid
+        self.touch()
+
     def inreplyto(self):
         return self._header['In-Reply-To']
 
+    def set_inreplyto(self, inreplyto):
+        self._header['In-Reply-To'] = inreplyto
+        self.touch()
+
     def date(self):
         return self._header['Date']
+
+    def set_date(self, date):
+        self._header['Date'] = date
+        self.touch()
 
     def date_str(self):
         """The date converted to a string in local time."""
@@ -420,14 +444,14 @@ class Post(object):
     # Misc
 
     def remove_google_stuff(self):
-        body = self.get_body()
         r = re.compile(r'--~--~---------~--~----~------------~-------~--~' + \
                        r'----~\n.*?\n' + \
                        r'-~----------~----~----~----~------~----~------~-' + \
                        r'-~---\n', re.DOTALL)
-        self.set_body(r.sub('', body))
+        self.set_body(r.sub('', self.body()))
 
 
+##### MailDB #####
 
 class MailDB(object):
 
@@ -625,6 +649,8 @@ class MailDB(object):
         return self._html_dir
 
 
+##### Server #####
+
 class Server(object):
     
     """A Server object can be used to connect to the server and download new
@@ -712,14 +738,18 @@ class Server(object):
         text = utf8(text, charset)
 
         text = re.sub(r'\r\n',r'\n',text)
-        post = Post()
-        post.set_header(headers)
+        post = Post.create_empty()
+        post.set_author(headers.get('From', ''))
+        post.set_subject(headers.get('Subject', ''))
+        post.set_messid(headers.get('Message-Id', ''))
+        post.set_inreplyto(headers.get('In-Reply-To', ''))
+        post.set_date(headers.get('Date', ''))
         post.set_body(text)
         post.remove_google_stuff()
 
         for entry, author_regex in self._config.items('nicknames'):
             [author, regex] = self._config.get('nicknames', entry).split(' ',1)
-            if re.search(regex, post.get_author()) != None:
+            if re.search(regex, post.author()) != None:
                 post.set_author(author)
                 break
 
@@ -748,9 +778,11 @@ class Server(object):
                     if post == None:
                         post = self.download_email(email_index)
                         self._maildb.add_new_post(post)
-                        log('Post #%s downloaded.' % post.heapid())
+                        log('Post #%s (#%s in INBOX) downloaded.' % \
+                            (post.heapid(), email_index))
                     else:
-                        log('Post #%s found.' % post.heapid())
+                        log('Post #%s (#%s in INBOX) found.' % \
+                            (post.heapid(), email_index))
         log('Downloading finished.')
 
 
