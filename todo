@@ -1,29 +1,41 @@
 Implementation
 --------------
 
-* Using match instead of search when matching when reading nicknames.
-* New-thead flag to indicate that the email begins a new thread.
+* PostSet: all operation:
+    ps.all.set_subject('xx')
+* PostSet: selector
+    s = maildb.get_selector()
+    ps_all = s('all')
+    ps_heap = s('[heap]')
+    ps_nt = s('{new-thread}')
+    ps_nt = s('{flag-new-thread}')
+    ps_nt = s('{since 2008-10-10}')
+    ps_112 = s('112')
+* PostSet: expand, expand_f, expand_b operations
+* Generator: sections
+* Tags: subject -> tag
+* Generator: * instead of the same subjects; same with tags
+    Attis: Something [heap]
+      Josh: * [heap] [heap-conventions]
+        Csabi: Something else [heap] [heap-conventions]
+          Josh: * [heap] [heap-conventions]
+* Tags: "tag implies tag" relations
+* Flag: New-thead flag to indicate that the email begins a new thread.
+* Console interface
+* Actor
+* Search
 * Downloading emails since given date.
-* Recognizing heap-id-s in in-reply-to fields.
-* The Generator should be able to determine the width of the generated HTML
-  page (to discuss).
-* Arguments for the constructors of Mail and MailDB whether they should read
-  the files from the disk.
+* Generator: it should be able to determine the width of the generated HTML
+  page (to discuss)
+* Improve CSS
+* Cleanup functionality
 
-Maintanance
------------
-
-* Comments into the program about its philosophy. More developer documentation.
-* Writing unit tests.
 
 Discussion
 ----------
 
-* "Tegnap" plan
 * Parsing email files and handling meta text
 * HTML for emails
-* Processing mail files
-* Console interface
 * "Things which we will talk about later" email
 * Folding threads.
 

@@ -612,15 +612,6 @@ class MailDB(object):
             timestamp = calc_timestamp(date) if date != '' else 0
             return (timestamp, heapid)
 
-        def cmp_with_timestamp(x, y):
-            """Compares two (timestamp, heapid) objects by their timestamps."""
-            if x[0] > y[0]:
-                return 1
-            elif x[0] == y[0]:
-                return 0
-            else:
-                return -1
-
         threads = {} # dict(heapid, [answered:(timestamp, heapid)])
         for post in self.posts():
             prev = post.inreplyto()
@@ -636,7 +627,7 @@ class MailDB(object):
                 threads[prev_heapid] = [add_timestamp(post)]
         t = {}
         for heapid in threads:
-            threads[heapid].sort(cmp_with_timestamp)
+            threads[heapid].sort()
             t[heapid] = [ heapid2 for timestamp, heapid2 in threads[heapid] ]
         self._threadstruct = t
 
@@ -647,6 +638,57 @@ class MailDB(object):
 
     def html_dir(self):
         return self._html_dir
+
+
+##### PostSet #####
+
+class PostSet(set):
+
+    """A set of posts.
+
+    Data attributes:
+    _maildb -- Mail database.
+        Type: MailDB
+    
+    Types:
+        PrePostSet = set(Post) | PostSet(Post) | [Post] | Post
+    """
+
+    def __init__(self, maildb, posts=set()):
+        """Constructor.
+
+        Arguments:
+        maildb -- Initialises self._maildb.
+            Type: MailDB
+        posts -- Initialises the set.
+            Type: PrePostSet
+        """
+
+        super(PostSet, self).__init__(PostSet.to_set(posts))
+        self._maildb = maildb
+
+    @staticmethod
+    def to_set(s):
+        """Converts a PreSet object to a set."""
+        if isinstance(s, set):
+            return s
+        elif isinstance(s, list) or isinstance(s, tuple):
+            return set(s)
+        elif isinstance(s, Post):
+            return set([s])
+        else:
+            raise HeapException, \
+                  ("Object's type not compatible with MailSet: %s" % (s,))
+
+    def is_set(self, s):
+        """The given set equals to the set of contained posts."""
+        return set.__eq__(self, PostSet.to_set(s))
+
+    def __eq__(self, s):
+        if isinstance(s, PostSet):
+            return set.__eq__(self, s)
+        else:
+            return False
 
 
 ##### Server #####

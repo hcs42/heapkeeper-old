@@ -389,9 +389,107 @@ html=%s
               '1': ['2']}
         self.assertEquals(ts, maildb.threadstruct())
 
+    def testThreadstructHeapid(self):
+        """Testing that the thread structure also works when the In-Reply-To
+        is defined by a heapid.
+        
+        If the same messid and heapid exist, the former has priority."""
+
+        # 1 <- 2
+        # 3
+        # 4 <- 5
+        self.createDirs()
+        maildb = self.createMailDB()
+        maildb.add_new_post(Post.from_str(''))               # #0
+        maildb.add_new_post(Post.from_str('In-Reply-To: 0')) # #1
+        maildb.add_new_post(Post.from_str(''))               # #2
+        maildb.add_new_post(Post.from_str('Message-Id: 2'))  # #3
+        maildb.add_new_post(Post.from_str('In-Reply-To: 2')) # #4
+
+        ts = {None: ['0', '2', '3'],
+              '0': ['1'],
+              '3': ['4']}
+        self.assertEquals(ts, maildb.threadstruct())
+
     def tearDown(self):
         shutil.rmtree(self._dir)
 
+
+class TestPostSet(unittest.TestCase):
+
+    """Tests the PostSet class."""
+
+    def setUp(self):
+        self._dir = tempfile.mkdtemp()
+        self._postfile_dir = os.path.join(self._dir, 'mail')
+        self._html_dir = os.path.join(self._dir, 'html')
+        os.mkdir(self._postfile_dir)
+        os.mkdir(self._html_dir)
+        postfile1 = self.postFileName('1.mail')
+        postfile2 = self.postFileName('2.mail')
+        postfile3 = self.postFileName('3.mail')
+        string_to_file('Message-Id: 1@', postfile1)
+        string_to_file('Message-Id: 2@\nIn-Reply-To: 1@', postfile2)
+        string_to_file('Message-Id: 3@\nIn-Reply-To: 1@', postfile3)
+        self._maildb = self.createMailDB()
+
+    def createMailDB(self):
+        return MailDB(self._postfile_dir, self._html_dir)
+
+    def postFileName(self, fname):
+        return os.path.join(self._postfile_dir, fname)
+
+    def testEmpty(self):
+        maildb = self._maildb
+        p1 = maildb.post('1')
+        p2 = maildb.post('2')
+        ps1 = PostSet(maildb)
+        ps2 = PostSet(maildb)
+        self.assertNotEquals(ps1, set())
+        self.assert_(ps1.is_set(set()))
+        self.assertEquals(ps1, ps2)
+
+    def test1(self):
+        maildb = self._maildb
+        p1 = maildb.post('1')
+        p2 = maildb.post('2')
+        p3 = maildb.post('3')
+
+        # __init__, to_set
+        ps0 = PostSet(maildb, set([p1]))
+        ps02 = PostSet(maildb, [p1])
+        ps03 = PostSet(maildb, p1)
+        self.assertEquals(ps0, ps02)
+        self.assertEquals(ps0, ps03)
+
+        ps1 = PostSet(maildb, set([p1, p2]))
+        ps2 = PostSet(maildb, set([p2, p3]))
+        ps3 = PostSet(maildb, [p2, p3])
+        ps4 = PostSet(maildb, ps3)
+        self.assertNotEquals(ps1, ps2)
+        self.assertEquals(ps2, ps3)
+        self.assertEquals(ps2, ps4)
+
+        def f():
+            PostSet(maildb, 0)
+        self.assertRaises(HeapException, f)
+
+        # is_set
+        self.assert_(ps0.is_set(set([p1])))
+        self.assert_(ps0.is_set([p1]))
+        self.assert_(ps0.is_set(p1))
+        self.assert_(ps1.is_set((p1, p2)))
+        self.assert_(ps1.is_set([p1, p2]))
+        self.assert_(ps2.is_set(ps3))
+
+        # &, |, -
+        self.assert_((ps1 & ps2).is_set(set([p2])))
+        self.assert_((ps1 & ps2).is_set([p2]))
+        self.assert_((ps1 | ps2).is_set([p1, p2, p3]))
+        self.assert_((ps1 - ps2).is_set([p1]))
+
+    def tearDown(self):
+        shutil.rmtree(self._dir)
 
 
 class TestGenerator(unittest.TestCase):
@@ -432,10 +530,6 @@ class TestGenerator(unittest.TestCase):
         postfile2 = self.postFileName('x.mail')
         string_to_file('Message-Id: mess1', postfile1)
         string_to_file('Message-Id: mess2\nIn-Reply-To: mess1', postfile2)
-        maildb = self.createMailDB()
-        p1 = maildb.post('1')
-        p2 = maildb.post('2')
-
         maildb = self.createMailDB()
         g = Generator(maildb)
         g.index_html()
