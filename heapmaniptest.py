@@ -389,6 +389,30 @@ html=%s
               '1': ['2']}
         self.assertEquals(ts, maildb.threadstruct())
 
+        # Modifying the MailDB
+        add_post(5, 0)
+        ts = {None: ['0', '4'],
+              '0': ['1', '3', '5'],
+              '1': ['2']}
+        self.assertEquals(ts, maildb.threadstruct())
+        
+        # Deleting a post
+        maildb.post('1').delete()
+        ts = {None: ['0', '2', '4'],
+              '0': ['3', '5']}
+        self.assertEquals(ts, maildb.threadstruct())
+
+        maildb.post('0').delete()
+        ts = {None: ['2', '3', '4', '5']}
+        self.assertEquals(ts, maildb.threadstruct())
+
+        maildb.post('2').delete()
+        maildb.post('3').delete()
+        maildb.post('4').delete()
+        maildb.post('5').delete()
+        ts = {None: []}
+        self.assertEquals(ts, maildb.threadstruct())
+
     def testThreadstructHeapid(self):
         """Testing that the thread structure also works when the In-Reply-To
         is defined by a heapid.
@@ -425,6 +449,8 @@ class TestPostSet(unittest.TestCase):
         self._html_dir = os.path.join(self._dir, 'html')
         os.mkdir(self._postfile_dir)
         os.mkdir(self._html_dir)
+        # 1 <- 2
+        #      3
         postfile1 = self.postFileName('1.mail')
         postfile2 = self.postFileName('2.mail')
         postfile3 = self.postFileName('3.mail')
@@ -443,11 +469,10 @@ class TestPostSet(unittest.TestCase):
         maildb = self._maildb
         p1 = maildb.post('1')
         p2 = maildb.post('2')
-        ps1 = PostSet(maildb)
-        ps2 = PostSet(maildb)
+        ps1 = PostSet(maildb, set())
         self.assertNotEquals(ps1, set())
         self.assert_(ps1.is_set(set()))
-        self.assertEquals(ps1, ps2)
+        self.assertEquals(ps1, PostSet(maildb, []))
 
     def test1(self):
         maildb = self._maildb
@@ -487,6 +512,13 @@ class TestPostSet(unittest.TestCase):
         self.assert_((ps1 & ps2).is_set([p2]))
         self.assert_((ps1 | ps2).is_set([p1, p2, p3]))
         self.assert_((ps1 - ps2).is_set([p1]))
+
+        # MailDB.all
+        ps_all = PostSet(maildb, [p1, p2, p3])
+        ps2 = PostSet(maildb, set([p2, p3]))
+        self.assertEquals(ps_all, maildb.all())
+        p1.delete()
+        self.assertEquals(ps2, maildb.all())
 
     def tearDown(self):
         shutil.rmtree(self._dir)

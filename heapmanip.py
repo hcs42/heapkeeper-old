@@ -469,7 +469,12 @@ class MailDB(object):
     _next_heapid -- The next free heapid. There is neither a post with this
         heap id nor with any larger heapid.
         Type: int
+    _posts -- All non-deleted posts.
+        Type: [Post()]
+    _all -- All posts in a PostSet. It can be asked with all().
+        Type: PostSet.
     _threadstruct -- Assigns the posts to a p post that are replies to p.
+        It can be asked with threadstruct().
         If it is None, then it should be recalculated when needed.
         Type: dict(heapid, [heapid])
     """
@@ -521,6 +526,8 @@ class MailDB(object):
                 except ValueError:
                     pass
         self._next_heapid = max(heapids) + 1 if heapids != [] else 0
+        self._posts = None
+        self._all = None
         self._threadstruct = None
 
     # Modifications
@@ -530,8 +537,11 @@ class MailDB(object):
         called.
         
         If a post in the database is changed, this function will be invoked
-        automatically, so there is no need to call it again."""
+        automatically, so there is no need to call it again.
+        """
 
+        self._posts = None
+        self._all = None
         self._threadstruct = None
 
     # Get-set functions
@@ -546,8 +556,19 @@ class MailDB(object):
         return str(next)
 
     def posts(self):
-        """Returns the list of posts that are not deleted."""
-        return [ p for p in self.real_posts() if not p.is_deleted() ]
+        """Returns the list of all posts that are not deleted.
+        
+        The object returned by this function should not be modified.
+        """
+
+        self._recalc_posts()
+        return self._posts
+    
+    def _recalc_posts(self):
+        """Recalculates the _posts variable if needed."""
+        if self._posts == None:
+            self._posts = \
+                [ p for p in self.real_posts() if not p.is_deleted() ]
 
     def real_posts(self):
         """Returns the list of all posts, even the deleted ones."""
@@ -593,43 +614,64 @@ class MailDB(object):
         if post.messid() != '':
             self.messid_to_heapid[post.messid()] = heapid
 
+    # All posts
+
+    def all(self):
+        """Returns the PostSet of all posts that are not deleted.
+        
+        The object returned by this function should not be modified.
+        """
+
+        self._recalc_all()
+        return self._all
+
+    def _recalc_all(self):
+        if self._all == None:
+            self._all = PostSet(self, self.posts())
+
     # Thread structure
 
     def threadstruct(self):
         """Returns the calculated _threadstruct.
         
         The object returned by this function should not be modified."""
-        if self._threadstruct == None:
-            self._recalc_threadstruct()
+
+        self._recalc_threadstruct()
         return self._threadstruct
 
     def _recalc_threadstruct(self):
+        """Recalculates the _threadstruct variable if needed."""
 
-        def add_timestamp(post):
-            """Creates a (timestamp, heapid) pair from the post."""
-            heapid = post.heapid()
-            date = post.date()
-            timestamp = calc_timestamp(date) if date != '' else 0
-            return (timestamp, heapid)
+        if self._threadstruct == None:
 
-        threads = {} # dict(heapid, [answered:(timestamp, heapid)])
-        for post in self.posts():
-            prev = post.inreplyto()
-            prev_heapid = None
-            if prev != '':
-                if prev in self.messid_to_heapid:
-                    prev_heapid = self.messid_to_heapid[prev]
-                elif prev in self.heapid_to_post:
-                    prev_heapid = prev
-            if prev_heapid in threads:
-                threads[prev_heapid].append(add_timestamp(post))
-            else:
-                threads[prev_heapid] = [add_timestamp(post)]
-        t = {}
-        for heapid in threads:
-            threads[heapid].sort()
-            t[heapid] = [ heapid2 for timestamp, heapid2 in threads[heapid] ]
-        self._threadstruct = t
+            def add_timestamp(post):
+                """Creates a (timestamp, heapid) pair from the post."""
+                heapid = post.heapid()
+                date = post.date()
+                timestamp = calc_timestamp(date) if date != '' else 0
+                return (timestamp, heapid)
+
+            threads = {None: []} # dict(heapid, [answered:(timestamp, heapid)])
+            for post in self.posts():
+                prev = post.inreplyto()
+                prev_heapid = None
+                if prev != '':
+                    if prev in self.messid_to_heapid:
+                        prev_heapid = self.messid_to_heapid[prev]
+                        if self.heapid_to_post[prev_heapid].is_deleted():
+                            prev_heapid = None
+                    elif prev in self.heapid_to_post:
+                        prev_heapid = prev
+                if prev_heapid in threads:
+                    threads[prev_heapid].append(add_timestamp(post))
+                else:
+                    threads[prev_heapid] = [add_timestamp(post)]
+            t = {}
+            for heapid in threads:
+                threads[heapid].sort()
+                t[heapid] = \
+                    [ heapid2 for timestamp, heapid2 in threads[heapid] ]
+            self._threadstruct = t
 
     # Filenames
 
@@ -654,7 +696,7 @@ class PostSet(set):
         PrePostSet = set(Post) | PostSet(Post) | [Post] | Post
     """
 
-    def __init__(self, maildb, posts=set()):
+    def __init__(self, maildb, posts):
         """Constructor.
 
         Arguments:
