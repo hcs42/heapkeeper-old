@@ -732,6 +732,45 @@ class PostSet(set):
         else:
             return False
 
+    def forall(self):
+        return PostSetDelegate(self)
+
+    def __getattr__(self, funname):
+        if funname == 'fa':
+            return self.forall()
+        else:
+            raise AttributeError, \
+                  ("'PostSet' object has no attribute '%s'" % funname)
+
+
+class PostSetDelegate(object):
+
+    """A delegate of posts.
+    
+    If a method is called on a PostSetDelegate object, it will forward the call
+    to the posts it represents.
+
+    Data attributes:
+    _postset -- The PostSet which is represented.
+        Type: PostSet
+    """
+
+    def __init__(self, postset):
+        """Constructor.
+
+        Arguments:
+        postset -- Initialises _postset.
+            Type: PostSet
+        """
+
+        super(PostSetDelegate, self).__init__()
+        self._postset = postset
+
+    def __getattr__(self, funname):
+        def forall_fun(*args, **kw):
+            for post in self._postset:
+                getattr(post, funname)(*args, **kw)
+        return forall_fun
 
 ##### Server #####
 

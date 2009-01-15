@@ -520,6 +520,53 @@ class TestPostSet(unittest.TestCase):
         p1.delete()
         self.assertEquals(ps2, maildb.all())
 
+    def testGetAttr(self):
+        """Tests the PostSet.__get_attr__ method."""
+
+        maildb = self._maildb
+        def f():
+            PostSet(maildb, []).nonexisting_method
+        self.assertRaises(AttributeError, f)
+
+    def testForall(self):
+        """Tests the PostSet.forall method."""
+
+        def testSubjects(s1, s2, s3):
+            self.assertEquals(s1, p1.subject())
+            self.assertEquals(s2, p2.subject())
+            self.assertEquals(s3, p3.subject())
+
+        maildb = self._maildb
+        p1 = maildb.post('1')
+        p2 = maildb.post('2')
+        p3 = maildb.post('3')
+        testSubjects('', '', '')
+
+        PostSet(maildb, []).forall().set_subject('x')
+        testSubjects('', '', '')
+        PostSet(maildb, [p1]).forall().set_subject('x')
+        testSubjects('x', '', '')
+        maildb.all().forall().set_subject('y')
+        testSubjects('y', 'y', 'y')
+
+        # Nonexisting methods will cause exceptions...
+        def f():
+            maildb.all().forall().nonexisting_method()
+        self.assertRaises(AttributeError, f)
+
+        # ...unless the postset is empty
+        PostSet(maildb, []).forall().nonexisting_method()
+        testSubjects('y', 'y', 'y')
+
+        # fa is the same as forall()
+        maildb.all().fa.set_subject('')
+        PostSet(maildb, []).fa.set_subject('x')
+        testSubjects('', '', '')
+        PostSet(maildb, [p1]).fa.set_subject('x')
+        testSubjects('x', '', '')
+        maildb.all().fa.set_subject('y')
+        testSubjects('y', 'y', 'y')
+
     def tearDown(self):
         shutil.rmtree(self._dir)
 
