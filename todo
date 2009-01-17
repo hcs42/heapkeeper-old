@@ -1,8 +1,27 @@
 Implementation
 --------------
 
-* PostSet: all operation:
-    ps.all.set_subject('xx')
+* PostSet: expand, expand_f, expand_b operations
+    * forward
+        PostSet.iter_thread(post):
+            yield post
+            for post2 in ts.get(post, []):
+                self.iter_thread(post2)
+        PostSet.exp_f():
+            result = set()
+            for post in self():
+                if post not in result:
+                    for post2 in self.iter_thread(post):
+                        result.add(post2)
+            self.clear()
+            self.update(result)
+    * backwards
+        Post.root()
+            loop on the in-reply-to-s
+        PostSet.exp_b():
+            loop on the in-reply-to-s
+    * both
+        PostSet.exp() = root() + exp_f()
 * PostSet: selector
     s = maildb.get_selector()
     ps_all = s('all')
@@ -11,7 +30,6 @@ Implementation
     ps_nt = s('{flag-new-thread}')
     ps_nt = s('{since 2008-10-10}')
     ps_112 = s('112')
-* PostSet: expand, expand_f, expand_b operations
 * Generator: sections
 * Tags: subject -> tag
 * Generator: * instead of the same subjects; same with tags
@@ -21,6 +39,8 @@ Implementation
           Josh: * [heap] [heap-conventions]
 * Tags: "tag implies tag" relations
 * Flag: New-thead flag to indicate that the email begins a new thread.
+  Post.inreplyto -> new-thread flag (stub)
+  Post.real_inreplyto
 * Console interface
 * Actor
 * Search
