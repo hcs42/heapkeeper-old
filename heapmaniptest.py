@@ -17,6 +17,55 @@ import ConfigParser
 
 from heapmanip import *
 
+class MailDBHandler(object):
+
+    """A class that helps implementing the tester classes by containing
+    functions commonly used by them."""
+    
+    # Creating an ordered array of dates.
+    dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200\n' % i \
+              for i in range(20) ]
+
+    def setUpDirs(self):
+        self._dir = tempfile.mkdtemp()
+        self._postfile_dir = os.path.join(self._dir, 'mail')
+        self._html_dir = os.path.join(self._dir, 'html')
+        os.mkdir(self._postfile_dir)
+        os.mkdir(self._html_dir)
+
+    def tearDownDirs(self):
+        shutil.rmtree(self._dir)
+
+    def createMailDB(self):
+        return MailDB(self._postfile_dir, self._html_dir)
+
+    def postFileName(self, fname):
+        return os.path.join(self._postfile_dir, fname)
+
+    def add_post(self, index, inreplyto=None):
+        """Adds a new post to maildb."""
+        messid = str(index) + '@'
+        inreplyto = str(inreplyto) + '@' if inreplyto != None else ''
+        s = 'Message-Id: ' + messid + '\n' + \
+            'In-Reply-To: ' + inreplyto + '\n' + \
+            MailDBHandler.dates[index]
+        self._maildb.add_new_post(Post.from_str(s))
+
+    def create_threadst(self):
+        """Adds a thread structure to the maildb with the following structure.
+
+        0 <- 1 <- 2
+          <- 3
+        4
+        """
+
+        self.add_post(0)
+        self.add_post(1, 0)
+        self.add_post(2, 1)
+        self.add_post(3, 0)
+        self.add_post(4)
+
+
 class TestUtilities(unittest.TestCase):
 
     """Tests the utility functions of heapmanip."""
@@ -250,7 +299,8 @@ class TestPost2(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self._dir)
 
-class TestMailDB(unittest.TestCase):
+
+class TestMailDB(unittest.TestCase, MailDBHandler):
 
     """Tests the MailDB class (and its cooperation with the Post class)."""
 
@@ -360,29 +410,9 @@ html=%s
     def testThreadstruct(self):
         """Tests the thread structure computing method."""
 
-        def add_post(index, inreplyto=None):
-            messid = str(index) + '@'
-            inreplyto = str(inreplyto) + '@' if inreplyto != None else ''
-            s = 'Message-Id: ' + messid + '\n' + \
-                'In-Reply-To: ' + inreplyto + '\n' + \
-                dates[index]
-            maildb.add_new_post(Post.from_str(s))
-
-        # 0 <- 1 <- 2
-        #   <- 3
-        # 4
-
-        # Creating an ordered array of dates.
-        dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200\n' % i \
-                   for i in range(10) ]
-
-        self.createDirs()
         maildb = self.createMailDB()
-        add_post(0)
-        add_post(1, 0)
-        add_post(2, 1)
-        add_post(3, 0)
-        add_post(4)
+        self._maildb = maildb
+        self.create_threadst()
 
         ts = {None: ['0', '4'],
               '0': ['1', '3'],
@@ -390,7 +420,7 @@ html=%s
         self.assertEquals(ts, maildb.threadstruct())
 
         # Modifying the MailDB
-        add_post(5, 0)
+        self.add_post(5, 0)
         ts = {None: ['0', '4'],
               '0': ['1', '3', '5'],
               '1': ['2']}
@@ -439,16 +469,13 @@ html=%s
         shutil.rmtree(self._dir)
 
 
-class TestPostSet(unittest.TestCase):
+class TestPostSet(unittest.TestCase, MailDBHandler):
 
     """Tests the PostSet class."""
 
     def setUp(self):
-        self._dir = tempfile.mkdtemp()
-        self._postfile_dir = os.path.join(self._dir, 'mail')
-        self._html_dir = os.path.join(self._dir, 'html')
-        os.mkdir(self._postfile_dir)
-        os.mkdir(self._html_dir)
+        self.setUpDirs()
+
         # 1 <- 2
         #      3
         postfile1 = self.postFileName('1.mail')
@@ -458,12 +485,6 @@ class TestPostSet(unittest.TestCase):
         string_to_file('Message-Id: 2@\nIn-Reply-To: 1@', postfile2)
         string_to_file('Message-Id: 3@\nIn-Reply-To: 1@', postfile3)
         self._maildb = self.createMailDB()
-
-    def createMailDB(self):
-        return MailDB(self._postfile_dir, self._html_dir)
-
-    def postFileName(self, fname):
-        return os.path.join(self._postfile_dir, fname)
 
     def testEmpty(self):
         maildb = self._maildb
@@ -568,25 +589,34 @@ class TestPostSet(unittest.TestCase):
         testSubjects('y', 'y', 'y')
 
     def tearDown(self):
-        shutil.rmtree(self._dir)
+        self.tearDownDirs()
 
 
-class TestGenerator(unittest.TestCase):
+class TestPostSetThreads(unittest.TestCase, MailDBHandler):
+
+    """Tests thread centric methods of the PostSet class."""
+
+    def setUp(self):
+        self.setUpDirs()
+        self._maildb = self.createMailDB()
+        self.create_threadst()
+
+    def testIterThread(self):
+        pass # XXX
+
+    def testExpf(self):
+        pass # XXX
+
+    def tearDown(self):
+        self.tearDownDirs()
+
+
+class TestGenerator(unittest.TestCase, MailDBHandler):
 
     """Tests the Generator class."""
 
     def setUp(self):
-        self._dir = tempfile.mkdtemp()
-        self._postfile_dir = os.path.join(self._dir, 'mail')
-        self._html_dir = os.path.join(self._dir, 'html')
-        os.mkdir(self._postfile_dir)
-        os.mkdir(self._html_dir)
-
-    def createMailDB(self):
-        return MailDB(self._postfile_dir, self._html_dir)
-
-    def postFileName(self, fname):
-        return os.path.join(self._postfile_dir, fname)
+        self.setUpDirs()
 
     def indexHtml(self):
         index_html_name = os.path.join(self._html_dir, 'index.html')
@@ -620,7 +650,7 @@ class TestGenerator(unittest.TestCase):
         self.assertEquals(self.indexHtml(), s)
 
     def tearDown(self):
-        shutil.rmtree(self._dir)
+        self.tearDownDirs()
 
 if __name__ == '__main__':
     set_log(False)
