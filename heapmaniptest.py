@@ -443,6 +443,32 @@ html=%s
         ts = {None: []}
         self.assertEquals(ts, maildb.threadstruct())
 
+    def testIterThread(self):
+        """Tests the MailDB.iter_thread method."""
+        maildb = self.createMailDB()
+        self._maildb = maildb
+        self.create_threadst()
+        p = [ maildb.post(str(i)) for i in range(5) ]
+        
+        #g = maildb.iter_thread(p[0])
+        #print g.next()
+        #print g.next()
+
+        def test_iter(post, result):
+            self.assertEquals(result, \
+                              [ p.heapid() for p in maildb.iter_thread(post)])
+
+        test_iter(None, ['0', '1', '2', '3', '4'])
+        test_iter(p[0], ['0', '1', '2', '3'])
+        test_iter(p[1], ['1', '2'])
+        test_iter(p[2], ['2'])
+        test_iter(p[3], ['3'])
+        test_iter(p[4], ['4'])
+
+        def f():
+            maildb.iter_thread(Post.from_str(''))
+        self.assertRaises(AssertionError, f)
+
     def testThreadstructHeapid(self):
         """Testing that the thread structure also works when the In-Reply-To
         is defined by a heapid.
@@ -600,9 +626,6 @@ class TestPostSetThreads(unittest.TestCase, MailDBHandler):
         self.setUpDirs()
         self._maildb = self.createMailDB()
         self.create_threadst()
-
-    def testIterThread(self):
-        pass # XXX
 
     def testExpf(self):
         pass # XXX

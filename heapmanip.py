@@ -673,6 +673,52 @@ class MailDB(object):
                     [ heapid2 for timestamp, heapid2 in threads[heapid] ]
             self._threadstruct = t
 
+    def iter_thread(maildb_self, post):
+        """Iterates throuh a thread that starts with post."""
+
+        class ThreadIterator:
+
+            def __init__(self):
+                self.first=True
+                self.children=None
+                self.current=None
+
+            def __iter__(self):
+                return self
+
+            def next(self):
+                if self.first:
+                    self.first = False
+                    if post != None:
+                        return post
+                    else:
+                        return self.next()
+                elif self.children == None:
+                    heapid = post.heapid() if post != None else None
+                    self.children = \
+                        [ maildb_self.iter_thread(maildb_self.post(ch_heapid))\
+                          for ch_heapid in \
+                          maildb_self.threadstruct().get(heapid, []) ]
+                    return self.first_children()
+                else:
+                    return self.first_children()
+
+            def first_children(self):
+                if self.current != None:
+                    try:
+                        return self.current.next()
+                    except StopIteration:
+                        self.current = None
+                        return self.first_children()
+                else:
+                    if self.children == []:
+                        raise StopIteration
+                    else:
+                        self.current = self.children.pop(0)
+                        return self.first_children()
+        assert(post in maildb_self.posts() or post==None) 
+        return ThreadIterator()
+
     # Filenames
 
     def postfile_dir(self):

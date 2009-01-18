@@ -3,10 +3,6 @@ Implementation
 
 * PostSet: expand, expand_f, expand_b operations
     * forward
-        PostSet.iter_thread(post):
-            yield post
-            for post2 in ts.get(post, []):
-                self.iter_thread(post2)
         PostSet.exp_f():
             result = set()
             for post in self():
