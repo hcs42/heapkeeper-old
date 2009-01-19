@@ -461,10 +461,11 @@ html=%s
         test_iter(p[3], ['3'])
         test_iter(p[4], ['4'])
 
-        #def f():
-        #    maildb.iter_thread(Post.from_str(''))
-        #self.assertRaises(AssertionError, f)
-
+        # if the post is not in the maildb, AssertionError will be raised
+        def f():
+            test_iter(Post.from_str(''), [])
+        self.assertRaises(AssertionError, f)
+    
     def testThreadstructHeapid(self):
         """Testing that the thread structure also works when the In-Reply-To
         is defined by a heapid.

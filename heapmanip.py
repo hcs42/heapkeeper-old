@@ -673,13 +673,27 @@ class MailDB(object):
                     [ heapid2 for timestamp, heapid2 in threads[heapid] ]
             self._threadstruct = t
 
-    def iter_thread(self, post):
+    def iter_thread(self, post, threadstruct=None):
+        """Iterates over a thread.
+
+        The first element of the thread will be the post (except when the post
+        is None, which will not be yielded). All the consequenses of post will
+        be yielded in a preorder way. An example:
+            1 <- 2 <- 3
+              <- 4
+            5
+        The posts will be yielded in the following order: 1, 2, 3, 4, 5.
+
+        The posts can be modified during the iteration.
+        """
+        assert(post in self.posts() or post == None)
         if post != None:
             yield post
         heapid = post.heapid() if post != None else None
-        ts = self.threadstruct()
-        for ch_heapid in ts.get(heapid, []):
-            for post2 in self.iter_thread(self.post(ch_heapid)):
+        if threadstruct == None:
+            threadstruct = self.threadstruct()
+        for ch_heapid in threadstruct.get(heapid, []):
+            for post2 in self.iter_thread(self.post(ch_heapid), threadstruct):
                 yield post2
 
     # Filenames
