@@ -673,7 +673,16 @@ class MailDB(object):
                     [ heapid2 for timestamp, heapid2 in threads[heapid] ]
             self._threadstruct = t
 
-    def iter_thread(maildb_self, post):
+    def iter_thread(self, post):
+        if post != None:
+            yield post
+        heapid = post.heapid() if post != None else None
+        ts = self.threadstruct()
+        for ch_heapid in ts.get(heapid, []):
+            for post2 in self.iter_thread(self.post(ch_heapid)):
+                yield post2
+
+    def iter_thread2(maildb_self, post):
         """Iterates throuh a thread that starts with post."""
 
         class ThreadIterator:

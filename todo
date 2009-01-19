@@ -1,6 +1,7 @@
 Implementation
 --------------
 
+* iter_thread optimization: give ts
 * PostSet: expand, expand_f, expand_b operations
     * forward
         PostSet.exp_f():

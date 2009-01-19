@@ -449,10 +449,6 @@ html=%s
         self._maildb = maildb
         self.create_threadst()
         p = [ maildb.post(str(i)) for i in range(5) ]
-        
-        #g = maildb.iter_thread(p[0])
-        #print g.next()
-        #print g.next()
 
         def test_iter(post, result):
             self.assertEquals(result, \
@@ -465,9 +461,9 @@ html=%s
         test_iter(p[3], ['3'])
         test_iter(p[4], ['4'])
 
-        def f():
-            maildb.iter_thread(Post.from_str(''))
-        self.assertRaises(AssertionError, f)
+        #def f():
+        #    maildb.iter_thread(Post.from_str(''))
+        #self.assertRaises(AssertionError, f)
 
     def testThreadstructHeapid(self):
         """Testing that the thread structure also works when the In-Reply-To
