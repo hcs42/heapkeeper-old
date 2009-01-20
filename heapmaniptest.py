@@ -564,6 +564,12 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         p1.delete()
         self.assertEquals(ps2, maildb.all())
 
+        # clear, update
+        ps1.clear()
+        self.assert_(ps1.is_set([]))
+        ps1.update(set([p1, p2]))
+        self.assert_(ps1.is_set([p1, p2]))
+
     def testGetAttr(self):
         """Tests the PostSet.__get_attr__ method."""
 
@@ -619,13 +625,65 @@ class TestPostSetThreads(unittest.TestCase, MailDBHandler):
 
     """Tests thread centric methods of the PostSet class."""
 
+    # Thread structure:
+    # 0 <- 1 <- 2
+    #   <- 3
+    # 4
+
     def setUp(self):
         self.setUpDirs()
         self._maildb = self.createMailDB()
         self.create_threadst()
+        self._p = [ self._maildb.post(str(i)) for i in range(5) ]
 
     def testExpf(self):
-        pass # XXX
+        maildb = self._maildb
+        p = self._p
+
+        def test_expf(heapids_1, heapids_2):
+            posts_1 = [ p[int(i)] for i in heapids_1 ]
+            posts_2 = [ p[int(i)] for i in heapids_2 ]
+            self.assert_(PostSet(maildb, posts_1).expf().is_set(posts_2))
+
+        # 0 in, 4 out
+        test_expf('0', '0123')
+        test_expf('03', '0123')
+        test_expf('02', '0123')
+        test_expf('023', '0123')
+        test_expf('01', '0123')
+        test_expf('013', '0123')
+        test_expf('012', '0123')
+        test_expf('0123', '0123')
+
+        # 0 in, 4 in
+        test_expf('04', '01234')
+        test_expf('034', '01234')
+        test_expf('024', '01234')
+        test_expf('0234', '01234')
+        test_expf('014', '01234')
+        test_expf('0134', '01234')
+        test_expf('0124', '01234')
+        test_expf('01234', '01234')
+
+        # 0 out, 4 out
+        test_expf('', '')
+        test_expf('3', '3')
+        test_expf('2', '2')
+        test_expf('23', '23')
+        test_expf('1', '12')
+        test_expf('13', '123')
+        test_expf('12', '12')
+        test_expf('123', '123')
+
+        # 0 out, 4 in
+        test_expf('4', '4')
+        test_expf('34', '34')
+        test_expf('24', '24')
+        test_expf('234', '234')
+        test_expf('14', '124')
+        test_expf('134', '1234')
+        test_expf('124', '124')
+        test_expf('1234', '1234')
 
     def tearDown(self):
         self.tearDownDirs()

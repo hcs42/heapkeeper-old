@@ -1,17 +1,7 @@
 Implementation
 --------------
 
-* iter_thread optimization: give ts
 * PostSet: expand, expand_f, expand_b operations
-    * forward
-        PostSet.exp_f():
-            result = set()
-            for post in self():
-                if post not in result:
-                    for post2 in self.iter_thread(post):
-                        result.add(post2)
-            self.clear()
-            self.update(result)
     * backwards
         Post.root()
             loop on the in-reply-to-s

@@ -686,6 +686,7 @@ class MailDB(object):
 
         The posts can be modified during the iteration.
         """
+
         assert(post in self.posts() or post == None)
         if post != None:
             yield post
@@ -765,6 +766,20 @@ class PostSet(set):
             raise AttributeError, \
                   ("'PostSet' object has no attribute '%s'" % funname)
 
+    def expf(self):
+        """Returns all consequenses of the PostSet.
+        
+        Returns: PostSet
+        """
+
+        result = set()
+        for post in self:
+            # if post is in result, then it has already been processed
+            # (and all its consequences has been added to result)
+            if post not in result:
+                for post2 in self._maildb.iter_thread(post):
+                    result.add(post2)
+        return PostSet(self._maildb, result)
 
 class PostSetDelegate(object):
 
