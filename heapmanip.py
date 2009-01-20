@@ -642,6 +642,7 @@ class MailDB(object):
     def prev(self, post):
         """Returns the previous post relative to the given post."""
 
+        assert(post in self.posts())
         inreplyto = post.inreplyto()
 
         if inreplyto == '':
@@ -661,6 +662,16 @@ class MailDB(object):
                 prev_post = None
 
             return prev_post
+
+    def root(self, post):
+        """Returns the root of the post."""
+
+        assert(post in self.posts())
+        prev_post = self.prev(post)
+        if prev_post == None:
+            return post
+        else:
+            return self.root(prev_post)
 
     def _recalc_threadstruct(self):
         """Recalculates the _threadstruct variable if needed."""

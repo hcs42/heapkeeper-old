@@ -407,14 +407,13 @@ html=%s
         self.assertEquals(set([p2, p3]), set(maildb.posts()))
         self.assertEquals(set([p1, p2, p3]), set(maildb.real_posts()))
 
-    def testThreadstruct(self):
-        """Tests the thread structure computing method."""
+    def testPrev(self):
+        """Tests the 'prev' method."""
 
         maildb = self.createMailDB()
         self._maildb = maildb
         self.create_threadst()
 
-        # Testing MailDB.prev
         def test_prev(post_heapid, prev_heapid):
             if prev_heapid != None:
                 prev_post = maildb.post(prev_heapid)
@@ -428,6 +427,34 @@ html=%s
         test_prev('2', '1')
         test_prev('3', '0')
         test_prev('4', None)
+
+    def testRoot(self):
+        """Tests the 'prev' method."""
+
+        maildb = self.createMailDB()
+        self._maildb = maildb
+        self.create_threadst()
+
+        def test_root(post_heapid, prev_heapid):
+            if prev_heapid != None:
+                prev_post = maildb.post(prev_heapid)
+            else:
+                prev_post = None
+            self.assertEquals(maildb.root(maildb.post(post_heapid)), \
+                              prev_post)
+
+        test_root('0', '0')
+        test_root('1', '0')
+        test_root('2', '0')
+        test_root('3', '0')
+        test_root('4', '4')
+
+    def testThreadstruct(self):
+        """Tests the thread structure computing method."""
+
+        maildb = self.createMailDB()
+        self._maildb = maildb
+        self.create_threadst()
 
         # Testing MailDB.threadstruct
 
