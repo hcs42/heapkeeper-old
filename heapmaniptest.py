@@ -414,6 +414,23 @@ html=%s
         self._maildb = maildb
         self.create_threadst()
 
+        # Testing MailDB.prev
+        def test_prev(post_heapid, prev_heapid):
+            if prev_heapid != None:
+                prev_post = maildb.post(prev_heapid)
+            else:
+                prev_post = None
+            self.assertEquals(maildb.prev(maildb.post(post_heapid)), \
+                              prev_post)
+
+        test_prev('0', None)
+        test_prev('1', '0')
+        test_prev('2', '1')
+        test_prev('3', '0')
+        test_prev('4', None)
+
+        # Testing MailDB.threadstruct
+
         ts = {None: ['0', '4'],
               '0': ['1', '3'],
               '1': ['2']}
@@ -425,7 +442,7 @@ html=%s
               '0': ['1', '3', '5'],
               '1': ['2']}
         self.assertEquals(ts, maildb.threadstruct())
-        
+
         # Deleting a post
         maildb.post('1').delete()
         ts = {None: ['0', '2', '4'],

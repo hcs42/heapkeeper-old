@@ -639,6 +639,29 @@ class MailDB(object):
         self._recalc_threadstruct()
         return self._threadstruct
 
+    def prev(self, post):
+        """Returns the previous post relative to the given post."""
+
+        inreplyto = post.inreplyto()
+
+        if inreplyto == '':
+            return None
+        
+        else:
+
+            # try to get the prev_post by messid
+            prev_post = self.post_by_messid(inreplyto)
+
+            # try to get the prev_post by heapid
+            if prev_post == None:
+                prev_post = self.post(inreplyto)
+
+            # deleted posts do not count
+            if prev_post != None and prev_post.is_deleted():
+                prev_post = None
+
+            return prev_post
+
     def _recalc_threadstruct(self):
         """Recalculates the _threadstruct variable if needed."""
 
@@ -653,15 +676,8 @@ class MailDB(object):
 
             threads = {None: []} # dict(heapid, [answered:(timestamp, heapid)])
             for post in self.posts():
-                prev = post.inreplyto()
-                prev_heapid = None
-                if prev != '':
-                    if prev in self.messid_to_heapid:
-                        prev_heapid = self.messid_to_heapid[prev]
-                        if self.heapid_to_post[prev_heapid].is_deleted():
-                            prev_heapid = None
-                    elif prev in self.heapid_to_post:
-                        prev_heapid = prev
+                prev_post = self.prev(post)
+                prev_heapid = prev_post.heapid() if prev_post != None else None
                 if prev_heapid in threads:
                     threads[prev_heapid].append(add_timestamp(post))
                 else:

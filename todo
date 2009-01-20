@@ -1,14 +1,14 @@
 Implementation
 --------------
 
-* PostSet: expand, expand_f, expand_b operations
+* PostSet: exp, expb operations
     * backwards
-        Post.root()
+        MailDB.root()
             loop on the in-reply-to-s
-        PostSet.exp_b():
+        PostSet.expb():
             loop on the in-reply-to-s
     * both
-        PostSet.exp() = root() + exp_f()
+        PostSet.exp() = root() + expf()
 * PostSet: selector
     s = maildb.get_selector()
     ps_all = s('all')
