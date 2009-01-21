@@ -18,7 +18,12 @@ Implementation
     ps_nt = s('{since 2008-10-10}')
     ps_112 = s('112')
 * Generator: sections
+* update the README
 * Tags: subject -> tag
+* devnotes.txt: developer notes
+    * architecture (relation of Post, MailDB and PostSet)
+    * performance improvement possibilities (iterators)
+    * using wrappers to protect e.g. MailDB.posts()
 * Generator: * instead of the same subjects; same with tags
     Attis: Something [heap]
       Josh: * [heap] [heap-conventions]
