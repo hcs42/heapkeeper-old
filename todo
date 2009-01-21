@@ -1,14 +1,6 @@
 Implementation
 --------------
 
-* PostSet: exp, expb operations
-    * backwards
-        MailDB.root()
-            loop on the in-reply-to-s
-        PostSet.expb():
-            loop on the in-reply-to-s
-    * both
-        PostSet.exp() = root() + expf()
 * PostSet: selector
     s = maildb.get_selector()
     ps_all = s('all')
@@ -24,6 +16,7 @@ Implementation
     * architecture (relation of Post, MailDB and PostSet)
     * performance improvement possibilities (iterators)
     * using wrappers to protect e.g. MailDB.posts()
+    * terminology: previous, next, cause, consequence
 * Generator: * instead of the same subjects; same with tags
     Attis: Something [heap]
       Josh: * [heap] [heap-conventions]

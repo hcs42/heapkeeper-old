@@ -667,11 +667,12 @@ class MailDB(object):
         """Returns the root of the post."""
 
         assert(post in self.posts())
-        prev_post = self.prev(post)
-        if prev_post == None:
-            return post
-        else:
-            return self.root(prev_post)
+        while True:
+            prevpost = self.prev(post)
+            if prevpost == None:
+                return post
+            else:
+                post = prevpost
 
     def _recalc_threadstruct(self):
         """Recalculates the _threadstruct variable if needed."""
@@ -793,20 +794,41 @@ class PostSet(set):
             raise AttributeError, \
                   ("'PostSet' object has no attribute '%s'" % funname)
 
-    def expf(self):
-        """Returns all consequenses of the PostSet.
+    def expb(self):
+        """Expand backwards: returns all causes of the posts in PostSet.
         
         Returns: PostSet
         """
 
-        result = set()
+        result = PostSet(self._maildb, [])
+        for post in self:
+            # if post is in result, then it has already been processed
+            # (and all its consequences has been added to result)
+            if post not in result:
+                while True:
+                    result.add(post)
+                    post = self._maildb.prev(post)
+                    if post == None:
+                        break
+        return result
+
+    def expf(self):
+        """Expand forward: Returns all consequenses of the PostSet.
+        
+        Returns: PostSet
+        """
+
+        result = PostSet(self._maildb, [])
         for post in self:
             # if post is in result, then it has already been processed
             # (and all its consequences has been added to result)
             if post not in result:
                 for post2 in self._maildb.iter_thread(post):
                     result.add(post2)
-        return PostSet(self._maildb, result)
+        return result
+
+    def exp(self):
+        return self.expb().expf()
 
 class PostSetDelegate(object):
 

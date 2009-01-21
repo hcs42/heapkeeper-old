@@ -64,6 +64,7 @@ class MailDBHandler(object):
         self.add_post(2, 1)
         self.add_post(3, 0)
         self.add_post(4)
+        self._posts = [ self._maildb.post(str(i)) for i in range(5) ]
 
 
 class TestUtilities(unittest.TestCase):
@@ -678,56 +679,164 @@ class TestPostSetThreads(unittest.TestCase, MailDBHandler):
         self.setUpDirs()
         self._maildb = self.createMailDB()
         self.create_threadst()
-        self._p = [ self._maildb.post(str(i)) for i in range(5) ]
 
-    def testExpf(self):
-        maildb = self._maildb
-        p = self._p
+    def _testExp(self, methodname):
+        """Tests the PostSet's method that has the given name.
+        
+        This function returns a function that can test the given method of
+        PostSet. The function requires addititonal test arguments that specify
+        the concrete test.
 
-        def test_expf(heapids_1, heapids_2):
-            posts_1 = [ p[int(i)] for i in heapids_1 ]
-            posts_2 = [ p[int(i)] for i in heapids_2 ]
-            self.assert_(PostSet(maildb, posts_1).expf().is_set(posts_2))
+        These additional argument are:
+        1. The heapids of the posts of the input postset.
+        2. The heapids of the posts of the expected output postset.
+
+        The following equality tested:
+        input_postset.methodname() = output_postset
+        """
+
+        def testExp2(heapids_1, heapids_2):
+            p = self._posts
+            posts_1 = [ self._posts[int(i)] for i in heapids_1 ]
+            posts_2 = [ self._posts[int(i)] for i in heapids_2 ]
+            ps = PostSet(self._maildb, posts_1)
+
+            # Testing that the real output is the expected output.
+            self.assert_(eval('ps.' + methodname + '()').is_set(posts_2))
+
+            # Testing that the exp() method did not change ps
+            self.assert_(ps.is_set(posts_1))
+
+        return testExp2
+
+    def testExpb(self):
+        test = self._testExp('expb')
 
         # 0 in, 4 out
-        test_expf('0', '0123')
-        test_expf('03', '0123')
-        test_expf('02', '0123')
-        test_expf('023', '0123')
-        test_expf('01', '0123')
-        test_expf('013', '0123')
-        test_expf('012', '0123')
-        test_expf('0123', '0123')
+        test('0', '0')
+        test('03', '03')
+        test('02', '012')
+        test('023', '0123')
+        test('01', '01')
+        test('013', '013')
+        test('012', '012')
+        test('0123', '0123')
 
         # 0 in, 4 in
-        test_expf('04', '01234')
-        test_expf('034', '01234')
-        test_expf('024', '01234')
-        test_expf('0234', '01234')
-        test_expf('014', '01234')
-        test_expf('0134', '01234')
-        test_expf('0124', '01234')
-        test_expf('01234', '01234')
+        test('04', '04')
+        test('034', '034')
+        test('024', '0124')
+        test('0234', '01234')
+        test('014', '014')
+        test('0134', '0134')
+        test('0124', '0124')
+        test('01234', '01234')
 
         # 0 out, 4 out
-        test_expf('', '')
-        test_expf('3', '3')
-        test_expf('2', '2')
-        test_expf('23', '23')
-        test_expf('1', '12')
-        test_expf('13', '123')
-        test_expf('12', '12')
-        test_expf('123', '123')
+        test('', '')
+        test('3', '03')
+        test('2', '012')
+        test('23', '0123')
+        test('1', '01')
+        test('13', '013')
+        test('12', '012')
+        test('123', '0123')
 
         # 0 out, 4 in
-        test_expf('4', '4')
-        test_expf('34', '34')
-        test_expf('24', '24')
-        test_expf('234', '234')
-        test_expf('14', '124')
-        test_expf('134', '1234')
-        test_expf('124', '124')
-        test_expf('1234', '1234')
+        test('4', '4')
+        test('34', '034')
+        test('24', '0124')
+        test('234', '01234')
+        test('14', '014')
+        test('134', '0134')
+        test('124', '0124')
+        test('1234', '01234')
+
+    def testExpf(self):
+        test = self._testExp('expf')
+
+        # 0 in, 4 out
+        test('0', '0123')
+        test('03', '0123')
+        test('02', '0123')
+        test('023', '0123')
+        test('01', '0123')
+        test('013', '0123')
+        test('012', '0123')
+        test('0123', '0123')
+
+        # 0 in, 4 in
+        test('04', '01234')
+        test('034', '01234')
+        test('024', '01234')
+        test('0234', '01234')
+        test('014', '01234')
+        test('0134', '01234')
+        test('0124', '01234')
+        test('01234', '01234')
+
+        # 0 out, 4 out
+        test('', '')
+        test('3', '3')
+        test('2', '2')
+        test('23', '23')
+        test('1', '12')
+        test('13', '123')
+        test('12', '12')
+        test('123', '123')
+
+        # 0 out, 4 in
+        test('4', '4')
+        test('34', '34')
+        test('24', '24')
+        test('234', '234')
+        test('14', '124')
+        test('134', '1234')
+        test('124', '124')
+        test('1234', '1234')
+
+    def testExp(self):
+        test = self._testExp('exp')
+
+        # 0 in, 4 out
+        test('0', '0123')
+        test('03', '0123')
+        test('02', '0123')
+        test('023', '0123')
+        test('01', '0123')
+        test('013', '0123')
+        test('012', '0123')
+        test('0123', '0123')
+
+        # 0 in, 4 in
+        test('04', '01234')
+        test('034', '01234')
+        test('024', '01234')
+        test('0234', '01234')
+        test('014', '01234')
+        test('0134', '01234')
+        test('0124', '01234')
+        test('01234', '01234')
+
+        # 0 out, 4 out
+        test('', '')
+        test('3', '0123')
+        test('2', '0123')
+        test('23', '0123')
+        test('1', '0123')
+        test('13', '0123')
+        test('12', '0123')
+        test('123', '0123')
+
+        # 0 out, 4 in
+        test('4', '4')
+        test('34', '01234')
+        test('24', '01234')
+        test('234', '01234')
+        test('14', '01234')
+        test('134', '01234')
+        test('124', '01234')
+        test('1234', '01234')
 
     def tearDown(self):
         self.tearDownDirs()
