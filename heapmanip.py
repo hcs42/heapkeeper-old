@@ -257,6 +257,9 @@ class Post(object):
     def set_tags(self, tags):
         self._header['Tag'] = tags
         self.touch()
+
+    def has_tag(self, tag):
+        return tag in self._header['Tag']
         
     def flags(self):
         # The list is copied so that the original cannot be modified by the
@@ -761,6 +764,19 @@ class PostSet(set):
         super(PostSet, self).__init__(PostSet.to_set(posts))
         self._maildb = maildb
 
+    def empty_clone(self):
+        """Returns an empty PostSet that has the same MailDB as this one."""
+        return PostSet(self._maildb, [])
+
+    def copy(self):
+        """Copies the object.
+        
+        The PostSet objects will be different, but the Posts will be the same
+        objects.
+        """
+
+        return PostSet(self._maildb, self)
+
     @staticmethod
     def to_set(s):
         """Converts a PreSet object to a set."""
@@ -787,6 +803,8 @@ class PostSet(set):
     def __getattr__(self, funname):
         if funname == 'forall':
             return PostSetForallDelegate(self)
+        if funname == 'collect':
+            return PostSetCollectDelegate(self)
         else:
             raise AttributeError, \
                   ("'PostSet' object has no attribute '%s'" % funname)
@@ -827,12 +845,15 @@ class PostSet(set):
     def exp(self):
         return self.expb().expf()
 
+
 class PostSetForallDelegate(object):
 
     """A delegate of posts.
     
     If a method is called on a PostSetForallDelegate object, it will forward
     the call to the posts it represents.
+    A PostSetForallDelegate object can be asked from a PostSet via its "forall"
+    attribute.
 
     Data attributes:
     _postset -- The PostSet which is represented.
@@ -855,6 +876,71 @@ class PostSetForallDelegate(object):
             for post in self._postset:
                 getattr(post, funname)(*args, **kw)
         return forall_fun
+
+
+class PostSetCollectDelegate(object):
+
+    """A delegate of posts.
+    
+    It can be used to collect posts with a specified property from a PostSet.
+    A PostSetCollectDelegate object can be asked from a PostSet via its
+    "collect" attribute.
+
+    Collecting posts can be done in three ways:
+
+    1. The PostSetCollectDelegate class has some functions that collect
+       specific posts.
+
+       The following example collects the posts that are root of a thread
+       ("collect" is a PostSetCollectDelegate object):
+
+           ps = collect.thread_root()  # TODO: does not work yet
+
+    2. If a method is called on a PostSetCollectDelegate object which is not
+       a method of the PostSetCollectDelegate class, the object will invoke the
+       given method with the given arguments on all the posts of the postset,
+       and returns those in a new postset whose method returned true.
+
+       An example that collects the posts that has 'mytag' tag:
+
+            ps = collect.has_tag('mytag')
+
+    3. The user can call the PostSetCollectDelegate object with any function as
+       an argument that gets a Post and returns a boolean.
+
+       An example that collects the posts that has 'mytag' tag but does not
+       have 'other_tag' tag:
+
+            ps = collect(lambda p: p.has_tag('mytag') and \\
+                                   not p.has_tag('other_tag'))
+
+    Data attributes:
+    _postset -- The PostSet which is represented.
+        Type: PostSet
+    """
+
+    def __init__(self, postset):
+        """Constructor.
+
+        Arguments:
+        postset -- Initialises _postset.
+            Type: PostSet
+        """
+
+        super(PostSetCollectDelegate, self).__init__()
+        self._postset = postset
+
+    def __getattr__(self, funname):
+        def collect_fun(*args, **kw):
+            result = self._postset.empty_clone()
+            for post in self._postset:
+                post_true = getattr(post, funname)(*args, **kw)
+                assert(isinstance(post_true, bool))
+                if post_true:
+                    result.add(post)
+            return result
+        return collect_fun
+
 
 ##### Server #####
 

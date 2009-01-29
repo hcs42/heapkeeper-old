@@ -249,6 +249,8 @@ class TestPost(unittest.TestCase):
         p = Post.from_str('Flag: f1\nFlag: f2\nTag: t1\nTag: t2')
         self.assertEquals(p.flags(), ['f1', 'f2'])
         self.assertEquals(p.tags(), ['t1', 't2'])
+        self.assertEquals(p.has_tag('t1'), True)
+        self.assertEquals(p.has_tag('t2'), True)
 
         # They cannot be modified via the get methods
         p.flags()[0] = ''
@@ -267,6 +269,9 @@ class TestPost(unittest.TestCase):
         self.assertEquals(p.flags(), ['f'])
         p.set_tags(['t'])
         self.assertEquals(p.tags(), ['t'])
+        self.assertEquals(p.has_tag('t'), True)
+        self.assertEquals(p.has_tag('t1'), False)
+        self.assertEquals(p.has_tag('t2'), False)
 
         # Sorting
         p = Post.from_str('Flag: f2\nFlag: f1\nTag: t2\nTag: t1')
@@ -563,6 +568,26 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         self.assert_(ps1.is_set(set()))
         self.assertEquals(ps1, PostSet(maildb, []))
 
+    def testCopy(self):
+        """Tests PostSet.copy and PostSet.empty_clone."""
+
+        maildb = self._maildb
+        ps_all = self._maildb.all().copy()
+        p1 = maildb.post('1')
+        p2 = maildb.post('2')
+        p3 = maildb.post('3')
+
+        ps1 = ps_all.copy()
+        ps1.remove(p1)
+        self.assert_(ps_all.is_set(set([p1, p2, p3])))
+        self.assert_(ps1.is_set(set([p2, p3])))
+        self.assert_(ps_all._maildb is ps1._maildb)
+
+        ps2 = ps_all.empty_clone()
+        self.assert_(ps_all.is_set(set([p1, p2, p3])))
+        self.assert_(ps2.is_set(set([])))
+        self.assert_(ps_all._maildb is ps2._maildb)
+
     def test1(self):
         maildb = self._maildb
         p1 = maildb.post('1')
@@ -652,6 +677,22 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         # ...unless the postset is empty
         PostSet(maildb, []).forall.nonexisting_method()
         testSubjects('y', 'y', 'y')
+
+    def testCollect(self):
+        """Tests the PostSet.collect method."""
+
+        maildb = self._maildb
+        p1 = maildb.post('1')
+        p1.set_tags(['t1'])
+        p2 = maildb.post('2')
+        p2.set_tags(['t1'])
+        p3 = maildb.post('3')
+        p3.set_tags(['t2'])
+
+        ps1 = maildb.all().collect.has_tag('t1')
+        self.assert_(ps1.is_set([p1, p2]))
+        #ps1 = maildb.all().collect(lambda p: p.subject() == s)
+        # todo: test assert(bool)
 
     def tearDown(self):
         self.tearDownDirs()
