@@ -784,12 +784,9 @@ class PostSet(set):
         else:
             return False
 
-    def forall(self):
-        return PostSetDelegate(self)
-
     def __getattr__(self, funname):
-        if funname == 'fa':
-            return self.forall()
+        if funname == 'forall':
+            return PostSetForallDelegate(self)
         else:
             raise AttributeError, \
                   ("'PostSet' object has no attribute '%s'" % funname)
@@ -830,12 +827,12 @@ class PostSet(set):
     def exp(self):
         return self.expb().expf()
 
-class PostSetDelegate(object):
+class PostSetForallDelegate(object):
 
     """A delegate of posts.
     
-    If a method is called on a PostSetDelegate object, it will forward the call
-    to the posts it represents.
+    If a method is called on a PostSetForallDelegate object, it will forward
+    the call to the posts it represents.
 
     Data attributes:
     _postset -- The PostSet which is represented.
@@ -850,7 +847,7 @@ class PostSetDelegate(object):
             Type: PostSet
         """
 
-        super(PostSetDelegate, self).__init__()
+        super(PostSetForallDelegate, self).__init__()
         self._postset = postset
 
     def __getattr__(self, funname):

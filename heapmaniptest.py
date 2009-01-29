@@ -637,29 +637,20 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         p3 = maildb.post('3')
         testSubjects('', '', '')
 
-        PostSet(maildb, []).forall().set_subject('x')
+        PostSet(maildb, []).forall.set_subject('x')
         testSubjects('', '', '')
-        PostSet(maildb, [p1]).forall().set_subject('x')
+        PostSet(maildb, [p1]).forall.set_subject('x')
         testSubjects('x', '', '')
-        maildb.all().forall().set_subject('y')
+        maildb.all().forall.set_subject('y')
         testSubjects('y', 'y', 'y')
 
         # Nonexisting methods will cause exceptions...
         def f():
-            maildb.all().forall().nonexisting_method()
+            maildb.all().forall.nonexisting_method()
         self.assertRaises(AttributeError, f)
 
         # ...unless the postset is empty
-        PostSet(maildb, []).forall().nonexisting_method()
-        testSubjects('y', 'y', 'y')
-
-        # fa is the same as forall()
-        maildb.all().fa.set_subject('')
-        PostSet(maildb, []).fa.set_subject('x')
-        testSubjects('', '', '')
-        PostSet(maildb, [p1]).fa.set_subject('x')
-        testSubjects('x', '', '')
-        maildb.all().fa.set_subject('y')
+        PostSet(maildb, []).forall.nonexisting_method()
         testSubjects('y', 'y', 'y')
 
     def tearDown(self):
