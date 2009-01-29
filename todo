@@ -1,14 +1,6 @@
 Implementation
 --------------
 
-* PostSet: selector
-    s = maildb.get_selector()
-    ps_all = s('all')
-    ps_heap = s('[heap]')
-    ps_nt = s('{new-thread}')
-    ps_nt = s('{flag-new-thread}')
-    ps_nt = s('{since 2008-10-10}')
-    ps_112 = s('112')
 * Generator: sections
 * update the README
 * Tags: subject -> tag

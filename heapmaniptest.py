@@ -666,6 +666,8 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         testSubjects('', '', '')
         PostSet(maildb, [p1]).forall.set_subject('x')
         testSubjects('x', '', '')
+        maildb.all().forall(lambda p: p.set_subject('z'))
+        testSubjects('z', 'z', 'z')
         maildb.all().forall.set_subject('y')
         testSubjects('y', 'y', 'y')
 

@@ -623,6 +623,7 @@ class MailDB(object):
         """Returns the PostSet of all posts that are not deleted.
         
         The object returned by this function should not be modified.
+        On the other hand, the posts contained by it can be modified.
         """
 
         self._recalc_all()
@@ -874,6 +875,11 @@ class PostSetForallDelegate(object):
 
         super(PostSetForallDelegate, self).__init__()
         self._postset = postset
+
+    def __call__(self, forallfun):
+        """Performs forallfun on each post."""
+        for post in self._postset:
+            forallfun(post)
 
     def __getattr__(self, funname):
         """Returns a function that calls the "funname" method of all the posts
