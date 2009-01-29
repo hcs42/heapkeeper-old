@@ -685,14 +685,25 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         p1 = maildb.post('1')
         p1.set_tags(['t1'])
         p2 = maildb.post('2')
-        p2.set_tags(['t1'])
+        p2.set_tags(['t2'])
         p3 = maildb.post('3')
-        p3.set_tags(['t2'])
+        p3.set_tags(['t1'])
 
         ps1 = maildb.all().collect.has_tag('t1')
-        self.assert_(ps1.is_set([p1, p2]))
-        #ps1 = maildb.all().collect(lambda p: p.subject() == s)
-        # todo: test assert(bool)
+        self.assert_(ps1.is_set([p1, p3]))
+        ps2 = maildb.all().collect(lambda p: False)
+        self.assert_(ps2.is_set([]))
+        ps3 = maildb.all().collect(lambda p: True)
+        self.assert_(ps3.is_set([p1, p2, p3]))
+        ps4 = maildb.all().collect(lambda p: p.has_tag('t1'))
+        self.assert_(ps4.is_set([p1, p3]))
+
+        def f():
+            maildb.all().collect(lambda p: None)
+        self.assertRaises(AssertionError, f)
+
+        ps_roots = maildb.all().collect.is_root()
+        self.assert_(ps_roots.is_set([p1]))
 
     def tearDown(self):
         self.tearDownDirs()

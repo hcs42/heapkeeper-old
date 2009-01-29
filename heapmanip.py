@@ -637,13 +637,17 @@ class MailDB(object):
     def threadstruct(self):
         """Returns the calculated _threadstruct.
         
-        The object returned by this function should not be modified."""
+        The object returned by this function should not be modified.
+        """
 
         self._recalc_threadstruct()
         return self._threadstruct
 
     def prev(self, post):
-        """Returns the previous post relative to the given post."""
+        """Returns the previous post relative to the given post.
+        
+        If there is no such post in the database, it returns None
+        """
 
         assert(post in self.posts())
         inreplyto = post.inreplyto()
@@ -872,6 +876,8 @@ class PostSetForallDelegate(object):
         self._postset = postset
 
     def __getattr__(self, funname):
+        """Returns a function that calls the "funname" method of all the posts
+        in postset when called with the given arguments."""
         def forall_fun(*args, **kw):
             for post in self._postset:
                 getattr(post, funname)(*args, **kw)
@@ -891,10 +897,10 @@ class PostSetCollectDelegate(object):
     1. The PostSetCollectDelegate class has some functions that collect
        specific posts.
 
-       The following example collects the posts that are root of a thread
+       The following example collects the posts that are roots of a thread
        ("collect" is a PostSetCollectDelegate object):
 
-           ps = collect.thread_root()  # TODO: does not work yet
+           ps = collect.is_root()
 
     2. If a method is called on a PostSetCollectDelegate object which is not
        a method of the PostSetCollectDelegate class, the object will invoke the
@@ -929,16 +935,26 @@ class PostSetCollectDelegate(object):
 
         super(PostSetCollectDelegate, self).__init__()
         self._postset = postset
+    
+    def __call__(self, filterfun):
+        """Returns posts with which filterfun returns true."""
+        result = self._postset.empty_clone()
+        for post in self._postset:
+            post_true = filterfun(post)
+            assert(isinstance(post_true, bool))
+            if post_true:
+                result.add(post)
+        return result
+
+    def is_root(self):
+        """Returns the posts that are roots of a thread."""
+        return self.__call__(lambda p: self._postset._maildb.prev(p) == None)
 
     def __getattr__(self, funname):
+        """Returns a function that collects posts whose return value is true
+        when their "funname" method is called with the given arguments."""
         def collect_fun(*args, **kw):
-            result = self._postset.empty_clone()
-            for post in self._postset:
-                post_true = getattr(post, funname)(*args, **kw)
-                assert(isinstance(post_true, bool))
-                if post_true:
-                    result.add(post)
-            return result
+            return self.__call__(lambda p: getattr(p, funname)(*args, **kw))
         return collect_fun
 
 
