@@ -1108,6 +1108,7 @@ class Server(object):
         post.set_date(headers.get('Date', ''))
         post.set_body(text)
         post.remove_google_stuff()
+        post.normalize_subject()
 
         for entry, author_regex in self._config.items('nicknames'):
             [author, regex] = self._config.get('nicknames', entry).split(' ',1)
