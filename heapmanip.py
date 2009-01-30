@@ -1161,6 +1161,7 @@ html_footer = """
 html_one_mail = """\
 <div class="mail">
 <a href="%s">
+<span class="tags">[%s]</span>
 <span class="subject">%s</span>
 <span class="index">&lt;%s&gt;</span>
 <span class="author">%s</span>
@@ -1229,6 +1230,7 @@ class Generator(object):
                 author = re.sub('<.*?>','', post.author())
                 date_str = ("&nbsp; (%s)" % post.date_str()) 
                 f.write(html_one_mail % (post.htmlfilebasename(), \
+                                         ', '.join(post.tags()), \
                                          quote_html(post.subject()), \
                                          post.heapid(), \
                                          quote_html(author), \
