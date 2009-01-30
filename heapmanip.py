@@ -453,6 +453,44 @@ class Post(object):
                        r'-~---\n', re.DOTALL)
         self.set_body(r.sub('', self.body()))
 
+    @staticmethod
+    def parse_subject(subject):
+        """Parses the subject.
+
+        Parses the tags and removes the "Re:" prefix and whitespaces.
+        Returns: (subject:str, tags:[str])
+        """
+
+        last_bracket = None
+        real_subject_start = 0
+        brackets = []
+        for i, c in enumerate(subject):
+            if c == '[' and last_bracket == None:
+                last_bracket = i
+            elif c == ']' and last_bracket != None:
+                brackets.append((last_bracket, i))
+                last_bracket = None
+                real_subject_start = i+1
+        
+        real_subject = subject[real_subject_start:]
+        if re.match('[Rr]e:', subject):
+            subject = subject[3:]
+        real_subject = real_subject.strip()
+
+        tags = [ subject[first+1:last].strip() for first, last in brackets ]
+        return real_subject, tags
+            
+    def normalize_subject(self):
+        """Removes the tags from the subject and adds them to the Post as real
+        tags.
+        
+        Also removes the "Re:" prefix and whitespaces."""
+
+        real_subject, tags = Post.parse_subject(self.subject())
+        self.set_subject(real_subject)
+        for tag in tags:
+            self._header['Tag'].append(tag)
+
 
 ##### MailDB #####
 

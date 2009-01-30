@@ -278,6 +278,24 @@ class TestPost(unittest.TestCase):
         self.assertEquals(p.flags(), ['f1', 'f2']) # flags are sorted
         self.assertEquals(p.tags(), ['t2', 't1']) # tags are not
 
+    def testParseTagsInSubject(self):
+
+        def test(subject1, subject2, tags):
+            self.assertEquals((subject2, tags), Post.parse_subject(subject1))
+
+        test('', '', [])
+        test('Subject',              'Subject', [])
+        test('[a]Subject',           'Subject', ['a'])
+        test(' [ab] Subject ',       'Subject', ['ab'])
+        test('[a][b]Subject',        'Subject', ['a', 'b'])
+        test(' [ a ] [ b ] Subject', 'Subject', ['a', 'b'])
+
+        p = Post.from_str('Subject: [t1][t2] subject\nTag: t3')
+        p.normalize_subject()
+        self.assertEquals(p.subject(), 'subject')
+        self.assertEquals(p.tags(), ['t3', 't1', 't2'])
+
+
 class TestPost2(unittest.TestCase):
 
     """Tests the Post class.
