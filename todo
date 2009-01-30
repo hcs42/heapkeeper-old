@@ -3,7 +3,6 @@ Implementation
 
 * Generator: sections
 * update the README
-* Tags: subject -> tag
 * devnotes.txt: developer notes
     * architecture (relation of Post, MailDB and PostSet)
     * performance improvement possibilities (iterators)

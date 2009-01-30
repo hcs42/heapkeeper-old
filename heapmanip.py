@@ -246,25 +246,33 @@ class Post(object):
             return time.strftime('%Y.%m.%d. %H:%M', date_local)
 
     def tags(self):
-        # The list is copied so that the original cannot be modified by the
-        # caller.
-        return self._header['Tag'][:]
-    
-    def tags_iter(self):
-        """Iterator that iterates on the tags."""
-        return self._header['Tag'].__iter__()
+        """Returns the tags of the email.
 
+        The returned object should not be modified.
+        """
+
+        return self._header['Tag']
+    
     def set_tags(self, tags):
         self._header['Tag'] = tags
+        self.touch()
+
+    def add_tag(self, tag):
+        if not self.has_tag(tag):
+            self._header['Tag'].append(tag)
+            self._header['Tag'].sort()
         self.touch()
 
     def has_tag(self, tag):
         return tag in self._header['Tag']
         
     def flags(self):
-        # The list is copied so that the original cannot be modified by the
-        # caller.
-        return self._header['Flag'][:]
+        """Returns the flags of the email.
+
+        The returned object should not be modified.
+        """
+
+        return self._header['Flag']
 
     def set_flags(self, flags):
         assert(isinstance(flags, list))
@@ -360,6 +368,7 @@ class Post(object):
         copy_one('In-Reply-To')
         copy_one('Date')
         copy_list('Flag')
+        h['Tag'].sort()
         h['Flag'].sort()
 
         # compatibility code for the "Flags" attribute {
