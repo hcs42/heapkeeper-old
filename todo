@@ -2,7 +2,6 @@ Implementation
 --------------
 
 * Generator: sections
-* update the README
 * devnotes.txt: developer notes
     * architecture (relation of Post, MailDB and PostSet)
     * performance improvement possibilities (iterators)

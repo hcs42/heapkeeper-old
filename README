@@ -8,29 +8,8 @@ You need to have Python. I have Python 2.5.
 Initial settings
 ----------------
 
-Create the following 4 files: username, pw, host, post.
-Each should contain one line with the specific setting.
-    
-Execution
----------
+Type
 
-Just type:
-$ ./heap.py
-or
-$ python heap.py
+    $ python heapmanip.py
 
-You will see something like this:
-$ ./heap.py
-Downloading mail #1
-Downloading mail #2
-Downloading mail #3
-Downloading mail #4
-Downloading mail #5
-Downloading mail #6
-Downloading mail #7
-Downloading mail #8
-
-The program created a directory called "mail" and downloaded the 8 messages
-there.
-$ ls mail
-1.mail  2.mail  3.mail  4.mail  5.mail  6.mail  7.mail  8.mail
+and a help will be printed.
