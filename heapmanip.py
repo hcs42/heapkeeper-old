@@ -1227,11 +1227,14 @@ class Generator(object):
                 f.write('</pre>')
                 f.write(html_footer)
 
-    def index_html(self):
+    def index_html(self, sections=None):
         """Creates the index HTML file.
         
         The created file is named 'index.html' and is placed in the html_dir
         directory."""
+        
+        if sections == None:
+            sections = [self._maildb.all()]
 
         def write_thread(heapid, indent):
             """Writes a post and all its followers into the output."""
@@ -1255,7 +1258,17 @@ class Generator(object):
         filename = os.path.join(self._maildb.html_dir(), 'index.html')
         with open(filename, 'w') as f:
             f.write(html_header % ('Heap Index', 'heapindex.css', 'UMS Heap'))
-            write_thread(None, 0)
+            roots = [ self._maildb.post(heapid) for heapid in threadst[None] ]
+            threads = [ PostSet(self._maildb, [root]).expf() for root in roots ]
+            first = True
+            for section in sections:
+                if first:
+                    first = False
+                else:
+                    f.write('<hr>\n')
+                for root, thread in zip(roots, threads):
+                    if not (section & thread).is_set([]):
+                        write_thread(root.heapid(), 1)
             f.write(html_footer)
         log('HTML generated.')
 

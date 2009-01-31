@@ -925,24 +925,6 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             html_footer
         self.assertEquals(self.indexHtml(), s)
 
-    def test1(self):
-        """Tests the MailDB with two posts."""
-
-        # Initialisation
-        postfile1 = self.postFileName('1.mail')
-        postfile2 = self.postFileName('x.mail')
-        string_to_file('Message-Id: mess1\nTag: t1\nTag: t2', postfile1)
-        string_to_file('Message-Id: mess2\nIn-Reply-To: mess1', postfile2)
-        maildb = self.createMailDB()
-        g = Generator(maildb)
-        g.index_html()
-        s = html_header % ('Heap Index', 'heapindex.css', 'UMS Heap') + \
-            html_one_mail % ('1.html', 't1, t2', '', '1', '', '&nbsp; ()') + \
-            html_one_mail % ('x.html', '', '', 'x', '', '&nbsp; ()') + \
-            '</div>\n</div>\n' + \
-            html_footer
-        self.assertEquals(self.indexHtml(), s)
-
     def tearDown(self):
         self.tearDownDirs()
 
