@@ -1,7 +1,11 @@
 Implementation
 --------------
 
+* Subject parsing should be fixed: now the subject '[a]b[c]d' becomes subject
+  'd' and tags ['a','c']
 * Generator: options about the fields to generate (date, tags, etc.)
+* There is encoding problem with mail '941'
+* Tags and flags should be sets and not lists?
 * devnotes.txt: developer notes
     * architecture (relation of Post, MailDB and PostSet)
     * performance improvement possibilities (iterators)
