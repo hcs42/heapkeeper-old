@@ -614,6 +614,14 @@ class MailDB(object):
         self._recalc_posts()
         return self._posts
     
+    def postset(self, posts):
+        """Creates a PostSet that will contain the specified posts.
+        
+        See the type of the posts argument at PostSet.__init__.
+        """
+
+        return PostSet(self, posts)
+    
     def _recalc_posts(self):
         """Recalculates the _posts variable if needed."""
         if self._posts == None:
@@ -624,11 +632,18 @@ class MailDB(object):
         """Returns the list of all posts, even the deleted ones."""
         return self.heapid_to_post.values()
 
-    def post(self, heapid):
-        try:
+    def post(self, heapid, raiseException=False):
+        """Returns the post specified by its heapid.
+
+        The raiseException argument specifies what should happen it the post is
+        not found. If raiseException is false, None will be returned, otherwise
+        a KeyError exception will be raised.
+        """
+
+        if raiseException:
             return self.heapid_to_post[heapid]
-        except KeyError:
-            return None
+        else:
+            return self.heapid_to_post.get(heapid)
 
     def post_by_messid(self, messid):
         try:
@@ -800,7 +815,11 @@ class PostSet(set):
         Type: MailDB
     
     Types:
-        PrePostSet = set(Post) | PostSet(Post) | [Post] | Post
+        PrePost = heapid | Post
+        PrePostSet = set(PrePest) | PostSet(PrePost) | [PrePost] | PrePost
+
+        Actually, PrePostSet can be any iterable object that iterates over
+        PrePost objects.
     """
 
     def __init__(self, maildb, posts):
@@ -813,7 +832,7 @@ class PostSet(set):
             Type: PrePostSet
         """
 
-        super(PostSet, self).__init__(PostSet.to_set(posts))
+        super(PostSet, self).__init__(PostSet._to_set(maildb, posts))
         self._maildb = maildb
 
     def empty_clone(self):
@@ -830,27 +849,38 @@ class PostSet(set):
         return PostSet(self._maildb, self)
 
     @staticmethod
-    def to_set(s):
-        """Converts a PreSet object to a set."""
-        if isinstance(s, set):
-            return s
-        elif isinstance(s, list) or isinstance(s, tuple):
-            return set(s)
-        elif isinstance(s, Post):
-            return set([s])
+    def _to_set(maildb, prepostset):
+        """Converts a PrePostSet object to a set of Posts.
+        
+        Arguments:
+        prepostset -- The PrePostSet to be converted.
+            Type: PrePostSet
+
+        Returns: set(Post)
+        """
+
+        if isinstance(prepostset, PostSet):
+            return prepostset
+        elif isinstance(prepostset, str) or isinstance(prepostset, Post):
+            return PostSet._to_set(maildb, [prepostset])
         else:
-            raise HeapException, \
-                  ("Object's type not compatible with MailSet: %s" % (s,))
+            result = set()
+            for prepost in prepostset:
+                # calculating the post for prepost
+                if isinstance(prepost, str): # prepost is a heapid
+                    post = maildb.post(prepost, True)
+                elif isinstance(prepost, Post): # prepost is a Post
+                    post = prepost
+                else:
+                    raise HeapException, \
+                          ("Object'type not compatible with Post: %prepost" % \
+                           (prepost,))
+                result.add(post)
+            return result
 
     def is_set(self, s):
         """The given set equals to the set of contained posts."""
-        return set.__eq__(self, PostSet.to_set(s))
-
-    def __eq__(self, s):
-        if isinstance(s, PostSet):
-            return set.__eq__(self, s)
-        else:
-            return False
+        return set.__eq__(self, PostSet._to_set(self._maildb, s))
 
     def __getattr__(self, funname):
         if funname == 'forall':
@@ -897,6 +927,108 @@ class PostSet(set):
     def exp(self):
         return self.expb().expf()
 
+    # Overriding set's methods
+    #
+    # These method should be tested (not all of them are tested now).
+
+    # TODO rewrite these
+
+    def construct(self, methodname, other):
+        """Constructs a new PostSet from self by calling the specified method
+        of the set class with the specified arguments."""
+        try:
+            other = PostSet(self._maildb, other)
+        except TypeError:
+            return NotImplemented
+        result = getattr(set, methodname)(self, other)
+        result._maildb = self._maildb
+        return result
+
+    def __and__(self, other):
+        return self.construct('__and__', other)
+
+    def __eq__(self, other):
+        if isinstance(other, PostSet):
+            return set.__eq__(self, other)
+        else:
+            return False
+    
+    def __ne__(self, other):
+        return not self == other
+
+    def __or__(self, other):
+        return self.construct('__or__', other)
+
+    def __sub__(self, other):
+        return self.construct('__sub__', other)
+
+    def __xor__(self, other):
+        return self.construct('__xor__', other)
+
+    def difference(self, other):
+        return self.construct('difference', other)
+
+    def intersection(self, other):
+        return self.construct('intersection', other)
+
+    def symmetric_difference(self, other):
+        return self.construct('symmetric_difference', other)
+
+    def union(self, other):
+        return self.construct('union', other)
+
+    def __rand__(self, other):
+        return self.construct('__rand__', other)
+
+    def __ror__(self, other):
+        return self.construct('__ror__', other)
+
+    def __rsub__(self, other):
+        return self.construct('__rsub__', other)
+
+    def __rxor__(self, other):
+        return self.construct('__rxor__', other)
+
+    # Methods inherited from set.
+    #
+    # These functions does not have to be overriden, because they do not
+    # construct a new PostSet object (as opposed to most of the overriden
+    # functions).
+    #
+    # __contains__(...)
+    # __iand__(...)
+    # __ior__(...)
+    # __isub__(...)
+    # __ixor__(...)
+    # __iter__(...)
+    # __len__(...)
+    # add(...)
+    # clear(...)
+    # difference_update(...)
+    # discard(...)
+    # intersection_update(...)
+    # issubset(...)
+    # issuperset(...)
+    # pop(...)
+    # remove(...)
+    # symmetric_difference_update(...)
+    # update(...)
+
+    #  Methods inherited from set which should not be used (yet?)
+    #
+    # TODO: These method should be reviewed whether they should be inherited,
+    # overriden or removed.
+    #
+    # __cmp__(...)
+    # __ge__(...)
+    # __getattribute__(...)
+    # __gt__(...)
+    # __hash__(...)
+    # __le__(...)
+    # __lt__(...)
+    # __reduce__(...)
+    # __repr__(...)
+    
 
 class PostSetForallDelegate(object):
 

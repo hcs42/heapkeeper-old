@@ -582,9 +582,15 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         p1 = maildb.post('1')
         p2 = maildb.post('2')
         ps1 = PostSet(maildb, set())
+
         self.assertNotEquals(ps1, set())
+        self.assert_(ps1 != set())
+        self.assertFalse(ps1 == set())
         self.assert_(ps1.is_set(set()))
+
         self.assertEquals(ps1, PostSet(maildb, []))
+        self.assert_(ps1 == PostSet(maildb, []))
+        self.assertFalse(ps1 != PostSet(maildb, []))
 
     def testCopy(self):
         """Tests PostSet.copy and PostSet.empty_clone."""
@@ -596,7 +602,14 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         p3 = maildb.post('3')
 
         ps1 = ps_all.copy()
+        self.assert_(ps1 == ps_all)
+        self.assertFalse(ps1 != ps_all)
+        self.assertFalse(ps1 is ps_all)
+
         ps1.remove(p1)
+        self.assertFalse(ps1 == ps_all)
+        self.assert_(ps1 != ps_all)
+
         self.assert_(ps_all.is_set(set([p1, p2, p3])))
         self.assert_(ps1.is_set(set([p2, p3])))
         self.assert_(ps_all._maildb is ps1._maildb)
@@ -612,12 +625,31 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         p2 = maildb.post('2')
         p3 = maildb.post('3')
 
-        # __init__, to_set
+        # __init__, _to_set
         ps0 = PostSet(maildb, set([p1]))
         ps02 = PostSet(maildb, [p1])
         ps03 = PostSet(maildb, p1)
+        psh1= PostSet(maildb, set(['1']))
+        psh2 = PostSet(maildb, ['1'])
+        psh3 = PostSet(maildb, '1')
         self.assertEquals(ps0, ps02)
         self.assertEquals(ps0, ps03)
+        self.assertEquals(ps0, psh1)
+        self.assertEquals(ps0, psh2)
+        self.assertEquals(ps0, psh3)
+
+        ps01 = maildb.postset(set([p1]))
+        ps02 = maildb.postset([p1])
+        ps03 = maildb.postset(p1)
+        psh1= maildb.postset(set(['1']))
+        psh2 = maildb.postset(['1'])
+        psh3 = maildb.postset('1')
+        self.assertEquals(ps0, ps01)
+        self.assertEquals(ps0, ps02)
+        self.assertEquals(ps0, ps03)
+        self.assertEquals(ps0, psh1)
+        self.assertEquals(ps0, psh2)
+        self.assertEquals(ps0, psh3)
 
         ps1 = PostSet(maildb, set([p1, p2]))
         ps2 = PostSet(maildb, set([p2, p3]))
@@ -628,8 +660,12 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         self.assertEquals(ps2, ps4)
 
         def f():
+            PostSet(maildb, 'nosuchpost')
+        self.assertRaises(KeyError, f)
+
+        def f():
             PostSet(maildb, 0)
-        self.assertRaises(HeapException, f)
+        self.assertRaises(TypeError, f)
 
         # is_set
         self.assert_(ps0.is_set(set([p1])))
@@ -639,11 +675,86 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         self.assert_(ps1.is_set([p1, p2]))
         self.assert_(ps2.is_set(ps3))
 
-        # &, |, -
-        self.assert_((ps1 & ps2).is_set(set([p2])))
-        self.assert_((ps1 & ps2).is_set([p2]))
-        self.assert_((ps1 | ps2).is_set([p1, p2, p3]))
-        self.assert_((ps1 - ps2).is_set([p1]))
+        # &, |, -, ^
+        ps1 = PostSet(maildb, [p1, p2])
+        ps2 = PostSet(maildb, [p1, p3])
+        ps3 = PostSet(maildb, [p2, p3])
+        ps1l = [p1, p2]
+        ps2l = [p1, p3]
+        ps3l = [p2, p3]
+
+        def test(postset, s):
+            self.assert_(postset.is_set(s))
+
+        # &, intersection
+        test(ps1 & ps2, [p1])
+        test(ps1 & ps2 & ps3, [])
+        test(ps1.intersection(ps2l), [p1])
+
+        ps1c = ps1.copy()
+        ps1c &= ps2
+        test(ps1c, [p1])
+
+        ps1c = ps1.copy()
+        ps1c.intersection_update(ps2l)
+        test(ps1c, [p1])
+
+        # |, union
+        test(ps1.union(ps2l), [p1, p2, p3])
+        test(ps1 | ps2, [p1, p2, p3])
+        test(ps1 | ps2 | ps3, [p1, p2, p3])
+
+        ps1c = ps1.copy()
+        ps1c |= ps2
+        test(ps1c, [p1, p2, p3])
+
+        ps1c = ps1.copy()
+        ps1c.update(ps2l)
+        test(ps1c, [p1, p2, p3])
+
+        # -, difference
+        test(ps1.difference(ps2l), [p2])
+        test(ps1 - ps2, [p2])
+        test(ps1 - ps2 - ps3, [])
+
+        ps1c = ps1.copy()
+        ps1c -= ps2
+        test(ps1c, [p2])
+
+        ps1c = ps1.copy()
+        ps1c.difference_update(ps2l)
+        test(ps1c, [p2])
+
+        # ^, symmetric_difference
+        test(ps1.symmetric_difference(ps2l), [p2, p3])
+        test(ps1 ^ ps2, [p2, p3])
+        test(ps1 ^ ps2 ^ ps3, [])
+
+        ps1c = ps1.copy()
+        ps1c ^= ps2
+        test(ps1c, [p2, p3])
+
+        ps1c = ps1.copy()
+        ps1c.symmetric_difference_update(ps2)
+        test(ps1c, [p2, p3])
+
+        # PostSet.construct 
+        test(ps1 & set([p1, p3]), [p1])
+        test(ps1 & [p1, p3], [p1])
+        test(ps1 & p1, [p1])
+        test(ps1 & '1', [p1])
+        test(set([p1, p3]) & ps1, [p1])
+        test([p1, p3] & ps1, [p1])
+        test(p1 & ps1, [p1])
+        test('1' & ps1, [p1])
+
+        def f():
+            test(ps1 & 1, [p1])
+        self.assertRaises(TypeError, f)
+
+        def f():
+            test(1 & ps1, [p1])
+        self.assertRaises(TypeError, f)
 
         # MailDB.all
         ps_all = PostSet(maildb, [p1, p2, p3])
