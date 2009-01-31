@@ -1,7 +1,6 @@
 Implementation
 --------------
 
-* Generator: sections
 * Generator: options about the fields to generate (date, tags, etc.)
 * devnotes.txt: developer notes
     * architecture (relation of Post, MailDB and PostSet)

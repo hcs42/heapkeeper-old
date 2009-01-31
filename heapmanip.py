@@ -42,9 +42,10 @@ import sys
 import ConfigParser
 import time
 import StringIO
+import datetime
 
 
-##### global variables #####
+##### logging #####
 
 log_on = [True]
 
@@ -55,6 +56,29 @@ def log(str):
     if log_on[0]:
         print str
 
+##### Performance measurement #####
+
+pm_last_time = datetime.datetime.now()
+pm_action = ''
+def int_time(next_action = ''):
+    """Returns the time elapsed since the last call of int_time."""
+    global pm_last_time
+    global pm_action
+    old_action = pm_action
+    pm_action = next_action
+    now = datetime.datetime.now()
+    delta = now - pm_last_time
+    delta = delta.seconds + (delta.microseconds)/1000000.0
+    pm_last_time = now
+    return old_action, delta
+
+def print_time(next_action = ''):
+    """Calls int_time and prints the result."""
+    pm_action, t = int_time(next_action)
+    if pm_action != '':
+        print '%.6f %s' % (t, pm_action)
+    else:
+        print '%.6f' % (t)
 
 ##### utility functions and classes #####
 
@@ -712,7 +736,7 @@ class MailDB(object):
         If there is no such post in the database, it returns None
         """
 
-        assert(post in self.posts())
+        assert(post in self.all())
         inreplyto = post.inreplyto()
 
         if inreplyto == '':
@@ -736,7 +760,7 @@ class MailDB(object):
     def root(self, post):
         """Returns the root of the post."""
 
-        assert(post in self.posts())
+        assert(post in self.all())
         while True:
             prevpost = self.prev(post)
             if prevpost == None:
@@ -784,8 +808,8 @@ class MailDB(object):
 
         The posts can be modified during the iteration.
         """
-
-        assert(post in self.posts() or post == None)
+        
+        assert(post in self.all() or post == None)
         if post != None:
             yield post
         heapid = post.heapid() if post != None else None
