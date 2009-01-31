@@ -47,11 +47,12 @@ class MailDBHandler(object):
         messid = str(index) + '@'
         inreplyto = str(inreplyto) + '@' if inreplyto != None else ''
         s = 'Message-Id: ' + messid + '\n' + \
-            'In-Reply-To: ' + inreplyto + '\n' + \
-            MailDBHandler.dates[index]
+            'In-Reply-To: ' + inreplyto + '\n'
+        if not self._skipdates:
+            s += MailDBHandler.dates[index]
         self._maildb.add_new_post(Post.from_str(s))
 
-    def create_threadst(self):
+    def create_threadst(self, skipdates=False):
         """Adds a thread structure to the maildb with the following structure.
 
         0 <- 1 <- 2
@@ -59,6 +60,7 @@ class MailDBHandler(object):
         4
         """
 
+        self._skipdates = skipdates
         self.add_post(0)
         self.add_post(1, 0)
         self.add_post(2, 1)
@@ -1035,6 +1037,100 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         s = html_header % ('Heap Index', 'heapindex.css', 'UMS Heap') + \
             html_footer
         self.assertEquals(self.indexHtml(), s)
+
+    def test1(self):
+        """Tests the MailDB with two posts."""
+
+        # Initialisation
+        postfile1 = self.postFileName('1.mail')
+        postfile2 = self.postFileName('x.mail')
+        string_to_file('Message-Id: mess1\nTag: t1\nTag: t2', postfile1)
+        string_to_file('Message-Id: mess2\nIn-Reply-To: mess1', postfile2)
+        maildb = self.createMailDB()
+        g = Generator(maildb)
+        g.index_html()
+        s = html_header % ('Heap Index', 'heapindex.css', 'UMS Heap') + \
+            html_one_mail % ('1.html', 't1, t2', '', '1', '', '&nbsp; ()') + \
+            html_one_mail % ('x.html', '', '', 'x', '', '&nbsp; ()') + \
+            '</div>\n</div>\n' + \
+            html_footer
+        self.assertEquals(self.indexHtml(), s)
+
+    def test2(self):
+        """Tests the MailDB with five posts."""
+
+        self._maildb = self.createMailDB()
+        maildb = self._maildb
+        self.create_threadst(skipdates=True)
+        p = self._posts
+        g = Generator(maildb)
+
+        g.index_html([['1'], ['4']])
+        # TODO: better test
+        s = \
+'''<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Heap Index</title>
+    <link rel=stylesheet href="heapindex.css" type="text/css">
+  </head>
+  <body>
+    <h1 id="header">UMS Heap</h1>
+
+<div class="mail">
+<a href="0.html">
+<span class="tags">[]</span>
+<span class="subject"></span>
+<span class="index">&lt;0&gt;</span>
+<span class="author"></span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+<div class="mail">
+<a href="1.html">
+<span class="tags">[]</span>
+<span class="subject"></span>
+<span class="index">&lt;1&gt;</span>
+<span class="author"></span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+<div class="mail">
+<a href="2.html">
+<span class="tags">[]</span>
+<span class="subject"></span>
+<span class="index">&lt;2&gt;</span>
+<span class="author"></span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+</div>
+</div>
+<div class="mail">
+<a href="3.html">
+<span class="tags">[]</span>
+<span class="subject"></span>
+<span class="index">&lt;3&gt;</span>
+<span class="author"></span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+</div>
+</div>
+<hr>
+<div class="mail">
+<a href="4.html">
+<span class="tags">[]</span>
+<span class="subject"></span>
+<span class="index">&lt;4&gt;</span>
+<span class="author"></span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+</div>
+
+  </body>
+</html>
+'''
+        self.assertEquals(self.indexHtml(), s)
+
+        html = self.indexHtml()
+        string_to_file(html, '/a/_/1.html')
 
     def tearDown(self):
         self.tearDownDirs()

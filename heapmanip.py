@@ -1363,7 +1363,11 @@ class Generator(object):
         """Creates the index HTML file.
         
         The created file is named 'index.html' and is placed in the html_dir
-        directory."""
+        directory.
+        
+        Arguments:
+        sections = None | [PrePostSet]
+        """
         
         if sections == None:
             sections = [self._maildb.all()]
@@ -1391,7 +1395,7 @@ class Generator(object):
         with open(filename, 'w') as f:
             f.write(html_header % ('Heap Index', 'heapindex.css', 'UMS Heap'))
             roots = [ self._maildb.post(heapid) for heapid in threadst[None] ]
-            threads = [ PostSet(self._maildb, [root]).expf() for root in roots ]
+            threads = [ self._maildb.postset(root).expf() for root in roots ]
             first = True
             for section in sections:
                 if first:
@@ -1399,7 +1403,7 @@ class Generator(object):
                 else:
                     f.write('<hr>\n')
                 for root, thread in zip(roots, threads):
-                    if not (section & thread).is_set([]):
+                    if not (thread & section).is_set([]):
                         write_thread(root.heapid(), 1)
             f.write(html_footer)
         log('HTML generated.')
