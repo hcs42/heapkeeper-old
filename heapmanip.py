@@ -494,18 +494,22 @@ class Post(object):
         Returns: (subject:str, tags:[str])
         """
 
+        # last_bracket==None  <=>  we are outside of a [tag]
         last_bracket = None
-        real_subject_start = 0
         brackets = []
-        for i, c in enumerate(subject):
+        i = 0
+        while i < len(subject):
+            c = subject[i]
             if c == '[' and last_bracket == None:
                 last_bracket = i
             elif c == ']' and last_bracket != None:
                 brackets.append((last_bracket, i))
                 last_bracket = None
-                real_subject_start = i+1
-        
-        real_subject = subject[real_subject_start:]
+            elif c != ' ' and last_bracket == None:
+                break
+            i += 1
+
+        real_subject = subject[i:]
         if re.match('[Rr]e:', subject):
             subject = subject[3:]
         real_subject = real_subject.strip()
