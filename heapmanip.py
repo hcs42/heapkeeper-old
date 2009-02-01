@@ -287,6 +287,11 @@ class Post(object):
             self._header['Tag'].sort()
         self.touch()
 
+    def remove_tag(self, tag):
+        if self.has_tag(tag):
+            self._header['Tag'].remove(tag)
+        self.touch()
+
     def has_tag(self, tag):
         return tag in self._header['Tag']
         
