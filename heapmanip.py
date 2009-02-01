@@ -952,10 +952,6 @@ class PostSet(set):
         return self.expb().expf()
 
     # Overriding set's methods
-    #
-    # These method should be tested (not all of them are tested now).
-
-    # TODO rewrite these
 
     def construct(self, methodname, other):
         """Constructs a new PostSet from self by calling the specified method

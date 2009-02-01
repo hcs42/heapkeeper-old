@@ -690,6 +690,8 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
 
         # &, intersection
         test(ps1 & ps2, [p1])
+        test(ps1 & ps2l, [p1])
+        test(ps1l & ps2, [p1])
         test(ps1 & ps2 & ps3, [])
         test(ps1.intersection(ps2l), [p1])
 
@@ -704,6 +706,8 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         # |, union
         test(ps1.union(ps2l), [p1, p2, p3])
         test(ps1 | ps2, [p1, p2, p3])
+        test(ps1 | ps2l, [p1, p2, p3])
+        test(ps1l | ps2, [p1, p2, p3])
         test(ps1 | ps2 | ps3, [p1, p2, p3])
 
         ps1c = ps1.copy()
@@ -716,7 +720,8 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
 
         # -, difference
         test(ps1.difference(ps2l), [p2])
-        test(ps1 - ps2, [p2])
+        test(ps1 - ps2l, [p2])
+        test(ps1l - ps2, [p2])
         test(ps1 - ps2 - ps3, [])
 
         ps1c = ps1.copy()
@@ -730,6 +735,8 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         # ^, symmetric_difference
         test(ps1.symmetric_difference(ps2l), [p2, p3])
         test(ps1 ^ ps2, [p2, p3])
+        test(ps1 ^ ps2l, [p2, p3])
+        test(ps1l ^ ps2, [p2, p3])
         test(ps1 ^ ps2 ^ ps3, [])
 
         ps1c = ps1.copy()
