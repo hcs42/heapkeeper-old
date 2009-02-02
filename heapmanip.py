@@ -52,9 +52,12 @@ log_on = [True]
 def set_log(log_):
     log_on[0] = log_
 
-def log(str):
+def log(*args):
     if log_on[0]:
-        print str
+        for arg in args:
+            sys.stdout.write(arg)
+        sys.stdout.write('\n')
+        sys.stdout.flush()
 
 ##### Performance measurement #####
 
