@@ -639,11 +639,13 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         psh1= PostSet(maildb, set(['1']))
         psh2 = PostSet(maildb, ['1'])
         psh3 = PostSet(maildb, '1')
+        psh4 = PostSet(maildb, 1)
         self.assertEquals(ps0, ps02)
         self.assertEquals(ps0, ps03)
         self.assertEquals(ps0, psh1)
         self.assertEquals(ps0, psh2)
         self.assertEquals(ps0, psh3)
+        self.assertEquals(ps0, psh4)
 
         ps01 = maildb.postset(set([p1]))
         ps02 = maildb.postset([p1])
@@ -651,12 +653,14 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         psh1= maildb.postset(set(['1']))
         psh2 = maildb.postset(['1'])
         psh3 = maildb.postset('1')
+        psh3 = maildb.postset(1)
         self.assertEquals(ps0, ps01)
         self.assertEquals(ps0, ps02)
         self.assertEquals(ps0, ps03)
         self.assertEquals(ps0, psh1)
         self.assertEquals(ps0, psh2)
         self.assertEquals(ps0, psh3)
+        self.assertEquals(ps0, psh4)
 
         ps1 = PostSet(maildb, set([p1, p2]))
         ps2 = PostSet(maildb, set([p2, p3]))
@@ -671,7 +675,7 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         self.assertRaises(KeyError, f)
 
         def f():
-            PostSet(maildb, 0)
+            PostSet(maildb, 1.0)
         self.assertRaises(TypeError, f)
 
         # is_set
@@ -757,17 +761,19 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         test(ps1 & [p1, p3], [p1])
         test(ps1 & p1, [p1])
         test(ps1 & '1', [p1])
+        test(ps1 & 1, [p1])
         test(set([p1, p3]) & ps1, [p1])
         test([p1, p3] & ps1, [p1])
         test(p1 & ps1, [p1])
         test('1' & ps1, [p1])
+        test(1 & ps1, [p1])
 
         def f():
-            test(ps1 & 1, [p1])
+            test(ps1 & 1.0, [p1])
         self.assertRaises(TypeError, f)
 
         def f():
-            test(1 & ps1, [p1])
+            test(1.0 & ps1, [p1])
         self.assertRaises(TypeError, f)
 
         # MailDB.all

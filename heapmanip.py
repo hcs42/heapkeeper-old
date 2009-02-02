@@ -287,6 +287,7 @@ class Post(object):
             self._header['Tag'].sort()
         self.touch()
 
+    # TODO: test
     def remove_tag(self, tag):
         if self.has_tag(tag):
             self._header['Tag'].remove(tag)
@@ -673,6 +674,8 @@ class MailDB(object):
         a KeyError exception will be raised.
         """
 
+        if isinstance(heapid, int):
+            heapid = str(heapid)
         if raiseException:
             return self.heapid_to_post[heapid]
         else:
@@ -848,9 +851,11 @@ class PostSet(set):
         Type: MailDB
     
     Types:
-        PrePost = heapid | Post
+        PrePost = heapid | int | Post
         PrePostSet = set(PrePest) | PostSet(PrePost) | [PrePost] | PrePost
 
+        When PrePost is an int, it will be converted to a string that should
+        represent a heapid.
         Actually, PrePostSet can be any iterable object that iterates over
         PrePost objects.
     """
@@ -894,13 +899,16 @@ class PostSet(set):
 
         if isinstance(prepostset, PostSet):
             return prepostset
-        elif isinstance(prepostset, str) or isinstance(prepostset, Post):
+        elif isinstance(prepostset, str) or \
+             isinstance(prepostset, int) or \
+             isinstance(prepostset, Post):
             return PostSet._to_set(maildb, [prepostset])
         else:
             result = set()
             for prepost in prepostset:
                 # calculating the post for prepost
-                if isinstance(prepost, str): # prepost is a heapid
+                if isinstance(prepost, str) or isinstance(prepost, int):
+                    # prepost is a heapid
                     post = maildb.post(prepost, True)
                 elif isinstance(prepost, Post): # prepost is a Post
                     post = prepost
