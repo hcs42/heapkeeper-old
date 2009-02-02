@@ -280,8 +280,16 @@ class Post(object):
 
         return self._header['Tag']
     
+    # TODO: test unsorted lists and sets as argument
     def set_tags(self, tags):
-        self._header['Tag'] = tags
+        """Sets the given tags as the tags of the post.
+
+        Arguments:
+        tags --
+            Type: iterable
+        """
+
+        self._header['Tag'] = sorted(tags)
         self.touch()
 
     def add_tag(self, tag):
