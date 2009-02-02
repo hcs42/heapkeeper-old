@@ -33,15 +33,17 @@ def h():
 
 def s():
     """Saves the mail database."""
-    maildb.save()
+    options['maildb'].save()
 
 def x():
-    maildb.save()
+    options['maildb'].save()
     sys.exit()
 
 options = {'auto_gen_var': True,
            'auto_save': True,
-           'auto_threadstruct': True}
+           'auto_threadstruct': True,
+           'heapcustom': 'heapcustom',
+           'callbacks': {'sections': lambda maildb: [maildb.all()]}}
 
 #    Some commands automatically re-generate the index.html when they run
 #    successfully, if this option is True.
@@ -76,19 +78,19 @@ def auto():
         gen_index_html()
         sys.stdout.flush()
     if options['auto_save']:
-        maildb.save()
+        options['maildb'].save()
     if options['auto_threadstruct']:
-        maildb.threadstruct()
+        options['maildb'].threadstruct()
 
 def gen_index_html():
     """Generates index.html."""
-    sections = custom_funs['sections'](maildb)
-    g = heapmanip.Generator(maildb)
+    sections = options['callbacks']['sections'](options['maildb'])
+    g = heapmanip.Generator(options['maildb'])
     g.index_html(sections)
 
 def gen_post_html():
     """Generates the html files for the posts."""
-    g = heapmanip.Generator(maildb)
+    g = heapmanip.Generator(options['maildb'])
     g.posts_to_html()
 
 def g():
@@ -99,11 +101,11 @@ def ga():
     gen_post_html()
 
 def gs():
-    maildb.save()
+    options['maildb'].save()
     gen_index_html()
 
 def ps(pps):
-    return maildb.postset(pps)
+    return options['maildb'].postset(pps)
 
 def perform_operation(pps, operation):
     posts = ps(pps)
@@ -149,7 +151,7 @@ def pt(pps):
             def add_tags(p):
                 for tag in post.tags():
                     p.add_tag(tag)
-            maildb.postset(post).expf().forall(add_tags)
+            options['maildb'].postset(post).expf().forall(add_tags)
     perform_operation(pps, operation)
 
 def at(pps, tags):
@@ -211,7 +213,7 @@ def pS(pps):
 
     def operation(posts):
         for post in posts:
-            maildb.postset(post).expf().set_subject(post.subject())
+            options['maildb'].postset(post).expf().set_subject(post.subject())
     perform_operation(pps, operation)
 
 def sS(pps, subject):
@@ -281,37 +283,37 @@ def j(pp1, pp2):
         Type: PrePost
     """
 
-    p1 = maildb.post(pp1)
-    p2 = maildb.post(pp2)
+    p1 = options['maildb'].post(pp1)
+    p2 = options['maildb'].post(pp2)
     if p1 != None and p2 != None:
         p2.set_inreplyto(p1.heapid())
         auto()
     else:
         log('Posts not found.')
 
-def heapcustom_sections_def(maildb):
-    return maildb.all()
+def load_custom():
+    """Loads the custom function when possible."""
 
-custom_funs = {'sections': heapcustom_sections_def}
-
-def load_custom(funname):
     try:
-        custom_funs[funname] = getattr(heapcustom, funname)
-        heapmanip.log(funname, ' custom function: loaded.')
-    except AttributeError:
-        heapmanip.log(funname, \
-                      ' custom function: not found, using the default.')
+        modname = options['heapcustom']
+        module = __import__(modname)
+        heapmanip.log('Customization module found (name: %s).' % (modname,))
+    except ImportError:
+        heapmanip.log('No customization module found.')
+        return
+
+    callbacks = options['callbacks']
+    for funname in callbacks.keys():
+        try:
+            callbacks[funname] = getattr(module, funname)
+            heapmanip.log(funname, ' custom function: loaded.')
+        except AttributeError:
+            heapmanip.log(funname, \
+                          ' custom function: not found, using the default.')
 
 def main():
-    global maildb
-    maildb = heapmanip.read_maildb()
-    try:
-        global heapcustom
-        import heapcustom
-        heapmanip.log('heapcustom imported.')
-        load_custom('sections')
-    except ImportError:
-        heapmanip.log('No heapcustom.')
+    options['maildb'] = heapmanip.read_maildb()
+    load_custom()
 
 if __name__ == '__main__':
     main()
