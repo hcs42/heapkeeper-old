@@ -293,6 +293,7 @@ class Post(object):
         self.touch()
 
     def add_tag(self, tag):
+        assert(isinstance(tag, str))
         if not self.has_tag(tag):
             self._header['Tag'].append(tag)
             self._header['Tag'].sort()
@@ -305,6 +306,7 @@ class Post(object):
         self.touch()
 
     def has_tag(self, tag):
+        assert(isinstance(tag, str))
         return tag in self._header['Tag']
         
     def flags(self):

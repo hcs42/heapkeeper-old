@@ -72,6 +72,11 @@ def set_option(option, value):
 
     options[option] = value
 
+def set_callback(callbackname, callbackfun):
+    """Sets a callback function."""
+
+    options['callbacks'][callbackname] = callbackfun
+
 def auto():
     """(Re-)generates index.html if the auto option is true."""
     if options['auto_gen_var']:
@@ -136,7 +141,8 @@ def tagset(tags):
     elif isinstance(tags, list):
         return set(tags)
     else:
-        raise HeapException, 'Cannot convert object to tagset: %s' % (tags,)
+        raise heapmanip.HeapException, \
+              'Cannot convert object to tagset: %s' % (tags,)
 
 def pt(pps):
     """Propagates the tags of the given postset to all its children.
