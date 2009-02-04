@@ -5,6 +5,8 @@ Implementation
     * heapmanip.Post.{set_tags, remove_tag}
     * heapia
     * Post.load
+* putting our Heap over ftp
+* should the tags be case insensitive?
 * Implementing tags and flags as frozensets
 * Tags dependencies, TagInfo class
 * devnotes.txt: developer notes

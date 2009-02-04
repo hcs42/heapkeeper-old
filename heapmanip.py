@@ -1368,10 +1368,10 @@ html_section_end = """\
 html_one_mail = """\
 <div class="mail">
 <a href="%s">
-<span class="tags">[%s]</span>
-<span class="subject">%s</span>
-<span class="index">&lt;%s&gt;</span>
 <span class="author">%s</span>
+<span class="subject">%s</span>
+<span class="tags">[%s]</span>
+<span class="index">&lt;%s&gt;</span>
 <span class="timestamp">%s</span>
 </a>
 """
@@ -1468,12 +1468,14 @@ class Generator(object):
                 else:
                     tags = ', '.join(post.tags())
 
-                f.write(html_one_mail % (post.htmlfilebasename(), \
-                                         tags, \
-                                         subject, \
-                                         post.heapid(), \
-                                         quote_html(author), \
-                                         date_str))
+                f.write(html_one_mail % (
+                                         post.htmlfilebasename(),
+                                         quote_html(author),
+                                         subject,
+                                         tags,
+                                         post.heapid(),
+                                         date_str,
+                                         ))
             else:
                 real_subject = None
                 real_tags = None

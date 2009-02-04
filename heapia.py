@@ -204,7 +204,7 @@ def rt(pps, tags):
     tags = tagset(tags)
     def operation(posts):
         for p in posts:
-            p.set_tags(tags.difference(p.tags()))
+            p.set_tags(set(p.tags()) - tags)
     perform_operation(pps, operation)
 
 def atr(pps, tags):
