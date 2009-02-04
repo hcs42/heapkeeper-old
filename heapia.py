@@ -23,6 +23,11 @@ cS(pps, subj)      - capitalize the subject
 cSr(pps, subj)     - capitalize the subject recursively
 j(p, p)            - join two threads
 set_auto_gen(bool) - setting autogeneration
+
+Arguments will be evaluated as commands.
+Example: generate the index HTML and exit:
+    $ python heapia.py 'g()' 'exit()'
+
 """
 
 import sys
@@ -43,7 +48,7 @@ options = {'auto_gen_var': True,
            'auto_save': True,
            'auto_threadstruct': True,
            'heapcustom': 'heapcustom',
-           'callbacks': {'sections': lambda maildb: [maildb.all()]}}
+           'callbacks': {'sections': lambda maildb: None}}
 
 #    Some commands automatically re-generate the index.html when they run
 #    successfully, if this option is True.
@@ -317,9 +322,11 @@ def load_custom():
             heapmanip.log(funname, \
                           ' custom function: not found, using the default.')
 
-def main():
+def main(args):
     options['maildb'] = heapmanip.read_maildb()
     load_custom()
+    for arg in args:
+        eval(arg)
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

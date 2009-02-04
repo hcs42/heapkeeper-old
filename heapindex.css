@@ -25,7 +25,7 @@ a
 
 	margin: 1em;
 	margin-right: 0;
-	padding: 0.7em 0;
+	padding: 0.7em 0 0.7em 0.7em;
 }
 
 .mail .mail
@@ -53,5 +53,14 @@ span
 {
 	margin: 0 1em;
 	font-style: italic;
+}
+
+.sectiontitle
+{
+	color: #ffc;
+	margin-left: 1em;
+	font-style: italic;
+	font-weight: bold;
+	font-size: 18;
 }
 

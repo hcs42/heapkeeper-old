@@ -1052,8 +1052,24 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         maildb = self.createMailDB()
         g = Generator(maildb)
         g.index_html()
-        s = html_header % ('Heap Index', 'heapindex.css', 'UMS Heap') + \
-            html_footer
+        s = '''\
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Heap Index</title>
+    <link rel=stylesheet href="heapindex.css" type="text/css">
+  </head>
+  <body>
+    <h1 id="header">UMS Heap</h1>
+
+<div><ul><li><a href="#0">All posts</a></li>
+</ul></div>
+<div class="section">
+<span class="sectiontitle" id=0>All posts</span>
+</div>
+  </body>
+</html>
+'''
         self.assertEquals(self.indexHtml(), s)
 
     def test1(self):
@@ -1067,11 +1083,42 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         maildb = self.createMailDB()
         g = Generator(maildb)
         g.index_html()
-        s = html_header % ('Heap Index', 'heapindex.css', 'UMS Heap') + \
-            html_one_mail % ('1.html', 't1, t2', '', '1', '', '&nbsp; ()') + \
-            html_one_mail % ('x.html', '', '', 'x', '', '&nbsp; ()') + \
-            '</div>\n</div>\n' + \
-            html_footer
+        s = '''\
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Heap Index</title>
+    <link rel=stylesheet href="heapindex.css" type="text/css">
+  </head>
+  <body>
+    <h1 id="header">UMS Heap</h1>
+
+<div><ul><li><a href="#0">All posts</a></li>
+</ul></div>
+<div class="section">
+<span class="sectiontitle" id=0>All posts</span>
+<div class="mail">
+<a href="1.html">
+<span class="tags">[t1, t2]</span>
+<span class="subject"></span>
+<span class="index">&lt;1&gt;</span>
+<span class="author"></span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+<div class="mail">
+<a href="x.html">
+<span class="tags">[]</span>
+<span class="subject"></span>
+<span class="index">&lt;x&gt;</span>
+<span class="author"></span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+</div>
+</div>
+</div>
+  </body>
+</html>
+'''
         self.assertEquals(self.indexHtml(), s)
 
     def test2(self):
@@ -1083,10 +1130,9 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         p = self._posts
         g = Generator(maildb)
 
-        g.index_html([['1'], ['4']])
-        # TODO: better test
-        s = \
-'''<html>
+        g.index_html([('Sec1', ['1']), ('Sec2', ['4'])])
+        s = '''\
+<html>
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <title>Heap Index</title>
@@ -1095,6 +1141,11 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
   <body>
     <h1 id="header">UMS Heap</h1>
 
+<div><ul><li><a href="#0">Sec1</a></li>
+<li><a href="#1">Sec2</a></li>
+</ul></div>
+<div class="section">
+<span class="sectiontitle" id=0>Sec1</span>
 <div class="mail">
 <a href="0.html">
 <span class="tags">[]</span>
@@ -1131,7 +1182,9 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 </a>
 </div>
 </div>
-<hr>
+</div>
+<div class="section">
+<span class="sectiontitle" id=1>Sec2</span>
 <div class="mail">
 <a href="4.html">
 <span class="tags">[]</span>
@@ -1141,14 +1194,11 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 <span class="timestamp">&nbsp; ()</span>
 </a>
 </div>
-
+</div>
   </body>
 </html>
 '''
         self.assertEquals(self.indexHtml(), s)
-
-        html = self.indexHtml()
-        string_to_file(html, '/a/_/1.html')
 
     def tearDown(self):
         self.tearDownDirs()

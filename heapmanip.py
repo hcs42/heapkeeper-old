@@ -1345,9 +1345,18 @@ html_header = """\
 
 """
 
-html_footer = """
+html_footer = """\
   </body>
 </html>
+"""
+
+html_section_begin = """\
+<div class="section">
+<span class="sectiontitle" id=%d>%s</span>
+"""
+
+html_section_end = """\
+</div>
 """
 
 html_one_mail = """\
@@ -1416,11 +1425,17 @@ class Generator(object):
         directory.
         
         Arguments:
-        sections = None | [PrePostSet]
+        sections = None | [(str, PrePostSet)]
         """
         
         if sections == None:
-            sections = [self._maildb.all()]
+            sections = [('All posts', self._maildb.all())]
+
+        def write_toc():
+            f.write("<div><ul>")
+            for i, (sectiontitle, section) in enumerate(sections):
+                f.write('<li><a href="#%d">%s</a></li>\n' % (i, sectiontitle))
+            f.write("</ul></div>\n")
 
         def write_thread(heapid, indent):
             """Writes a post and all its followers into the output."""
@@ -1447,14 +1462,13 @@ class Generator(object):
             roots = [ self._maildb.post(heapid) for heapid in threadst[None] ]
             threads = [ self._maildb.postset(root).expf() for root in roots ]
             first = True
-            for section in sections:
-                if first:
-                    first = False
-                else:
-                    f.write('<hr>\n')
+            write_toc()
+            for i, (sectiontitle, section) in enumerate(sections):
+                f.write(html_section_begin % (i, sectiontitle))
                 for root, thread in zip(roots, threads):
                     if not (thread & section).is_set([]):
                         write_thread(root.heapid(), 1)
+                f.write(html_section_end)
             f.write(html_footer)
         log('HTML generated.')
 
