@@ -4,8 +4,7 @@ Implementation
 * Tests:
     * heapmanip.Post.{set_tags, remove_tag}
     * heapia
-* Generator: options about the fields to generate (date, tags, etc.)
-* ia: enable editing a mail with a text editor from the interactive shell
+    * Post.load
 * Implementing tags and flags as frozensets
 * Tags dependencies, TagInfo class
 * devnotes.txt: developer notes
@@ -13,11 +12,6 @@ Implementation
     * performance improvement possibilities (iterators)
     * using wrappers to protect e.g. MailDB.posts()
     * terminology: previous, next, cause, consequence
-* Generator: * instead of the same subjects; same with tags
-    Attis: Something [heap]
-      Josh: * [heap] [heap-conventions]
-        Csabi: Something else [heap] [heap-conventions]
-          Josh: * [heap] [heap-conventions]
 * Generator: different colours for the posts that are not in a section but
   their thread is
 * Flag: New-thead flag to indicate that the email begins a new thread.

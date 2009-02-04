@@ -31,6 +31,7 @@ Example: generate the index HTML and exit:
 """
 
 import sys
+import subprocess
 import heapmanip
 
 def h():
@@ -44,12 +45,17 @@ def x():
     options['maildb'].save()
     sys.exit()
 
+def edit_default(file):
+    subprocess.call(['gvim', '-f', file])
+    return True
+
 options = {'auto_gen_var': True,
            'auto_save': True,
            'auto_threadstruct': True,
            'heapcustom': 'heapcustom',
            'callbacks': {'sections': lambda maildb: None,
-                         'gen_index_html': None}}
+                         'gen_index_html': None,
+                         'edit': edit_default}}
 
 #    Some commands automatically re-generate the index.html when they run
 #    successfully, if this option is True.
@@ -305,6 +311,23 @@ def j(pp1, pp2):
         auto()
     else:
         log('Posts not found.')
+
+def e(pp):
+    """Edits a mail.
+
+    Arguments:
+    pp --
+        Type: PrePost"""
+
+    p = options['maildb'].post(pp)
+    if p != None:
+        options['maildb'].save()
+        result = options['callbacks']['edit'](p.postfilename())
+        if result == True:
+            p.load()
+            auto()
+    else:
+        log('Post not found.')
 
 def load_custom():
     """Loads the custom function when possible."""

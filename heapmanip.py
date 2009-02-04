@@ -463,6 +463,12 @@ class Post(object):
                 self.write(f)
                 self._modified = False
 
+    def load(self):
+        with open(self.postfilename(), 'r') as f:
+            self._header, self._body = Post.parse(f)
+        self._modified = False
+        self._maildb.touch()
+
     # Filenames
 
     def postfilename(self):
