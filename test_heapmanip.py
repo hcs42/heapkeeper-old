@@ -1099,18 +1099,18 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 <span class="sectiontitle" id=0>All posts</span>
 <div class="mail">
 <a href="1.html">
-<span class="tags">[t1, t2]</span>
-<span class="subject"></span>
-<span class="index">&lt;1&gt;</span>
 <span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[t1, t2]</span>
+<span class="index">&lt;1&gt;</span>
 <span class="timestamp">&nbsp; ()</span>
 </a>
 <div class="mail">
 <a href="x.html">
-<span class="tags">[]</span>
-<span class="subject"></span>
-<span class="index">&lt;x&gt;</span>
 <span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;x&gt;</span>
 <span class="timestamp">&nbsp; ()</span>
 </a>
 </div>
@@ -1148,36 +1148,36 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 <span class="sectiontitle" id=0>Sec1</span>
 <div class="mail">
 <a href="0.html">
-<span class="tags">[]</span>
-<span class="subject"></span>
-<span class="index">&lt;0&gt;</span>
 <span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;0&gt;</span>
 <span class="timestamp">&nbsp; ()</span>
 </a>
 <div class="mail">
 <a href="1.html">
-<span class="tags">[]</span>
-<span class="subject"></span>
-<span class="index">&lt;1&gt;</span>
 <span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;1&gt;</span>
 <span class="timestamp">&nbsp; ()</span>
 </a>
 <div class="mail">
 <a href="2.html">
-<span class="tags">[]</span>
-<span class="subject"></span>
-<span class="index">&lt;2&gt;</span>
 <span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;2&gt;</span>
 <span class="timestamp">&nbsp; ()</span>
 </a>
 </div>
 </div>
 <div class="mail">
 <a href="3.html">
-<span class="tags">[]</span>
-<span class="subject"></span>
-<span class="index">&lt;3&gt;</span>
 <span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;3&gt;</span>
 <span class="timestamp">&nbsp; ()</span>
 </a>
 </div>
@@ -1187,10 +1187,10 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 <span class="sectiontitle" id=1>Sec2</span>
 <div class="mail">
 <a href="4.html">
-<span class="tags">[]</span>
-<span class="subject"></span>
-<span class="index">&lt;4&gt;</span>
 <span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;4&gt;</span>
 <span class="timestamp">&nbsp; ()</span>
 </a>
 </div>
