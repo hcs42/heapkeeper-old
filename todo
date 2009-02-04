@@ -4,7 +4,6 @@ Implementation
 * Tests:
     * heapmanip.Post.{set_tags, remove_tag}
     * heapia
-* Generator: names for sections
 * Generator: options about the fields to generate (date, tags, etc.)
 * ia: enable editing a mail with a text editor from the interactive shell
 * Implementing tags and flags as frozensets

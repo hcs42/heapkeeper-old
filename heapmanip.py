@@ -1418,7 +1418,7 @@ class Generator(object):
                 f.write('</pre>')
                 f.write(html_footer)
 
-    def index_html(self, sections=None):
+    def index_html(self, sections=None, date_on=True):
         """Creates the index HTML file.
         
         The created file is named 'index.html' and is placed in the html_dir
@@ -1442,7 +1442,10 @@ class Generator(object):
             if heapid != None:
                 post = self._maildb.heapid_to_post[heapid]
                 author = re.sub('<.*?>','', post.author())
-                date_str = ("&nbsp; (%s)" % post.date_str()) 
+                if date_on:
+                    date_str = ("&nbsp; (%s)" % post.date_str()) 
+                else:
+                    date_str = ''
                 f.write(html_one_mail % (post.htmlfilebasename(), \
                                          ', '.join(post.tags()), \
                                          quote_html(post.subject()), \

@@ -48,7 +48,8 @@ options = {'auto_gen_var': True,
            'auto_save': True,
            'auto_threadstruct': True,
            'heapcustom': 'heapcustom',
-           'callbacks': {'sections': lambda maildb: None}}
+           'callbacks': {'sections': lambda maildb: None,
+                         'gen_index_html': None}}
 
 #    Some commands automatically re-generate the index.html when they run
 #    successfully, if this option is True.
@@ -94,9 +95,12 @@ def auto():
 
 def gen_index_html():
     """Generates index.html."""
-    sections = options['callbacks']['sections'](options['maildb'])
-    g = heapmanip.Generator(options['maildb'])
-    g.index_html(sections)
+    if options['callbacks']['gen_index_html'] != None:
+        sections = options['callbacks']['gen_index_html'](options['maildb'])
+    else:
+        sections = options['callbacks']['sections'](options['maildb'])
+        g = heapmanip.Generator(options['maildb'])
+        g.index_html(sections)
 
 def gen_post_html():
     """Generates the html files for the posts."""
