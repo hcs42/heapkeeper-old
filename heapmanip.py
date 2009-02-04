@@ -1418,7 +1418,8 @@ class Generator(object):
                 f.write('</pre>')
                 f.write(html_footer)
 
-    def index_html(self, sections=None, date_on=True):
+    def index_html(self, sections=None, write_toc=True, write_date=True,
+                   shortsubject=False, shorttags=False):
         """Creates the index HTML file.
         
         The created file is named 'index.html' and is placed in the html_dir
@@ -1431,30 +1432,49 @@ class Generator(object):
         if sections == None:
             sections = [('All posts', self._maildb.all())]
 
-        def write_toc():
+        def write_toc_fun():
             f.write("<div><ul>")
             for i, (sectiontitle, section) in enumerate(sections):
                 f.write('<li><a href="#%d">%s</a></li>\n' % (i, sectiontitle))
             f.write("</ul></div>\n")
 
-        def write_thread(heapid, indent):
+        def write_thread(heapid, indent, parentsubject, parenttags):
             """Writes a post and all its followers into the output."""
+
             if heapid != None:
+
                 post = self._maildb.heapid_to_post[heapid]
                 author = re.sub('<.*?>','', post.author())
-                if date_on:
+                if write_date:
                     date_str = ("&nbsp; (%s)" % post.date_str()) 
                 else:
                     date_str = ''
+
+                real_subject = post.subject()
+                if shortsubject and parentsubject == real_subject:
+                    subject = '*'
+                else:
+                    subject = quote_html(real_subject)
+
+                real_tags = post.tags()
+                if shorttags and parenttags == real_tags:
+                    tags = '*'
+                else:
+                    tags = ', '.join(post.tags())
+
                 f.write(html_one_mail % (post.htmlfilebasename(), \
-                                         ', '.join(post.tags()), \
-                                         quote_html(post.subject()), \
+                                         tags, \
+                                         subject, \
                                          post.heapid(), \
                                          quote_html(author), \
                                          date_str))
+            else:
+                real_subject = None
+                real_tags = None
+
             if heapid in threadst:
                 for heapid2 in threadst[heapid]:
-                    write_thread(heapid2, indent+1)
+                    write_thread(heapid2, indent+1, real_subject, real_tags)
             if heapid != None:
                 f.write("</div>\n")
 
@@ -1465,12 +1485,13 @@ class Generator(object):
             roots = [ self._maildb.post(heapid) for heapid in threadst[None] ]
             threads = [ self._maildb.postset(root).expf() for root in roots ]
             first = True
-            write_toc()
+            if write_toc:
+                write_toc_fun()
             for i, (sectiontitle, section) in enumerate(sections):
                 f.write(html_section_begin % (i, sectiontitle))
                 for root, thread in zip(roots, threads):
                     if not (thread & section).is_set([]):
-                        write_thread(root.heapid(), 1)
+                        write_thread(root.heapid(), 1, None, None)
                 f.write(html_section_end)
             f.write(html_footer)
         log('HTML generated.')
