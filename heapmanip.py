@@ -1390,7 +1390,7 @@ html_footer = """\
 
 html_section_begin = """\
 <div class="section">
-<span class="sectiontitle" id=%d>%s</span>
+<span class="sectiontitle" id=%s>%s</span>
 """
 
 html_section_end = """\
@@ -1472,22 +1472,32 @@ class Generator(object):
 
         def write_toc_fun():
             f.write("<div><ul>")
+            if self._maildb.has_cycle():
+                f.write('<li><a href="#posts_in_cycles">' +
+                        'Posts in cycles</a></li>\n')
             for i, (sectiontitle, section) in enumerate(sections):
                 f.write('<li><a href="#%d">%s</a></li>\n' % (i, sectiontitle))
             f.write("</ul></div>\n")
-
-        def write_thread(heapid, indent, parentsubject, parenttags):
-            """Writes a post and all its followers into the output."""
-
-            if heapid != None:
-
-                post = self._maildb.heapid_to_post[heapid]
+        
+        def write_post(post, subject, tags):
                 author = re.sub('<.*?>','', post.author())
                 if write_date:
                     date_str = ("&nbsp; (%s)" % post.date_str()) 
                 else:
                     date_str = ''
 
+                f.write(html_one_mail % (post.htmlfilebasename(),
+                                         quote_html(author),
+                                         subject,
+                                         tags,
+                                         post.heapid(),
+                                         date_str))
+
+        def write_thread(heapid, indent, parentsubject, parenttags):
+            """Writes a post and all its followers into the output."""
+
+            if heapid != None:
+                post = self._maildb.heapid_to_post[heapid]
                 real_subject = post.subject()
                 if shortsubject and parentsubject == real_subject:
                     subject = '*'
@@ -1500,14 +1510,8 @@ class Generator(object):
                 else:
                     tags = ', '.join(post.tags())
 
-                f.write(html_one_mail % (
-                                         post.htmlfilebasename(),
-                                         quote_html(author),
-                                         subject,
-                                         tags,
-                                         post.heapid(),
-                                         date_str,
-                                         ))
+                write_post(post, subject, tags)
+
             else:
                 real_subject = None
                 real_tags = None
@@ -1528,10 +1532,19 @@ class Generator(object):
             if write_toc:
                 write_toc_fun()
             for i, (sectiontitle, section) in enumerate(sections):
-                f.write(html_section_begin % (i, sectiontitle))
+                f.write(html_section_begin % (str(i), sectiontitle))
                 for root, thread in zip(roots, threads):
                     if not (thread & section).is_set([]):
                         write_thread(root.heapid(), 1, None, None)
+                f.write(html_section_end)
+            if self._maildb.has_cycle():
+                f.write(html_section_begin % ('posts_in_cycles',
+                                              'Posts in cycles'))
+                for post in self._maildb.cycles():
+                    subject = quote_html(post.subject())
+                    tags = ', '.join(post.tags())
+                    write_post(post, subject, tags)
+                    f.write("</div>\n")
                 f.write(html_section_end)
             f.write(html_footer)
         log('HTML generated.')

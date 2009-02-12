@@ -1187,7 +1187,6 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         self._maildb = self.createMailDB()
         maildb = self._maildb
         self.create_threadst(skipdates=True)
-        p = self._posts
         g = Generator(maildb)
 
         g.index_html([('Sec1', ['1']), ('Sec2', ['4'])])
@@ -1251,6 +1250,89 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 <span class="subject"></span>
 <span class="tags">[]</span>
 <span class="index">&lt;4&gt;</span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+</div>
+</div>
+  </body>
+</html>
+'''
+        self.assertEquals(self.indexHtml(), s)
+
+    def testCycles(self):
+        """Tests the MailDB with cycles."""
+
+        self._maildb = self.createMailDB()
+        maildb = self._maildb
+        self.create_threadst(skipdates=True)
+        maildb.post('1').set_inreplyto('2')
+        g = Generator(maildb)
+
+        g.index_html([('Sec1', ['0']), ('Sec2', ['4'])])
+        s = '''\
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>Heap Index</title>
+    <link rel=stylesheet href="heapindex.css" type="text/css">
+  </head>
+  <body>
+    <h1 id="header">UMS Heap</h1>
+
+<div><ul><li><a href="#posts_in_cycles">Posts in cycles</a></li>
+<li><a href="#0">Sec1</a></li>
+<li><a href="#1">Sec2</a></li>
+</ul></div>
+<div class="section">
+<span class="sectiontitle" id=0>Sec1</span>
+<div class="mail">
+<a href="0.html">
+<span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;0&gt;</span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+<div class="mail">
+<a href="3.html">
+<span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;3&gt;</span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+</div>
+</div>
+</div>
+<div class="section">
+<span class="sectiontitle" id=1>Sec2</span>
+<div class="mail">
+<a href="4.html">
+<span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;4&gt;</span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+</div>
+</div>
+<div class="section">
+<span class="sectiontitle" id=posts_in_cycles>Posts in cycles</span>
+<div class="mail">
+<a href="2.html">
+<span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;2&gt;</span>
+<span class="timestamp">&nbsp; ()</span>
+</a>
+</div>
+<div class="mail">
+<a href="1.html">
+<span class="author"></span>
+<span class="subject"></span>
+<span class="tags">[]</span>
+<span class="index">&lt;1&gt;</span>
 <span class="timestamp">&nbsp; ()</span>
 </a>
 </div>
