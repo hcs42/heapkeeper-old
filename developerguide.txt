@@ -1,0 +1,44 @@
+Heapmanipulator Developer Guide
+-------------------------------
+
+This file is a high-level introduction to the Heapmanipulator program (or
+Manipulator for short) with the developer's eye. More specific details can be
+found in the documentation inside the Python code. Due to Python's help system,
+the documentation can be accessed without opening the source code.
+
+
+Files
+-----
+
+There are text files that has some information about the Manipulator:
+    README: This is for new users.
+    todo.txt: Our feature and bug tracking "system".
+    userguide.txt: User Guide.
+    developerguide.txt: Developer Guide.
+
+The Manipulator consists of Python modules.
+
+    heapmanip: The database and business logic of the Manipulator. It
+        implements Post, MailDB, PostSet and Generator, which are the most
+        important classes of the program.
+    heapia: The interactive interface of the Manipulator.
+
+We use unit tests to test the Manipulator's code. Each module has a module that
+tests it.
+
+    test_heapmanip: Tests the heapmanip module.
+    test_heapia: Tests the heapia module.
+    test: Tests all modules.
+
+There is also a CSS file for the generated HTML files:
+
+    heapindex.css
+
+
+Help
+----
+
+For getting help on testing, type:
+
+    $ python test.py --help
+

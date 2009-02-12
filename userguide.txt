@@ -1,0 +1,14 @@
+Heapmanipulator User Guide
+--------------------------
+
+Heap is a data structure that consists of posts. It is primarily represented in
+mailfiles, but HTML files can be generated from them. The posts have fields,
+e.g. author, subject, tags, flags, a field that describes the previous post.
+The generated HTML can show the posts in a threaded structure.
+
+The Heapmanipulator is a program written is Python that can manipulate this
+data structure: e.g. it can download new posts from an IMAP server, modify the
+posts, and generate HTML files.
+
+The Heapmanipulator consists of several modules that are described in the
+Developer guide.
