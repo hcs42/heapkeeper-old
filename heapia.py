@@ -386,10 +386,11 @@ def e(pp):
         log('Post not found.')
 
 def dl(from_=0):
-    server = Server(maildb(), options['config'])
+    server = heapmanip.Server(maildb(), options['config'])
     server.connect()
     server.download_new(int(from_))
     server.close()
+    auto()
 
 def load_custom():
     """Loads the custom function when possible."""
@@ -414,7 +415,7 @@ def load_custom():
 def read_maildb():
     config = ConfigParser.ConfigParser()
     config.read('heap.cfg')
-    return config, heapmanip.MailDB.from_config(config)
+    return heapmanip.MailDB.from_config(config), config
 
 def main(args):
     options['maildb'], options['config'] = read_maildb()
