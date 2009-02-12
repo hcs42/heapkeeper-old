@@ -22,7 +22,8 @@ sSr(pps, subj)     - set subject recursively
 cS(pps, subj)      - capitalize the subject
 cSr(pps, subj)     - capitalize the subject recursively
 j(pp, pp)          - join two threads
-e(pp)              - 
+e(pp)              - edit the post as a file
+dl()               - download new mail
 
 maildb()           - the mail database object
 set_option(option, value) - setting an option
@@ -80,6 +81,7 @@ Example: generate the index HTML (and exit):
 import sys
 import subprocess
 import heapmanip
+import ConfigParser
 
 def h():
     print __doc__
@@ -97,6 +99,7 @@ def edit_default(file):
     return True
 
 options = {'maildb': None,
+           'config': None,
            'auto_gen_var': True,
            'auto_save': True,
            'auto_threadstruct': True,
@@ -382,6 +385,12 @@ def e(pp):
     else:
         log('Post not found.')
 
+def dl(from_=0):
+    server = Server(maildb(), options['config'])
+    server.connect()
+    server.download_new(int(from_))
+    server.close()
+
 def load_custom():
     """Loads the custom function when possible."""
 
@@ -402,8 +411,13 @@ def load_custom():
             heapmanip.log(funname, \
                           ' custom function: not found, using the default.')
 
+def read_maildb():
+    config = ConfigParser.ConfigParser()
+    config.read('heap.cfg')
+    return config, heapmanip.MailDB.from_config(config)
+
 def main(args):
-    options['maildb'] = heapmanip.read_maildb()
+    options['maildb'], options['config'] = read_maildb()
     load_custom()
     for arg in args:
         eval(arg)

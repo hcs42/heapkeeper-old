@@ -15,7 +15,6 @@ import base64
 import quopri
 import email.utils
 import sys
-import ConfigParser
 import time
 import StringIO
 import datetime
