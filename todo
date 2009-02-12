@@ -14,6 +14,8 @@ Implementation
     * heapmanip.Post.{set_tags, remove_tag}
     * heapia
     * Post.load
+* Correct problem: order of posts in cycles in HTML is nondeterministic
+  (the test was put into comment)
 * putting our Heap over ftp
 * should the tags be case insensitive?
 * Implementing tags and flags as frozensets
