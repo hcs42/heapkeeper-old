@@ -129,7 +129,7 @@ Flag: flag2
 post1_output = post_output + '\n'
 post4_output = post_output + 'Hi\n'
 
-class TestPost(unittest.TestCase):
+class TestPost1(unittest.TestCase):
 
     """Tests the Post class."""
 
@@ -331,7 +331,7 @@ class TestPost2(unittest.TestCase):
         shutil.rmtree(self._dir)
 
 
-class TestMailDB(unittest.TestCase, MailDBHandler):
+class TestMailDB1(unittest.TestCase, MailDBHandler):
 
     """Tests the MailDB class (and its cooperation with the Post class)."""
 
@@ -339,9 +339,6 @@ class TestMailDB(unittest.TestCase, MailDBHandler):
         self._dir = tempfile.mkdtemp()
         self._postfile_dir = os.path.join(self._dir, 'mail')
         self._html_dir = os.path.join(self._dir, 'html')
-
-    def createMailDB(self):
-        return MailDB(self._postfile_dir, self._html_dir)
 
     def createDirs(self):
         os.mkdir(self._postfile_dir)
@@ -438,55 +435,43 @@ html=%s
         self.assertEquals(set([p2, p3]), set(maildb.posts()))
         self.assertEquals(set([p1, p2, p3]), set(maildb.real_posts()))
 
-    def testPrev(self):
-        """Tests the 'prev' method."""
+    def testThreadstructHeapid(self):
+        """Testing that the thread structure also works when the In-Reply-To
+        is defined by a heapid.
+        
+        If the same messid and heapid exist, the former has priority."""
 
+        # 1 <- 2
+        # 3
+        # 4 <- 5
+        self.createDirs()
         maildb = self.createMailDB()
-        self._maildb = maildb
+        maildb.add_new_post(Post.from_str(''))               # #0
+        maildb.add_new_post(Post.from_str('In-Reply-To: 0')) # #1
+        maildb.add_new_post(Post.from_str(''))               # #2
+        maildb.add_new_post(Post.from_str('Message-Id: 2'))  # #3
+        maildb.add_new_post(Post.from_str('In-Reply-To: 2')) # #4
+
+        ts = {None: ['0', '2', '3'],
+              '0': ['1'],
+              '3': ['4']}
+        self.assertEquals(ts, maildb.threadstruct())
+
+    def tearDown(self):
+        shutil.rmtree(self._dir)
+
+
+class TestMailDB2(unittest.TestCase, MailDBHandler):
+
+    def setUp(self):
+        self.setUpDirs()
+        self._maildb = self.createMailDB()
         self.create_threadst()
-
-        def test_prev(post_heapid, prev_heapid):
-            if prev_heapid != None:
-                prev_post = maildb.post(prev_heapid)
-            else:
-                prev_post = None
-            self.assertEquals(maildb.prev(maildb.post(post_heapid)), \
-                              prev_post)
-
-        test_prev('0', None)
-        test_prev('1', '0')
-        test_prev('2', '1')
-        test_prev('3', '0')
-        test_prev('4', None)
-
-    def testRoot(self):
-        """Tests the 'prev' method."""
-
-        maildb = self.createMailDB()
-        self._maildb = maildb
-        self.create_threadst()
-
-        def test_root(post_heapid, prev_heapid):
-            if prev_heapid != None:
-                prev_post = maildb.post(prev_heapid)
-            else:
-                prev_post = None
-            self.assertEquals(maildb.root(maildb.post(post_heapid)), \
-                              prev_post)
-
-        test_root('0', '0')
-        test_root('1', '0')
-        test_root('2', '0')
-        test_root('3', '0')
-        test_root('4', '4')
 
     def testThreadstruct(self):
         """Tests the thread structure computing method."""
 
-        maildb = self.createMailDB()
-        self._maildb = maildb
-        self.create_threadst()
-
+        maildb = self._maildb
         # Testing MailDB.threadstruct
 
         ts = {None: ['0', '4'],
@@ -520,51 +505,83 @@ html=%s
 
     def testIterThread(self):
         """Tests the MailDB.iter_thread method."""
-        maildb = self.createMailDB()
-        self._maildb = maildb
-        self.create_threadst()
-        p = [ maildb.post(str(i)) for i in range(5) ]
+        maildb = self._maildb
+        p = self._posts
 
-        def test_iter(post, result):
+        def test(post, result):
             self.assertEquals(result, \
                               [ p.heapid() for p in maildb.iter_thread(post)])
 
-        test_iter(None, ['0', '1', '2', '3', '4'])
-        test_iter(p[0], ['0', '1', '2', '3'])
-        test_iter(p[1], ['1', '2'])
-        test_iter(p[2], ['2'])
-        test_iter(p[3], ['3'])
-        test_iter(p[4], ['4'])
+        test(None, ['0', '1', '2', '3', '4'])
+        test(p[0], ['0', '1', '2', '3'])
+        test(p[1], ['1', '2'])
+        test(p[2], ['2'])
+        test(p[3], ['3'])
+        test(p[4], ['4'])
 
         # if the post is not in the maildb, AssertionError will be raised
         def f():
-            test_iter(Post.from_str(''), [])
+            test(Post.from_str(''), [])
         self.assertRaises(AssertionError, f)
     
-    def testThreadstructHeapid(self):
-        """Testing that the thread structure also works when the In-Reply-To
-        is defined by a heapid.
-        
-        If the same messid and heapid exist, the former has priority."""
+    def testPrev(self):
+        """Tests the 'prev' method."""
+        maildb = self._maildb
 
-        # 1 <- 2
-        # 3
-        # 4 <- 5
-        self.createDirs()
-        maildb = self.createMailDB()
-        maildb.add_new_post(Post.from_str(''))               # #0
-        maildb.add_new_post(Post.from_str('In-Reply-To: 0')) # #1
-        maildb.add_new_post(Post.from_str(''))               # #2
-        maildb.add_new_post(Post.from_str('Message-Id: 2'))  # #3
-        maildb.add_new_post(Post.from_str('In-Reply-To: 2')) # #4
+        def test(post_heapid, prev_heapid):
+            if prev_heapid != None:
+                prev_post = maildb.post(prev_heapid)
+            else:
+                prev_post = None
+            self.assertEquals(maildb.prev(maildb.post(post_heapid)), \
+                              prev_post)
 
-        ts = {None: ['0', '2', '3'],
-              '0': ['1'],
-              '3': ['4']}
-        self.assertEquals(ts, maildb.threadstruct())
+        test('0', None)
+        test('1', '0')
+        test('2', '1')
+        test('3', '0')
+        test('4', None)
+
+    def testRoot(self):
+        """Tests the 'root' method."""
+        maildb = self._maildb
+
+        def test(post_heapid, prev_heapid):
+            if prev_heapid != None:
+                prev_post = maildb.post(prev_heapid)
+            else:
+                prev_post = None
+            self.assertEquals(maildb.root(maildb.post(post_heapid)), \
+                              prev_post)
+
+        test('0', '0')
+        test('1', '0')
+        test('2', '0')
+        test('3', '0')
+        test('4', '4')
+
+    def threadstructCycle_general(self, inreplytos, threadstruct, cycles):
+        """The general function that tests the cycle detection of the thread
+        structure computing method."""
+
+        maildb = self._maildb
+        p = self._posts
+        for child, parent in inreplytos.items():
+            maildb.post(child).set_inreplyto(parent)
+        self.assertEquals(threadstruct, maildb.threadstruct())
+        self.assert_(maildb.cycles().is_set(cycles))
+
+    def testThreadstructCycle1(self):
+
+        self.threadstructCycle_general({'1': '2'},
+                                  {None: ['0', '4'],
+                                        '0': ['3'],
+                                        '1': ['2'],
+                                        '2': ['1']},
+                                  ['1', '2'])
 
     def tearDown(self):
-        shutil.rmtree(self._dir)
+        self.tearDownDirs()
 
 
 class TestPostSet(unittest.TestCase, MailDBHandler):
