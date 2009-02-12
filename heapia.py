@@ -22,7 +22,10 @@ sSr(pps, subj)     - set subject recursively
 cS(pps, subj)      - capitalize the subject
 cSr(pps, subj)     - capitalize the subject recursively
 j(p, p)            - join two threads
-set_auto_gen(bool) - setting autogeneration
+
+maildb()           - the mail database object
+set_option(option, value) - setting an option
+get_option(option) - the value of an option
 
 Arguments will be evaluated as commands.
 Example: generate the index HTML and exit:
@@ -49,7 +52,8 @@ def edit_default(file):
     subprocess.call(['gvim', '-f', file])
     return True
 
-options = {'auto_gen_var': True,
+options = {'maildb': None,
+           'auto_gen_var': True,
            'auto_save': True,
            'auto_threadstruct': True,
            'heapcustom': 'heapcustom',
@@ -82,6 +86,8 @@ def set_option(option, value):
         Type: something
     """
 
+    if option not in options:
+        raise heapmanip.HeapException, 'No such option: "%s"' % (option,)
     options[option] = value
 
 def set_callback(callbackname, callbackfun):
@@ -89,28 +95,31 @@ def set_callback(callbackname, callbackfun):
 
     options['callbacks'][callbackname] = callbackfun
 
+def maildb():
+    return options['maildb']
+
 def auto():
     """(Re-)generates index.html if the auto option is true."""
     if options['auto_gen_var']:
         gen_index_html()
         sys.stdout.flush()
     if options['auto_save']:
-        options['maildb'].save()
+        maildb().save()
     if options['auto_threadstruct']:
-        options['maildb'].threadstruct()
+        maildb().threadstruct()
 
 def gen_index_html():
     """Generates index.html."""
     if options['callbacks']['gen_index_html'] != None:
-        sections = options['callbacks']['gen_index_html'](options['maildb'])
+        sections = options['callbacks']['gen_index_html'](maildb())
     else:
-        sections = options['callbacks']['sections'](options['maildb'])
-        g = heapmanip.Generator(options['maildb'])
+        sections = options['callbacks']['sections'](maildb())
+        g = heapmanip.Generator(maildb())
         g.index_html(sections)
 
 def gen_post_html():
     """Generates the html files for the posts."""
-    g = heapmanip.Generator(options['maildb'])
+    g = heapmanip.Generator(maildb())
     g.posts_to_html()
 
 def g():
@@ -121,11 +130,11 @@ def ga():
     gen_post_html()
 
 def gs():
-    options['maildb'].save()
+    maildb().save()
     gen_index_html()
 
 def ps(pps):
-    return options['maildb'].postset(pps)
+    return maildb().postset(pps)
 
 def perform_operation(pps, operation):
     posts = ps(pps)
@@ -172,7 +181,7 @@ def pt(pps):
             def add_tags(p):
                 for tag in post.tags():
                     p.add_tag(tag)
-            options['maildb'].postset(post).expf().forall(add_tags)
+            maildb().postset(post).expf().forall(add_tags)
     perform_operation(pps, operation)
 
 def at(pps, tags):
@@ -234,7 +243,7 @@ def pS(pps):
 
     def operation(posts):
         for post in posts:
-            options['maildb'].postset(post).expf().set_subject(post.subject())
+            maildb().postset(post).expf().set_subject(post.subject())
     perform_operation(pps, operation)
 
 def sS(pps, subject):
@@ -304,8 +313,8 @@ def j(pp1, pp2):
         Type: PrePost
     """
 
-    p1 = options['maildb'].post(pp1)
-    p2 = options['maildb'].post(pp2)
+    p1 = maildb().post(pp1)
+    p2 = maildb().post(pp2)
     if p1 != None and p2 != None:
         p2.set_inreplyto(p1.heapid())
         auto()
@@ -319,9 +328,9 @@ def e(pp):
     pp --
         Type: PrePost"""
 
-    p = options['maildb'].post(pp)
+    p = maildb().post(pp)
     if p != None:
-        options['maildb'].save()
+        maildb().save()
         result = options['callbacks']['edit'](p.postfilename())
         if result == True:
             p.load()
