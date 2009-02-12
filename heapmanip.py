@@ -577,9 +577,11 @@ class MailDB(object):
     _all -- All posts in a PostSet. It can be asked with all().
         Type: PostSet.
     _threadstruct -- Assigns the posts to a p post that are replies to p.
+        Posts that are not replies to any existing post will be assigned to
+        None.
         It can be asked with threadstruct().
         If it is None, then it should be recalculated when needed.
-        Type: dict(heapid, [heapid])
+        Type: dict(None | heapid, [heapid])
     """
 
     # Constructors

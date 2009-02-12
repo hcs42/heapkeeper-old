@@ -562,7 +562,19 @@ class TestMailDB2(unittest.TestCase, MailDBHandler):
 
     def threadstructCycle_general(self, inreplytos, threadstruct, cycles):
         """The general function that tests the cycle detection of the thread
-        structure computing method."""
+        structure computing method.
+
+        It modifies the mail database according to the inreplytos argument,
+        then checks that the thread structture and the cycles of the modified
+        database are as expected.
+        
+        Arguments:
+        inreplytos: Contains child->parent pairs, which indicate that the child
+            post should be modified as if it were a reply to parent.
+            Type: dict(heapid, heapid)
+        threadstruct: The excepted thread structure.
+            Type: dict(None | heapid, [heapid])
+        """
 
         maildb = self._maildb
         p = self._posts
@@ -572,13 +584,38 @@ class TestMailDB2(unittest.TestCase, MailDBHandler):
         self.assert_(maildb.cycles().is_set(cycles))
 
     def testThreadstructCycle1(self):
+        self.threadstructCycle_general(
+            {},
+            {None: ['0', '4'],
+             '0': ['1', '3'],
+             '1': ['2']},
+            [])
 
-        self.threadstructCycle_general({'1': '2'},
-                                  {None: ['0', '4'],
-                                        '0': ['3'],
-                                        '1': ['2'],
-                                        '2': ['1']},
-                                  ['1', '2'])
+    def testThreadstructCycle2(self):
+        self.threadstructCycle_general(
+            {'1': '2'},
+            {None: ['0', '4'],
+                  '0': ['3'],
+                  '1': ['2'],
+                  '2': ['1']},
+            ['1', '2'])
+
+    def testThreadstructCycle3(self):
+        self.threadstructCycle_general(
+            {'0': '2'},
+            {None: ['4'],
+             '0': ['1', '3'],
+             '1': ['2'],
+             '2': ['0']},
+            ['0', '1', '2', '3'])
+
+    def testThreadstructCycle4(self):
+        self.threadstructCycle_general(
+            {'0': '0'},
+            {None: ['4'],
+             '0': ['0', '1', '3'],
+             '1': ['2']},
+            ['0', '1', '2', '3'])
 
     def tearDown(self):
         self.tearDownDirs()
