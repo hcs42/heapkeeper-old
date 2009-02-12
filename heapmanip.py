@@ -573,15 +573,18 @@ class MailDB(object):
         heap id nor with any larger heapid.
         Type: int
     _posts -- All non-deleted posts.
-        Type: [Post()]
+        Type: None | [Post()]
     _all -- All posts in a PostSet. It can be asked with all().
-        Type: PostSet.
+        Type: None | PostSet.
     _threadstruct -- Assigns the posts to a p post that are replies to p.
         Posts that are not replies to any existing post will be assigned to
         None.
         It can be asked with threadstruct().
         If it is None, then it should be recalculated when needed.
-        Type: dict(None | heapid, [heapid])
+        Type: None | dict(None | heapid, [heapid])
+    _cycles -- Posts that are in a cycle in the thread structure.
+        These posts will not be iterated by the iter_thread function.
+        Type: None | PostSet
     """
 
     # Constructors
@@ -634,6 +637,7 @@ class MailDB(object):
         self._posts = None
         self._all = None
         self._threadstruct = None
+        self._cycles = None
 
     # Modifications
 
@@ -648,6 +652,7 @@ class MailDB(object):
         self._posts = None
         self._all = None
         self._threadstruct = None
+        self._cycles = None
 
     # Get-set functions
 
@@ -795,7 +800,7 @@ class MailDB(object):
         
         Warning: if the thread structure contains cycles, calling this
         function may result in an endless loop. Before calling this function,
-        the called should check that maildb.has_cycles() == False.
+        the called should check that maildb.has_cycle() == False.
         """
 
         assert(post in self.all())
@@ -863,16 +868,19 @@ class MailDB(object):
         Returns: PostSet
         """
 
-        postset = self.all().copy()
-        # A post is in a cycle <=> it cannot be accessed by iter_thread
-        for post in self.iter_thread(None):
-            postset.remove(post)
-        return postset
+        self._recalc_cycles()
+        return self._cycles
 
-    def has_cycles(self):
+    def has_cycle(self):
         """Returns whether there is a cycle in the thread structure."""
-
         return len(self.cycles()) != 0
+
+    def _recalc_cycles(self):
+        if self._cycles == None:
+            self._cycles = self.all().copy()
+            # A post is in a cycle <=> it cannot be accessed by iter_thread
+            for post in self.iter_thread(None):
+                self._cycles.remove(post)
 
     # Filenames
 

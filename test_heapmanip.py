@@ -585,9 +585,9 @@ class TestMailDB2(unittest.TestCase, MailDBHandler):
         self.assertEquals(threadstruct, maildb.threadstruct())
         self.assert_(maildb.cycles().is_set(cycles))
         if cycles == []:
-            self.assertFalse(maildb.has_cycles())
+            self.assertFalse(maildb.has_cycle())
         else:
-            self.assert_(maildb.has_cycles())
+            self.assert_(maildb.has_cycle())
 
     def testThreadstructCycle1(self):
         self.threadstructCycle_general(
