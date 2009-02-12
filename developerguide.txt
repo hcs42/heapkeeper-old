@@ -1,5 +1,4 @@
-Heapmanipulator Developer Guide
--------------------------------
+HEAPMANIPULATOR DEVELOPER GUIDE
 
 This file is a high-level introduction to the Heapmanipulator program (or
 Manipulator for short) with the developer's eye. More specific details can be
@@ -7,8 +6,7 @@ found in the documentation inside the Python code. Due to Python's help system,
 the documentation can be accessed without opening the source code.
 
 
-Files
------
+FILES
 
 There are text files that has some information about the Manipulator:
     README: This is for new users.
@@ -35,8 +33,7 @@ There is also a CSS file for the generated HTML files:
     heapindex.css
 
 
-Help
-----
+HELP
 
 For getting help on testing, type:
 

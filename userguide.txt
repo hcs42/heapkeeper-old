@@ -1,5 +1,5 @@
-Heapmanipulator User Guide
---------------------------
+HEAPMANIPULATOR USER GUIDE
+
 
 Heap is a data structure that consists of posts. It is primarily represented in
 mailfiles, but HTML files can be generated from them. The posts have fields,
@@ -11,4 +11,61 @@ data structure: e.g. it can download new posts from an IMAP server, modify the
 posts, and generate HTML files.
 
 The Heapmanipulator consists of several modules that are described in the
-Developer guide.
+Developer guide. The heapia module is the interactive interface of the
+Heapmanipulator, that's designed for end-users. The User Guide will explain how
+to use the Heapmanipulator via the heapia module.
+
+
+CONFIGURATION
+
+A config file has to be created in the current directory with the name
+"heap.cfg". An example config file:
+
+    [server]
+    host=imap.gmail.com
+    port=993
+    username=our.heap@gmail.com
+    password=examplepassword
+
+    [paths]
+    mail=mail   # directory of the mail database
+    html=html   # directory where the HTML should be generated
+
+    [nicknames]
+    1=Somebody somebody@gmail.com
+    2=Somebody_else somebody.else@else.com
+
+If the directory of the mail database does not exists, it will be created.
+
+
+USING THE INTERACTIVE INTERFACE
+
+After creating the configuration file, the interactive interface can be started
+by typing the following:
+
+    $ python -i heapia.py
+
+This will start a Python shell and define the interactive commands as global
+functions. You can type the h command (i.e. call the h function) to see the
+available commands:
+
+    >>> h()
+
+If you type a command, the index.html will be automatically regenerated.
+Most of the commands take a postset as their arguments. A postset can be
+given in many ways:
+- the heapid as a string (e.g. '42')
+- the heapid as an integer (e.g. 42)
+- the post as a Post object (e.g. maildb().post(42))
+- a list or set of objects of any previous type (e.g. [42, '43'])
+- a PostSet object (e.g. maildb().all())
+
+E.g. the j command joins two posts (so the first given post will be the parent
+of the second given post). To join posts with heapid 10 and 11:
+
+    >>> j(10, 11)
+
+
+CUSTOMIZING THE INTERFACE
+
+TODO
