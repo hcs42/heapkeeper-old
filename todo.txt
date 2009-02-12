@@ -5,11 +5,10 @@ Implementation
 * writing a User Guide, mainly about heapia
     * document options
     * tutorial
-    * heapcustom
 * Heapia changes:
     * create d() for downloading new mail
     * delete the heapcustom.section function
-* Rename todo to todo.txt
+* what's the best way to define own commands in the interactive shell?
 * Tests:
     * heapmanip.Post.{set_tags, remove_tag}
     * heapia

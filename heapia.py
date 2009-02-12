@@ -21,16 +21,60 @@ sS(pps, subj)      - set subject
 sSr(pps, subj)     - set subject recursively
 cS(pps, subj)      - capitalize the subject
 cSr(pps, subj)     - capitalize the subject recursively
-j(p, p)            - join two threads
+j(pp, pp)          - join two threads
+e(pp)              - 
 
 maildb()           - the mail database object
 set_option(option, value) - setting an option
 get_option(option) - the value of an option
 
-Arguments will be evaluated as commands.
-Example: generate the index HTML and exit:
-    $ python heapia.py 'g()' 'exit()'
+Argument types:
+    pp = prepost = int | str | Post
+    pps = prepostset = prepost | [prepost] | set(prepost) | PostSet
 
+Options:
+    maildb --- The mail database.
+        Type: MailDB
+    auto_gen_var --- If True, the index HTML will be regenerated after each
+        command.
+        Type: bool
+    auto_save --- If True, the mail database will be saved after each command.
+        Type: bool
+    auto_threadstruct --- If True, the threadstruct will be regenerated after
+        each command. It has only efficiency consequences, because later it
+        will be regenerated later anyway.
+        Type: bool
+    heapcustom --- The module that is used to customize the behaviour of the
+        commands.
+        Type: str
+    callbacks --- The callback functions. Don't change it manually, use the
+        customization feature (heapcustom). If you want to modify it directly,
+        use the set_callback function.
+
+Callback functions (that can be defined in heapcustom.py):
+
+    edit(file)
+        Called when the user wants to edit a file (with the e() command). It
+        should open some kind of text editor and return only when the editing
+        is finished.
+
+        Args:
+            file --- The name of the mail file to be edited.
+
+        Returns: whether the given file was modified and should be reread from
+        the disk.
+
+    gen_index_html(maildb):
+        It should generate the index.html file.
+
+        Args:
+            maildb --- MailDB
+
+        Returns: -
+
+Arguments given to the script will be evaluated as commands.
+Example: generate the index HTML (and exit):
+    $ python heapia.py 'g()'
 """
 
 import sys
