@@ -850,6 +850,18 @@ class MailDB(object):
             for post2 in self.iter_thread(self.post(ch_heapid), threadstruct):
                 yield post2
 
+    def cycles(self):
+        """Returns the posts that are in a cycle.
+        
+        Returns: PostSet
+        """
+
+        postset = self.all().copy()
+        # A post is in a cycle <=> it cannot be accessed by iter_thread
+        for post in self.iter_thread(None):
+            postset.remove(post)
+        return postset
+
     # Filenames
 
     def postfile_dir(self):

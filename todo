@@ -1,6 +1,7 @@
 Implementation
 --------------
 
+* warning to root() about cycles
 * threadstruct: circle detection
 * removing interface functions from heapmanip.py, modifying the documentation
 * writing a User Guide, mainly about heapia
