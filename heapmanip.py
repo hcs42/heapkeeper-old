@@ -1,30 +1,6 @@
 #!/usr/bin/python
 
-"""Manipulates the Heap data structure.
-
-Usage:
-
-    python heapmanip.py download_mail
-    python heapmanip.py generate_html
-    python heapmanip.py rename_thread _heapid_ _new_subject_
-
-A config file has to be created in the current directory with the name
-"heap.cfg". An example config file:
-
-    [server]
-    host=imap.gmail.com
-    port=993
-    username=our.heap@gmail.com
-    password=examplepassword
-
-    [paths]
-    mail=mail
-    html=html
-
-    [nicknames]
-    1=Somebody somebody@gmail.com
-    2=Somebody_else somebody.else@else.com
-"""
+"""Module that manipulates the Heap data structure."""
 
 from __future__ import with_statement
 from imaplib import IMAP4_SSL
@@ -1548,69 +1524,4 @@ class Generator(object):
                 f.write(html_section_end)
             f.write(html_footer)
         log('HTML generated.')
-
-
-##### Interface functions #####
-
-def read_config():
-    """Reads and returns the configuration object."""
-
-    config = ConfigParser.ConfigParser()
-    config.read('heap.cfg')
-    return config
-
-def read_maildb():
-    return MailDB.from_config(read_config())
-
-def download_mail(from_ = 0):
-    config = read_config()
-    maildb = MailDB.from_config(config)
-    server = Server(maildb, config)
-    server.connect()
-    server.download_new(int(from_))
-    server.close()
-    maildb.save()
-
-def generate_html():
-    maildb = read_maildb()
-    g = Generator(maildb)
-    g.index_html()
-    g.posts_to_html()
-
-def delete_mail(*heapids):
-    l = list(heapids)
-    maildb = read_maildb()
-    for heapid in l:
-        maildb.post(heapid).delete()
-    maildb.save()
-
-def change_nick(author_regex, new_author):
-    maildb = read_maildb()
-    author_regex = re.compile(author_regex)
-    for heapid in maildb.heapids():
-        mail = maildb.post(heapid)
-        if author_regex.search(mail.author()) != None:
-            mail.set_author(new_author)
-    maildb.save()
-
-def rename_thread_core(maildb, threadst, heapid, new_subject):
-    maildb.post(heapid).set_subject(new_subject)
-    if heapid in threadst:
-        for heapid2 in threadst[heapid]:
-            rename_thread_core(maildb, threadst, heapid2, new_subject)
-
-def rename_thread(heapid, new_subject):
-    """Renames the subject of a post and all of its following posts."""
-    maildb = read_maildb()
-    threadst = maildb.threadstruct()
-    rename_thread_core(maildb, threadst, heapid, new_subject)
-    maildb.save()
-
-if __name__ == '__main__':
-    argv = sys.argv[1:]
-    if argv == [] or argv[0] in ['-h', '-help', '--help']:
-        print __doc__
-    else:
-        funname = argv.pop(0)
-        getattr(sys.modules[__name__], funname)(*argv)
 
