@@ -574,6 +574,8 @@ class TestMailDB2(unittest.TestCase, MailDBHandler):
             Type: dict(heapid, heapid)
         threadstruct: The excepted thread structure.
             Type: dict(None | heapid, [heapid])
+        cycles: Posts that are in a cycle.
+            Type: [heapid]
         """
 
         maildb = self._maildb
@@ -582,6 +584,10 @@ class TestMailDB2(unittest.TestCase, MailDBHandler):
             maildb.post(child).set_inreplyto(parent)
         self.assertEquals(threadstruct, maildb.threadstruct())
         self.assert_(maildb.cycles().is_set(cycles))
+        if cycles == []:
+            self.assertFalse(maildb.has_cycles())
+        else:
+            self.assert_(maildb.has_cycles())
 
     def testThreadstructCycle1(self):
         self.threadstructCycle_general(

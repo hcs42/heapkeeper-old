@@ -791,7 +791,12 @@ class MailDB(object):
             return prev_post
 
     def root(self, post):
-        """Returns the root of the post."""
+        """Returns the root of the post.
+        
+        Warning: if the thread structure contains cycles, calling this
+        function may result in an endless loop. Before calling this function,
+        the called should check that maildb.has_cycles() == False.
+        """
 
         assert(post in self.all())
         while True:
@@ -853,7 +858,7 @@ class MailDB(object):
                 yield post2
 
     def cycles(self):
-        """Returns the posts that are in a cycle.
+        """Returns the posts that are in a cycle of the thread structure.
         
         Returns: PostSet
         """
@@ -863,6 +868,11 @@ class MailDB(object):
         for post in self.iter_thread(None):
             postset.remove(post)
         return postset
+
+    def has_cycles(self):
+        """Returns whether there is a cycle in the thread structure."""
+
+        return len(self.cycles()) != 0
 
     # Filenames
 
