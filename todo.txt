@@ -26,7 +26,7 @@ Implementation
 * Search
 * Generator: it should be able to determine the width of the generated HTML
   page (to discuss)
-* Improve CSS
+* Improve CSS, including heapindex.css into the customized heapindex.css
 * Cleanup functionality
 * A better system for touch: it should know what should be recalculated and
   what should not be

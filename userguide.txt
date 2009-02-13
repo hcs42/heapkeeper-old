@@ -36,6 +36,8 @@ A config file has to be created in the current directory with the name
     2=Somebody_else somebody.else@else.com
 
 If the directory of the mail database does not exists, it will be created.
+The html directory should contain heapindex.css; you can make for example a
+symbolic link to the heapindex.css in the heap directory.
 
 
 USING THE INTERACTIVE INTERFACE
