@@ -122,3 +122,12 @@ into the heapcustom.py:
     def edit_default(file):
         subprocess.call(['vim', file])
         return True
+
+
+USING THE INTERFACE WITHOUT PYTHON SHELL
+
+The interface can be also used without interaction. Just call the heapia module
+and give the commands as arguments. E.g. the following line typed into a Unix
+shell will download the new mail and regenerate the HTML files:
+
+    $ python heapia.py 'dl()' 'ga()'  # dl = download, ga = generate all HTML
