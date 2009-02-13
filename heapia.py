@@ -21,6 +21,8 @@ sS(pps, subj)      - set subject
 sSr(pps, subj)     - set subject recursively
 cS(pps, subj)      - capitalize the subject
 cSr(pps, subj)     - capitalize the subject recursively
+d(pps)             - delete
+dr(pps)            - delete recursively
 j(pp, pp)          - join two threads
 e(pp)              - edit the post as a file
 dl()               - download new mail
@@ -349,6 +351,27 @@ def cSr(pps):
 
     perform_operation(pps,
                       lambda posts: posts.expf().forall(capitalize_subject))
+
+def d(pps):
+    """Deletes given postset.
+    
+    Arguments:
+    pps --
+        Type: PrePostSet
+    """
+
+    perform_operation(pps, lambda posts: posts.forall.delete())
+
+def dr(pps):
+    """Deletes the posts of the given postset and all their consequences.
+
+    Arguments:
+    pps --
+        Type: PrePostSet
+    """
+
+    perform_operation(pps,
+                      lambda posts: posts.expf().forall.delete())
 
 def j(pp1, pp2):
     """Joins two mails.
