@@ -1,15 +1,3 @@
 This is Heapmanipulator v0.1.
 
-What you need
--------------
-
-You need to have Python. I have Python 2.5.
-
-Initial settings
-----------------
-
-Type
-
-    $ python heapmanip.py
-
-and a help will be printed.
+See the userguide.txt for information about the program.
