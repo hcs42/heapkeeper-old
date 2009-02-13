@@ -6,6 +6,7 @@
 import heapmanip
 import subprocess
 import time
+import datetime
 
 def sections(maildb):
     ps_all = maildb.all().copy()
@@ -22,12 +23,27 @@ def sections(maildb):
             ("Programozás", ps_cp),
             ("Egyéb", ps_all)]
 
+def format_date(post):
+    "post -> str"
+    if post.date() == '':
+        return None
+    else:
+        d = time.localtime(heapmanip.calc_timestamp(post.date()))
+        return time.strftime('%Y.%m.%d.', d)
+
+def read_date(post):
+    "post_date -> datetime.datetime"
+    return datetime.datetime.fromtimestamp(heapmanip.calc_timestamp(post.date()))
+
 def gen_index_html(maildb):
 
     def date_fun(post):
-        if maildb.prev(post) == None:
-            date_local = time.localtime(heapmanip.calc_timestamp(post.date()))
-            return time.strftime('%Y.%m.%d.', date_local)
+        prev = maildb.prev(post)
+        if prev == None or \
+           (post.date() != '' and prev.date() != '' and \
+            (read_date(post) - read_date(prev) > 
+             datetime.timedelta(days=5))):
+            return format_date(post)
         else:
             return None
 
