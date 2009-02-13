@@ -60,6 +60,8 @@ def print_time(next_action = ''):
 
 ##### utility functions and classes #####
 
+STAR = 0
+
 def file_to_string(file_name):
     """Reads a file's content into a string."""
     f = open(file_name)
@@ -1372,16 +1374,32 @@ html_section_end = """\
 </div>
 """
 
-html_one_mail = """\
-<div class="mail">
-<a href="%s">
-<span class="author">%s</span>
-<span class="subject">%s</span>
-<span class="tags">[%s]</span>
-<span class="index">&lt;%s&gt;</span>
-<span class="timestamp">%s</span>
-</a>
-"""
+def html_link(link, content):
+    return '<a href="%s">%s</a>' % (link, content)
+
+def html_span(class_, content):
+    return '<span class="%s">%s</span>' % (class_, content)
+
+def html_one_mail(link, author, subject, tags, index, date):
+
+    s = '<div class="mail">\n'
+    s += html_span('author', html_link(link, author)) + '\n'
+
+    if subject != STAR:
+        subject = html_link(link, subject)
+    else:
+        subject = html_span('star', html_link(link, '&mdash;'))
+    s += html_span('subject', subject) + '\n'
+
+    if tags != STAR:
+        s += html_span('tags', '[%s]' % html_link(link, tags)) + '\n'
+    else:
+        s += html_span('tags_star', '[%s]' % html_link(link, '&mdash;')) + '\n'
+
+    s += html_span('index', '&lt;%s&gt;' % html_link(link, index)) + '\n'
+    if date != None:
+        s += html_span('timestamp', html_link(link, date)) + '\n'
+    return s
 
 def sub_html(matchobject):
     whole = matchobject.group(0)
@@ -1468,12 +1486,12 @@ class Generator(object):
                 else:
                     date_html = ''
 
-                f.write(html_one_mail % (post.htmlfilebasename(),
-                                         quote_html(author),
-                                         subject,
-                                         tags,
-                                         post.heapid(),
-                                         date_html))
+                f.write(html_one_mail(post.htmlfilebasename(),
+                                      quote_html(author),
+                                      subject,
+                                      tags,
+                                      post.heapid(),
+                                      date_html))
 
         def write_thread(heapid, indent, parentsubject, parenttags):
             """Writes a post and all its followers into the output."""
@@ -1482,13 +1500,13 @@ class Generator(object):
                 post = self._maildb.heapid_to_post[heapid]
                 real_subject = post.subject()
                 if shortsubject and parentsubject == real_subject:
-                    subject = '*'
+                    subject = STAR
                 else:
                     subject = quote_html(real_subject)
 
                 real_tags = post.tags()
                 if shorttags and parenttags == real_tags:
-                    tags = '*'
+                    tags = STAR
                 else:
                     tags = ', '.join(post.tags())
 

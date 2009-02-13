@@ -6,6 +6,7 @@ body
 a
 {
 	text-decoration: none;
+	color: #f22;
 }
 
 #header
@@ -31,7 +32,7 @@ a
 .mail .mail
 {
 	border: none;
-	margin-left: 2em;
+	margin-left: 0.5em;
 	margin-top: 0.3em;
 	padding-top: 0;
 	padding-bottom: 0;
@@ -44,10 +45,68 @@ span
 	font-family: Arial, sans-serif;
 }
 
+/* subject */
+
 .subject
 {
 	font-weight: bold;
 }
+
+.subject a:link
+{
+	color: #000;
+    text-decoration: underline;
+}
+
+.subject a:visited
+{
+	color: #888;
+    text-decoration: underline;
+}
+
+.subject a:active
+{
+	color: #888;
+}
+
+.subject .star a:link
+{
+    text-decoration: none;
+}
+
+.subject .star a:visited
+{
+    text-decoration: none;
+}
+
+.subject .star a:active
+{
+    text-decoration: none;
+}
+
+/* index */
+
+.index
+{
+    color: #aaa;
+}
+
+.index a:link
+{
+	color: #aaa;
+}
+
+.index a:visited
+{
+	color: #aaa;
+}
+
+.index a:active
+{
+	color: #aaa;
+}
+
+/* author, sectiontitle */
 
 .author
 {
@@ -62,10 +121,5 @@ span
 	font-style: italic;
 	font-weight: bold;
 	font-size: 18;
-}
-
-.index
-{
-    color: #aaa;
 }
 
