@@ -123,6 +123,8 @@ into the heapcustom.py:
         subprocess.call(['vim', file])
         return True
 
+See heapcustom-csabahoch.py as an example.
+
 
 USING THE INTERFACE WITHOUT PYTHON SHELL
 
