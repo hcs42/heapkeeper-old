@@ -1,6 +1,8 @@
 Implementation
 --------------
 
+* Generator: an option for sections to print the posts that they really
+  contain
 * Tests:
     * heapmanip.Post.{set_tags, remove_tag}
     * heapia
