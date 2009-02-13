@@ -1432,7 +1432,7 @@ class Generator(object):
                 f.write(html_footer)
 
     def index_html(self, sections=None, write_toc=True, write_date=True,
-                   shortsubject=False, shorttags=False):
+                   shortsubject=False, shorttags=False, date_fun=None):
         """Creates the index HTML file.
         
         The created file is named 'index.html' and is placed in the html_dir
@@ -1457,16 +1457,23 @@ class Generator(object):
         def write_post(post, subject, tags):
                 author = re.sub('<.*?>','', post.author())
                 if write_date:
-                    date_str = ("&nbsp; (%s)" % post.date_str()) 
+                    if date_fun == None:
+                        date_str = post.date_str()
+                    else:
+                        date_str = date_fun(post)
+                    if date_str != None:
+                        date_html = ("&nbsp; (%s)" % date_str) 
+                    else:
+                        date_html = ''
                 else:
-                    date_str = ''
+                    date_html = ''
 
                 f.write(html_one_mail % (post.htmlfilebasename(),
                                          quote_html(author),
                                          subject,
                                          tags,
                                          post.heapid(),
-                                         date_str))
+                                         date_html))
 
         def write_thread(heapid, indent, parentsubject, parenttags):
             """Writes a post and all its followers into the output."""
