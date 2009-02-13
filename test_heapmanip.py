@@ -1158,21 +1158,17 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 <div class="section">
 <span class="sectiontitle" id=0>All posts</span>
 <div class="mail">
-<a href="1.html">
-<span class="author"></span>
-<span class="subject"></span>
-<span class="tags">[t1, t2]</span>
-<span class="index">&lt;1&gt;</span>
-<span class="timestamp">&nbsp; ()</span>
-</a>
+<span class="author"><a href="1.html"></a></span>
+<span class="subject"><a href="1.html"></a></span>
+<span class="tags">[<a href="1.html">t1, t2</a>]</span>
+<span class="index">&lt;<a href="1.html">1</a>&gt;</span>
+<span class="timestamp"><a href="1.html">&nbsp; ()</a></span>
 <div class="mail">
-<a href="x.html">
-<span class="author"></span>
-<span class="subject"></span>
-<span class="tags">[]</span>
-<span class="index">&lt;x&gt;</span>
-<span class="timestamp">&nbsp; ()</span>
-</a>
+<span class="author"><a href="x.html"></a></span>
+<span class="subject"><a href="x.html"></a></span>
+<span class="tags">[<a href="x.html"></a>]</span>
+<span class="index">&lt;<a href="x.html">x</a>&gt;</span>
+<span class="timestamp"><a href="x.html">&nbsp; ()</a></span>
 </div>
 </div>
 </div>
@@ -1206,52 +1202,42 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 <div class="section">
 <span class="sectiontitle" id=0>Sec1</span>
 <div class="mail">
-<a href="0.html">
-<span class="author"></span>
-<span class="subject"></span>
-<span class="tags">[]</span>
-<span class="index">&lt;0&gt;</span>
-<span class="timestamp">&nbsp; ()</span>
-</a>
+<span class="author"><a href="0.html"></a></span>
+<span class="subject"><a href="0.html"></a></span>
+<span class="tags">[<a href="0.html"></a>]</span>
+<span class="index">&lt;<a href="0.html">0</a>&gt;</span>
+<span class="timestamp"><a href="0.html">&nbsp; ()</a></span>
 <div class="mail">
-<a href="1.html">
-<span class="author"></span>
-<span class="subject"></span>
-<span class="tags">[]</span>
-<span class="index">&lt;1&gt;</span>
-<span class="timestamp">&nbsp; ()</span>
-</a>
+<span class="author"><a href="1.html"></a></span>
+<span class="subject"><a href="1.html"></a></span>
+<span class="tags">[<a href="1.html"></a>]</span>
+<span class="index">&lt;<a href="1.html">1</a>&gt;</span>
+<span class="timestamp"><a href="1.html">&nbsp; ()</a></span>
 <div class="mail">
-<a href="2.html">
-<span class="author"></span>
-<span class="subject"></span>
-<span class="tags">[]</span>
-<span class="index">&lt;2&gt;</span>
-<span class="timestamp">&nbsp; ()</span>
-</a>
+<span class="author"><a href="2.html"></a></span>
+<span class="subject"><a href="2.html"></a></span>
+<span class="tags">[<a href="2.html"></a>]</span>
+<span class="index">&lt;<a href="2.html">2</a>&gt;</span>
+<span class="timestamp"><a href="2.html">&nbsp; ()</a></span>
 </div>
 </div>
 <div class="mail">
-<a href="3.html">
-<span class="author"></span>
-<span class="subject"></span>
-<span class="tags">[]</span>
-<span class="index">&lt;3&gt;</span>
-<span class="timestamp">&nbsp; ()</span>
-</a>
+<span class="author"><a href="3.html"></a></span>
+<span class="subject"><a href="3.html"></a></span>
+<span class="tags">[<a href="3.html"></a>]</span>
+<span class="index">&lt;<a href="3.html">3</a>&gt;</span>
+<span class="timestamp"><a href="3.html">&nbsp; ()</a></span>
 </div>
 </div>
 </div>
 <div class="section">
 <span class="sectiontitle" id=1>Sec2</span>
 <div class="mail">
-<a href="4.html">
-<span class="author"></span>
-<span class="subject"></span>
-<span class="tags">[]</span>
-<span class="index">&lt;4&gt;</span>
-<span class="timestamp">&nbsp; ()</span>
-</a>
+<span class="author"><a href="4.html"></a></span>
+<span class="subject"><a href="4.html"></a></span>
+<span class="tags">[<a href="4.html"></a>]</span>
+<span class="index">&lt;<a href="4.html">4</a>&gt;</span>
+<span class="timestamp"><a href="4.html">&nbsp; ()</a></span>
 </div>
 </div>
   </body>
