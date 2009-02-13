@@ -24,7 +24,6 @@ Implementation
   their thread is
 * Actor
 * Search
-* Downloading emails since given date.
 * Generator: it should be able to determine the width of the generated HTML
   page (to discuss)
 * Improve CSS
@@ -32,6 +31,9 @@ Implementation
 * A better system for touch: it should know what should be recalculated and
   what should not be
 * heapia could print affected emails after executing a command
+* Downloading emails since given date.
+  Workaround: if we go to the heap account regularly and archive the emails in
+  the inbox, downloading new mail will remain fast.
 
 
 Discussion
