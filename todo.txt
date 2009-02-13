@@ -8,20 +8,20 @@ Implementation
 * Correct problem: order of posts in cycles in HTML is nondeterministic
   (the test was put into comment)
 * putting our Heap over ftp
-* should the tags be case insensitive?
-* Implementing tags and flags as frozensets
-* Tags dependencies, TagInfo class
-* devnotes.txt: developer notes
+* tags, flags
+    * should the tags be case insensitive?
+    * Implementing tags and flags as frozensets
+    * Tags dependencies, TagInfo class
+    * Flag: New-thead flag to indicate that the email begins a new thread.
+      Post.inreplyto -> new-thread flag (stub)
+      Post.real_inreplyto
+* Developer Guide
     * architecture (relation of Post, MailDB and PostSet)
     * performance improvement possibilities (iterators)
     * using wrappers to protect e.g. MailDB.posts()
     * terminology: previous, next, cause, consequence
 * Generator: different colours for the posts that are not in a section but
   their thread is
-* Flag: New-thead flag to indicate that the email begins a new thread.
-  Post.inreplyto -> new-thread flag (stub)
-  Post.real_inreplyto
-* Console interface
 * Actor
 * Search
 * Downloading emails since given date.
@@ -31,6 +31,7 @@ Implementation
 * Cleanup functionality
 * A better system for touch: it should know what should be recalculated and
   what should not be
+* heapia could print affected emails after executing a command
 
 
 Discussion
