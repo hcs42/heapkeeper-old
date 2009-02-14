@@ -1573,7 +1573,7 @@ class Generator(object):
                                               'Posts in cycles'))
                 for post in self._maildb.cycles():
                     subject = quote_html(post.subject())
-                    write_post(post, subject, tags)
+                    write_post(post, subject, post.tags())
                     f.write("</div>\n")
                 f.write(html_section_end)
             f.write(html_footer)
