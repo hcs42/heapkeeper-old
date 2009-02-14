@@ -1462,30 +1462,15 @@ class Generator(object):
         """
         
         if sections == None:
-            sections = [('All posts', self._maildb.all(),{})]
-        else:
-            #sections3 = []
-            #for section in sections:
-            #    try:
-            #        sectionname, sectionset, sectionflags = section
-            #    except ValueError:
-            #        sectionname, sectionset = section
-            #        sectionflags = {}
-            #    section3.append((sectionname, sectionset, sectionflags))
-            #sections = sections3
+            sections = [('All posts', self._maildb.all())]
 
-            #for i in range(sections):
-            #    if len(section) == 2:
-            #        sectionname, sectionset = sections[i]
-            #        sections[i] = sectionname, sectionset, {}
-
-            for i in range(len(sections)):
-                try:
-                    sectionname, sectionset = sections[i]
-                    sections[i] = sectionname, sectionset, {}
-                except:
-                    pass
-                sections[i][2].setdefault('flat', False)
+        for i in range(len(sections)):
+            try:
+                sectionname, sectionset = sections[i]
+                sections[i] = sectionname, sectionset, {}
+            except:
+                pass
+            sections[i][2].setdefault('flat', False)
 
         def write_toc_fun():
             f.write("<div><ul>")
