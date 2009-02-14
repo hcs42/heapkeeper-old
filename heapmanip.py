@@ -1392,6 +1392,7 @@ def html_one_mail(link, author, subject, tags, index, date):
     s += html_span('subject', subject) + '\n'
 
     if tags != STAR:
+        tags = ', '.join(tags)
         s += html_span('tags', '[%s]' % html_link(link, tags)) + '\n'
     else:
         s += html_span('tags_star', '[%s]' % html_link(link, '&mdash;')) + '\n'
@@ -1461,14 +1462,37 @@ class Generator(object):
         """
         
         if sections == None:
-            sections = [('All posts', self._maildb.all())]
+            sections = [('All posts', self._maildb.all(),{})]
+        else:
+            #sections3 = []
+            #for section in sections:
+            #    try:
+            #        sectionname, sectionset, sectionflags = section
+            #    except ValueError:
+            #        sectionname, sectionset = section
+            #        sectionflags = {}
+            #    section3.append((sectionname, sectionset, sectionflags))
+            #sections = sections3
+
+            #for i in range(sections):
+            #    if len(section) == 2:
+            #        sectionname, sectionset = sections[i]
+            #        sections[i] = sectionname, sectionset, {}
+
+            for i in range(len(sections)):
+                try:
+                    sectionname, sectionset = sections[i]
+                    sections[i] = sectionname, sectionset, {}
+                except:
+                    pass
+                sections[i][2].setdefault('flat', False)
 
         def write_toc_fun():
             f.write("<div><ul>")
             if self._maildb.has_cycle():
                 f.write('<li><a href="#posts_in_cycles">' +
                         'Posts in cycles</a></li>\n')
-            for i, (sectiontitle, section) in enumerate(sections):
+            for i, (sectiontitle, section, sectionopts) in enumerate(sections):
                 f.write('<li><a href="#%d">%s</a></li>\n' % (i, sectiontitle))
             f.write("</ul></div>\n")
         
@@ -1508,7 +1532,7 @@ class Generator(object):
                 if shorttags and parenttags == real_tags:
                     tags = STAR
                 else:
-                    tags = ', '.join(post.tags())
+                    tags = real_tags
 
                 write_post(post, subject, tags)
 
@@ -1531,18 +1555,24 @@ class Generator(object):
             first = True
             if write_toc:
                 write_toc_fun()
-            for i, (sectiontitle, section) in enumerate(sections):
+            for i, (sectiontitle, section, sectionopts) in enumerate(sections):
                 f.write(html_section_begin % (str(i), sectiontitle))
-                for root, thread in zip(roots, threads):
-                    if not (thread & section).is_set([]):
-                        write_thread(root.heapid(), 1, None, None)
+
+                if not sectionopts['flat']:
+                    for root, thread in zip(roots, threads):
+                        if not (thread & section).is_set([]):
+                            write_thread(root.heapid(), 1, None, None)
+                else:
+                    for post in section:
+                        write_post(post, post.subject(), post.tags())
+                        f.write('</div>')
+
                 f.write(html_section_end)
             if self._maildb.has_cycle():
                 f.write(html_section_begin % ('posts_in_cycles',
                                               'Posts in cycles'))
                 for post in self._maildb.cycles():
                     subject = quote_html(post.subject())
-                    tags = ', '.join(post.tags())
                     write_post(post, subject, tags)
                     f.write("</div>\n")
                 f.write(html_section_end)
