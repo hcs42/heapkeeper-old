@@ -39,10 +39,16 @@ a
 	margin-bottom: 0;
 }
 
-span
+span, td
 {
 	color: #f22;
 	font-family: Arial, sans-serif;
+}
+
+td
+{
+    padding-left: 0.5em;
+    padding-right: 0.5em;
 }
 
 /* subject */
