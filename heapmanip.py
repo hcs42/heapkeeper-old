@@ -1377,29 +1377,39 @@ html_section_end = """\
 def html_link(link, content):
     return '<a href="%s">%s</a>' % (link, content)
 
-def html_span(class_, content):
-    return '<span class="%s">%s</span>' % (class_, content)
+def html_enclose(class_, content, tag='span'):
+    return '<%s class="%s">%s</%s>' % (tag, class_, content, tag)
 
-def html_one_mail(link, author, subject, tags, index, date):
+def html_post(link, author, subject, tags, index, date, tag):
 
-    s = '<div class="mail">\n'
-    s += html_span('author', html_link(link, author)) + '\n'
+    s = html_enclose('author', html_link(link, author), tag) + '\n'
 
     if subject != STAR:
         subject = html_link(link, subject)
     else:
-        subject = html_span('star', html_link(link, '&mdash;'))
-    s += html_span('subject', subject) + '\n'
+        subject = html_enclose('star', html_link(link, '&mdash;'))
+    s += html_enclose('subject', subject, tag) + '\n'
 
     if tags != STAR:
         tags = ', '.join(tags)
-        s += html_span('tags', '[%s]' % html_link(link, tags)) + '\n'
+        s += html_enclose('tags', html_link(link, '[%s]' % tags), tag) + '\n'
     else:
-        s += html_span('tags_star', '[%s]' % html_link(link, '&mdash;')) + '\n'
+        s += html_enclose('tags_star', html_link(link, '[&mdash;]'), tag) + '\n'
 
-    s += html_span('index', '&lt;%s&gt;' % html_link(link, index)) + '\n'
+    s += html_enclose('index', '&lt;%s&gt;' % html_link(link, index), tag) + '\n'
     if date != None:
-        s += html_span('timestamp', html_link(link, date)) + '\n'
+        s += html_enclose('timestamp', html_link(link, date), tag) + '\n'
+    return s
+
+def html_post_div(link, author, subject, tags, index, date):
+    s = '<div class="mail">'
+    s += html_post(link, author, subject, tags, index, date, 'span')
+    return s
+
+def html_post_table(link, author, subject, tags, index, date):
+    s = '<tr>'
+    s += html_post(link, author, subject, tags, index, date, 'td')
+    s += '</tr>\n'
     return s
 
 def sub_html(matchobject):
@@ -1481,7 +1491,7 @@ class Generator(object):
                 f.write('<li><a href="#%d">%s</a></li>\n' % (i, sectiontitle))
             f.write("</ul></div>\n")
         
-        def write_post(post, subject, tags):
+        def write_post(post, subject, tags, flat=False):
                 author = re.sub('<.*?>','', post.author())
                 if write_date:
                     if date_fun == None:
@@ -1495,12 +1505,14 @@ class Generator(object):
                 else:
                     date_html = ''
 
-                f.write(html_one_mail(post.htmlfilebasename(),
-                                      quote_html(author),
-                                      subject,
-                                      tags,
-                                      post.heapid(),
-                                      date_html))
+                args = (post.htmlfilebasename(),
+                        quote_html(author), subject,
+                        tags, post.heapid(), date_html)
+
+                if flat: 
+                    f.write(html_post_table(*args))
+                else:
+                    f.write(html_post_div(*args))
 
         def write_thread(heapid, indent, parentsubject, parenttags):
             """Writes a post and all its followers into the output."""
@@ -1548,9 +1560,12 @@ class Generator(object):
                         if not (thread & section).is_set([]):
                             write_thread(root.heapid(), 1, None, None)
                 else:
+                    f.write('<table class="mail">\n')
                     for post in section:
-                        write_post(post, post.subject(), post.tags())
-                        f.write('</div>')
+                        # f.write('<div class="flatpost">')
+                        write_post(post, post.subject(), post.tags(), True)
+                        # f.write('</div>')
+                    f.write('</table>\n')
 
                 f.write(html_section_end)
             if self._maildb.has_cycle():
