@@ -1,14 +1,14 @@
 HEAPMANIPULATOR DEVELOPER GUIDE
 
 This file is a high-level introduction to the Heapmanipulator program (or
-Manipulator for short) with the developer's eye. More specific details can be
-found in the documentation inside the Python code. Due to Python's help system,
+Manipulator for short) for the developer's eyes. More specific details can be
+found in the documentation inside the Python code. Thanks to Python's help system,
 the documentation can be accessed without opening the source code.
 
 
 FILES
 
-There are text files that has some information about the Manipulator:
+There are text files that contain information about the Manipulator:
     README: This is for new users.
     todo.txt: Our feature and bug tracking "system".
     userguide.txt: User Guide.

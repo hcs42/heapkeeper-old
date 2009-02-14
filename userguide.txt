@@ -2,9 +2,9 @@ HEAPMANIPULATOR USER GUIDE
 
 
 Heap is a data structure that consists of posts. It is primarily represented in
-mailfiles, but HTML files can be generated from them. The posts have fields,
+mailfiles, but HTML files may be generated from them. The posts have fields,
 e.g. author, subject, tags, flags, a field that describes the previous post.
-The generated HTML can show the posts in a threaded structure.
+The generated HTML displays the posts in a threaded structure.
 
 The Heapmanipulator is a program written is Python that can manipulate this
 data structure: e.g. it can download new posts from an IMAP server, modify the
@@ -99,7 +99,7 @@ appropriate callback functions are defined here, they will be used by heapia
 instead of the default behaviour.
 
 E.g. the following heapcustom.py changes the arguments of the HTML-generator so
-that it will write a table of contents and it will omit the dates.
+that it includes the table of contents in the generated HTML and omits the dates.
 
     import heapmanip
 
