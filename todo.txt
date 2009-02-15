@@ -1,8 +1,7 @@
 Implementation
 --------------
 
-* Generator: an option for sections to print the posts that they really
-  contain
+* Generator: user defines how to cut the subject
 * Tests:
     * heapmanip.Post.{set_tags, remove_tag}
     * heapia
