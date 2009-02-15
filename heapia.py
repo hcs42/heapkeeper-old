@@ -292,7 +292,7 @@ def pS(pps):
 
     def operation(posts):
         for post in posts:
-            maildb().postset(post).expf().set_subject(post.subject())
+            maildb().postset(post).expf().forall.set_subject(post.subject())
     perform_operation(pps, operation)
 
 def sS(pps, subject):
