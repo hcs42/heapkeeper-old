@@ -2,6 +2,7 @@ Implementation
 --------------
 
 * Generator: user defines how to cut the subject
+* Generator: make index.html deterministic
 * Tests:
     * heapmanip.Post.{set_tags, remove_tag}
     * heapia
