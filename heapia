@@ -1,3 +1,20 @@
 #!/bin/sh
 
-python -i -c 'from heapia import *; main([])'
+if [ "$#" = 0 ]
+then
+    python -i -c 'from heapia import *; main([])'
+elif [ "$1" = '-h' -o "$1" = '--help' ]
+then
+    cat <<END
+This script starts the Heapmanipulator's interactive interface.
+
+The interface can be started by typing "./heapia". This should give a
+Python shell. Type "h()" into this shell to get help.
+
+The interface can be also used in a batch mode: give the commands to run
+(Python expressions) as arguments of this script, e.g.:
+    ./heapia 'dl()' 'g()'
+END
+else
+    python heapia.py "$@"
+fi
