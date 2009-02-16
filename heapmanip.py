@@ -249,6 +249,10 @@ class Post(object):
             date_local = time.localtime(calc_timestamp(date))
             return time.strftime('%Y.%m.%d. %H:%M', date_local)
 
+    def timestamp(self):
+        date = self.date()
+        return calc_timestamp(date) if date != '' else 0
+
     def tags(self):
         """Returns the tags of the email.
 
@@ -795,10 +799,7 @@ class MailDB(object):
 
             def add_timestamp(post):
                 """Creates a (timestamp, heapid) pair from the post."""
-                heapid = post.heapid()
-                date = post.date()
-                timestamp = calc_timestamp(date) if date != '' else 0
-                return (timestamp, heapid)
+                return (post.timestamp(), post.heapid())
 
             threads = {None: []} # dict(heapid, [answered:(timestamp, heapid)])
             for post in self.posts():
@@ -1564,7 +1565,10 @@ class Generator(object):
                             write_thread(root.heapid(), 1, None, None, section)
                 else:
                     f.write('<table class="mail">\n')
-                    for post in sectionposts:
+                    ts_posts = [ (post.timestamp(), post) \
+                                 for post in sectionposts ]
+                    ts_posts.sort()
+                    for timestamp, post in ts_posts:
                         write_post(post, section, post.subject(), post.tags(),
                                    flat=True)
                     f.write('</table>\n')
