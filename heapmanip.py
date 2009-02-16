@@ -1476,8 +1476,8 @@ class Generator(object):
 
         for i in range(len(sections)):
             try:
-                sectionname, sectionset = sections[i]
-                sections[i] = sectionname, sectionset, {}
+                sectiontitle, sectionposts = sections[i]
+                sections[i] = sectiontitle, sectionposts, {}
             except:
                 pass
             sections[i][2].setdefault('flat', False)
@@ -1487,17 +1487,18 @@ class Generator(object):
             if self._maildb.has_cycle():
                 f.write('<li><a href="#posts_in_cycles">' +
                         'Posts in cycles</a></li>\n')
-            for i, (sectiontitle, section, sectionopts) in enumerate(sections):
+            for i, section in enumerate(sections):
+                sectiontitle, sectionposts, sectionopts = section
                 f.write('<li><a href="#%d">%s</a></li>\n' % (i, sectiontitle))
             f.write("</ul></div>\n")
         
-        def write_post(post, subject, tags, flat=False):
+        def write_post(post, section, subject, tags, flat=False):
                 author = re.sub('<.*?>','', post.author())
                 if write_date:
                     if date_fun == None:
                         date_str = post.date_str()
                     else:
-                        date_str = date_fun(post)
+                        date_str = date_fun(post, section)
                     if date_str != None:
                         date_html = ("&nbsp; (%s)" % date_str) 
                     else:
@@ -1514,7 +1515,7 @@ class Generator(object):
                 else:
                     f.write(html_post_div(*args))
 
-        def write_thread(heapid, indent, parentsubject, parenttags):
+        def write_thread(heapid, indent, parentsubject, parenttags, section):
             """Writes a post and all its followers into the output."""
 
             if heapid != None:
@@ -1531,7 +1532,7 @@ class Generator(object):
                 else:
                     tags = real_tags
 
-                write_post(post, subject, tags)
+                write_post(post, section, subject, tags, flat=False)
 
             else:
                 real_subject = None
@@ -1539,7 +1540,8 @@ class Generator(object):
 
             if heapid in threadst:
                 for heapid2 in threadst[heapid]:
-                    write_thread(heapid2, indent+1, real_subject, real_tags)
+                    write_thread(heapid2, indent+1, real_subject, real_tags,
+                                 section)
             if heapid != None:
                 f.write("</div>\n")
 
@@ -1552,19 +1554,19 @@ class Generator(object):
             first = True
             if write_toc:
                 write_toc_fun()
-            for i, (sectiontitle, section, sectionopts) in enumerate(sections):
+            for i, section in enumerate(sections):
+                sectiontitle, sectionposts, sectionopts = section
                 f.write(html_section_begin % (str(i), sectiontitle))
 
                 if not sectionopts['flat']:
                     for root, thread in zip(roots, threads):
-                        if not (thread & section).is_set([]):
-                            write_thread(root.heapid(), 1, None, None)
+                        if not (thread & sectionposts).is_set([]):
+                            write_thread(root.heapid(), 1, None, None, section)
                 else:
                     f.write('<table class="mail">\n')
-                    for post in section:
-                        # f.write('<div class="flatpost">')
-                        write_post(post, post.subject(), post.tags(), True)
-                        # f.write('</div>')
+                    for post in sectionposts:
+                        write_post(post, section, post.subject(), post.tags(),
+                                   flat=True)
                     f.write('</table>\n')
 
                 f.write(html_section_end)
@@ -1573,7 +1575,7 @@ class Generator(object):
                                               'Posts in cycles'))
                 for post in self._maildb.cycles():
                     subject = quote_html(post.subject())
-                    write_post(post, subject, post.tags())
+                    write_post(post, section, subject, post.tags(), flat=False)
                     f.write("</div>\n")
                 f.write(html_section_end)
             f.write(html_footer)

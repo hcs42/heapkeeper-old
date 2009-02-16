@@ -19,7 +19,7 @@ def sections(maildb):
     ps_cp |= ps_all.collect.has_tag('Python')
     ps_cp = ps_cp.exp()
     ps_all -= ps_cp
-    return [("Heap", ps_heap),
+    return [("Heap", ps_heap, {'flat':True}),
             ("Programozás", ps_cp),
             ("Egyéb", ps_all)]
 
@@ -37,9 +37,10 @@ def read_date(post):
 
 def gen_index_html(maildb):
 
-    def date_fun(post):
+    def date_fun(post, section):
         prev = maildb.prev(post)
-        if prev == None or \
+        if section[2]['flat'] or \
+           prev == None or \
            (post.date() != '' and prev.date() != '' and \
             (read_date(post) - read_date(prev) > 
              datetime.timedelta(days=5))):
