@@ -309,6 +309,7 @@ class Post(object):
     def delete(self):
         self._header = {'Message-Id': self.messid(), 
                          'Flag': ['deleted']}
+        self._body = ''
         self.touch()
 
     def body(self):

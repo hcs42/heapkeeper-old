@@ -19,7 +19,7 @@ def sections(maildb):
     ps_cp |= ps_all.collect.has_tag('Python')
     ps_cp = ps_cp.exp()
     ps_all -= ps_cp
-    return [("Heap", ps_heap, {'flat':True}),
+    return [("Heap", ps_heap),
             ("Programozás", ps_cp),
             ("Egyéb", ps_all)]
 
