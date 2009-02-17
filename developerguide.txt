@@ -39,3 +39,16 @@ For getting help on testing, type:
 
     $ python test.py --help
 
+
+TODO FILE
+
+This file is our feature and bug tracking "system".
+
+It contains items that may contain other items. The items may have identifiers
+(#1, #2 etc). There are several kinds of items, and the type of the item is
+shows before its text:
++ feature
+- problem which should be fixed
+* other: documentation, testing, refactoring
+
+The items are in sorted in a descending order according to their prorities.
