@@ -1574,10 +1574,7 @@ class Generator(object):
                             write_thread(root.heapid(), 1, None, None, section)
                 else:
                     f.write('<table class="mail">\n')
-                    ts_posts = [ (post.timestamp(), post) \
-                                 for post in sectionposts ]
-                    ts_posts.sort()
-                    for timestamp, post in ts_posts:
+                    for post in sectionposts.sorted_list():
                         write_post(post, section, post.subject(), post.tags(),
                                    flat=True)
                     f.write('</table>\n')
@@ -1586,7 +1583,7 @@ class Generator(object):
             if self._maildb.has_cycle():
                 f.write(html_section_begin % ('posts_in_cycles',
                                               'Posts in cycles'))
-                for post in self._maildb.cycles():
+                for post in self._maildb.cycles().sorted_list():
                     subject = quote_html(post.subject())
                     write_post(post, section, subject, post.tags(), flat=False)
                     f.write("</div>\n")

@@ -1096,7 +1096,6 @@ class TestPostSetThreads(unittest.TestCase, MailDBHandler):
         ps = self._maildb.postset(self._posts)
         self.assertEquals(ps.sorted_list(), self._posts)
 
-
     def tearDown(self):
         self.tearDownDirs()
 
@@ -1191,6 +1190,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         g = Generator(maildb)
 
         g.index_html([('Sec1', ['1']), ('Sec2', ['4'])])
+        string_to_file(self.indexHtml(), '/a/_/2.html')
         s = '''\
 <html>
   <head>
@@ -1250,16 +1250,16 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 '''
         #self.assertEquals(self.indexHtml(), s)
 
-#    def testCycles(self):
-#        """Tests the MailDB with cycles."""
-#
-#        self._maildb = self.createMailDB()
-#        maildb = self._maildb
-#        self.create_threadst(skipdates=True)
-#        maildb.post('1').set_inreplyto('2')
-#        g = Generator(maildb)
-#
-#        g.index_html([('Sec1', ['0']), ('Sec2', ['4'])])
+    def testCycles(self):
+        """Tests the MailDB with cycles."""
+
+        self._maildb = self.createMailDB()
+        maildb = self._maildb
+        self.create_threadst(skipdates=True)
+        maildb.post('1').set_inreplyto('2')
+        g = Generator(maildb)
+
+        g.index_html([('Sec1', ['0']), ('Sec2', ['4'])])
 #        s = '''\
 #<html>
 #  <head>
