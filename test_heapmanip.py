@@ -1091,6 +1091,11 @@ class TestPostSetThreads(unittest.TestCase, MailDBHandler):
         test('134', '01234')
         test('124', '01234')
         test('1234', '01234')
+    
+    def testSortedList(self):
+        ps = self._maildb.postset(self._posts)
+        self.assertEquals(ps.sorted_list(), self._posts)
+
 
     def tearDown(self):
         self.tearDownDirs()

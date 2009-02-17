@@ -998,6 +998,14 @@ class PostSet(set):
     def exp(self):
         return self.expb().expf()
 
+    def sorted_list(self):
+        """Returns the list of posts contains by the postset sorted by their
+        date."""
+
+        posts = [ (post.timestamp(), post) for post in self ]
+        posts.sort()
+        return [ post for timestamp, post in posts]
+
     # Overriding set's methods
 
     def construct(self, methodname, other):
