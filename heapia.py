@@ -43,6 +43,9 @@ Options:
         Type: bool
     auto_save --- If True, the mail database will be saved after each command.
         Type: bool
+    timing --- If True, the real (wall clock) time taken by commands is
+        reported.
+        Type: bool
     auto_threadstruct --- If True, the threadstruct will be regenerated after
         each command. It has only efficiency consequences, because later it
         will be regenerated later anyway.
@@ -81,9 +84,12 @@ Example: generate the index HTML (and exit):
 """
 
 import sys
+import time
 import subprocess
 import heapmanip
 import ConfigParser
+
+start = time.time()
 
 def h():
     print __doc__
@@ -104,6 +110,7 @@ options = {'maildb': None,
            'config': None,
            'auto_gen_var': True,
            'auto_save': True,
+           'timing': False,
            'auto_threadstruct': True,
            'heapcustom': 'heapcustom',
            'callbacks': {'sections': lambda maildb: None,
@@ -157,6 +164,15 @@ def auto():
     if options['auto_threadstruct']:
         maildb().threadstruct()
 
+def start_timing():
+    global start
+    start = time.time()
+
+def end_timing():
+    global start
+    if options['timing']:
+        print "%f seconds." % (time.time() - start)
+
 def gen_index_html():
     """Generates index.html."""
     if options['callbacks']['gen_index_html'] != None:
@@ -172,18 +188,24 @@ def gen_post_html():
     g.posts_to_html()
 
 def g():
+    start_timing()
     gen_index_html()
+    end_timing()
 
 def ga():
+    start_timing()
     gen_index_html()
     gen_post_html()
+    end_timing()
 
 def gs():
+    start_timing()
     maildb().save()
     gen_index_html()
+    end_timing()
 
 def ps(pps):
-    return maildb().postset(pps)
+    res = maildb().postset(pps)
 
 def perform_operation(pps, operation):
     posts = ps(pps)
