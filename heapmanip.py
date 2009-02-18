@@ -18,6 +18,7 @@ import sys
 import time
 import StringIO
 import datetime
+import inspect
 
 
 ##### logging #####
@@ -61,6 +62,7 @@ def print_time(next_action = ''):
 ##### utility functions and classes #####
 
 STAR = 0
+NORMAL = 1
 
 def file_to_string(file_name):
     """Reads a file's content into a string."""
@@ -102,6 +104,60 @@ class HeapException(Exception):
 
     def __str__(self):
         return repr(self.value)
+
+
+##### Option handling #####
+
+def arginfo(fun):
+    """Returns a tuple based on the arguments of the given function.
+    
+    The first element of the tuple is the list of arguments that do not have
+    a default value. The second element is a dictionary that assigns the
+    default values to the arguments that do have a default value.
+    
+    Returns: ([str], dict(str, anything))
+    """
+
+    args, varargs, varkw, defaults = inspect.getargspec(fun)
+    args_without_default = args[:-len(defaults)]
+    argnames_with_default = args[-len(defaults):]
+    d = {}
+    for argname, argdefault in zip(argnames_with_default, defaults):
+        d[argname] = argdefault
+    return args_without_default, d
+
+def set_defaultoptions(options, fun, excluded):
+    """Reads the options and their default values from the given function's
+    argument list and updates the given dictionary accordingly.
+
+    Arguments:
+    options --- The dictionary that should be updated with the default options.
+        Type: dict(str, anything)
+    fun --- The list of options and the default options will be read from
+        this function.
+        Type: function
+    excluded --- Arguments of 'fun' that are not options and should be
+        excluded from the result.
+        Type: set(str) | [str]
+    """
+
+    unused_options = set(options.keys())
+    args_without_default, args_with_default = arginfo(fun)
+    for optionname in args_without_default:
+        if optionname not in excluded:
+            if optionname in options:
+                unused_options.discard(optionname)
+            else:
+                raise HeapException, \
+                      'Option "%s" should be specified in %s' % \
+                      (optionname, options)
+    for optionname, optiondefault in args_with_default.items():
+        if optionname not in excluded:
+            options.setdefault(optionname, optiondefault)
+            unused_options.discard(optionname)
+    if len(unused_options) > 0:
+        raise HeapException, \
+              'Unused options %s in %s' % (list(unused_options), options)
 
 
 ##### Post #####
@@ -619,10 +675,7 @@ class MailDB(object):
                 except ValueError:
                     pass
         self._next_heapid = max(heapids) + 1 if heapids != [] else 0
-        self._posts = None
-        self._all = None
-        self._threadstruct = None
-        self._cycles = None
+        self.touch()
 
     # Modifications
 
@@ -638,6 +691,8 @@ class MailDB(object):
         self._all = None
         self._threadstruct = None
         self._cycles = None
+        self._roots = None
+        self._threads = None
 
     # Get-set functions
 
@@ -796,6 +851,27 @@ class MailDB(object):
             else:
                 post = prevpost
 
+    def children(self, post):
+        """Returns the children of the given post.
+        
+        If 'post' is None, returns the posts with no parents (i.e. whose
+        parent is None).
+        
+        Arguments:
+        post ---
+            Type: Post | None
+
+        Returns: [Post]
+        """
+
+        assert(post == None or post in self.all())
+        
+        if post == None:
+            children_heapids = self.threadstruct().get(None, [])
+        else:
+            children_heapids = self.threadstruct().get(post.heapid(), [])
+        return [ self.post(heapid) for heapid in children_heapids ]
+
     def _recalc_threadstruct(self):
         """Recalculates the _threadstruct variable if needed."""
 
@@ -863,6 +939,25 @@ class MailDB(object):
             # A post is in a cycle <=> it cannot be accessed by iter_thread
             for post in self.iter_thread(None):
                 self._cycles.remove(post)
+
+    def roots(self):
+        self._recalc_roots()
+        return self._roots
+
+    def _recalc_roots(self):
+        if self._roots == None:
+            self._roots = [ self.post(heapid)
+                            for heapid in self.threadstruct()[None] ]
+
+    def threads(self):
+        self._recalc_threads()
+        return self._threads
+
+    def _recalc_threads(self):
+        if self._threads == None:
+            self._threads = {}
+            for root in self.roots():
+                self._threads[root] = self.postset(root).expf()
 
     # Filenames
 
@@ -1359,83 +1454,142 @@ class Server(object):
         log('Downloading finished.')
 
 
+##### Html #####
+
+class Html():
+    """Creates HTML strings."""
+
+    @staticmethod
+    def escape_char(matchobject):
+        """Escapes one character based on a match."""
+        whole = matchobject.group(0)
+        if whole == '<':
+            return '&lt;'
+        elif whole == '>':
+            return '&gt;'
+        elif whole == '&':
+            return '&amp;'
+
+    @staticmethod
+    def escape(text):
+        """Escapes the characters of 'text' so that 'text' will appear
+        correctly when inserted into HTML."""
+        return re.sub(r'[<>&]', Html.escape_char, text)
+
+    @staticmethod
+    def doc_header(title, h1, css):
+        """An HTML document's beginning."""
+        return \
+            '<html>\n' \
+            '  <head>\n' \
+            '    <meta http-equiv="Content-Type" ' \
+            'content="text/html;charset=utf-8">\n' \
+            '    <title>%s</title>\n' \
+            '    <link rel=stylesheet href="%s" type="text/css">\n' \
+            '  </head>\n' \
+            '  <body>\n' \
+            '    <h1 id="header">%s</h1>\n\n' % \
+            (title, css, h1)
+
+    @staticmethod
+    def doc_footer():
+        """An HTML document's end."""
+        return \
+            '\n' \
+            '  </body>\n' \
+            '</html>\n'
+    
+    @staticmethod
+    def section_begin(sectionid, sectiontitle):
+        """The beginning of a "section" div."""
+        return \
+            '<div class="section">\n' \
+            '<span class="sectiontitle" id="%s">%s</span>\n' % \
+            (sectionid, sectiontitle)
+
+    @staticmethod
+    def section_end():
+        """The end of a "section" div."""
+        return '</div>\n'
+
+    @staticmethod
+    def link(link, content):
+        """Creates a link."""
+        return '<a href="%s">%s</a>' % (link, content)
+
+    @staticmethod
+    def enclose(class_, content, tag='span', newlines=False):
+        """Encloses the given content into a tag."""
+        newline = '\n' if newlines else ''
+        return '<%s class="%s">%s%s</%s>%s' % \
+               (tag, class_, newline, content, tag, newline)
+
+    @staticmethod
+    def post_summary(postlink, author, subject, tags, index, date, tag):
+        """Creates a summary for a post."""
+
+        enc = Html.enclose
+        link = Html.link
+        l = []
+        def newline():
+            l.append('\n')
+
+        l.append(enc('author', link(postlink, author), tag))
+        newline()
+
+        if subject != STAR:
+            subject = link(postlink, subject)
+        else:
+            subject = enc('star', link(postlink, '&mdash;'))
+        l.append(enc('subject', subject, tag))
+        newline()
+
+        if tags != STAR:
+            tags = ', '.join(tags)
+            tags = link(postlink, '[%s]' % tags)
+        else:
+            tags = enc('star', link(postlink, '[&mdash;]'))
+        l.append(enc('tags', tags, tag))
+        newline()
+
+        l.append(enc('index', '&lt;%s&gt;' % link(postlink, index), tag))
+        newline()
+        if date != None:
+            l.append(enc('date', link(postlink, date), tag) + '\n')
+        return ''.join(l)
+
+    @staticmethod
+    def post_summary_div(link, author, subject, tags, index, date):
+        """Creates a summary for a post as a div."""
+        return \
+            '<div class="postsummary">' + \
+            Html.post_summary(link, author, subject, tags, index, date, 'span')
+
+    @staticmethod
+    def post_summary_table(link, author, subject, tags, index, date):
+        """Creates a summary for a post as a row of a table."""
+        return \
+            '<tr>' + \
+            Html.post_summary(link, author, subject, tags, index, date, 'td')+\
+            '</tr>\n'
+
+    @staticmethod
+    def list(items, class_=None):
+        """Puts the given items into an <ul> list."""
+        l = []
+        l.append('<ul')
+        if class_ != None:
+            l.append(' class="%s"' % (class_,))
+        l.append('>\n')
+        for item in items:
+            l.append('  <li>')
+            l.append(item)
+            l.append('</li>\n')
+        l.append('</ul>\n')
+        return ''.join(l)
+
+
 ##### Generator #####
-
-html_header = """\
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <title>%s</title>
-    <link rel=stylesheet href="%s" type="text/css">
-  </head>
-  <body>
-    <h1 id="header">%s</h1>
-
-"""
-
-html_footer = """\
-  </body>
-</html>
-"""
-
-html_section_begin = """\
-<div class="section">
-<span class="sectiontitle" id=%s>%s</span>
-"""
-
-html_section_end = """\
-</div>
-"""
-
-def html_link(link, content):
-    return '<a href="%s">%s</a>' % (link, content)
-
-def html_enclose(class_, content, tag='span'):
-    return '<%s class="%s">%s</%s>' % (tag, class_, content, tag)
-
-def html_post(link, author, subject, tags, index, date, tag):
-
-    s = html_enclose('author', html_link(link, author), tag) + '\n'
-
-    if subject != STAR:
-        subject = html_link(link, subject)
-    else:
-        subject = html_enclose('star', html_link(link, '&mdash;'))
-    s += html_enclose('subject', subject, tag) + '\n'
-
-    if tags != STAR:
-        tags = ', '.join(tags)
-        s += html_enclose('tags', html_link(link, '[%s]' % tags), tag) + '\n'
-    else:
-        s += html_enclose('tags_star', html_link(link, '[&mdash;]'), tag) + '\n'
-
-    s += html_enclose('index', '&lt;%s&gt;' % html_link(link, index), tag) + '\n'
-    if date != None:
-        s += html_enclose('timestamp', html_link(link, date), tag) + '\n'
-    return s
-
-def html_post_div(link, author, subject, tags, index, date):
-    s = '<div class="mail">'
-    s += html_post(link, author, subject, tags, index, date, 'span')
-    return s
-
-def html_post_table(link, author, subject, tags, index, date):
-    s = '<tr>'
-    s += html_post(link, author, subject, tags, index, date, 'td')
-    s += '</tr>\n'
-    return s
-
-def sub_html(matchobject):
-    whole = matchobject.group(0)
-    if whole == '<':
-        return '&lt;'
-    elif whole == '>':
-        return '&gt;'
-    elif whole == '&':
-        return '&amp;'
-
-def quote_html(text):
-    return re.sub(r'[<>&]', sub_html, text)
 
 class Generator(object):
 
@@ -1447,6 +1601,14 @@ class Generator(object):
     Data attributes:
     _maildb -- The mail database.
         Type: MailDB
+
+    Types:
+        Section = (title:str, sectionposts:SectionPosts,
+                   options:SectionOptions)
+        SectionPosts = [Post] | PostSet
+        SectionOptions = dict(str, something)
+        IndexOptions = dict(str, something)
+        HtmlStr = normal string, but it contains HTML
     """
 
     def __init__(self, maildb):
@@ -1464,28 +1626,214 @@ class Generator(object):
         """Creates an HTML file for each post that are not deleted."""
         for post in self._maildb.posts():
             with open(post.htmlfilename(), 'w') as f:
-                h1 = quote_html(post.author()) + ': ' + \
-                     quote_html(post.subject())
-                f.write(html_header % (h1, 'heapindex.css', h1))
+                h1 = Html.escape(post.author()) + ': ' + \
+                     Html.escape(post.subject())
+                f.write(Html.doc_header(h1, h1, 'heapindex.css'))
                 f.write('(' + post.date_str() + ')')
                 f.write('<pre>')
-                f.write(quote_html(post.body()))
+                f.write(Html.escape(post.body()))
                 f.write('</pre>')
-                f.write(html_footer)
+                f.write(Html.doc_footer())
 
-    def index_html(self, sections=None, write_toc=True, write_date=True,
-                   shortsubject=False, shorttags=False, date_fun=None):
-        """Creates the index HTML file.
+    def index_toc(self, sections):
+        """Creates a table of contents for the sections and for the posts in
+        cycles.
+
+        Arguments:
+        sections ---
+            Type: [Section]
         
-        The created file is named 'index.html' and is placed in the html_dir
-        directory.
+        Returns: HtmlStr
+        """
+
+        items = []
+        for i, section in enumerate(sections):
+            items.append(Html.link("#section_%s" % (i,), section[0]))
+        return Html.list(items, 'tableofcontents')
+        
+    def post_summary(self, post, section, options, subject=NORMAL,
+                     tags=NORMAL):
+        """Creates a summary for the post.
         
         Arguments:
-        sections = None | [(str, PrePostSet)]
+        post ---
+            Type: Post
+        section --- The section which is printed.
+            Type: Section
+        options ---
+            Type: IndexOptions
+
+        Returns: HtmlStr
         """
+
+        # Author
+        author = Html.escape(post.author())
+
+        # Subject
+        if subject == NORMAL:
+            subject = Html.escape(post.subject())
+
+        # Tags
+        if tags == NORMAL:
+            tags = post.tags()
+
+        # Date
+        if options['write_date']:
+            date_fun = options['date_fun']
+            if date_fun == None:
+                date_str = '(%s)' % (post.date_str(),)
+                # If the post does not have a date, we still want to print
+                # an empty string.
+                if date_str == None:
+                    date_str = '()'
+            else:
+                date_str = date_fun(post, section)
+        else:
+            date_str = None
+
+        args = (post.htmlfilebasename(), author, subject, tags, post.heapid(),
+                date_str)
+
+        if section[2]['flat']: 
+            return Html.post_summary_table(*args)
+        else:
+            return Html.post_summary_div(*args)
+
+    def post_summary_end(self):
+        """Returns an HTML string that closes the HTML returned by
+        Generator.post_summary.
         
-        if sections == None:
-            sections = [('All posts', self._maildb.all())]
+        Returns: HtmlStr
+        """
+
+        return '</div>\n'
+
+    def thread(self, post, section, options):
+        """Prints the summaries of posts in a thread into an HTML string.
+        
+        Warning: if the given post is in a cycle, this function will go into
+        an endless loop.
+
+        Arguments:
+        post --- The root of the thread to be printed.
+            Type: None | Post
+        section --- The section that is printed.
+            Type: Section
+        options ---
+            Type: IndexOptions
+
+        Returns: HtmlString
+        """
+
+        # options
+        shortsubject = options['shortsubject']
+        shorttags = options['shorttags']
+
+        # stack will contain heapids and strings.
+        # A heapid may be a string or None.
+        # If stack contains several items during the execution of the loop, the
+        # loop will do the following.
+        # It goes through all items in reversed order and does the following
+        # to all items:
+        #  - if the item is a string, puts it into 'strings'
+        #  - if item is a heapid, then:
+        #      - if heapid is not None, puts the summary of the post that has
+        #        the heapid into 'strings'
+        #      - puts the summary of the the post's all children into 'strings'
+        stack = [post]
+        threadstruct = self._maildb.threadstruct()
+        strings = []
+
+        while len(stack) > 0:
+            item = stack.pop()
+            #print 'item:', item
+
+            if isinstance(item, str):
+                strings.append(item)
+
+            else:
+                if item != None:
+                    post = item
+                    #print 'post:', post
+                    parent = self._maildb.prev(post)
+                    subject = post.subject()
+                    if (shortsubject and parent != None and
+                        subject == parent.subject()):
+                        subject_to_print = STAR
+                    else:
+                        subject_to_print = Html.escape(subject)
+
+                    tags = post.tags()
+                    if (shorttags and parent != None and
+                        tags == parent.tags()):
+                        tags_to_print = STAR
+                    else:
+                        tags_to_print = tags
+
+                    strings.append(
+                        self.post_summary(post, section, options,
+                                          subject_to_print, tags_to_print))
+
+                    stack.append(self.post_summary_end())
+                #print 'children:', children
+                stack += reversed(self._maildb.children(item))
+            #print 'stack:', stack
+        return ''.join(strings)
+
+    def section(self, section, sectionid, options):
+        """Prints a section.
+
+        When the section is flat, the 'sectionpost' specifies in what order to
+        print them. If it is a list, the order of the list will be kept. If it
+        is a PostSet, they will be sorted by their date.
+
+        Arguments:
+        section ---
+            Type: Section
+        sectionid --- The identifier of the section.
+            Type: int
+        options ---
+            Type: IndexOptions
+
+        Returns: HtmlString
+        """
+
+        l = []
+        sectiontitle, sectionposts, sectionopts = section
+        roots = self._maildb.roots()
+        threads = self._maildb.threads()
+
+        l.append(Html.section_begin('section_%s' % (sectionid,), sectiontitle))
+        if sectionopts['flat']:
+            l.append('<table class="flatlist">\n')
+            if isinstance(sectionposts, PostSet):
+                sectionposts = sectionposts.sorted_list()
+            for post in sectionposts:
+                l.append(self.post_summary(post, section, options))
+            l.append('</table>\n')
+        else:
+            if isinstance(sectionposts, list):
+                sectionposts = set(sectionposts)
+            for root in roots:
+                thread = threads[root]
+                if not (thread & sectionposts).is_set([]):
+                    l.append(self.thread(root, section, options))
+        l.append(Html.section_end())
+
+        return ''.join(l)
+
+    @staticmethod
+    def sections_setdefaultoptions(sections):
+        """Modifies the given sectionlist so that it will be a proper
+        sectionlist.
+
+        Arguments:
+        sections ---
+            Type: [(sectionname:str, sectionposts) |
+                   (sectionname:str, sectionposts, dict(str, something))]
+        
+        Returns: [Section]
+        """
 
         for i in range(len(sections)):
             try:
@@ -1495,102 +1843,75 @@ class Generator(object):
                 pass
             sections[i][2].setdefault('flat', False)
 
-        def write_toc_fun():
-            f.write("<div><ul>")
-            if self._maildb.has_cycle():
-                f.write('<li><a href="#posts_in_cycles">' +
-                        'Posts in cycles</a></li>\n')
-            for i, section in enumerate(sections):
-                sectiontitle, sectionposts, sectionopts = section
-                f.write('<li><a href="#%d">%s</a></li>\n' % (i, sectiontitle))
-            f.write("</ul></div>\n")
+    @staticmethod
+    def index_setdefaultoptions(options):
+        """Sets the default options of Generator.index in the given dictionary.
+
+        Arguments:
+        options ---
+            Type: dict(str, something)
+
+        Returns: IndexOptions
+        """
+
+        set_defaultoptions(options, Generator.index, ['self'])
+
+    def index(self, sections=None, write_toc=True, write_date=True,
+              shortsubject=False, shorttags=False, date_fun=None,
+              html_title='Heap index', html_h1='Heap index',
+              cssfile='heapindex.css'):
+        """Creates the index HTML file.
         
-        def write_post(post, section, subject, tags, flat=False):
-                author = re.sub('<.*?>','', post.author())
-                if write_date:
-                    if date_fun == None:
-                        date_str = post.date_str()
-                    else:
-                        date_str = date_fun(post, section)
-                    if date_str != None:
-                        date_html = ("&nbsp; (%s)" % date_str) 
-                    else:
-                        date_html = ''
-                else:
-                    date_html = ''
+        The created file is named 'index.html' and is placed in the html_dir
+        directory.
+        
+        Arguments:
+        sections --- The sections to print into the index.
+            Type: None | [(str, PrePostSet)]
+        write_toc --- If True, the index will contain a Table of Contents.
+            Type: bool
+        write_date --- If True, the dates of the posts will be printed.
+            Type: bool
+        shortsubject --- If True, the posts that have the same subject as
+            their parent will show a dash instead of their subject.
+            Type: bool
+        shorttags --- If True, the posts that have the same tags as
+            their parent will show a dash instead of their tags.
+            Type: bool
+        date_fun --- Function that specifies how to print the dates of the
+            posts. It will be called for each post summary that is written
+            into the index. When it returns None, no date will be printed.
+            Type: None | fun(Post, Section) -> (str | None)
+        html_title --- The string to print as the <title> of the HTML file.
+            Type: str
+        html_h1 --- The string to print as the title (<h1>) of the HTML file.
+            Type: str
+        cssfile --- The name of the CSS file that should be referenced.
+            Type: str
+        """
 
-                args = (post.htmlfilebasename(),
-                        quote_html(author), subject,
-                        tags, post.heapid(), date_html)
+        # Putting the arguments into the 'options' variable
+        options = locals().copy()
+        del options['self']
+        Generator.index_setdefaultoptions(options)
 
-                if flat: 
-                    f.write(html_post_table(*args))
-                else:
-                    f.write(html_post_div(*args))
+        # sections
+        if sections == None:
+            sections = [('All posts', self._maildb.all())]
+        if self._maildb.has_cycle():
+            sections.append(('Posts in cycles', self._maildb.cycles(), 'flat'))
+        Generator.sections_setdefaultoptions(sections)
 
-        def write_thread(heapid, indent, parentsubject, parenttags, section):
-            """Writes a post and all its followers into the output."""
-
-            if heapid != None:
-                post = self._maildb.heapid_to_post[heapid]
-                real_subject = post.subject()
-                if shortsubject and parentsubject == real_subject:
-                    subject = STAR
-                else:
-                    subject = quote_html(real_subject)
-
-                real_tags = post.tags()
-                if shorttags and parenttags == real_tags:
-                    tags = STAR
-                else:
-                    tags = real_tags
-
-                write_post(post, section, subject, tags, flat=False)
-
-            else:
-                real_subject = None
-                real_tags = None
-
-            if heapid in threadst:
-                for heapid2 in threadst[heapid]:
-                    write_thread(heapid2, indent+1, real_subject, real_tags,
-                                 section)
-            if heapid != None:
-                f.write("</div>\n")
-
+        # generating the index
         threadst = self._maildb.threadstruct()
         filename = os.path.join(self._maildb.html_dir(), 'index.html')
         with open(filename, 'w') as f:
-            f.write(html_header % ('Heap Index', 'heapindex.css', 'UMS Heap'))
-            roots = [ self._maildb.post(heapid) for heapid in threadst[None] ]
-            threads = [ self._maildb.postset(root).expf() for root in roots ]
-            first = True
+            f.write(Html.doc_header(html_title, html_h1, cssfile))
             if write_toc:
-                write_toc_fun()
+                f.write(self.index_toc(sections))
             for i, section in enumerate(sections):
                 sectiontitle, sectionposts, sectionopts = section
-                f.write(html_section_begin % (str(i), sectiontitle))
-
-                if not sectionopts['flat']:
-                    for root, thread in zip(roots, threads):
-                        if not (thread & sectionposts).is_set([]):
-                            write_thread(root.heapid(), 1, None, None, section)
-                else:
-                    f.write('<table class="mail">\n')
-                    for post in sectionposts.sorted_list():
-                        write_post(post, section, post.subject(), post.tags(),
-                                   flat=True)
-                    f.write('</table>\n')
-
-                f.write(html_section_end)
-            if self._maildb.has_cycle():
-                f.write(html_section_begin % ('posts_in_cycles',
-                                              'Posts in cycles'))
-                for post in self._maildb.cycles().sorted_list():
-                    subject = quote_html(post.subject())
-                    write_post(post, section, subject, post.tags(), flat=False)
-                    f.write("</div>\n")
-                f.write(html_section_end)
-            f.write(html_footer)
+                f.write(self.section(section, i, options))
+            f.write(Html.doc_footer())
         log('HTML generated.')
 

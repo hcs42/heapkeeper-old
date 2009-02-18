@@ -29,13 +29,13 @@ def format_date(post):
         return None
     else:
         d = time.localtime(heapmanip.calc_timestamp(post.date()))
-        return time.strftime('%Y.%m.%d.', d)
+        return time.strftime('(%Y.%m.%d.)', d)
 
 def read_date(post):
     "post_date -> datetime.datetime"
     return datetime.datetime.fromtimestamp(heapmanip.calc_timestamp(post.date()))
 
-def gen_index_html(maildb):
+def gen_index(maildb):
 
     def date_fun(post, section):
         prev = maildb.prev(post)
@@ -50,7 +50,7 @@ def gen_index_html(maildb):
 
     sections_ = sections(maildb)
     g = heapmanip.Generator(maildb)
-    g.index_html(sections_, write_toc=True, write_date=True,
-                 shortsubject=True, shorttags=True,
-                 date_fun=date_fun)
+    g.index(sections_, write_toc=True, write_date=True,
+            shortsubject=True, shorttags=True,
+            date_fun=date_fun)
 

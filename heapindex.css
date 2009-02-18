@@ -19,7 +19,7 @@ a
 	color: #ffc;
 }
 
-.mail
+.postsummary
 {
 	display: block;
 	border: 1px solid #ffc;
@@ -29,7 +29,7 @@ a
 	padding: 0.7em 0 0.7em 0.7em;
 }
 
-.mail .mail
+.postsummary .postsummary
 {
 	border: none;
 	margin-left: 0.5em;
