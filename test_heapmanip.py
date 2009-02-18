@@ -14,8 +14,10 @@ import tempfile
 import os
 import os.path
 import ConfigParser
+import re
 
 from heapmanip import *
+
 
 class MailDBHandler(object):
 
@@ -24,7 +26,7 @@ class MailDBHandler(object):
     
     # Creating an ordered array of dates.
     dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200\n' % i \
-              for i in range(20) ]
+              for i in range(6) ]
 
     def setUpDirs(self):
         self._dir = tempfile.mkdtemp()
@@ -46,8 +48,10 @@ class MailDBHandler(object):
         """Adds a new post to maildb."""
         messid = str(index) + '@'
         inreplyto = str(inreplyto) + '@' if inreplyto != None else ''
-        s = 'Message-Id: ' + messid + '\n' + \
-            'In-Reply-To: ' + inreplyto + '\n'
+        s = ('From: author%s\n' % (index,) +
+             'Subject: subject%s\n' % (index,) +
+             'Message-Id: %s\n' % (messid,) +
+             'In-Reply-To: %s\n' % (inreplyto,))
         if not self._skipdates:
             s += MailDBHandler.dates[index]
         self._maildb.add_new_post(Post.from_str(s))
@@ -87,6 +91,40 @@ class TestUtilities(unittest.TestCase):
         except HeapException, h:
             self.assertEquals(h.value, 'description')
             self.assertEquals(str(h), "'description'")
+
+
+class TestOptionHandling(unittest.TestCase):
+
+    def f(a, b, c=1, d=2):
+        pass
+
+    def test_arginfo(self):
+        def f(a, b, c=1, d=2):
+            pass
+        self.assertEquals(arginfo(f), (['a', 'b'], {'c':1, 'd':2}))
+        f2 = TestOptionHandling.f
+        self.assertEquals(arginfo(f2), (['a', 'b'], {'c':1, 'd':2}))
+
+    def test_set_defaultoptions(self):
+
+        def f(other1, a, b=1, c=2, other2=None):
+            pass
+
+        options = {'a':0, 'b': 1}
+        set_defaultoptions(options, f, ['other1', 'other2'])
+        self.assertEquals(options, {'a':0, 'b':1, 'c':2})
+
+        options = {'b': 1}
+        def try_():
+            set_defaultoptions(options, f, ['other1', 'other2'])
+        self.assertRaises(HeapException, try_)
+
+        options = {'a':0, 'b': 1, 'other': 2}
+        def try_():
+            set_defaultoptions(options, f, ['other1', 'other2'])
+        self.assertRaises(HeapException, try_)
+
+# global strings for tests
 
 post1_text = '''\
 From: author
@@ -128,6 +166,7 @@ Flag: flag2
 
 post1_output = post_output + '\n'
 post4_output = post_output + 'Hi\n'
+
 
 class TestPost1(unittest.TestCase):
 
@@ -1100,6 +1139,99 @@ class TestPostSetThreads(unittest.TestCase, MailDBHandler):
         self.tearDownDirs()
 
 
+class TestHtml(unittest.TestCase):
+
+    def testEscape(self):
+
+        def test(unescaped, escaped):
+            self.assertEquals(Html.escape(unescaped), escaped)
+
+        test('a<b', 'a&lt;b')
+        test('a>b', 'a&gt;b')
+        test('a&b', 'a&amp;b')
+
+    def testDocHeader(self):
+        r = re.compile(
+                '<title>mytitle</title>.*'
+                '<link rel=stylesheet href="mycss" type="text/css">.*'
+                '<h1 id="header">myh1</h1>',
+                re.IGNORECASE | re.DOTALL)
+        search = r.search(Html.doc_header('mytitle', 'myh1', 'mycss'))
+        self.assertNotEquals(search, None)
+
+    def testLink(self):
+        self.assertEquals(Html.link('mylink', 'mystuff'),
+                          '<a href="mylink">mystuff</a>')
+
+    def testEnclose(self):
+        self.assertEquals(Html.enclose('myclass', 'mystuff'),
+                          '<span class="myclass">mystuff</span>')
+        self.assertEquals(Html.enclose('myclass', 'mystuff', 'mytag'),
+                          '<mytag class="myclass">mystuff</mytag>')
+
+    def testPostSummary(self):
+        enc = Html.enclose
+        link = Html.link
+
+        # basic case
+        self.assertEquals(
+            Html.post_summary('mylink', 'myauthor', 'mysubject',
+                              ['mytag1', 'mytag2'], 'myindex', None, 'mytag'),
+            enc('author', link('mylink', 'myauthor'), 'mytag') + '\n' +
+            enc('subject', link('mylink', 'mysubject'), 'mytag') + '\n' +
+            enc('tags', link('mylink', '[mytag1, mytag2]'), 'mytag') + '\n' +
+            enc('index', '&lt;%s&gt;' % link('mylink', 'myindex'), 'mytag') +
+            '\n')
+
+        # subject is STAR
+        self.assertEquals(
+            Html.post_summary('mylink', 'myauthor', STAR,
+                              ['mytag1', 'mytag2'], 'myindex', None, 'mytag'),
+            enc('author', link('mylink', 'myauthor'), 'mytag') + '\n' +
+            enc('subject', enc('star', link('mylink', '&mdash;')), 'mytag') +
+            '\n' +
+            enc('tags', link('mylink', '[mytag1, mytag2]'), 'mytag') + '\n' +
+            enc('index', '&lt;%s&gt;' % link('mylink', 'myindex'), 'mytag') +
+            '\n')
+
+        # 'tags' is STAR
+        self.assertEquals(
+            Html.post_summary('mylink', 'myauthor', 'mysubject',
+                              STAR, 'myindex', None, 'mytag'),
+            enc('author', link('mylink', 'myauthor'), 'mytag') + '\n' +
+            enc('subject', link('mylink', 'mysubject'), 'mytag') + '\n' +
+            enc('tags', enc('star', link('mylink', '[&mdash;]')), 'mytag') +
+            '\n' +
+            enc('index', '&lt;%s&gt;' % link('mylink', 'myindex'), 'mytag') +
+            '\n')
+
+        # specifying a date
+        self.assertEquals(
+            Html.post_summary('mylink', 'myauthor', 'mysubject',
+                              ['mytag1', 'mytag2'], 'myindex', 'mydate',
+                              'mytag'),
+            enc('author', link('mylink', 'myauthor'), 'mytag') + '\n' +
+            enc('subject', link('mylink', 'mysubject'), 'mytag') + '\n' +
+            enc('tags', link('mylink', '[mytag1, mytag2]'), 'mytag') + '\n' +
+            enc('index', '&lt;%s&gt;' % link('mylink', 'myindex'), 'mytag') +
+            '\n' +
+            enc('date', link('mylink', 'mydate'), 'mytag') + '\n')
+
+    def testList(self):
+        self.assertEquals(
+            Html.list(['item 1', 'item 2']),
+            '<ul>\n'
+            '  <li>item 1</li>\n'
+            '  <li>item 2</li>\n'
+            '</ul>\n')
+        self.assertEquals(
+            Html.list(['item 1', 'item 2'], 'myclass'),
+            '<ul class="myclass">\n'
+            '  <li>item 1</li>\n'
+            '  <li>item 2</li>\n'
+            '</ul>\n')
+
+
 class TestGenerator(unittest.TestCase, MailDBHandler):
 
     """Tests the Generator class."""
@@ -1107,234 +1239,367 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
     def setUp(self):
         self.setUpDirs()
 
-    def indexHtml(self):
+    def init(self):
+        maildb = self._maildb = self.createMailDB()
+        g = Generator(maildb)
+        return maildb, g
+
+    def index_html(self):
         index_html_name = os.path.join(self._html_dir, 'index.html')
         return file_to_string(index_html_name)
 
-    def testEmpty(self):
-        """Tests the empty MailDB."""
-        maildb = self.createMailDB()
-        g = Generator(maildb)
-        g.index_html()
-        s = '''\
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <title>Heap Index</title>
-    <link rel=stylesheet href="heapindex.css" type="text/css">
-  </head>
-  <body>
-    <h1 id="header">UMS Heap</h1>
+    def _sections(self, sections):
+        assert(isinstance(sections, list))
+        for i in range(len(sections)):
+            section = sections[i]
+            if isinstance(section[1], list):
+                sectionposts = [ self._posts[postindex] 
+                               for postindex in section[1] ]
+                sectionoptions = {} if len(section) == 2 else section[2]
+                sections[i] = (section[0], sectionposts, sectionoptions)
 
-<div><ul><li><a href="#0">All posts</a></li>
-</ul></div>
-<div class="section">
-<span class="sectiontitle" id=0>All posts</span>
-</div>
-  </body>
-</html>
-'''
-        self.assertEquals(self.indexHtml(), s)
+        Generator.sections_setdefaultoptions(sections)
+        return sections
 
-    def test1(self):
-        """Tests the MailDB with two posts."""
+    def create_input(self, sections, options, sectionindex=None):
+        sections = self._sections(sections)
+        options2 = {'sections': sections}
+        for optionname, optionvalue in options.items():
+            options2[optionname] = optionvalue
+        Generator.index_setdefaultoptions(options2)
+        if sectionindex == None:
+            return sections, options2
+        else:
+            return sections, options2, sections[sectionindex]
 
-        # Initialisation
-        postfile1 = self.postFileName('1.mail')
-        postfile2 = self.postFileName('x.mail')
-        string_to_file('Message-Id: mess1\nTag: t1\nTag: t2', postfile1)
-        string_to_file('Message-Id: mess2\nIn-Reply-To: mess1', postfile2)
-        maildb = self.createMailDB()
-        g = Generator(maildb)
-        g.index_html()
-        s = '''\
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <title>Heap Index</title>
-    <link rel=stylesheet href="heapindex.css" type="text/css">
-  </head>
-  <body>
-    <h1 id="header">UMS Heap</h1>
 
-<div><ul><li><a href="#0">All posts</a></li>
-</ul></div>
-<div class="section">
-<span class="sectiontitle" id=0>All posts</span>
-<div class="mail">
-<span class="author"><a href="1.html"></a></span>
-<span class="subject"><a href="1.html"></a></span>
-<span class="tags">[<a href="1.html">t1, t2</a>]</span>
-<span class="index">&lt;<a href="1.html">1</a>&gt;</span>
-<span class="timestamp"><a href="1.html">&nbsp; ()</a></span>
-<div class="mail">
-<span class="author"><a href="x.html"></a></span>
-<span class="subject"><a href="x.html"></a></span>
-<span class="tags">[<a href="x.html"></a>]</span>
-<span class="index">&lt;<a href="x.html">x</a>&gt;</span>
-<span class="timestamp"><a href="x.html">&nbsp; ()</a></span>
-</div>
-</div>
-</div>
-  </body>
-</html>
-'''
-        #self.assertEquals(self.indexHtml(), s)
-
-    def test2(self):
-        """Tests the MailDB with five posts."""
-
-        self._maildb = self.createMailDB()
-        maildb = self._maildb
+    def test_index_toc(self):
+        maildb, g = self.init()
         self.create_threadst(skipdates=True)
-        g = Generator(maildb)
+        
+        sections, options = \
+            self.create_input(
+                [('Sec1', [1]), ('Sec2', [4])],
+                {'write_date': False})
 
-        g.index_html([('Sec1', ['1']), ('Sec2', ['4'])])
-        string_to_file(self.indexHtml(), '/a/_/2.html')
-        s = '''\
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <title>Heap Index</title>
-    <link rel=stylesheet href="heapindex.css" type="text/css">
-  </head>
-  <body>
-    <h1 id="header">UMS Heap</h1>
+        link = Html.link
+        self.assertEquals(
+            g.index_toc(sections),
+            Html.list(
+                [link('#section_0', 'Sec1'),
+                 link('#section_1', 'Sec2')],
+                'tableofcontents'))
 
-<div><ul><li><a href="#0">Sec1</a></li>
-<li><a href="#1">Sec2</a></li>
-</ul></div>
-<div class="section">
-<span class="sectiontitle" id=0>Sec1</span>
-<div class="mail">
-<span class="author"><a href="0.html"></a></span>
-<span class="subject"><a href="0.html"></a></span>
-<span class="tags">[<a href="0.html"></a>]</span>
-<span class="index">&lt;<a href="0.html">0</a>&gt;</span>
-<span class="timestamp"><a href="0.html">&nbsp; ()</a></span>
-<div class="mail">
-<span class="author"><a href="1.html"></a></span>
-<span class="subject"><a href="1.html"></a></span>
-<span class="tags">[<a href="1.html"></a>]</span>
-<span class="index">&lt;<a href="1.html">1</a>&gt;</span>
-<span class="timestamp"><a href="1.html">&nbsp; ()</a></span>
-<div class="mail">
-<span class="author"><a href="2.html"></a></span>
-<span class="subject"><a href="2.html"></a></span>
-<span class="tags">[<a href="2.html"></a>]</span>
-<span class="index">&lt;<a href="2.html">2</a>&gt;</span>
-<span class="timestamp"><a href="2.html">&nbsp; ()</a></span>
-</div>
-</div>
-<div class="mail">
-<span class="author"><a href="3.html"></a></span>
-<span class="subject"><a href="3.html"></a></span>
-<span class="tags">[<a href="3.html"></a>]</span>
-<span class="index">&lt;<a href="3.html">3</a>&gt;</span>
-<span class="timestamp"><a href="3.html">&nbsp; ()</a></span>
-</div>
-</div>
-</div>
-<div class="section">
-<span class="sectiontitle" id=1>Sec2</span>
-<div class="mail">
-<span class="author"><a href="4.html"></a></span>
-<span class="subject"><a href="4.html"></a></span>
-<span class="tags">[<a href="4.html"></a>]</span>
-<span class="index">&lt;<a href="4.html">4</a>&gt;</span>
-<span class="timestamp"><a href="4.html">&nbsp; ()</a></span>
-</div>
-</div>
-  </body>
-</html>
-'''
-        #self.assertEquals(self.indexHtml(), s)
+    def test_post_summary(self):
+        maildb, g = self.init()
+        self.create_threadst()
 
-    def testCycles(self):
-        """Tests the MailDB with cycles."""
+        sections, options, section = \
+            self.create_input(
+                [('Sec1', [1]), ('Sec2', [4])],
+                {'write_date': False},
+                sectionindex=0)
 
-        self._maildb = self.createMailDB()
-        maildb = self._maildb
-        self.create_threadst(skipdates=True)
+        div = Html.post_summary_div
+
+        # basic case
+        self.assertEquals(
+            g.post_summary(self._posts[0], section, options),
+            div('0.html', 'author0', 'subject0', [], '0', None))
+
+        # subject
+        self.assertEquals(
+            g.post_summary(self._posts[0], section, options, 'mysubject'),
+            div('0.html', 'author0', 'mysubject', [], '0', None))
+
+        self.assertEquals(
+            g.post_summary(self._posts[0], section, options, STAR),
+            div('0.html', 'author0', STAR, [], '0', None))
+
+        # tags
+        self.assertEquals(
+            g.post_summary(self._posts[0], section, options,tags=['t1','t2']),
+            div('0.html', 'author0', 'subject0', ['t1', 't2'], '0', None))
+
+        self.assertEquals(
+            g.post_summary(self._posts[0], section, options, tags=STAR),
+            div('0.html', 'author0', 'subject0', STAR, '0', None))
+
+    def test_post_summary__flat(self):
+        maildb, g = self.init()
+        self.create_threadst()
+
+        sections, options, section = \
+            self.create_input(
+                [('Sec1', [1]), ('Sec2', [4])],
+                {'write_date': False},
+                sectionindex=0)
+        section[2]['flat'] = True
+
+        table = Html.post_summary_table
+        self.assertEquals(
+            g.post_summary(self._posts[0], section, options),
+            table('0.html', 'author0', 'subject0', [], '0', None))
+
+    def test_post_summary__date(self):
+        
+        def date_fun(post, sectionarg):
+            self.assertEquals(sectionarg, section)
+            self.assertEquals(post.heapid(), str((self._posts.index(post))))
+            return 'date%s' % (self._posts.index(post),)
+
+        maildb, g = self.init()
+        self.create_threadst()
+
+        sections, options, section = \
+            self.create_input(
+                [('Sec1', [1]), ('Sec2', [4])],
+                {'date_fun': date_fun},
+                sectionindex=0)
+
+        div = Html.post_summary_div
+        self.assertEquals(
+            g.post_summary(self._posts[0], section, options),
+            div('0.html', 'author0', 'subject0', [], '0', 'date0'))
+
+    def test_thread(self):
+        maildb, g = self.init()
+        self.create_threadst()
+
+        sections, options, section = \
+            self.create_input(
+                [('Sec1', [1]), ('Sec2', [4])],
+                {'write_date': False},
+                sectionindex=0)
+
+        self.assertEquals(
+            g.thread(self._posts[2], section, options),
+            g.post_summary(self._posts[2], section, options) +
+            g.post_summary_end())
+
+        self.assertEquals(
+            g.thread(self._posts[1], section, options),
+            g.post_summary(self._posts[1], section, options) +
+            g.post_summary(self._posts[2], section, options) +
+            g.post_summary_end() +
+            g.post_summary_end())
+
+        self.assertEquals(
+            g.thread(self._posts[0], section, options),
+            g.post_summary(self._posts[0], section, options) +
+            g.post_summary(self._posts[1], section, options) +
+            g.post_summary(self._posts[2], section, options) +
+            g.post_summary_end() + # end of 2
+            g.post_summary_end() + # end of 1
+            g.post_summary(self._posts[3], section, options) +
+            g.post_summary_end() + # end of 3
+            g.post_summary_end()) # end of 0
+
+        sections, options, section = \
+            self.create_input(
+                [('Sec', [1, 4])],
+                {'write_date': False},
+                sectionindex=0)
+
+        self.assertEquals(
+            g.thread(None, section, options),
+            g.post_summary(self._posts[0], section, options) +
+            g.post_summary(self._posts[1], section, options) +
+            g.post_summary(self._posts[2], section, options) +
+            g.post_summary_end() + # end of 2
+            g.post_summary_end() + # end of 1
+            g.post_summary(self._posts[3], section, options) +
+            g.post_summary_end() + # end of 3
+            g.post_summary_end() + # end of 0
+            g.post_summary(self._posts[4], section, options) +
+            g.post_summary_end()) # end of 4
+
+    def test_thread__shortsubject(self):
+        maildb, g = self.init()
+        self.create_threadst()
+
+        sections, options, section = \
+            self.create_input(
+                [('Sec', [1, 4])],
+                {'write_date': False, 'shortsubject': True},
+                sectionindex=0)
+
+        # All posts have the same subject.
+
+        for i in range(5):
+            self._posts[i].set_subject('subject')
+
+        self.assertEquals(
+            g.thread(None, section, options),
+            g.post_summary(self._posts[0], section, options) +
+            g.post_summary(self._posts[1], section, options, subject=STAR) +
+            g.post_summary(self._posts[2], section, options, subject=STAR) +
+            g.post_summary_end() + # end of 2
+            g.post_summary_end() + # end of 1
+            g.post_summary(self._posts[3], section, options, subject=STAR) +
+            g.post_summary_end() + # end of 3
+            g.post_summary_end() + # end of 0
+            g.post_summary(self._posts[4], section, options) +
+            g.post_summary_end()) # end of 4
+
+        # All but one posts have the same subject.
+
+        self._posts[3].set_subject('subject3')
+
+        self.assertEquals(
+            g.thread(None, section, options),
+            g.post_summary(self._posts[0], section, options) +
+            g.post_summary(self._posts[1], section, options, subject=STAR) +
+            g.post_summary(self._posts[2], section, options, subject=STAR) +
+            g.post_summary_end() + # end of 2
+            g.post_summary_end() + # end of 1
+            g.post_summary(self._posts[3], section, options) +
+            g.post_summary_end() + # end of 3
+            g.post_summary_end() + # end of 0
+            g.post_summary(self._posts[4], section, options) +
+            g.post_summary_end()) # end of 4
+
+    def test_thread__cycles(self):
+        maildb, g = self.init()
+        self.create_threadst()
         maildb.post('1').set_inreplyto('2')
-        g = Generator(maildb)
 
-        g.index_html([('Sec1', ['0']), ('Sec2', ['4'])])
-#        s = '''\
-#<html>
-#  <head>
-#    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-#    <title>Heap Index</title>
-#    <link rel=stylesheet href="heapindex.css" type="text/css">
-#  </head>
-#  <body>
-#    <h1 id="header">UMS Heap</h1>
-#
-#<div><ul><li><a href="#posts_in_cycles">Posts in cycles</a></li>
-#<li><a href="#0">Sec1</a></li>
-#<li><a href="#1">Sec2</a></li>
-#</ul></div>
-#<div class="section">
-#<span class="sectiontitle" id=0>Sec1</span>
-#<div class="mail">
-#<a href="0.html">
-#<span class="author"></span>
-#<span class="subject"></span>
-#<span class="tags">[]</span>
-#<span class="index">&lt;0&gt;</span>
-#<span class="timestamp">&nbsp; ()</span>
-#</a>
-#<div class="mail">
-#<a href="3.html">
-#<span class="author"></span>
-#<span class="subject"></span>
-#<span class="tags">[]</span>
-#<span class="index">&lt;3&gt;</span>
-#<span class="timestamp">&nbsp; ()</span>
-#</a>
-#</div>
-#</div>
-#</div>
-#<div class="section">
-#<span class="sectiontitle" id=1>Sec2</span>
-#<div class="mail">
-#<a href="4.html">
-#<span class="author"></span>
-#<span class="subject"></span>
-#<span class="tags">[]</span>
-#<span class="index">&lt;4&gt;</span>
-#<span class="timestamp">&nbsp; ()</span>
-#</a>
-#</div>
-#</div>
-#<div class="section">
-#<span class="sectiontitle" id=posts_in_cycles>Posts in cycles</span>
-#<div class="mail">
-#<a href="2.html">
-#<span class="author"></span>
-#<span class="subject"></span>
-#<span class="tags">[]</span>
-#<span class="index">&lt;2&gt;</span>
-#<span class="timestamp">&nbsp; ()</span>
-#</a>
-#</div>
-#<div class="mail">
-#<a href="1.html">
-#<span class="author"></span>
-#<span class="subject"></span>
-#<span class="tags">[]</span>
-#<span class="index">&lt;1&gt;</span>
-#<span class="timestamp">&nbsp; ()</span>
-#</a>
-#</div>
-#</div>
-#  </body>
-#</html>
-#'''
-#        self.assertEquals(self.indexHtml(), s)
+        # One thread.
+        sections, options, section = \
+            self.create_input(
+                [('Sec', [1, 4])],
+                {'write_date': False},
+                sectionindex=0)
+
+        self.assertEquals(
+            g.thread(self._posts[0], section, options),
+            g.post_summary(self._posts[0], section, options) +
+            g.post_summary(self._posts[3], section, options) +
+            g.post_summary_end() + # end of 3
+            g.post_summary_end()) # end of 0
+
+        # All threads.
+        sections, options, section = \
+            self.create_input(
+                [('Sec', [1, 4])],
+                {'write_date': False},
+                sectionindex=0)
+        self.assertEquals(
+            g.thread(None, section, options),
+            g.post_summary(self._posts[0], section, options) +
+            g.post_summary(self._posts[3], section, options) +
+            g.post_summary_end() + # end of 3
+            g.post_summary_end() + # end of 0
+            g.post_summary(self._posts[4], section, options) +
+            g.post_summary_end()) # end of 4
+
+    def test_section(self):
+        maildb, g = self.init()
+        self.create_threadst()
+
+        # Tests empty section.
+        sections, options, section = \
+            self.create_input(
+                [('Sec', [])],
+                {'write_date': False},
+                sectionindex=0)
+
+        self.assertEquals(
+            g.section(section, 0, options),
+            Html.section_begin('section_0', 'Sec') +
+            Html.section_end())
+
+        # Tests where not every post is in the section.
+        sections, options, section = \
+            self.create_input(
+                [('Sec1', [1]), ('Sec2', [4])],
+                {'write_date': False},
+                sectionindex=0)
+
+        self.assertEquals(
+            g.section(section, 0, options),
+            Html.section_begin('section_0', 'Sec1') +
+            g.thread(self._posts[0], section, options) +
+            Html.section_end())
+
+        # Tests where more than one threads are in the section.
+        sections, options, section = \
+            self.create_input(
+                [('Sec', [1, 4])],
+                {'write_date': False},
+                sectionindex=0)
+
+        self.assertEquals(
+            g.section(section, 0, options),
+            Html.section_begin('section_0', 'Sec') +
+            g.thread(self._posts[0], section, options) +
+            g.thread(self._posts[4], section, options) +
+            Html.section_end())
+
+        # Tests flat printing
+
+        def flat_result(postindex1, postindex2):
+            return \
+                (Html.section_begin('section_0', 'Sec') +
+                 Html.enclose(
+                     'flatlist',
+                     g.post_summary(self._posts[postindex1], section,options)+
+                     g.post_summary(self._posts[postindex2], section,options),
+                     tag='table', newlines=True) +
+                 Html.section_end())
+
+        # Tests flat printing with list.
+        sections, options, section = \
+            self.create_input(
+                [('Sec', [1, 4])],
+                {'write_date': False},
+                sectionindex=0)
+        section[2]['flat'] = True
+        self.assertEquals(g.section(section, 0, options), flat_result(1, 4))
+
+        # Tests flat printing with list in the reversed order.
+        sections, options, section = \
+            self.create_input(
+                [('Sec', [4, 1])],
+                {'write_date': False},
+                sectionindex=0)
+        section[2]['flat'] = True
+        self.assertEquals(g.section(section, 0, options), flat_result(4, 1))
+
+        # Tests flat printing with PostSet.
+        sections, options, section = \
+            self.create_input(
+                [('Sec', maildb.postset([self._posts[1], self._posts[4]]))],
+                {'write_date': False},
+                sectionindex=0)
+        section[2]['flat'] = True
+        self.assertEquals(g.section(section, 0, options), flat_result(1, 4))
+
+    def test_index(self):
+
+        maildb, g = self.init()
+        self.create_threadst()
+
+        sections, options = \
+            self.create_input(
+                [('Sec1', [1]), ('Sec2', [4])],
+                 {'write_date': False,
+                  'write_toc': False,
+                  'html_title': 'myhtmltitle',
+                  'html_h1': 'myhtmlh1',
+                  'cssfile': 'mycssfile'})
+
+        g.index(**options)
+        self.assertEquals(
+            self.index_html(),
+            Html.doc_header('myhtmltitle', 'myhtmlh1', 'mycssfile') +
+            g.section(sections[0], 0, options) +
+            g.section(sections[1], 1, options) +
+            Html.doc_footer())
 
     def tearDown(self):
         self.tearDownDirs()
+
 
 if __name__ == '__main__':
     set_log(False)

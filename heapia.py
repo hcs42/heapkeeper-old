@@ -67,7 +67,7 @@ Callback functions (that can be defined in heapcustom.py):
         Returns: whether the given file was modified and should be reread from
         the disk.
 
-    gen_index_html(maildb):
+    gen_index(maildb):
         It should generate the index.html file.
 
         Args:
@@ -107,7 +107,7 @@ options = {'maildb': None,
            'auto_threadstruct': True,
            'heapcustom': 'heapcustom',
            'callbacks': {'sections': lambda maildb: None,
-                         'gen_index_html': None,
+                         'gen_index': None,
                          'edit': edit_default}}
 
 #    Some commands automatically re-generate the index.html when they run
@@ -150,21 +150,21 @@ def maildb():
 def auto():
     """(Re-)generates index.html if the auto option is true."""
     if options['auto_gen_var']:
-        gen_index_html()
+        gen_index()
         sys.stdout.flush()
     if options['auto_save']:
         maildb().save()
     if options['auto_threadstruct']:
         maildb().threadstruct()
 
-def gen_index_html():
+def gen_index():
     """Generates index.html."""
-    if options['callbacks']['gen_index_html'] != None:
-        sections = options['callbacks']['gen_index_html'](maildb())
+    if options['callbacks']['gen_index'] != None:
+        sections = options['callbacks']['gen_index'](maildb())
     else:
         sections = options['callbacks']['sections'](maildb())
         g = heapmanip.Generator(maildb())
-        g.index_html(sections)
+        g.index(sections)
 
 def gen_post_html():
     """Generates the html files for the posts."""
@@ -172,15 +172,15 @@ def gen_post_html():
     g.posts_to_html()
 
 def g():
-    gen_index_html()
+    gen_index()
 
 def ga():
-    gen_index_html()
+    gen_index()
     gen_post_html()
 
 def gs():
     maildb().save()
-    gen_index_html()
+    gen_index()
 
 def ps(pps):
     return maildb().postset(pps)

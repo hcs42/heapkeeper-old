@@ -1,13 +1,24 @@
-* <#1> Generator.{index_html,posts_to_html} should be refactored.
-    * the functions inside index_html should be extracted so that they can be
-      tested separately
-    *  the post HTML generator should now about the index to allow #2
+* <#1> Generator.posts_to_html should be refactored.
+    * the post HTML generator should now about the index to allow #2
+    * generating a file different from index.html
 
 * Tests:
-    * Generator (precond: #1)
+    * Generator: posts_to_html (precond: #1)
+    * Generator.index: more tests.
+        * 'write_date'
+        * 'write_toc'
+        * cycles
     * heapia
     * Post.load
     * heapmanip.Post.{set_tags, remove_tag}
+    * doc&test: MailDB.{children, roots, threads}
+        * dependencies?
+        * Html.table
+
+* docstrings:
+    * types into generator methods
+    * object instead of "something" and "andthing"
+    * extracting pseudo-types (like PrePostSet and SectionOptions)
 
 * Developer Guide
     * architecture
@@ -18,6 +29,8 @@
     * using wrappers to protect e.g. MailDB.posts()
     * consistent terminology: previous, parent or cause? next, child or
       consequence?
+
+* STAR should be renamed
 
 + MailDB.reload, and also an interface to heapia
 
