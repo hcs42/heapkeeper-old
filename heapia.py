@@ -89,14 +89,14 @@ import subprocess
 import heapmanip
 import ConfigParser
 
-start = time.time()
-
 def h():
     print __doc__
 
 def s():
     """Saves the mail database."""
+    start_timing()
     options['maildb'].save()
+    end_timing()
 
 def x():
     options['maildb'].save()
@@ -164,6 +164,8 @@ def auto():
     if options['auto_threadstruct']:
         maildb().threadstruct()
 
+start = time.time()
+
 def start_timing():
     global start
     start = time.time()
@@ -205,7 +207,10 @@ def gs():
     end_timing()
 
 def ps(pps):
+    start_timing()
     res = maildb().postset(pps)
+    end_timing()
+    return res
 
 def perform_operation(pps, operation):
     posts = ps(pps)
