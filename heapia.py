@@ -14,12 +14,12 @@ gs()               - generate index.html and save
 ps(pps)            - create a postset
 
 pt(pps)            - propagate tags
-at(pps, tag/tags)  - add tag/tags
-atr(pps, tag/tags) - add tag/tags recursively
-rt(pps, tag/tags)  - remove tag/tags
-rtr(pps, tag/tags) - remove tag/tags recursively
-st(pps, tag/tags)  - set tag/tags
-strec(pps, tag[s]) - set tag/tags recursively
+at(pps, pts)       - add tag/tags
+atr(pps, pts)      - add tag/tags recursively
+rt(pps, pts)       - remove tag/tags
+rtr(pps, pts)      - remove tag/tags recursively
+st(pps, pts)       - set tag/tags
+str_(pps, pts)     - set tag/tags recursively
 pS(pps)            - propagate subject
 sS(pps, subj)      - set subject
 sSr(pps, subj)     - set subject recursively
@@ -36,8 +36,9 @@ set_option(option, value) - setting an option
 get_option(option) - the value of an option
 
 Argument types:
-    pp = prepost = int | str | Post
-    pps = prepostset = prepost | [prepost] | set(prepost) | PostSet
+    pp = PrePost = int | str | Post
+    pps = PrePostSet = prepost | [prepost] | set(prepost) | PostSet
+    pts = PreTagSet = tag | set(tag) | [tag]
 
 Options:
     maildb --- The mail database.
@@ -120,9 +121,6 @@ options = {'maildb': None,
            'callbacks': {'sections': lambda maildb: None,
                          'gen_index_html': None,
                          'edit': edit_default}}
-
-#    Some commands automatically re-generate the index.html when they run
-#    successfully, if this option is True.
 
 def get_option(option):
     """Returns the value of the given option.
@@ -224,6 +222,9 @@ def perform_operation(pps, operation):
         operation(posts)
         auto()
 
+
+##### tag #####
+
 def tagset(tags):
     """Converts the argument to set(tag).
     
@@ -271,7 +272,7 @@ def at(pps, tags):
     pps --
         Type: PrePostSet
     tags --
-        Type: set(str) | [str]
+        Type: PreTagSet
     """
 
     tags = tagset(tags)
@@ -287,7 +288,7 @@ def rt(pps, tags):
     pps --
         Type: PrePostSet
     tags --
-        Type: set(str) | [str]
+        Type: PreTagSet
     """
 
     tags = tagset(tags)
@@ -303,7 +304,7 @@ def st(pps, tags):
     pps --
         Type: PrePostSet
     tags --
-        Type: set(str) | [str]
+        Type: PreTagSet
     """
 
     tags = tagset(tags)
@@ -320,7 +321,7 @@ def atr(pps, tags):
     pps --
         Type: PrePostSet
     tags --
-        Type: set(str) | [str]
+        Type: PreTagSet
     """
 
     tags = tagset(tags)
@@ -337,7 +338,7 @@ def rtr(pps, tags):
     pps --
         Type: PrePostSet
     tags --
-        Type: set(str) | [str]
+        Type: PreTagSet
     """
 
     tags = tagset(tags)
@@ -346,7 +347,7 @@ def rtr(pps, tags):
             p.set_tags(set(p.tags()) - tags)
     perform_operation(pps, operation)
 
-def strec(pps, tags):
+def str_(pps, tags):
     """Removes the given tags from the posts of the given postset and all their
     consequences.
 
@@ -354,7 +355,7 @@ def strec(pps, tags):
     pps --
         Type: PrePostSet
     tags --
-        Type: set(str) | [str]
+        Type: PreTagSet
     """
 
     tags = tagset(tags)
@@ -362,6 +363,9 @@ def strec(pps, tags):
         for p in posts.expf():
             p.set_tags(tags)
     perform_operation(pps, operation)
+
+
+##### subject #####
 
 def pS(pps):
     """Propagates the subject of the given postset to all its children.
@@ -432,6 +436,9 @@ def cSr(pps):
 
     perform_operation(pps,
                       lambda posts: posts.expf().forall(capitalize_subject))
+
+
+##### etc #####
 
 def d(pps):
     """Deletes given postset.
