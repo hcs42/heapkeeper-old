@@ -16,6 +16,8 @@ ps(pps)            - create a postset
 pt(pps)            - propagate tags
 at(pps, tag/tags)  - add tag/tags
 atr(pps, tag/tags) - add tag/tags recursively
+rt(pps, tag/tags)  - remove tag/tags
+rtr(pps, tag/tags) - remove tag/tags recursively
 pS(pps)            - propagate subject
 sS(pps, subj)      - set subject
 sSr(pps, subj)     - set subject recursively
@@ -307,6 +309,23 @@ def atr(pps, tags):
     def operation(posts):
         for p in posts.expf():
             p.set_tags(tags.union(p.tags()))
+    perform_operation(pps, operation)
+
+def rtr(pps, tags):
+    """Removes the given tags from the posts of the given postset and all their
+    consequences.
+
+    Arguments:
+    pps --
+        Type: PrePostSet
+    tags --
+        Type: set(str) | [str]
+    """
+
+    tags = tagset(tags)
+    def operation(posts):
+        for p in posts.expf():
+            p.set_tags(set(p.tags()) - tags)
     perform_operation(pps, operation)
 
 def pS(pps):
