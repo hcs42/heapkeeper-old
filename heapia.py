@@ -20,6 +20,7 @@ rt(pps, pts)       - remove tag/tags
 rtr(pps, pts)      - remove tag/tags recursively
 st(pps, pts)       - set tag/tags
 str_(pps, pts)     - set tag/tags recursively
+
 pS(pps)            - propagate subject
 sS(pps, subj)      - set subject
 sSr(pps, subj)     - set subject recursively
@@ -281,38 +282,6 @@ def at(pps, tags):
             p.set_tags(tags.union(p.tags()))
     perform_operation(pps, operation)
 
-def rt(pps, tags):
-    """Removes the given tags to the given postset.
-    
-    Arguments:
-    pps --
-        Type: PrePostSet
-    tags --
-        Type: PreTagSet
-    """
-
-    tags = tagset(tags)
-    def operation(posts):
-        for p in posts:
-            p.set_tags(set(p.tags()) - tags)
-    perform_operation(pps, operation)
-
-def st(pps, tags):
-    """Sets the given tags on the given postset.
-    
-    Arguments:
-    pps --
-        Type: PrePostSet
-    tags --
-        Type: PreTagSet
-    """
-
-    tags = tagset(tags)
-    def operation(posts):
-        for p in posts:
-            p.set_tags(tags)
-    perform_operation(pps, operation)
-
 def atr(pps, tags):
     """Adds the given tags to the posts of the given postset and all their
     consequences.
@@ -330,6 +299,22 @@ def atr(pps, tags):
             p.set_tags(tags.union(p.tags()))
     perform_operation(pps, operation)
 
+def rt(pps, tags):
+    """Removes the given tags to the given postset.
+    
+    Arguments:
+    pps --
+        Type: PrePostSet
+    tags --
+        Type: PreTagSet
+    """
+
+    tags = tagset(tags)
+    def operation(posts):
+        for p in posts:
+            p.set_tags(set(p.tags()) - tags)
+    perform_operation(pps, operation)
+
 def rtr(pps, tags):
     """Removes the given tags from the posts of the given postset and all their
     consequences.
@@ -345,6 +330,22 @@ def rtr(pps, tags):
     def operation(posts):
         for p in posts.expf():
             p.set_tags(set(p.tags()) - tags)
+    perform_operation(pps, operation)
+
+def st(pps, tags):
+    """Sets the given tags on the given postset.
+    
+    Arguments:
+    pps --
+        Type: PrePostSet
+    tags --
+        Type: PreTagSet
+    """
+
+    tags = tagset(tags)
+    def operation(posts):
+        for p in posts:
+            p.set_tags(tags)
     perform_operation(pps, operation)
 
 def str_(pps, tags):
