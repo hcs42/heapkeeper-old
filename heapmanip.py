@@ -319,6 +319,9 @@ class Post(object):
         self._body = body.strip() + '\n'
         self.touch()
 
+    def body_contains(self, regexp):
+        return re.search(regexp, self._body) != None
+
     # Parsing and printing
 
     @staticmethod
