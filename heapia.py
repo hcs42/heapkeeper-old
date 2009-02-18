@@ -26,6 +26,7 @@ sS(pps, subj)      - set subject
 sSr(pps, subj)     - set subject recursively
 cS(pps, subj)      - capitalize the subject
 cSr(pps, subj)     - capitalize the subject recursively
+
 d(pps)             - delete
 dr(pps)            - delete recursively
 j(pp, pp)          - join two threads

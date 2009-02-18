@@ -19,6 +19,13 @@
     * consistent terminology: previous, parent or cause? next, child or
       consequence?
 
+* heapia: atr, rt, rtr, sr, str_ are almost the same, they could use the same
+  function and contain only the differences:
+
+    def rtr(pps, tags):
+        """..."""
+        tag_operation(lambda post, tags: post.set_tags(set(post.tags()) - tags))
+
 + MailDB.reload, and also an interface to heapia
 
 + <#2> Post generator: (precond: #1)
