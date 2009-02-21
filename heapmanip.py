@@ -1562,7 +1562,7 @@ class Html():
     def post_summary_div(link, author, subject, tags, index, date):
         """Creates a summary for a post as a div."""
         return \
-            '<div class="postsummary">' + \
+            '<div class="postsummary">\n' + \
             Html.post_summary(link, author, subject, tags, index, date, 'span')
 
     @staticmethod
