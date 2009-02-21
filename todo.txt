@@ -63,6 +63,9 @@
     + creating links from post-references. Idea:
       Original post: <<<!post: 123>>>
       In Post HTML: <a href="123.post">&lt;&lt;&lt;post: 123&gt;&gt;&gt;</a>
+    + any inline links (instead of cites):
+      Original post: what about [this|http://...] thing?
+      In Post HTML:  what about <a href="http://...">this</a> thing?
     + creating flags from <<<metatext>>> (e.g. todo flag)
         * How to show the flags like "todo" in the index? Maybe they should be
          tags, and not flags?
@@ -73,6 +76,10 @@
     + formatting _underline_ and *bold* text: do we want it? (probably not)
     + the post's HTML could contain the whole thread of the post below the post
       itself?
+    + post references for non-existent posts with explicit id-s:
+      Original post1: <<<post:id=boring_stuff>>>
+      Original post2: As I said in [this|post:id=boring_stuff] mail...
+      Post2 in HTML:  what about <a href="http://...">this</a> thing?
 
 + Generator: different colours for the posts that are not in a section but
   their thread is
