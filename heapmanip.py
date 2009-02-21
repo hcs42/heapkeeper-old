@@ -1622,17 +1622,24 @@ class Generator(object):
         super(Generator, self).__init__()
         self._maildb = maildb
 
-    def posts_to_html(self):
+    def posts_to_html(self, indexoptions={}):
         """Creates an HTML file for each post that are not deleted."""
+        indexoptions = indexoptions.copy()
+        self.index_setdefaultoptions(indexoptions)
         for post in self._maildb.posts():
             with open(post.htmlfilename(), 'w') as f:
                 h1 = Html.escape(post.author()) + ': ' + \
                      Html.escape(post.subject())
                 f.write(Html.doc_header(h1, h1, 'heapindex.css'))
                 f.write('(' + post.date_str() + ')')
-                f.write('<pre>')
+                f.write('<pre>\n')
                 f.write(Html.escape(post.body()))
-                f.write('</pre>')
+                f.write('</pre>\n')
+                sections = [('Thread', [post])]
+                self.sections_setdefaultoptions(sections)
+                thread = self.thread(self._maildb.root(post),
+                                     sections[0], indexoptions)
+                f.write(thread)
                 f.write(Html.doc_footer())
 
     def index_toc(self, sections):
