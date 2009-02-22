@@ -66,13 +66,13 @@ td
 
 .subject a:visited
 {
-	color: #888;
+	color: #666;
     text-decoration: underline;
 }
 
 .subject a:active
 {
-	color: #888;
+	color: #666;
 }
 
 .subject .star a:link
@@ -115,6 +115,11 @@ td
 .post_inactive span a
 {
     color: gray;
+}
+
+.post_inactive .subject a
+{
+    font-weight: normal;
 }
 
 /* author, sectiontitle */

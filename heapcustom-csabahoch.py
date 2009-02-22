@@ -10,7 +10,7 @@ import datetime
 
 def sections(maildb):
     ps_all = maildb.all().copy()
-    ps_heap = ps_all.collect.has_tag('heap').exp()
+    ps_heap = ps_all.collect.has_tag('heap')
     ps_all -= ps_heap
     ps_cp = ps_all.collect.has_tag('programozás')
     ps_cp |= ps_all.collect.has_tag('c++')

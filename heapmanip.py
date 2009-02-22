@@ -1561,16 +1561,22 @@ class Html():
     @staticmethod
     def post_summary_div(link, author, subject, tags, index, date, active):
         """Creates a summary for a post as a div."""
+        class_ = 'postsummary'
+        if not active:
+            class_ += ' post_inactive'
         return \
-            '<div class="postsummary%s">\n' % \
-                ('' if active else ' post_inactive') + \
-            Html.post_summary(link, author, subject, tags, index, date, 'span')
+            '<div class="postbox">\n' + \
+            Html.enclose(
+                class_,
+                Html.post_summary(
+                    link, author, subject, tags, index, date, 'span'))
 
     @staticmethod
     def post_summary_table(link, author, subject, tags, index, date, active):
         """Creates a summary for a post as a row of a table."""
+        class_attr = '' if active else ' post_inactive'
         return \
-            '<tr>' + \
+            '<tr class="postsummary%s">' % (class_attr,) + \
             Html.post_summary(link, author, subject, tags, index, date, 'td')+\
             '</tr>\n'
 
