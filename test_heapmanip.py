@@ -1305,25 +1305,26 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         # basic case
         self.assertEquals(
             g.post_summary(self._posts[0], section, options),
-            div('0.html', 'author0', 'subject0', [], '0', None))
+            div('0.html', 'author0', 'subject0', [], '0', None, False))
 
         # subject
         self.assertEquals(
             g.post_summary(self._posts[0], section, options, 'mysubject'),
-            div('0.html', 'author0', 'mysubject', [], '0', None))
+            div('0.html', 'author0', 'mysubject', [], '0', None, False))
 
         self.assertEquals(
             g.post_summary(self._posts[0], section, options, STAR),
-            div('0.html', 'author0', STAR, [], '0', None))
+            div('0.html', 'author0', STAR, [], '0', None, False))
 
         # tags
         self.assertEquals(
             g.post_summary(self._posts[0], section, options,tags=['t1','t2']),
-            div('0.html', 'author0', 'subject0', ['t1', 't2'], '0', None))
+            div('0.html', 'author0', 'subject0', ['t1', 't2'], '0', None,
+                False))
 
         self.assertEquals(
             g.post_summary(self._posts[0], section, options, tags=STAR),
-            div('0.html', 'author0', 'subject0', STAR, '0', None))
+            div('0.html', 'author0', 'subject0', STAR, '0', None, False))
 
     def test_post_summary__flat(self):
         maildb, g = self.init()
@@ -1339,7 +1340,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         table = Html.post_summary_table
         self.assertEquals(
             g.post_summary(self._posts[0], section, options),
-            table('0.html', 'author0', 'subject0', [], '0', None))
+            table('0.html', 'author0', 'subject0', [], '0', None, False))
 
     def test_post_summary__date(self):
         
@@ -1360,7 +1361,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         div = Html.post_summary_div
         self.assertEquals(
             g.post_summary(self._posts[0], section, options),
-            div('0.html', 'author0', 'subject0', [], '0', 'date0'))
+            div('0.html', 'author0', 'subject0', [], '0', 'date0', False))
 
     def test_thread(self):
         maildb, g = self.init()
