@@ -1559,14 +1559,14 @@ class Html():
         return ''.join(l)
 
     @staticmethod
-    def post_summary_div(link, author, subject, tags, index, date):
+    def post_summary_div(link, author, subject, tags, index, date, active):
         """Creates a summary for a post as a div."""
         return \
-            '<div class="postsummary">' + \
+            '<div class="postsummary%s">' % ('' if active else ' post_inactive') + \
             Html.post_summary(link, author, subject, tags, index, date, 'span')
 
     @staticmethod
-    def post_summary_table(link, author, subject, tags, index, date):
+    def post_summary_table(link, author, subject, tags, index, date, active):
         """Creates a summary for a post as a row of a table."""
         return \
             '<tr>' + \
@@ -1692,7 +1692,7 @@ class Generator(object):
             date_str = None
 
         args = (post.htmlfilebasename(), author, subject, tags, post.heapid(),
-                date_str)
+                date_str, post in section[1])
 
         if section[2]['flat']: 
             return Html.post_summary_table(*args)

@@ -19,7 +19,7 @@ a
 	color: #ffc;
 }
 
-.postsummary
+.postbox
 {
 	display: block;
 	border: 1px solid #ffc;
@@ -29,7 +29,7 @@ a
 	padding: 0.7em 0 0.7em 0.7em;
 }
 
-.postsummary .postsummary
+.postbox .postbox
 {
 	border: none;
 	margin-left: 0.5em;
@@ -110,6 +110,11 @@ td
 .index a:active
 {
 	color: #aaa;
+}
+
+.post_inactive span a
+{
+    color: gray;
 }
 
 /* author, sectiontitle */
