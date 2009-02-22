@@ -1636,6 +1636,8 @@ class Generator(object):
         h1 = Html.escape(post.author()) + ': ' + \
              Html.escape(post.subject())
         l.append(Html.doc_header(h1, h1, 'heapindex.css'))
+        l.append(Html.link('index.html', 'Back to the index'))
+        l.append('\n')
         l.append(Html.enclose('index', Html.escape('<%s>' % (post.heapid(),))))
         l.append('\n')
         l.append(Html.enclose('date', '(%s)' % (post.date_str(),)))
