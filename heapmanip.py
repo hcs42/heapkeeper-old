@@ -1574,9 +1574,11 @@ class Html():
     @staticmethod
     def post_summary_table(link, author, subject, tags, index, date, active):
         """Creates a summary for a post as a row of a table."""
-        class_attr = '' if active else ' post_inactive'
+        class_ = 'postsummary'
+        if not active:
+            class_ += ' post_inactive'
         return \
-            '<tr class="postsummary%s">' % (class_attr,) + \
+            '<tr class="%s">' % (class_,) + \
             Html.post_summary(link, author, subject, tags, index, date, 'td')+\
             '</tr>\n'
 
