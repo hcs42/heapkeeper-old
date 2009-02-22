@@ -1562,7 +1562,8 @@ class Html():
     def post_summary_div(link, author, subject, tags, index, date, active):
         """Creates a summary for a post as a div."""
         return \
-            '<div class="postsummary%s">' % ('' if active else ' post_inactive') + \
+            '<div class="postsummary%s">\n' % \
+                ('' if active else ' post_inactive') + \
             Html.post_summary(link, author, subject, tags, index, date, 'span')
 
     @staticmethod
@@ -1621,19 +1622,36 @@ class Generator(object):
 
         super(Generator, self).__init__()
         self._maildb = maildb
+    
+    def post(self, post, indexoptions):
+        l = []
+        h1 = Html.escape(post.author()) + ': ' + \
+             Html.escape(post.subject())
+        l.append(Html.doc_header(h1, h1, 'heapindex.css'))
+        l.append(Html.enclose('index', Html.escape('<%s>' % (post.heapid(),))))
+        l.append('\n')
+        l.append(Html.enclose('date', '(%s)' % (post.date_str(),)))
+        l.append('\n')
 
-    def posts_to_html(self):
+        # thread
+        sections = [('Thread', [post])]
+        self.sections_setdefaultoptions(sections)
+        thread = \
+            self.thread(self._maildb.root(post), sections[0], indexoptions)
+        l.append(thread)
+
+        l.append(Html.enclose('postbody', Html.escape(post.body()), tag='pre'))
+
+        l.append(Html.doc_footer())
+        return ''.join(l)
+
+    def posts_to_html(self, indexoptions={}):
         """Creates an HTML file for each post that are not deleted."""
+        indexoptions = indexoptions.copy()
+        self.index_setdefaultoptions(indexoptions)
         for post in self._maildb.posts():
             with open(post.htmlfilename(), 'w') as f:
-                h1 = Html.escape(post.author()) + ': ' + \
-                     Html.escape(post.subject())
-                f.write(Html.doc_header(h1, h1, 'heapindex.css'))
-                f.write('(' + post.date_str() + ')')
-                f.write('<pre>')
-                f.write(Html.escape(post.body()))
-                f.write('</pre>')
-                f.write(Html.doc_footer())
+                f.write(self.post(post, indexoptions))
 
     def index_toc(self, sections):
         """Creates a table of contents for the sections and for the posts in
