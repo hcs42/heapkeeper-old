@@ -2,6 +2,13 @@
     * the post HTML generator should now about the index to allow #2
     * generating a file different from index.html
 
+* Generator: 
+    * Should sections be classes? Or should the "sections" be one class? Or
+      should the whole "indexlist" be one class?
+    * Printing whether to print cycles should be specified in the "sections" or
+      "indexlist". E.g. if the section is (name, heapmanip.CYCLES) instead of
+      (name, [Post]) or (name, PostSet), then we print cycles.
+
 * Tests:
     * Generator: posts_to_html (precond: #1)
     * Generator.index: more tests.
