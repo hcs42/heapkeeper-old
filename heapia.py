@@ -160,7 +160,7 @@ def maildb():
     return options['maildb']
 
 def all_mail():
-    return options['maildb'].all()
+    return maildb().all()
 
 def auto():
     """(Re-)generates index.html if the auto option is true."""
