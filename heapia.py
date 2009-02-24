@@ -34,6 +34,7 @@ e(pp)              - edit the post as a file
 dl()               - download new mail
 
 maildb()           - the mail database object
+all_mail()         - shorthand for maildb().all()
 set_option(option, value) - setting an option
 get_option(option) - the value of an option
 
@@ -157,6 +158,9 @@ def set_callback(callbackname, callbackfun):
 
 def maildb():
     return options['maildb']
+
+def all_mail():
+    return options['maildb'].all()
 
 def auto():
     """(Re-)generates index.html if the auto option is true."""
