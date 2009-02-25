@@ -2,6 +2,11 @@
     * the post HTML generator should now about the index to allow #2
     * generating a file different from index.html
 
+* Refactoring:
+    * Handling options
+    * A heapcustomlib module should be created to include common things of
+      customlibs.
+
 * Generator: 
     * Should sections be classes? Or should the "sections" be one class? Or
       should the whole "indexlist" be one class?
