@@ -12,6 +12,7 @@ g()                - generate index.html
 ga()               - generate all html
 gs()               - generate index.html and save
 ps(pps)            - create a postset
+ls(ps)             - get a summary of a postset
 
 pt(pps)            - propagate tags
 at(pps, pts)       - add tag/tags
@@ -34,6 +35,7 @@ e(pp)              - edit the post as a file
 dl()               - download new mail
 
 maildb()           - the mail database object
+c()                - shorthand for maildb().all().collect
 set_option(option, value) - setting an option
 get_option(option) - the value of an option
 
@@ -158,6 +160,9 @@ def set_callback(callbackname, callbackfun):
 def maildb():
     return options['maildb']
 
+def c():
+    return maildb().all().collect
+
 def auto():
     """(Re-)generates index.html if the auto option is true."""
     if options['auto_gen_var']:
@@ -215,6 +220,12 @@ def ps(pps):
     res = maildb().postset(pps)
     end_timing()
     return res
+
+def ls(ps):
+    for p in ps:
+        sum = p.subject() if len(p.subject()) < 40 \
+            else p.subject()[:37] + '...'
+        print p.author() + ' ' + p.date() + '  ' + sum
 
 def perform_operation(pps, operation):
     posts = ps(pps)
