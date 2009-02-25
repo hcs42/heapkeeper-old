@@ -14,6 +14,7 @@
       "sections" or "indexlist". E.g. if the section is
       (name, heapmanip.CYCLES) instead of
       (name, [Post]) or (name, PostSet), then we print cycles.
+    * Generator.index should be able to get the threads as an argument.
 
 * Tests:
     * Generator: posts_to_html (precond: #1)
