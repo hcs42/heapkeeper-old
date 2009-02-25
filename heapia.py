@@ -12,6 +12,7 @@ g()                - generate index.html
 ga()               - generate all html
 gs()               - generate index.html and save
 ps(pps)            - create a postset
+ls(ps)             - get a summary of a postset
 
 pt(pps)            - propagate tags
 at(pps, pts)       - add tag/tags
@@ -219,6 +220,12 @@ def ps(pps):
     res = maildb().postset(pps)
     end_timing()
     return res
+
+def ls(ps):
+    for p in ps:
+        sum = p.subject() if len(p.subject()) < 40 \
+            else p.subject()[:37] + '...'
+        print p.author() + ' ' + p.date() + '  ' + sum
 
 def perform_operation(pps, operation):
     posts = ps(pps)
