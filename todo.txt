@@ -5,8 +5,9 @@
 * Generator: 
     * Should sections be classes? Or should the "sections" be one class? Or
       should the whole "indexlist" be one class?
-    * Printing whether to print cycles should be specified in the "sections" or
-      "indexlist". E.g. if the section is (name, heapmanip.CYCLES) instead of
+    * Printing whether to print cycles should be specified in the
+      "sections" or "indexlist". E.g. if the section is
+      (name, heapmanip.CYCLES) instead of
       (name, [Post]) or (name, PostSet), then we print cycles.
 
 * Tests:
@@ -46,6 +47,8 @@
 
 * STAR should be renamed
 
+* A heaplib module should be created from the functions that have nothing to do
+  with the heap, for example datetime handling functions.
 
 + MailDB.reload, and also an interface to heapia
 
