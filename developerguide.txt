@@ -13,6 +13,8 @@ There are text files that contain information about the Manipulator:
     todo.txt: Our feature and bug tracking "system".
     userguide.txt: User Guide.
     developerguide.txt: Developer Guide.
+    patterns.txt: Developer Guide: Patterns.
+    codingconventions.txt: Developer Guide: Coding Conventions.
 
 The Manipulator consists of Python modules.
 
@@ -131,4 +133,6 @@ documented in MailDB's docstring. (Here too, maybe in more detail.)
 It is important to keep in mind that MailDB takes a lazy approach on
 handling these members. If they are needed, and they are not there
 (i.e. their value is None), they are produced, but no sooner.
+
+
 
