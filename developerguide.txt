@@ -72,7 +72,7 @@ CLASSES
 
 MailDB Class
 
-This class is serves as both an outermost container for all posts
+This class serves as both an outermost container for all posts
 and as a representation of the relationships between them. The
 most authentic list of all Post objects on the Heap is internally
 MailDB.heapid_to_post.values(). Thus, heapid_to_post can be seen as the
