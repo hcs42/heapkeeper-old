@@ -52,3 +52,83 @@ shows before its text:
 * other: documentation, testing, refactoring
 
 The items are in sorted in a descending order according to their prorities.
+
+
+GLOSSARY (TODO)
+
+delegate -
+Heap -
+heapcustom -
+heapia -
+heapid -
+manipulator -
+messid - 
+post -
+postset -
+prepostset -
+tag -
+
+CLASSES
+
+MailDB Class
+
+This class is serves as both an outermost container for all posts
+and as a representation of the relationships between them. The
+most authentic list of all Post objects on the Heap is internally
+MailDB.heapid_to_post.values(). Thus, heapid_to_post can be seen as the
+most basic data member of MailDB.
+
+heapid_to_post is a dict that, as the name suggests, assings posts
+to heapids. (Mind you, 'heapid_to_post' is to be read as 'heapid =>
+post', not as 'assigns heapid to post'.) This dict gets modified only by
+_add_post_to_dicts, which itself is called upon by _init() (an offspring
+of __init__) and add_new_posts(). _init() simply fills up heapid_to_post
+by looking at the list of .mail files in the mail directory, creating
+the Post objects on the fly, while add_new_posts() adds already created
+Post objects. The Post object also needs to be notified that it has been
+added to a MailDB via Post.add_to_maildb. add_new_post() does this, but
+_init() can skip this, as Post.from_file() already includes this action.
+
+heapid_to_post is then used as a source of all heapids, all posts and
+of course the post-to-heapid mapping whenever needed; though it is
+accessed by convenience functions, namely heapids(), real_posts() and
+post(). Not many functions are to access heapid_to_post directly, as
+it is a well-guarded implementation detail that the fewer know of, the
+safer it is.
+
+Another such dict is messid_to_heapid (messid => heapid). It is
+written by _add_post_to_dicts, and read only by post_by_messid.
+
+Values of heapid_to_post also include deleted posts. Deletion, as of
+now, is a delicate matter. Removing the .mail file altogether would
+result in downloading the deleted post again on the next syncing with
+the IMAP server, so the .mail file stays in place for deleted posts,
+albeit without any content but a header of two lines, a Message-Id:
+(which we still need to match the .mail file to the e-mail in the IMAP
+Inbox) and a Flag: deleted line. real_posts() return this untouched
+list of all posts, thus including deleted ones. Should you need a list
+that excludes these undead posts (and most probably you should), use
+post().
+
+If you have followed our trip this far, it is the first time you
+encounter evidence a basic principle of MailDB's architecture. I've
+already hinted that most of MailDB's data members are all generated
+from the two authentic sources, heapid_to_post and messid_to_heapid.
+Generating all these data members is expensive, so it is done only
+when necessary. The necessity of regenerating is indicated by calling
+touch(). This simple method does nothing but discard these generated
+data members, the names of which can be found here:
+    _posts
+    _all
+    _threadstruct
+    _cycles
+    _roots
+    _threads
+
+The names are pretty much self-explanatory, the exact structure is
+documented in MailDB's docstring. (Here too, maybe in more detail.)
+
+It is important to keep in mind that MailDB takes a lazy approach on
+handling these members. If they are needed, and they are not there
+(i.e. their value is None), they are produced, but no sooner.
+
