@@ -312,7 +312,6 @@ class Post(object):
     def datetime(self):
         return datetime.datetime.fromtimestamp(self.timestamp())
 
-    # TODO tested only by hand
     def before(self, *dt):
         return datetime.datetime(*dt) > self.datetime()
 
@@ -320,12 +319,8 @@ class Post(object):
         return datetime.datetime(*dt) <= self.datetime()
 
     def between(self, dts, dte):
-        return (datetime.datetime(*dts) <= self.datetime()) \
-            and (datetime.datetime(*dte) > self.datetime())
-
-    def not_between(self, dts, dte):
-        return not ((datetime.datetime(*dts) <= self.datetime()) \
-            and (datetime.datetime(*dte) > self.datetime()))
+        date = self.datetime()
+        return datetime.datetime(*dts) <= date < datetime.datetime(*dte)
 
     def tags(self):
         """Returns the tags of the email.

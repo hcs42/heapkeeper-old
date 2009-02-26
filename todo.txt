@@ -30,6 +30,7 @@
     * heapia
     * Post.load
     * heapmanip.Post.{set_tags, remove_tag}
+    * heapmanip.Post.{before, after, between}
     * doc&test: MailDB.{children, roots, threads}
         * dependencies?
         * Html.table
