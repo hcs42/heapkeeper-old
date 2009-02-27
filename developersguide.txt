@@ -1,4 +1,4 @@
-HEAPMANIPULATOR DEVELOPER GUIDE
+HEAPMANIPULATOR DEVELOPERS' GUIDE
 
 This file is a high-level introduction to the Heapmanipulator program (or
 Manipulator for short) for the developer's eyes. More specific details can be
@@ -12,9 +12,9 @@ There are text files that contain information about the Manipulator:
     README: This is for new users.
     todo.txt: Our feature and bug tracking "system".
     userguide.txt: User Guide.
-    developerguide.txt: Developer Guide.
-    patterns.txt: Developer Guide: Patterns.
-    codingconventions.txt: Developer Guide: Coding Conventions.
+    developersguide.txt: Developers' Guide.
+    patterns.txt: Developers' Guide: Patterns.
+    codingconventions.txt: Developers' Guide: Coding Conventions.
 
 The Manipulator consists of Python modules.
 
