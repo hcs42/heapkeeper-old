@@ -297,7 +297,13 @@ class Post(object):
         self.touch()
 
     def date_str(self):
-        """The date converted to a string in local time."""
+        """The date converted to a string in local time.
+        
+        If the post does not have a date, an empty string is returned.
+        
+        Returns: str
+        """
+
         date = self.date()
         if date == '':
             return ''
@@ -306,11 +312,29 @@ class Post(object):
             return time.strftime('%Y.%m.%d. %H:%M', date_local)
 
     def timestamp(self):
+        """Returns the timestamp of the date of the post.
+
+        If the post does not have a date, 0 is returned.
+
+        Returns: int
+        """
+
         date = self.date()
         return calc_timestamp(date) if date != '' else 0
 
     def datetime(self):
-        return datetime.datetime.fromtimestamp(self.timestamp())
+        """Returns the datetime object that describes the date of the post.
+
+        If the post does not have a date, the None object is returned.
+
+        Returns: datetime.datetime | None
+        """
+
+        timestamp = self.timestamp()
+        if timestamp == 0:
+            return None
+        else:
+            return datetime.datetime.fromtimestamp(timestamp)
 
     def before(self, *dt):
         return datetime.datetime(*dt) > self.datetime()
