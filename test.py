@@ -14,17 +14,18 @@ It can be used to run a specific test:
 import sys
 import unittest
 import heapmanip
-import test_heapmanip
-import test_heapia
+
+testmodules = ['test_heapmanip', 'test_heapia']
 
 def main(args):
     heapmanip.set_log(False)
     if args in [['-h'], '--help']:
         sys.stdout.write(__doc__)
     elif args == []:
-        suite1 = unittest.TestLoader().loadTestsFromModule(test_heapmanip)
-        suite2 = unittest.TestLoader().loadTestsFromModule(test_heapia)
-        suite = unittest.TestSuite([suite1, suite2])
+        suites = \
+            [ unittest.TestLoader().loadTestsFromModule(__import__(modname))
+              for modname in testmodules ]
+        suite = unittest.TestSuite(suites)
         unittest.TextTestRunner(verbosity=0).run(suite)
     elif len(args) == 3:
         modname, testcasename, funname = args
