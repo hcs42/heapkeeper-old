@@ -1280,7 +1280,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options = \
             self.create_input(
                 [('Sec1', [1]), ('Sec2', [4])],
-                {'write_date': False})
+                {})
 
         link = Html.link
         self.assertEquals(
@@ -1297,7 +1297,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec1', [1]), ('Sec2', [4])],
-                {'write_date': False},
+                {'date_fun': lambda post, section: None},
                 sectionindex=0)
 
         div = Html.post_summary_div
@@ -1333,7 +1333,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec1', [1]), ('Sec2', [4])],
-                {'write_date': False},
+                {'date_fun': lambda post, section: None},
                 sectionindex=0)
         section[2]['flat'] = True
 
@@ -1370,7 +1370,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec1', [1]), ('Sec2', [4])],
-                {'write_date': False},
+                {},
                 sectionindex=0)
 
         self.assertEquals(
@@ -1399,7 +1399,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec', [1, 4])],
-                {'write_date': False},
+                {},
                 sectionindex=0)
 
         self.assertEquals(
@@ -1422,7 +1422,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec', [1, 4])],
-                {'write_date': False, 'shortsubject': True},
+                {'shortsubject': True},
                 sectionindex=0)
 
         # All posts have the same subject.
@@ -1469,7 +1469,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec', [1, 4])],
-                {'write_date': False},
+                {},
                 sectionindex=0)
 
         self.assertEquals(
@@ -1483,7 +1483,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec', [1, 4])],
-                {'write_date': False},
+                {},
                 sectionindex=0)
         self.assertEquals(
             g.thread(None, section, options),
@@ -1502,7 +1502,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec', [])],
-                {'write_date': False},
+                {},
                 sectionindex=0)
 
         self.assertEquals(
@@ -1514,7 +1514,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec1', [1]), ('Sec2', [4])],
-                {'write_date': False},
+                {},
                 sectionindex=0)
 
         self.assertEquals(
@@ -1527,7 +1527,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec', [1, 4])],
-                {'write_date': False},
+                {},
                 sectionindex=0)
 
         self.assertEquals(
@@ -1553,7 +1553,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec', [1, 4])],
-                {'write_date': False},
+                {},
                 sectionindex=0)
         section[2]['flat'] = True
         self.assertEquals(g.section(section, 0, options), flat_result(1, 4))
@@ -1562,7 +1562,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec', [4, 1])],
-                {'write_date': False},
+                {},
                 sectionindex=0)
         section[2]['flat'] = True
         self.assertEquals(g.section(section, 0, options), flat_result(4, 1))
@@ -1571,7 +1571,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options, section = \
             self.create_input(
                 [('Sec', maildb.postset([self._posts[1], self._posts[4]]))],
-                {'write_date': False},
+                {},
                 sectionindex=0)
         section[2]['flat'] = True
         self.assertEquals(g.section(section, 0, options), flat_result(1, 4))
@@ -1585,8 +1585,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         sections, options = \
             self.create_input(
                 [('Sec1', [1]), ('Sec2', [4])],
-                 {'write_date': False,
-                  'write_toc': False,
+                 {'write_toc': False,
                   'html_title': 'myhtmltitle',
                   'html_h1': 'myhtmlh1',
                   'cssfile': 'mycssfile'})

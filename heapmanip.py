@@ -38,8 +38,6 @@ sections --- The sections to print into the index. 'None' means that everything
     Type: None | [Section]
 write_toc --- If True, the index will contain a Table of Contents.
     Type: bool
-write_date --- If True, the dates of the posts will be printed.
-    Type: bool
 shortsubject --- If True, the posts that have the same subject as
     their parent will show a dash instead of their subject.
     Type: bool
@@ -1764,18 +1762,15 @@ class Generator(object):
             tags = post.tags()
 
         # Date
-        if options['write_date']:
-            date_fun = options['date_fun']
-            if date_fun == None:
-                date_str = '(%s)' % (post.date_str(),)
-                # If the post does not have a date, we still want to print
-                # an empty string.
-                if date_str == None:
-                    date_str = '()'
-            else:
-                date_str = date_fun(post, section)
+        date_fun = options['date_fun']
+        if date_fun == None:
+            date_str = '(%s)' % (post.date_str(),)
+            # If the post does not have a date, we still want to print
+            # an empty string.
+            if date_str == None:
+                date_str = '()'
         else:
-            date_str = None
+            date_str = date_fun(post, section)
 
         args = (post.htmlfilebasename(), author, subject, tags, post.heapid(),
                 date_str, post in section[1])
