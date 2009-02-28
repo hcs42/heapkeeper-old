@@ -212,7 +212,7 @@ def ga():
 def gs():
     start_timing()
     maildb().save()
-    gen_indexl()
+    gen_index()
     end_timing()
 
 def ps(pps):
