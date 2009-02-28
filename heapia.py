@@ -96,6 +96,7 @@ import sys
 import time
 import subprocess
 import heapmanip
+import heapcustomlib
 import ConfigParser
 
 def h():
@@ -190,8 +191,10 @@ def gen_index():
         sections = options['callbacks']['gen_index'](maildb())
     else:
         sections = options['callbacks']['sections'](maildb())
-        g = heapmanip.Generator(maildb())
-        g.index(sections)
+    g = heapmanip.Generator(maildb())
+    gen_options = heapcustomlib.generator_defopts()
+    gen_options['sections'] = sections
+    g.index(gen_options)
 
 def gen_post_html():
     """Generates the html files for the posts."""
