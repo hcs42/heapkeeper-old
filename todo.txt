@@ -36,6 +36,8 @@
         * dependencies?
         * Html.table
 
+* test.py: test all test_*.py files in the current dir
+
 * docstrings:
     * types into generator methods
     * object instead of "something" and "andthing"
