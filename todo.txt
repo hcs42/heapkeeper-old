@@ -32,10 +32,13 @@
     * heapia
     * Post.load
     * heapmanip.Post.{set_tags, remove_tag}
+        * set_tags: test unsorted lists and sets as argument
     * heapmanip.Post.{before, after, between}
     * doc&test: MailDB.{children, roots, threads}
         * dependencies?
         * Html.table
+
+* test.py: test all test_*.py files in the current dir
 
 * docstrings:
     * types into generator methods
@@ -199,5 +202,8 @@
 
 * Distant future: use Django or some other web framework to manipulate the heap
   instead of heapia.
+
+* PostSet: method inherited from set should be reviewed whether they should be
+  inherited, overriden or removed.
 
 Next free id: #5

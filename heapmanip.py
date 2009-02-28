@@ -307,12 +307,16 @@ class Post(object):
     def heapid(self):
         return self._heapid
 
+    # author field
+
     def author(self):
         return self._header['From']
 
     def set_author(self, author):
         self._header['From'] = author
         self.touch()
+
+    # subject field
 
     def real_subject(self):
         return self._header['Subject']
@@ -328,6 +332,8 @@ class Post(object):
         self._header['Subject'] = subject
         self.touch()
 
+    # message id field
+
     def messid(self):
         return self._header['Message-Id']
 
@@ -335,12 +341,16 @@ class Post(object):
         self._header['Message-Id'] = messid
         self.touch()
 
+    # inreplyto field
+
     def inreplyto(self):
         return self._header['In-Reply-To']
 
     def set_inreplyto(self, inreplyto):
         self._header['In-Reply-To'] = inreplyto
         self.touch()
+
+    # date field
 
     def date(self):
         return self._header['Date']
@@ -350,7 +360,13 @@ class Post(object):
         self.touch()
 
     def date_str(self):
-        """The date converted to a string in local time."""
+        """The date converted to a string in local time.
+        
+        If the post does not have a date, an empty string is returned.
+        
+        Returns: str
+        """
+
         date = self.date()
         if date == '':
             return ''
@@ -359,20 +375,29 @@ class Post(object):
             return time.strftime('%Y.%m.%d. %H:%M', date_local)
 
     def timestamp(self):
+        """Returns the timestamp of the date of the post.
+
+        If the post does not have a date, 0 is returned.
+
+        Returns: int
+        """
+
         date = self.date()
         return calc_timestamp(date) if date != '' else 0
 
     def datetime(self):
         """Returns the datetime object that describes the date of the post.
 
-        Arguments:
-        post ---
-            Type: Post
+        If the post does not have a date, the None object is returned.
 
-        Returns: datetime.datetime
+        Returns: datetime.datetime | None
         """
 
-        return datetime.datetime.fromtimestamp(self.timestamp())
+        timestamp = self.timestamp()
+        if timestamp == 0:
+            return None
+        else:
+            return datetime.datetime.fromtimestamp(timestamp)
 
     def before(self, *dt):
         return datetime.datetime(*dt) > self.datetime()
@@ -384,6 +409,8 @@ class Post(object):
         date = self.datetime()
         return datetime.datetime(*dts) <= date < datetime.datetime(*dte)
 
+    # tag fields
+
     def tags(self):
         """Returns the tags of the email.
 
@@ -392,7 +419,6 @@ class Post(object):
 
         return self._header['Tag']
     
-    # TODO: test unsorted lists and sets as argument
     def set_tags(self, tags):
         """Sets the given tags as the tags of the post.
 
@@ -411,7 +437,6 @@ class Post(object):
             self._header['Tag'].sort()
         self.touch()
 
-    # TODO: test
     def remove_tag(self, tag):
         if self.has_tag(tag):
             self._header['Tag'].remove(tag)
@@ -421,6 +446,8 @@ class Post(object):
         assert(isinstance(tag, str))
         return tag in self._header['Tag']
         
+    # flag fields
+
     def flags(self):
         """Returns the flags of the email.
 
@@ -442,6 +469,8 @@ class Post(object):
                          'Flag': ['deleted']}
         self._body = ''
         self.touch()
+
+    # body
 
     def body(self):
         return self._body
