@@ -9,6 +9,8 @@
 
 * Refactoring:
     * Handling options
+        * adding a 'check' function that checks for certain paramters in the
+          beginning of Generator.index
     * A heapcustomlib module should be created to include common things of
       customlibs.
 

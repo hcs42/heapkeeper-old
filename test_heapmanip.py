@@ -17,6 +17,7 @@ import ConfigParser
 import re
 
 from heapmanip import *
+import heapcustomlib
 
 
 class MailDBHandler(object):
@@ -1263,10 +1264,9 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 
     def create_input(self, sections, options, sectionindex=None):
         sections = self._sections(sections)
-        options2 = {'sections': sections}
-        for optionname, optionvalue in options.items():
-            options2[optionname] = optionvalue
-        Generator.index_setdefaultoptions(options2)
+        options2 = heapcustomlib.generator_defopts()
+        options2['sections'] = sections
+        options2.update(options)
         if sectionindex == None:
             return sections, options2
         else:
@@ -1581,6 +1581,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         maildb, g = self.init()
         self.create_threadst()
 
+        options = heapcustomlib.generator_defopts()
         sections, options = \
             self.create_input(
                 [('Sec1', [1]), ('Sec2', [4])],
@@ -1590,7 +1591,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
                   'html_h1': 'myhtmlh1',
                   'cssfile': 'mycssfile'})
 
-        g.index(**options)
+        g.index(options)
         self.assertEquals(
             self.index_html(),
             Html.doc_header('myhtmltitle', 'myhtmlh1', 'mycssfile') +

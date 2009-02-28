@@ -1644,7 +1644,7 @@ class Generator(object):
         super(Generator, self).__init__()
         self._maildb = maildb
     
-    def post(self, post, indexoptions):
+    def post(self, post, options):
         l = []
         h1 = Html.escape(post.author()) + ': ' + \
              Html.escape(post.subject())
@@ -1660,7 +1660,7 @@ class Generator(object):
         sections = [('Thread', [post])]
         self.sections_setdefaultoptions(sections)
         thread = \
-            self.thread(self._maildb.root(post), sections[0], indexoptions)
+            self.thread(self._maildb.root(post), sections[0], options)
         l.append(thread)
 
         l.append(Html.enclose('postbody', Html.escape(post.body()), tag='pre'))
@@ -1668,13 +1668,11 @@ class Generator(object):
         l.append(Html.doc_footer())
         return ''.join(l)
 
-    def posts_to_html(self, indexoptions={}):
+    def posts_to_html(self, options):
         """Creates an HTML file for each post that are not deleted."""
-        indexoptions = indexoptions.copy()
-        self.index_setdefaultoptions(indexoptions)
         for post in self._maildb.posts():
             with open(post.htmlfilename(), 'w') as f:
-                f.write(self.post(post, indexoptions))
+                f.write(self.post(post, options))
 
     def index_toc(self, sections):
         """Creates a table of contents for the sections and for the posts in
@@ -1884,23 +1882,7 @@ class Generator(object):
                 pass
             sections[i][2].setdefault('flat', False)
 
-    @staticmethod
-    def index_setdefaultoptions(options):
-        """Sets the default options of Generator.index in the given dictionary.
-
-        Arguments:
-        options ---
-            Type: dict(str, something)
-
-        Returns: IndexOptions
-        """
-
-        set_defaultoptions(options, Generator.index, ['self'])
-
-    def index(self, sections=None, write_toc=True, write_date=True,
-              shortsubject=False, shorttags=False, date_fun=None,
-              html_title='Heap index', html_h1='Heap index',
-              cssfile='heapindex.css'):
+    def index(self, options):
         """Creates the index HTML file.
         
         The created file is named 'index.html' and is placed in the html_dir
@@ -1931,12 +1913,8 @@ class Generator(object):
             Type: str
         """
 
-        # Putting the arguments into the 'options' variable
-        options = locals().copy()
-        del options['self']
-        Generator.index_setdefaultoptions(options)
-
         # sections
+        sections = options['sections']
         if sections == None:
             sections = [('All posts', self._maildb.all())]
         if self._maildb.has_cycle():
@@ -1947,8 +1925,11 @@ class Generator(object):
         threadst = self._maildb.threadstruct()
         filename = os.path.join(self._maildb.html_dir(), 'index.html')
         with open(filename, 'w') as f:
-            f.write(Html.doc_header(html_title, html_h1, cssfile))
-            if write_toc:
+            doc_header = Html.doc_header(options['html_title'],
+                                         options['html_h1'],
+                                         options['cssfile'])
+            f.write(doc_header)
+            if options['write_toc']:
                 f.write(self.index_toc(sections))
             for i, section in enumerate(sections):
                 sectiontitle, sectionposts, sectionopts = section

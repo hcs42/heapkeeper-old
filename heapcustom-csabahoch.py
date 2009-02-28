@@ -4,6 +4,7 @@
 # My (Csaba Hoch) heapcustom.
 
 import heapmanip
+import heapcustomlib
 import subprocess
 import time
 import datetime
@@ -50,7 +51,11 @@ def gen_index(maildb):
 
     sections_ = sections(maildb)
     g = heapmanip.Generator(maildb)
-    g.index(sections_, write_toc=True, write_date=True,
-            shortsubject=True, shorttags=True,
-            date_fun=date_fun)
-
+    options = heapcustomlib.generator_defopts()
+    options.update({'sections': sections_,
+                    'write_toc': True,
+                    'write_date': True,
+                    'shortsubject': True,
+                    'shorttags': True,
+                    'date_fun': date_fun})
+    g.index(options)
