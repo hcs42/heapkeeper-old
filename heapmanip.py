@@ -310,6 +310,15 @@ class Post(object):
         return calc_timestamp(date) if date != '' else 0
 
     def datetime(self):
+        """Returns the datetime object that describes the date of the post.
+
+        Arguments:
+        post ---
+            Type: Post
+
+        Returns: datetime.datetime
+        """
+
         return datetime.datetime.fromtimestamp(self.timestamp())
 
     def before(self, *dt):

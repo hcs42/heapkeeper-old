@@ -9,53 +9,48 @@ import subprocess
 import time
 import datetime
 
+def has_tag(tags):
+    def has_tag_fun(post):
+        for tag in tags:
+            if post.has_tag(tag):
+                return True
+        return False
+    return has_tag_fun
+
+
 def sections(maildb):
     ps_all = maildb.all().copy()
-    ps_heap = ps_all.collect.has_tag('heap')
+
+    # heap
+    heap_tags = ['heap', 'Heap']
+    ps_heap = ps_all.collect(has_tag(heap_tags))
     ps_all -= ps_heap
-    ps_cp = ps_all.collect.has_tag('programozás')
-    ps_cp |= ps_all.collect.has_tag('c++')
-    ps_cp |= ps_all.collect.has_tag('C++')
-    ps_cp |= ps_all.collect.has_tag('python')
-    ps_cp |= ps_all.collect.has_tag('Python')
-    ps_cp = ps_cp.exp()
+
+    # cp
+    cp_tags = ['programozás', 'c++', 'C++', 'python', 'Python']
+    ps_cp = ps_all.collect(has_tag(cp_tags))
     ps_all -= ps_cp
+
+    # sections
     return [("Heap", ps_heap),
             ("Programozás", ps_cp),
             ("Egyéb", ps_all)]
 
-def format_date(post):
-    "post -> str"
-    if post.date() == '':
-        return None
-    else:
-        d = time.localtime(heapmanip.calc_timestamp(post.date()))
-        return time.strftime('(%Y.%m.%d.)', d)
-
-def read_date(post):
-    "post_date -> datetime.datetime"
-    return datetime.datetime.fromtimestamp(heapmanip.calc_timestamp(post.date()))
-
 def gen_index(maildb):
 
-    def date_fun(post, section):
-        prev = maildb.prev(post)
-        if section[2]['flat'] or \
-           prev == None or \
-           (post.date() != '' and prev.date() != '' and \
-            (read_date(post) - read_date(prev) > 
-             datetime.timedelta(days=5))):
-            return format_date(post)
-        else:
-            return None
+    # Date options
+    date_options = heapcustomlib.date_defopts())
+    date_fun = heapcustomlib.create_date_fun(date_options)
 
+    # Generator options
     sections_ = sections(maildb)
-    g = heapmanip.Generator(maildb)
-    options = heapcustomlib.generator_defopts()
-    options.update({'sections': sections_,
+    gen_options = heapcustomlib.generator_defopts()
+    gen_options.update({'sections': sections_,
                     'write_toc': True,
                     'write_date': True,
                     'shortsubject': True,
                     'shorttags': True,
                     'date_fun': date_fun})
-    g.index(options)
+
+    # Generating the index
+    heapmanip.Generator(maildb).index(gen_options)
