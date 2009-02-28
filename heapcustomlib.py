@@ -1,24 +1,28 @@
-"""
+#!/usr/bin/python
+
+"""Module that can be used to customize the Heap.
+
 Type definitions:
-
-should_print_date_fun -- A function that specifies when to print the date
+ShouldPrintDateFun -- A function that specifies when to print the date
     of a post in the post summary.
-    Real type: (post) -> bool
+    Real type: fun(post) -> bool
+DateOptions --- Options on how to handle and show dates.
+    Real type: dict(str, object)
 
-DateFunOptions:
-
+DateOptions keys:
 date_format --- The format of the date as given to time.strftime.
     Type: str
 maildb --- The mail database to work on.
     Type: str
 should_print_date_fun -- The function that specifies when to print the date of
     a post in the post summary.
-    Type: should_print_date_fun
+    Type: ShouldPrintDateFun
 timedelta --- A date for the post summary will be printed if the time between
     the post and its parent is less then timedelta. (If the post has no parent
     or the date is not specified in each posts, the date is printed.)
     Type: datetime.timedelta
-localtime_fun --- A 
+localtime_fun --- A function that calculates the tm structure based on a
+    timestamp.
     Type: (timestamp:int) -> time.tm
 """
 
@@ -34,7 +38,7 @@ def generator_defopts(options={}):
     
     options0 = \
         {'sections': None,
-         'write_toc': True,
+         'write_toc': False,
          'write_date': True,
          'shortsubject': False,
          'shorttags': False,
@@ -56,7 +60,7 @@ def format_date(post, options):
     post ---
         Type: Post
     options ---
-        Type: DateFunOptions
+        Type: DateOptions
         Required options: date_format, localtime_fun
 
     Returns: str | None
@@ -78,10 +82,10 @@ def create_should_print_date_fun(options):
     post ---
         Type: Post
     options ---
-        Type: DateFunOptions
+        Type: DateOptions
         Required options: maildb, timedelta
 
-    Returns: should_print_date_fun
+    Returns: ShouldPrintDateFun
     """
 
     maildb = options['maildb']
@@ -104,12 +108,12 @@ def create_date_fun(options):
     """Returns a date_fun.
 
     Arguments:
-    options --- DateFunOptions
+    options --- DateOptions
         Required options:
             date_format, maildb
             Either maildb, timedelta or should_print_date_fun.
 
-    Returns: date_fun
+    Returns: heapmanip.DateFun
     """
 
     if options['should_print_date_fun'] == None:
@@ -130,6 +134,12 @@ def date_defopts(options={}):
          'date_format' : '(%Y.%m.%d.)',
          'localtime_fun': time.localtime,
          'should_print_date_fun': None,
-         'timedelta': datetime.timedelta(days=5)}
+         'timedelta': datetime.timedelta(0)}
     options0.update(options)
     return options0
+
+def gen_index(maildb):
+    date_options = date_defopts({'maildb': maildb})
+    date_fun = create_date_fun(date_options)
+    gen_options = generator_defopts()
+    heapmanip.Generator(maildb).index(gen_options)

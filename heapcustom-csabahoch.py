@@ -39,18 +39,21 @@ def sections(maildb):
 def gen_index(maildb):
 
     # Date options
-    date_options = heapcustomlib.date_defopts())
+    date_options = heapcustomlib.date_defopts()
+    date_options.update({'maildb': maildb,
+                         'timedelta': datetime.timedelta(days=5)})
     date_fun = heapcustomlib.create_date_fun(date_options)
 
     # Generator options
     sections_ = sections(maildb)
     gen_options = heapcustomlib.generator_defopts()
-    gen_options.update({'sections': sections_,
-                    'write_toc': True,
-                    'write_date': True,
-                    'shortsubject': True,
-                    'shorttags': True,
-                    'date_fun': date_fun})
+    gen_options.update({'maildb': maildb,
+                        'sections': sections_,
+                        'write_toc': True,
+                        'write_date': True,
+                        'shortsubject': True,
+                        'shorttags': True,
+                        'date_fun': date_fun})
 
     # Generating the index
     heapmanip.Generator(maildb).index(gen_options)

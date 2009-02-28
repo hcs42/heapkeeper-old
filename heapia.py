@@ -124,7 +124,7 @@ options = {'maildb': None,
            'auto_threadstruct': True,
            'heapcustom': 'heapcustom',
            'callbacks': {'sections': lambda maildb: None,
-                         'gen_index': None,
+                         'gen_index': heapcustomlib.gen_index,
                          'edit': edit_default}}
 
 def get_option(option):
@@ -187,14 +187,7 @@ def end_timing():
 
 def gen_index():
     """Generates index.html."""
-    if options['callbacks']['gen_index'] != None:
-        sections = options['callbacks']['gen_index'](maildb())
-    else:
-        sections = options['callbacks']['sections'](maildb())
-    g = heapmanip.Generator(maildb())
-    gen_options = heapcustomlib.generator_defopts()
-    gen_options['sections'] = sections
-    g.index(gen_options)
+    options['callbacks']['gen_index'](maildb())
 
 def gen_post_html():
     """Generates the html files for the posts."""

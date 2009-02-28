@@ -1,6 +1,61 @@
 #!/usr/bin/python
 
-"""Module that manipulates the Heap data structure."""
+"""Module that manipulates the Heap data structure.
+
+Type definitions:
+PrePost --- An object that can be converted into a Post.
+    When it is an int, it will be converted to a string that should represent a
+    heapid. The heapid is converted to a Post based on the mail database.
+    Real type: heapid | int | Post
+PrePostSet --- An object that can be converted into a PostSet.
+    Real type: set(PrePest) | PostSet(PrePost) | [PrePost] | PrePost
+    Actually, PrePostSet can be any iterable object that iterates over PrePost
+    objects.
+Section --- A section is a set of posts that should be printed with a title
+    according to the specified options.
+    Real type: (title:str, sectionposts:SectionPosts, options:SectionOptions)
+SectionPosts --- Posts of a section. If it a list, the order of the posts
+    matters.
+    Real type: [Post] | PostSet
+SectionOptions --- Options on how to print a given section. See later.
+    Real type: dict(str, object)
+GeneratorOptions --- Options on how the Generator should behave. See later.
+    Real type: dict(str, object)
+HtmlStr --- normal string, but it contains HTML.
+    Real type: str
+DateFun --- Function that specifies how to print the dates of the
+    posts. It will be called for each post summary that is written
+    into the index. When it returns None, no date will be printed.
+    Type: fun(Post, Section) -> (str | None)
+
+SectionOptions keys:
+flat --- The section should be printed in a flat way instead of a threaded way.
+    Type: bool
+
+GeneratorOptions keys:
+sections --- The sections to print into the index. 'None' means that everything
+    should be printed into one section.
+    Type: None | [Section]
+write_toc --- If True, the index will contain a Table of Contents.
+    Type: bool
+write_date --- If True, the dates of the posts will be printed.
+    Type: bool
+shortsubject --- If True, the posts that have the same subject as
+    their parent will show a dash instead of their subject.
+    Type: bool
+shorttags --- If True, the posts that have the same tags as
+    their parent will show a dash instead of their tags.
+    Type: bool
+date_fun --- Function that specifies how to print the dates of the
+    posts.
+    Type: None | DateFun
+html_title --- The string to print as the <title> of the HTML file.
+    Type: str
+html_h1 --- The string to print as the title (<h1>) of the HTML file.
+    Type: str
+cssfile --- The name of the CSS file that should be referenced.
+    Type: str
+"""
 
 from __future__ import with_statement
 from imaplib import IMAP4_SSL
@@ -999,15 +1054,6 @@ class PostSet(set):
     Data attributes:
     _maildb -- Mail database.
         Type: MailDB
-    
-    Types:
-        PrePost = heapid | int | Post
-        PrePostSet = set(PrePest) | PostSet(PrePost) | [PrePost] | PrePost
-
-        When PrePost is an int, it will be converted to a string that should
-        represent a heapid.
-        Actually, PrePostSet can be any iterable object that iterates over
-        PrePost objects.
     """
 
     def __init__(self, maildb, posts):
@@ -1632,14 +1678,6 @@ class Generator(object):
     Data attributes:
     _maildb -- The mail database.
         Type: MailDB
-
-    Types:
-        Section = (title:str, sectionposts:SectionPosts,
-                   options:SectionOptions)
-        SectionPosts = [Post] | PostSet
-        SectionOptions = dict(str, something)
-        IndexOptions = dict(str, something)
-        HtmlStr = normal string, but it contains HTML
     """
 
     def __init__(self, maildb):
@@ -1709,7 +1747,7 @@ class Generator(object):
         section --- The section which is printed.
             Type: Section
         options ---
-            Type: IndexOptions
+            Type: GeneratorOptions
 
         Returns: HtmlStr
         """
@@ -1768,7 +1806,7 @@ class Generator(object):
         section --- The section that is printed.
             Type: Section
         options ---
-            Type: IndexOptions
+            Type: GeneratorOptions
 
         Returns: HtmlString
         """
@@ -1841,7 +1879,7 @@ class Generator(object):
         sectionid --- The identifier of the section.
             Type: int
         options ---
-            Type: IndexOptions
+            Type: GeneratorOptions
 
         Returns: HtmlString
         """
@@ -1898,28 +1936,6 @@ class Generator(object):
         directory.
         
         Arguments:
-        sections --- The sections to print into the index.
-            Type: None | [(str, PrePostSet)]
-        write_toc --- If True, the index will contain a Table of Contents.
-            Type: bool
-        write_date --- If True, the dates of the posts will be printed.
-            Type: bool
-        shortsubject --- If True, the posts that have the same subject as
-            their parent will show a dash instead of their subject.
-            Type: bool
-        shorttags --- If True, the posts that have the same tags as
-            their parent will show a dash instead of their tags.
-            Type: bool
-        date_fun --- Function that specifies how to print the dates of the
-            posts. It will be called for each post summary that is written
-            into the index. When it returns None, no date will be printed.
-            Type: None | fun(Post, Section) -> (str | None)
-        html_title --- The string to print as the <title> of the HTML file.
-            Type: str
-        html_h1 --- The string to print as the title (<h1>) of the HTML file.
-            Type: str
-        cssfile --- The name of the CSS file that should be referenced.
-            Type: str
         """
 
         # sections
