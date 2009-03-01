@@ -53,6 +53,9 @@ html_h1 --- The string to print as the title (<h1>) of the HTML file.
     Type: str
 cssfile --- The name of the CSS file that should be referenced.
     Type: str
+print_thread_of_post --- The thread of the post will be printed into the
+    post HTML.
+    Type: bool
 """
 
 from __future__ import with_statement
@@ -1731,11 +1734,12 @@ class Generator(object):
         l.append('\n')
 
         # thread
-        sections = [('Thread', [post])]
-        self.sections_setdefaultoptions(sections)
-        thread = \
-            self.thread(self._maildb.root(post), sections[0], options)
-        l.append(thread)
+        if options['print_thread_of_post']:
+            sections = [('Thread', [post])]
+            self.sections_setdefaultoptions(sections)
+            thread = \
+                self.thread(self._maildb.root(post), sections[0], options)
+            l.append(thread)
 
         l.append(Html.enclose('postbody', Html.escape(post.body()), tag='pre'))
 

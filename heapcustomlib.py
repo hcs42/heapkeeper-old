@@ -39,13 +39,13 @@ def generator_defopts(options={}):
     options0 = \
         {'sections': None,
          'write_toc': False,
-         'write_date': True,
          'shortsubject': False,
          'shorttags': False,
          'date_fun': None,
          'html_title': 'Heap index',
          'html_h1': 'Heap index',
-         'cssfile': 'heapindex.css'}
+         'cssfile': 'heapindex.css',
+         'print_thread_of_post': True}
     options0.update(options)
     return options0
 

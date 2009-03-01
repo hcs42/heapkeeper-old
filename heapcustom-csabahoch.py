@@ -50,7 +50,6 @@ def gen_index(maildb):
     gen_options.update({'maildb': maildb,
                         'sections': sections_,
                         'write_toc': True,
-                        'write_date': True,
                         'shortsubject': True,
                         'shorttags': True,
                         'date_fun': date_fun})
