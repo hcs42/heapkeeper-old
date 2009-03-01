@@ -65,8 +65,6 @@
 * A heaplib module should be created from the functions that have nothing to do
   with the heap, for example datetime handling functions.
 
-+ MailDB.reload, and also an interface to heapia
-
 + <#2> Post generator: (precond: #1)
     + parent, children into Post HTML (easy)
     + put prev and next links into Post HTML (the post generator should know
