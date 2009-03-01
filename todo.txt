@@ -55,14 +55,16 @@
 * docstrings:
     * object instead of "something" and "andthing"
 
-* Developer Guide
+* Developers' Guide
     * architecture
         * relation of Post, MailDB and PostSet
     * performance improvement possibilities (iterators)
     * using wrappers to protect e.g. MailDB.posts()
     * consistent terminology: previous, parent or cause? next, child or
       consequence?
-    * Coding Conventions: templates for documentation
+    * Coding Conventions:
+        * templates for documentation
+        * templates for tests (test<class>, test_<method>)
     * using wiki or asciidoc instead of plain text files
     * putting the documentation files into a separate directory (e.g. heap/doc)
 
