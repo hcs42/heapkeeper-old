@@ -42,20 +42,21 @@
 
 * test.py: test all test_*.py files in the current dir
 
++ heapia.hh(): fast help (only the commands)
+
 * docstrings:
-    * types into generator methods
     * object instead of "something" and "andthing"
-    * extracting pseudo-types (like PrePostSet and SectionOptions)
 
 * Developer Guide
     * architecture
         * relation of Post, MailDB and PostSet
-        * by-request philosoply
-        * touch-system
     * performance improvement possibilities (iterators)
     * using wrappers to protect e.g. MailDB.posts()
     * consistent terminology: previous, parent or cause? next, child or
       consequence?
+    * Coding Conventions: templates for documentation
+    * using wiki or asciidoc instead of plain text files
+    * putting the documentation files into a separate directory (e.g. heap/doc)
 
 * heapia: atr, rt, rtr, sr, str_ are almost the same, they could use the same
   function and contain only the differences:
@@ -70,6 +71,8 @@
   with the heap, for example datetime handling functions.
 
 + MailDB.reload, and also an interface to heapia
+
++ Being able to reload heapcustom without restarting the Manipulator
 
 + <#2> Post generator: (precond: #1)
     + parent, children into Post HTML (easy)

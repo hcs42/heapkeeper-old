@@ -120,6 +120,11 @@ def s():
     end_timing()
 
 def x():
+    """Saves the mail database and exits.
+
+    If you want to exit without saving, just quit by hitting Ctrl-D.
+    """
+
     options['maildb'].save()
     sys.exit()
 
