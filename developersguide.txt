@@ -83,13 +83,14 @@ most basic data member of MailDB.
 heapid_to_post is a dict that, as the name suggests, assings posts
 to heapids. (Mind you, 'heapid_to_post' is to be read as 'heapid =>
 post', not as 'assigns heapid to post'.) This dict gets modified only by
-_add_post_to_dicts, which itself is called upon by _init() (an offspring
-of __init__) and add_new_posts(). _init() simply fills up heapid_to_post
-by looking at the list of .mail files in the mail directory, creating
-the Post objects on the fly, while add_new_posts() adds already created
-Post objects. The Post object also needs to be notified that it has been
-added to a MailDB via Post.add_to_maildb. add_new_post() does this, but
-_init() can skip this, as Post.from_file() already includes this action.
+_add_post_to_dicts, which itself is called upon by _load_from_disk() (an
+offspring of __init__) and add_new_posts(). _load_from_disk() simply
+fills up heapid_to_post by looking at the list of .mail files in the
+mail directory, creating the Post objects on the fly, while
+add_new_posts() adds already created Post objects. The Post object also
+needs to be notified that it has been added to a MailDB via
+Post.add_to_maildb. add_new_post() does this, but _load_from_disk() can
+skip this, as Post.from_file() already includes this action.
 
 heapid_to_post is then used as a source of all heapids, all posts and
 of course the post-to-heapid mapping whenever needed; though it is

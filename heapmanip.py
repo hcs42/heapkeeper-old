@@ -493,11 +493,18 @@ class Post(object):
                 self.write(f)
                 self._modified = False
 
-    def load(self):
+    def load(self, silent=False):
+        """(Re)loads the Post from the disk.
+        
+        Arguments:
+        silent --- Do not call maildb.touch.
+        """
+
         with open(self.postfilename(), 'r') as f:
             self._header, self._body = Post.parse(f)
         self._modified = False
-        self._maildb.touch()
+        if not silent:
+            self._maildb.touch()
 
     # Filenames
 
@@ -630,7 +637,10 @@ class MailDB(object):
         super(MailDB, self).__init__()
         self._postfile_dir = postfile_dir
         self._html_dir = html_dir
-        self._init()
+        self._next_heapid = 0
+        self.heapid_to_post = {}
+        self.messid_to_heapid = {}
+        self._load_from_disk()
 
     @staticmethod
     def from_config(config):
@@ -646,24 +656,44 @@ class MailDB(object):
         html_dir = config.get('paths', 'html')
         return MailDB(postfile_dir, html_dir)
 
-    def _init(self):
-        """Initialisation."""
+    def _load_from_disk(self):
+        """Loading the database from the disk."""
+
+        # We need the original_heapid_to_post when reloading the mail database.
+        original_heapid_to_post = self.heapid_to_post
 
         self.heapid_to_post = {}
         self.messid_to_heapid = {}
         heapids = []
+
         if not os.path.exists(self._postfile_dir):
             os.mkdir(self._postfile_dir)
+
         for file in os.listdir(self._postfile_dir):
             if file.endswith('.mail'):
                 heapid = file[:-5]
                 absname = os.path.join(self._postfile_dir, file)
-                self._add_post_to_dicts(Post.from_file(absname, heapid, self))
+
+                # We try to obtain the post which has the heapid 'heapid'. If
+                # such a post exists (i.e. original_heapid_to_post contains
+                # 'heapid'), the post should be reloaded from the disk. This
+                # way, if someone has a reference to post object, they will
+                # refer to the reloaded posts. If there is no post with
+                # 'heapid', a new Post object should be created.
+                post = original_heapid_to_post.get(heapid, None)
+                if post == None:
+                    post = Post.from_file(absname, heapid, self)
+                else:
+                    post.load(silent=True)
+                self._add_post_to_dicts(post)
+
                 try:
                     heapids.append(int(heapid))
                 except ValueError:
                     pass
-        self._next_heapid = max(heapids) + 1 if heapids != [] else 0
+
+        next_heapid_0 = max(heapids) + 1 if heapids != [] else 0
+        self._next_heapid = max([self._next_heapid, next_heapid_0])
         self.touch()
 
     # Modifications
@@ -742,12 +772,20 @@ class MailDB(object):
         except KeyError:
             return None
 
-    # Save
+    # Save, reload
 
     def save(self):
         """Saves all the posts that needs to be saved."""
         for post in self.heapid_to_post.values():
             post.save()
+
+    def reload(self):
+        """Reloads the database from the disk.
+        
+        The unsaved changes will be abandoned.
+        """
+
+        self._load_from_disk()
 
     # New posts
 

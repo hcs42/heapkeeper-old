@@ -8,6 +8,7 @@ Functions:
 h()                - prints this help
 s()                - save
 x()                - save and exit
+rl()               - reload the database (changes will be lost!)
 g()                - generate index.html
 ga()               - generate all html
 gs()               - generate index.html and save
@@ -127,6 +128,14 @@ def x():
 
     options['maildb'].save()
     sys.exit()
+
+def rl():
+    """Reloads the mail from the mail database.
+
+    Changes that have not been saved (e.g. with the x() command) will be lost.
+    """
+
+    options['maildb'].reload()
 
 def edit_default(file):
     subprocess.call(['gvim', '-f', file])

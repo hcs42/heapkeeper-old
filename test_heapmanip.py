@@ -430,6 +430,35 @@ html=%s
         self.assertEquals(set([p2, p3]), set(maildb.posts()))
         self.assertEquals(set([p1, p2, p3]), set(maildb.real_posts()))
 
+    def test_reload(self):
+
+        # Initialization
+        self.createDirs()
+        maildb = self.createMailDB()
+        maildb.add_new_post(Post.from_str(''))
+        p1 = maildb.post('0')
+
+        # Saving a subject; setting a new one but abandoning it
+        p1.set_subject('sub1')
+        maildb.save()
+
+        # A change that will be lost.
+        p1.set_subject('sub2')
+
+        # A change on the disk that will be loaded.
+        heaplib.string_to_file('Subject: sub_new', self.postFileName('x.mail'))
+
+        maildb.reload()
+        maildb.save()
+
+        # The subject of p1 is unchanged, x.mail is loaded
+        self.assertEquals(p1.subject(), 'sub1')
+        self.assert_(maildb.post('0') is p1)
+        self.assertEquals(
+            heaplib.file_to_string(p1.postfilename()),
+            'Subject: sub1\n\n\n')
+        self.assertEquals(maildb.post('x').subject(), 'sub_new')
+
     def testThreadstructHeapid(self):
         """Testing that the thread structure also works when the In-Reply-To
         is defined by a heapid.
