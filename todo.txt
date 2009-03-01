@@ -44,6 +44,12 @@
 
 + heapia.hh(): fast help (only the commands)
 
++ heapia: being able to customize what should happen after each command.
+  * Now the heapia.auto function is called after each command, and it
+    regenerates the index. But sometimes all the posts should be generated.
+  * Maybe also the timing could be extracted into a before_commands and
+    after_command callback function?
+
 * docstrings:
     * object instead of "something" and "andthing"
 
@@ -58,6 +64,8 @@
     * using wiki or asciidoc instead of plain text files
     * putting the documentation files into a separate directory (e.g. heap/doc)
 
+* hepia: Putting the options into the new option system.
+
 * heapia: atr, rt, rtr, sr, str_ are almost the same, they could use the same
   function and contain only the differences:
 
@@ -71,6 +79,9 @@
   with the heap, for example datetime handling functions.
 
 + MailDB.reload, and also an interface to heapia
+
++ It would be nice if we could regenerate the post HTMLs only for the posts
+  that has been modified.
 
 + Being able to reload heapcustom without restarting the Manipulator
 
