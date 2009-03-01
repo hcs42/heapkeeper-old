@@ -143,3 +143,9 @@ def gen_index(maildb):
     date_fun = create_date_fun(date_options)
     gen_options = generator_defopts()
     heapmanip.Generator(maildb).index(gen_options)
+
+def gen_post_html(maildb):
+    date_options = date_defopts({'maildb': maildb})
+    date_fun = create_date_fun(date_options)
+    gen_options = generator_defopts()
+    heapmanip.Generator(maildb).posts_to_html(gen_options)

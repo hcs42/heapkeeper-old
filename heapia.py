@@ -87,6 +87,15 @@ Callback functions (that can be defined in heapcustom.py):
 
         Returns: -
 
+    gen_post_html(maildb):
+
+        It should generate HTML for all posts.
+
+        Args:
+            maildb --- MailDB
+
+        Returns: -
+
 Arguments given to the script will be evaluated as commands.
 Example: generate the index HTML (and exit):
     $ python heapia.py 'g()'
@@ -125,6 +134,7 @@ options = {'maildb': None,
            'heapcustom': 'heapcustom',
            'callbacks': {'sections': lambda maildb: None,
                          'gen_index': heapcustomlib.gen_index,
+                         'gen_post_html': heapcustomlib.gen_post_html,
                          'edit': edit_default}}
 
 def get_option(option):
@@ -191,8 +201,7 @@ def gen_index():
 
 def gen_post_html():
     """Generates the html files for the posts."""
-    g = heapmanip.Generator(maildb())
-    g.posts_to_html()
+    options['callbacks']['gen_post_html'](maildb())
 
 def g():
     start_timing()

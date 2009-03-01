@@ -1747,6 +1747,7 @@ class Generator(object):
         for post in self._maildb.posts():
             with open(post.htmlfilename(), 'w') as f:
                 f.write(self.post(post, options))
+        log('Post HTMLs generated.')
 
     def index_toc(self, sections):
         """Creates a table of contents for the sections and for the posts in
@@ -1984,5 +1985,5 @@ class Generator(object):
                 sectiontitle, sectionposts, sectionopts = section
                 f.write(self.section(section, i, options))
             f.write(Html.doc_footer())
-        log('HTML generated.')
+        log('Index generated.')
 
