@@ -13,6 +13,8 @@
           beginning of Generator.index
     * A heapcustomlib module should be created to include common things of
       customlibs.
+    * heapmanip.Post.date_str: the date format is hardcoded in the function.
+      The date format should be extracted.
 
 * Generator: 
     * Should sections be classes? Or should the "sections" be one class? Or

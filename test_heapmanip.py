@@ -74,57 +74,6 @@ class MailDBHandler(object):
         self._posts = [ self._maildb.post(str(i)) for i in range(5) ]
 
 
-class TestUtilities(unittest.TestCase):
-
-    """Tests the utility functions of heapmanip."""
-
-    def test_calc_timestamp(self):
-        ts = calc_timestamp('Wed, 20 Aug 2008 17:41:30 +0200')
-        self.assertEquals(ts, 1219246890.0)
-
-    def test_HeapException(self):
-        def f():
-            raise HeapException, 'description'
-        self.assertRaises(HeapException, f)
-
-        try:
-            raise HeapException, 'description'
-        except HeapException, h:
-            self.assertEquals(h.value, 'description')
-            self.assertEquals(str(h), "'description'")
-
-
-class TestOptionHandling(unittest.TestCase):
-
-    def f(a, b, c=1, d=2):
-        pass
-
-    def test_arginfo(self):
-        def f(a, b, c=1, d=2):
-            pass
-        self.assertEquals(arginfo(f), (['a', 'b'], {'c':1, 'd':2}))
-        f2 = TestOptionHandling.f
-        self.assertEquals(arginfo(f2), (['a', 'b'], {'c':1, 'd':2}))
-
-    def test_set_defaultoptions(self):
-
-        def f(other1, a, b=1, c=2, other2=None):
-            pass
-
-        options = {'a':0, 'b': 1}
-        set_defaultoptions(options, f, ['other1', 'other2'])
-        self.assertEquals(options, {'a':0, 'b':1, 'c':2})
-
-        options = {'b': 1}
-        def try_():
-            set_defaultoptions(options, f, ['other1', 'other2'])
-        self.assertRaises(HeapException, try_)
-
-        options = {'a':0, 'b': 1, 'other': 2}
-        def try_():
-            set_defaultoptions(options, f, ['other1', 'other2'])
-        self.assertRaises(HeapException, try_)
-
 # global strings for tests
 
 post1_text = '''\
@@ -354,7 +303,7 @@ class TestPost2(unittest.TestCase):
 
     def testFromFile(self):
         fname = os.path.join(self._dir, 'postfile')
-        string_to_file(post1_text, fname)
+        heaplib.string_to_file(post1_text, fname)
         p = Post.from_file(fname)
 
         self.assertEquals(p.heapid(), None)
@@ -398,10 +347,10 @@ class TestMailDB1(unittest.TestCase, MailDBHandler):
     def testOnlyMail(self):
         """Tests that only the files with ".mail" postfix are read."""
         self.createDirs()
-        string_to_file('Subject: s1', self.postFileName('1.mail'))
-        string_to_file('Subject: sx', self.postFileName('xy.mail'))
-        string_to_file('Subject: s2', self.postFileName('2.other'))
-        string_to_file('Subject: s3', self.postFileName('3mail'))
+        heaplib.string_to_file('Subject: s1', self.postFileName('1.mail'))
+        heaplib.string_to_file('Subject: sx', self.postFileName('xy.mail'))
+        heaplib.string_to_file('Subject: s2', self.postFileName('2.other'))
+        heaplib.string_to_file('Subject: s3', self.postFileName('3mail'))
         maildb = self.createMailDB()
         self.assertEquals(set(maildb.heapids()), set(['1', 'xy']))
         self.assertEquals(maildb.next_heapid(), '2')
@@ -409,14 +358,14 @@ class TestMailDB1(unittest.TestCase, MailDBHandler):
     def testConfig(self):
         """Tests the MailDB.__init__ which has a ConfigParser argument."""
         self.createDirs()
-        string_to_file('Subject: s1', self.postFileName('1.mail'))
+        heaplib.string_to_file('Subject: s1', self.postFileName('1.mail'))
         configFileText = '''\
 [paths]
 mail=%s
 html=%s
 ''' % (self._postfile_dir, self._html_dir)
         configFileName = os.path.join(self._dir, 'heap.cfg')
-        string_to_file(configFileText, configFileName)
+        heaplib.string_to_file(configFileText, configFileName)
         config = ConfigParser.ConfigParser()
         config.read(configFileName)
         maildb = MailDB.from_config(config)
@@ -425,8 +374,10 @@ html=%s
     def testGetMethods(self):
         """Tests the 'get' methods of MailDB."""
         self.createDirs()
-        string_to_file('Message-Id: mess1', self.postFileName('1.mail'))
-        string_to_file('Message-Id: mess2', self.postFileName('2.mail'))
+        heaplib.string_to_file('Message-Id: mess1',
+                               self.postFileName('1.mail'))
+        heaplib.string_to_file('Message-Id: mess2',
+                               self.postFileName('2.mail'))
         maildb = self.createMailDB()
         self.assertEquals(set(maildb.heapids()), set(['1', '2']))
         self.assertEquals(maildb.next_heapid(), '3')
@@ -444,20 +395,24 @@ html=%s
         self.createDirs()
         postfile1 = self.postFileName('1.mail')
         postfile2 = self.postFileName('2.mail')
-        string_to_file('Message-Id: mess1', postfile1)
-        string_to_file('Message-Id: mess2', postfile2)
+        heaplib.string_to_file('Message-Id: mess1', postfile1)
+        heaplib.string_to_file('Message-Id: mess2', postfile2)
         maildb = self.createMailDB()
         p1 = maildb.post('1')
         p2 = maildb.post('2')
 
         # Modifying and saving a post
         p1.set_subject('subject')
-        self.assertEquals('Message-Id: mess1', file_to_string(postfile1))
-        self.assertEquals('Message-Id: mess2', file_to_string(postfile2))
+        self.assertEquals('Message-Id: mess1',
+                          heaplib.file_to_string(postfile1))
+        self.assertEquals('Message-Id: mess2',
+                          heaplib.file_to_string(postfile2))
         maildb.save()
         postfile1_str = 'Subject: subject\nMessage-Id: mess1\n\n\n'
-        self.assertEquals(postfile1_str, file_to_string(postfile1))
-        self.assertEquals('Message-Id: mess2', file_to_string(postfile2))
+        self.assertEquals(postfile1_str,
+                          heaplib.file_to_string(postfile1))
+        self.assertEquals('Message-Id: mess2',
+                          heaplib.file_to_string(postfile2))
         
         # Adding a new post
         postfile3 = self.postFileName('3.mail')
@@ -679,9 +634,9 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         postfile1 = self.postFileName('1.mail')
         postfile2 = self.postFileName('2.mail')
         postfile3 = self.postFileName('3.mail')
-        string_to_file('Message-Id: 1@', postfile1)
-        string_to_file('Message-Id: 2@\nIn-Reply-To: 1@', postfile2)
-        string_to_file('Message-Id: 3@\nIn-Reply-To: 1@', postfile3)
+        heaplib.string_to_file('Message-Id: 1@', postfile1)
+        heaplib.string_to_file('Message-Id: 2@\nIn-Reply-To: 1@', postfile2)
+        heaplib.string_to_file('Message-Id: 3@\nIn-Reply-To: 1@', postfile3)
         self._maildb = self.createMailDB()
 
     def testEmpty(self):
@@ -1247,7 +1202,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 
     def index_html(self):
         index_html_name = os.path.join(self._html_dir, 'index.html')
-        return file_to_string(index_html_name)
+        return heaplib.file_to_string(index_html_name)
 
     def _sections(self, sections):
         assert(isinstance(sections, list))

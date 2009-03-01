@@ -69,12 +69,12 @@ import email
 import email.header
 import base64
 import quopri
-import email.utils
 import sys
 import time
 import StringIO
 import datetime
-import inspect
+
+import heaplib
 
 
 ##### logging #####
@@ -91,130 +91,10 @@ def log(*args):
         sys.stdout.write('\n')
         sys.stdout.flush()
 
-##### Performance measurement #####
-
-pm_last_time = datetime.datetime.now()
-pm_action = ''
-def int_time(next_action = ''):
-    """Returns the time elapsed since the last call of int_time."""
-    global pm_last_time
-    global pm_action
-    old_action = pm_action
-    pm_action = next_action
-    now = datetime.datetime.now()
-    delta = now - pm_last_time
-    delta = delta.seconds + (delta.microseconds)/1000000.0
-    pm_last_time = now
-    return old_action, delta
-
-def print_time(next_action = ''):
-    """Calls int_time and prints the result."""
-    pm_action, t = int_time(next_action)
-    if pm_action != '':
-        print '%.6f %s' % (t, pm_action)
-    else:
-        print '%.6f' % (t)
-
-##### utility functions and classes #####
+##### Constants #####
 
 STAR = 0
 NORMAL = 1
-
-def file_to_string(file_name):
-    """Reads a file's content into a string."""
-    f = open(file_name)
-    s = f.read()
-    f.close()
-    return s
-
-def string_to_file(s, file_name):
-    """Writes a string to a file."""
-    f = open(file_name,'w')
-    f.write(s)
-    f.close()
-
-def utf8(s, charset):
-    """Encodes the given string in the charset into utf-8.
-
-    If the charset is None, the original string will be returned.
-    """
-    if charset != None:
-        return s.decode(charset).encode('utf-8')
-    else:
-        return s
-
-def calc_timestamp(date):
-    """Calculates a timestamp from a date.
-
-    The date argument should conform to RFC 2822.
-    The timestamp will be an UTC timestamp.
-    """
-    return email.utils.mktime_tz(email.utils.parsedate_tz(date))
-
-class HeapException(Exception):
-
-    """A very simple exception class used by this module."""
-
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
-
-##### Option handling #####
-
-def arginfo(fun):
-    """Returns a tuple based on the arguments of the given function.
-    
-    The first element of the tuple is the list of arguments that do not have
-    a default value. The second element is a dictionary that assigns the
-    default values to the arguments that do have a default value.
-    
-    Returns: ([str], dict(str, anything))
-    """
-
-    args, varargs, varkw, defaults = inspect.getargspec(fun)
-    args_without_default = args[:-len(defaults)]
-    argnames_with_default = args[-len(defaults):]
-    d = {}
-    for argname, argdefault in zip(argnames_with_default, defaults):
-        d[argname] = argdefault
-    return args_without_default, d
-
-def set_defaultoptions(options, fun, excluded):
-    """Reads the options and their default values from the given function's
-    argument list and updates the given dictionary accordingly.
-
-    Arguments:
-    options --- The dictionary that should be updated with the default options.
-        Type: dict(str, anything)
-    fun --- The list of options and the default options will be read from
-        this function.
-        Type: function
-    excluded --- Arguments of 'fun' that are not options and should be
-        excluded from the result.
-        Type: set(str) | [str]
-    """
-
-    unused_options = set(options.keys())
-    args_without_default, args_with_default = arginfo(fun)
-    for optionname in args_without_default:
-        if optionname not in excluded:
-            if optionname in options:
-                unused_options.discard(optionname)
-            else:
-                raise HeapException, \
-                      'Option "%s" should be specified in %s' % \
-                      (optionname, options)
-    for optionname, optiondefault in args_with_default.items():
-        if optionname not in excluded:
-            options.setdefault(optionname, optiondefault)
-            unused_options.discard(optionname)
-    if len(unused_options) > 0:
-        raise HeapException, \
-              'Unused options %s in %s' % (list(unused_options), options)
-
 
 ##### Post #####
 
@@ -362,21 +242,6 @@ class Post(object):
         self._header['Date'] = date
         self.touch()
 
-    def date_str(self):
-        """The date converted to a string in local time.
-        
-        If the post does not have a date, an empty string is returned.
-        
-        Returns: str
-        """
-
-        date = self.date()
-        if date == '':
-            return ''
-        else:
-            date_local = time.localtime(calc_timestamp(date))
-            return time.strftime('%Y.%m.%d. %H:%M', date_local)
-
     def timestamp(self):
         """Returns the timestamp of the date of the post.
 
@@ -386,7 +251,7 @@ class Post(object):
         """
 
         date = self.date()
-        return calc_timestamp(date) if date != '' else 0
+        return heaplib.calc_timestamp(date) if date != '' else 0
 
     def datetime(self):
         """Returns the datetime object that describes the date of the post.
@@ -402,6 +267,20 @@ class Post(object):
         else:
             return datetime.datetime.fromtimestamp(timestamp)
 
+    def date_str(self):
+        """The date converted to a string in local time.
+        
+        If the post does not have a date, an empty string is returned.
+        
+        Returns: str
+        """
+
+        timestamp = self.timestamp()
+        if timestamp == 0:
+            return ''
+        else:
+            return time.strftime('%Y.%m.%d. %H:%M', time.localtime(timestamp))
+
     def before(self, *dt):
         return datetime.datetime(*dt) > self.datetime()
 
@@ -415,7 +294,7 @@ class Post(object):
     # tag fields
 
     def tags(self):
-        """Returns the tags of the email.
+        """Returns the tags of the post.
 
         The returned object should not be modified.
         """
@@ -452,7 +331,7 @@ class Post(object):
     # flag fields
 
     def flags(self):
-        """Returns the flags of the email.
+        """Returns the flags of the post.
 
         The returned object should not be modified.
         """
@@ -544,7 +423,8 @@ class Post(object):
             try:
                 [value] = d.pop(key, [''])
             except ValueError:
-                raise HeapException, ('Multiple "%s" keys.' % key)
+                raise heaplib.HeapException, \
+                      ('Multiple "%s" keys.' % key)
             h[key] = value
 
         def copy_list(key):
@@ -569,11 +449,13 @@ class Post(object):
         elif flags == None:
             pass
         else:
-            raise HeapException, ('Unknown "Flags" tag: "%s"' % (flags,))
+            raise heaplib.HeapException, \
+                  ('Unknown "Flags" tag: "%s"' % (flags,))
         # }
 
         if d != {}:
-            raise HeapException, ('Additional keys: "%s".' % d)
+            raise heaplib.HeapException, \
+                  ('Additional keys: "%s".' % d)
         return h
 
     def write(self, f):
@@ -1139,7 +1021,7 @@ class PostSet(set):
                 elif isinstance(prepost, Post): # prepost is a Post
                     post = prepost
                 else:
-                    raise HeapException, \
+                    raise heaplib.HeapException, \
                           ("Object'type not compatible with Post: %prepost" % \
                            (prepost,))
                 result.add(post)
@@ -1488,7 +1370,7 @@ class Server(object):
                         first = False
                     else:
                         value += ' '
-                    value += utf8(v[0], v[1])
+                    value += heaplib.utf8(v[0], v[1])
                 value = re.sub(r'\r\n',r'\n',value)
                 headers[attr] = value
 
@@ -1500,7 +1382,7 @@ class Server(object):
             elif encoding.lower() == 'quoted-printable':
                 text = quopri.decodestring(text)
         charset = message.get_content_charset()
-        text = utf8(text, charset)
+        text = heaplib.utf8(text, charset)
 
         text = re.sub(r'\r\n',r'\n',text)
         post = Post.create_empty()

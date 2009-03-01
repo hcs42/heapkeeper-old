@@ -10,6 +10,7 @@ Usage:
 from __future__ import with_statement
 import unittest
 
+import heaplib
 import heapmanip
 import test_heapmanip
 import heapia
@@ -44,7 +45,7 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
 
         def f():
             heapia.tagset(0)
-        self.assertRaises(heapmanip.HeapException, f)
+        self.assertRaises(heaplib.HeapException, f)
 
     def tags(self):
         return [ self._posts[i].tags() for i in range(5) ]

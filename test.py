@@ -15,7 +15,10 @@ import sys
 import unittest
 import heapmanip
 
-testmodules = ['test_heapmanip', 'test_heapia', 'test_heapcustomlib']
+testmodules = ['test_heaplib',
+               'test_heapmanip',
+               'test_heapia',
+               'test_heapcustomlib']
 
 def main(args):
     heapmanip.set_log(False)

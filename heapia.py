@@ -104,9 +104,11 @@ Example: generate the index HTML (and exit):
 import sys
 import time
 import subprocess
+import ConfigParser
+
+import heaplib
 import heapmanip
 import heapcustomlib
-import ConfigParser
 
 def h():
     print __doc__
@@ -160,7 +162,7 @@ def set_option(option, value):
     """
 
     if option not in options:
-        raise heapmanip.HeapException, 'No such option: "%s"' % (option,)
+        raise heaplib.HeapException, 'No such option: "%s"' % (option,)
     options[option] = value
 
 def set_callback(callbackname, callbackfun):
@@ -264,7 +266,7 @@ def tagset(tags):
     elif isinstance(tags, list):
         return set(tags)
     else:
-        raise heapmanip.HeapException, \
+        raise heaplib.HeapException, \
               'Cannot convert object to tagset: %s' % (tags,)
 
 def pt(pps):
