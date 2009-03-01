@@ -40,8 +40,6 @@
         * dependencies?
         * Html.table
 
-* test.py: test all test_*.py files in the current dir
-
 + heapia.hh(): fast help (only the commands)
 
 + heapia: being able to customize what should happen after each command.
@@ -49,6 +47,10 @@
     regenerates the index. But sometimes all the posts should be generated.
   * Maybe also the timing could be extracted into a before_commands and
     after_command callback function?
+  * heapia should have two lists of functions called after_funs and before_funs
+    that are called before/after each command. The user could manipulate these
+    lists. The functions would also get the function from which they were
+    called.
 
 * docstrings:
     * object instead of "something" and "andthing"
