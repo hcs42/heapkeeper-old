@@ -32,22 +32,10 @@ import heapmanip
 
 ##### Generator #####
 
-def generator_defopts(options={}):
-    """Returns sensible default options for the methods of
-    heapmanip.Generator"""
-    
-    options0 = \
-        {'sections': None,
-         'write_toc': False,
-         'shortsubject': False,
-         'shorttags': False,
-         'date_fun': None,
-         'html_title': 'Heap index',
-         'html_h1': 'Heap index',
-         'cssfile': 'heapindex.css',
-         'print_thread_of_post': True}
-    options0.update(options)
-    return options0
+def generatoroptions_setdef(options):
+    """Sets sensible default options for the given GeneratorOptions object."""
+    # Now all options are sensible...
+    pass
 
 ##### Date #####
 
@@ -141,11 +129,11 @@ def date_defopts(options={}):
 def gen_index(maildb):
     date_options = date_defopts({'maildb': maildb})
     date_fun = create_date_fun(date_options)
-    gen_options = generator_defopts()
+    gen_options = heapmanip.GeneratorOptions()
     heapmanip.Generator(maildb).index(gen_options)
 
 def gen_post_html(maildb):
     date_options = date_defopts({'maildb': maildb})
     date_fun = create_date_fun(date_options)
-    gen_options = generator_defopts()
+    gen_options = heapmanip.GeneratorOptions()
     heapmanip.Generator(maildb).posts_to_html(gen_options)

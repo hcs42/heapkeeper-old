@@ -45,14 +45,12 @@ def gen_index(maildb):
     date_fun = heapcustomlib.create_date_fun(date_options)
 
     # Generator options
-    sections_ = sections(maildb)
-    gen_options = heapcustomlib.generator_defopts()
-    gen_options.update({'maildb': maildb,
-                        'sections': sections_,
-                        'write_toc': True,
-                        'shortsubject': True,
-                        'shorttags': True,
-                        'date_fun': date_fun})
+    gen_options = heapmanip.GeneratorOptions()
+    gen_options.sections = sections(maildb)
+    gen_options.write_toc = True
+    gen_options.shortsubject = True
+    gen_options.shorttags = True
+    gen_options.date_fun = date_fun
 
     # Generating the index
     heapmanip.Generator(maildb).index(gen_options)

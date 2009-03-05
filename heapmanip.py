@@ -11,39 +11,12 @@ PrePostSet --- An object that can be converted into a PostSet.
     Real type: set(PrePest) | PostSet(PrePost) | [PrePost] | PrePost
     Actually, PrePostSet can be any iterable object that iterates over PrePost
     objects.
-GeneratorOptions --- Options on how the Generator should behave. See later.
-    Real type: dict(str, object)
 HtmlStr --- normal string, but it contains HTML.
     Real type: str
 DateFun --- Function that specifies how to print the dates of the
     posts. It will be called for each post summary that is written
     into the index. When it returns None, no date will be printed.
     Type: fun(Post, Section) -> (str | None)
-
-GeneratorOptions keys:
-sections --- The sections to print into the index. 'None' means that everything
-    should be printed into one section.
-    Type: None | [Section]
-write_toc --- If True, the index will contain a Table of Contents.
-    Type: bool
-shortsubject --- If True, the posts that have the same subject as
-    their parent will show a dash instead of their subject.
-    Type: bool
-shorttags --- If True, the posts that have the same tags as
-    their parent will show a dash instead of their tags.
-    Type: bool
-date_fun --- Function that specifies how to print the dates of the
-    posts.
-    Type: None | DateFun
-html_title --- The string to print as the <title> of the HTML file.
-    Type: str
-html_h1 --- The string to print as the title (<h1>) of the HTML file.
-    Type: str
-cssfile --- The name of the CSS file that should be referenced.
-    Type: str
-print_thread_of_post --- The thread of the post will be printed into the
-    post HTML.
-    Type: bool
 """
 
 from __future__ import with_statement
@@ -1630,9 +1603,67 @@ class Section(object):
         """Constructor."""
 
         super(Section, self).__init__()
-        self.title = title
-        self.posts = posts
-        self.is_flat = is_flat
+        for var, value in locals().items():
+            if var != 'self':
+                setattr(self, var, value)
+
+
+##### GeneratorOptions #####
+
+class GeneratorOptions(object):
+
+    """Options that are used by the Generator.
+
+    Data attributes:
+    sections --- The sections to print into the index. 'None' means that
+        everything should be printed into one section.
+        Type: None | [Section]
+    write_toc --- If True, the index will contain a Table of Contents.
+        Type: bool
+    shortsubject --- If True, the posts that have the same subject as
+        their parent will show a dash instead of their subject.
+        Type: bool
+        Default: False
+    shorttags --- If True, the posts that have the same tags as
+        their parent will show a dash instead of their tags.
+        Type: bool
+        Default: False
+    date_fun --- Function that specifies how to print the dates of the
+        posts.
+        Type: DateFun
+        Default: (lambda post, section: None)
+    html_title --- The string to print as the <title> of the HTML file.
+        Type: str
+        Default: 'Heap'
+    html_h1 --- The string to print as the title (<h1>) of the HTML file.
+        Type: str
+        Default: 'Heap'
+    cssfile --- The name of the CSS file that should be referenced.
+        Type: str
+    print_thread_of_post --- The thread of the post will be printed into the
+        post HTML.
+        Type: bool
+        Default: False
+    """
+
+    def __init__(self,
+                 sections=heaplib.NOT_SET,
+                 write_toc=heaplib.NOT_SET,
+                 shortsubject=False,
+                 shorttags=False,
+                 date_fun=lambda post, section: None,
+                 html_title='Heap index',
+                 html_h1='Heap index',
+                 cssfile='heapindex.css',
+                 print_thread_of_post=False):
+
+        """Constructor."""
+
+        super(GeneratorOptions, self).__init__()
+        for var, value in locals().items():
+            if var != 'self':
+                setattr(self, var, value)
+
 
 ##### Generator #####
 
@@ -1672,7 +1703,7 @@ class Generator(object):
         l.append('\n')
 
         # thread
-        if options['print_thread_of_post']:
+        if options.print_thread_of_post:
             section = Section(title='Thread', posts=[post])
             thread = \
                 self.thread(self._maildb.root(post), section, options)
@@ -1733,15 +1764,7 @@ class Generator(object):
             tags = post.tags()
 
         # Date
-        date_fun = options['date_fun']
-        if date_fun == None:
-            date_str = '(%s)' % (post.date_str(),)
-            # If the post does not have a date, we still want to print
-            # an empty string.
-            if date_str == None:
-                date_str = '()'
-        else:
-            date_str = date_fun(post, section)
+        date_str = options.date_fun(post, section)
 
         args = (post.htmlfilebasename(), author, subject, tags, post.heapid(),
                 date_str, post in section.posts)
@@ -1777,10 +1800,6 @@ class Generator(object):
         Returns: HtmlString
         """
 
-        # options
-        shortsubject = options['shortsubject']
-        shorttags = options['shorttags']
-
         # stack will contain heapids and strings.
         # A heapid may be a string or None.
         # If stack contains several items during the execution of the loop, the
@@ -1809,14 +1828,14 @@ class Generator(object):
                     #print 'post:', post
                     parent = self._maildb.prev(post)
                     subject = post.subject()
-                    if (shortsubject and parent != None and
+                    if (options.shortsubject and parent != None and
                         subject == parent.subject()):
                         subject_to_print = STAR
                     else:
                         subject_to_print = Html.escape(subject)
 
                     tags = post.tags()
-                    if (shorttags and parent != None and
+                    if (options.shorttags and parent != None and
                         tags == parent.tags()):
                         tags_to_print = STAR
                     else:
@@ -1885,7 +1904,7 @@ class Generator(object):
         """
 
         # sections
-        sections = options['sections']
+        sections = options.sections
         if sections == None:
             sections = [ Section(title='All posts', posts=self._maildb.all()) ]
         if self._maildb.has_cycle():
@@ -1898,11 +1917,11 @@ class Generator(object):
         threadst = self._maildb.threadstruct()
         filename = os.path.join(self._maildb.html_dir(), 'index.html')
         with open(filename, 'w') as f:
-            doc_header = Html.doc_header(options['html_title'],
-                                         options['html_h1'],
-                                         options['cssfile'])
+            doc_header = Html.doc_header(options.html_title,
+                                         options.html_h1,
+                                         options.cssfile)
             f.write(doc_header)
-            if options['write_toc']:
+            if options.write_toc:
                 f.write(self.index_toc(sections))
             for i, section in enumerate(sections):
                 f.write(self.section(section, i, options))

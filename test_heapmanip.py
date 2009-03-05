@@ -1276,13 +1276,11 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
     def create_input(self, raw_sections, options, sectionindex=None):
         sections = [ self._raw_section_to_section(raw_section)
                      for raw_section in raw_sections ]
-        options2 = heapcustomlib.generator_defopts()
-        options2['sections'] = sections
-        options2.update(options)
+        genoptions = GeneratorOptions(sections=sections, **options)
         if sectionindex == None:
-            return sections, options2
+            return sections, genoptions
         else:
-            return sections, options2, sections[sectionindex]
+            return sections, genoptions, sections[sectionindex]
 
 
     def test_index_toc(self):
@@ -1593,7 +1591,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         maildb, g = self.init()
         self.create_threadst()
 
-        options = heapcustomlib.generator_defopts()
+        options = GeneratorOptions()
         sections, options = \
             self.create_input(
                 [('Sec1', [1]), ('Sec2', [4])],
