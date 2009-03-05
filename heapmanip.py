@@ -11,14 +11,6 @@ PrePostSet --- An object that can be converted into a PostSet.
     Real type: set(PrePest) | PostSet(PrePost) | [PrePost] | PrePost
     Actually, PrePostSet can be any iterable object that iterates over PrePost
     objects.
-Section --- A section is a set of posts that should be printed with a title
-    according to the specified options.
-    Real type: (title:str, sectionposts:SectionPosts, options:SectionOptions)
-SectionPosts --- Posts of a section. If it a list, the order of the posts
-    matters.
-    Real type: [Post] | PostSet
-SectionOptions --- Options on how to print a given section. See later.
-    Real type: dict(str, object)
 GeneratorOptions --- Options on how the Generator should behave. See later.
     Real type: dict(str, object)
 HtmlStr --- normal string, but it contains HTML.
@@ -27,10 +19,6 @@ DateFun --- Function that specifies how to print the dates of the
     posts. It will be called for each post summary that is written
     into the index. When it returns None, no date will be printed.
     Type: fun(Post, Section) -> (str | None)
-
-SectionOptions keys:
-flat --- The section should be printed in a flat way instead of a threaded way.
-    Type: bool
 
 GeneratorOptions keys:
 sections --- The sections to print into the index. 'None' means that everything
@@ -1615,6 +1603,36 @@ class Html():
         l.append('</ul>\n')
         return ''.join(l)
 
+##### Section #####
+
+class Section(object):
+    """Represents a set of posts that should be printed with a title
+    according to the specified options.
+
+    Data attributes:
+    title --- The title of the section.
+        Type: str
+    posts --- The posts that are in the section. If it is a list, the order of
+        the posts can matter. (E.g. when printed flatly, the posts will be
+        printed in the same order as they are in the list.)
+        Type: [Post] | PostSet
+    is_flat --- If true, the section should be printed flatly, otherwise in a
+        threaded structure.
+        Type: bool
+        Default value: False
+    """
+
+    def __init__(self,
+                 title=heaplib.NOT_SET,
+                 posts=heaplib.NOT_SET,
+                 is_flat=False):
+
+        """Constructor."""
+
+        super(Section, self).__init__()
+        self.title = title
+        self.posts = posts
+        self.is_flat = is_flat
 
 ##### Generator #####
 
@@ -1655,10 +1673,9 @@ class Generator(object):
 
         # thread
         if options['print_thread_of_post']:
-            sections = [('Thread', [post])]
-            self.sections_setdefaultoptions(sections)
+            section = Section(title='Thread', posts=[post])
             thread = \
-                self.thread(self._maildb.root(post), sections[0], options)
+                self.thread(self._maildb.root(post), section, options)
             l.append(thread)
 
         l.append(Html.enclose('postbody', Html.escape(post.body()), tag='pre'))
@@ -1686,7 +1703,7 @@ class Generator(object):
 
         items = []
         for i, section in enumerate(sections):
-            items.append(Html.link("#section_%s" % (i,), section[0]))
+            items.append(Html.link("#section_%s" % (i,), section.title))
         return Html.list(items, 'tableofcontents')
         
     def post_summary(self, post, section, options, subject=NORMAL,
@@ -1727,9 +1744,9 @@ class Generator(object):
             date_str = date_fun(post, section)
 
         args = (post.htmlfilebasename(), author, subject, tags, post.heapid(),
-                date_str, post in section[1])
+                date_str, post in section.posts)
 
-        if section[2]['flat']: 
+        if section.is_flat: 
             return Html.post_summary_table(*args)
         else:
             return Html.post_summary_div(*args)
@@ -1834,49 +1851,29 @@ class Generator(object):
         """
 
         l = []
-        sectiontitle, sectionposts, sectionopts = section
         roots = self._maildb.roots()
         threads = self._maildb.threads()
 
-        l.append(Html.section_begin('section_%s' % (sectionid,), sectiontitle))
-        if sectionopts['flat']:
+        l.append(Html.section_begin('section_%s' % (sectionid,),section.title))
+
+        posts = section.posts
+        if section.is_flat:
             l.append('<table class="flatlist">\n')
-            if isinstance(sectionposts, PostSet):
-                sectionposts = sectionposts.sorted_list()
-            for post in sectionposts:
+            if isinstance(posts, PostSet):
+                posts = posts.sorted_list()
+            for post in posts:
                 l.append(self.post_summary(post, section, options))
             l.append('</table>\n')
         else:
-            if isinstance(sectionposts, list):
-                sectionposts = set(sectionposts)
+            if isinstance(posts, list):
+                posts = set(posts)
             for root in roots:
                 thread = threads[root]
-                if not (thread & sectionposts).is_set([]):
+                if not (thread & posts).is_set([]):
                     l.append(self.thread(root, section, options))
         l.append(Html.section_end())
 
         return ''.join(l)
-
-    @staticmethod
-    def sections_setdefaultoptions(sections):
-        """Modifies the given sectionlist so that it will be a proper
-        sectionlist.
-
-        Arguments:
-        sections ---
-            Type: [(sectionname:str, sectionposts) |
-                   (sectionname:str, sectionposts, dict(str, something))]
-        
-        Returns: [Section]
-        """
-
-        for i in range(len(sections)):
-            try:
-                sectiontitle, sectionposts = sections[i]
-                sections[i] = sectiontitle, sectionposts, {}
-            except:
-                pass
-            sections[i][2].setdefault('flat', False)
 
     def index(self, options):
         """Creates the index HTML file.
@@ -1890,10 +1887,12 @@ class Generator(object):
         # sections
         sections = options['sections']
         if sections == None:
-            sections = [('All posts', self._maildb.all())]
+            sections = [ Section(title='All posts', posts=self._maildb.all()) ]
         if self._maildb.has_cycle():
-            sections.append(('Posts in cycles', self._maildb.cycles(), 'flat'))
-        Generator.sections_setdefaultoptions(sections)
+            section = Section(name='Posts in cycles',
+                              posts=self._maildb.cycles(),
+                              is_flat='flat')
+            sections.append(section)
 
         # generating the index
         threadst = self._maildb.threadstruct()
@@ -1906,7 +1905,6 @@ class Generator(object):
             if options['write_toc']:
                 f.write(self.index_toc(sections))
             for i, section in enumerate(sections):
-                sectiontitle, sectionposts, sectionopts = section
                 f.write(self.section(section, i, options))
             f.write(Html.doc_footer())
         log('Index generated.')

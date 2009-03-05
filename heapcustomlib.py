@@ -93,7 +93,7 @@ def create_should_print_date_fun(options):
 
     def should_print_date_fun(post, section):
         prev = maildb.prev(post)
-        if section[2]['flat']:
+        if section.is_flat:
             return True
         if prev == None:
             return True

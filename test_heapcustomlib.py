@@ -33,9 +33,8 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
 
     def test_create_should_print_date_fun(self):
         # sections
-        section = ('', self._maildb.all(), {})
+        section = heapmanip.Section('', self._maildb.all())
         sections = [section]
-        heapmanip.Generator.sections_setdefaultoptions(sections)
 
         # date options
         options = date_defopts({'maildb': self._maildb,
@@ -57,7 +56,7 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
         self.assertEquals(f(self._posts[2], section), False)
 
         # Flat section: all date has to be printed
-        section[2]['flat'] = True
+        section.is_flat = True
         self.assertEquals(f(self._posts[0], section), True)
         self.assertEquals(f(self._posts[1], section), True)
         self.assertEquals(f(self._posts[2], section), True)
@@ -66,9 +65,8 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
 
     def test_create_date_fun(self):
         # sections
-        section = ('', self._maildb.all(), {})
+        section = heapmanip.Section('', self._maildb.all())
         sections = [section]
-        heapmanip.Generator.sections_setdefaultoptions(sections)
 
         def my_should_fun(post, section):
             return post.heapid() in ['1', '3']

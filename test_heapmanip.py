@@ -1224,6 +1224,9 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
     def setUp(self):
         self.setUpDirs()
 
+    def tearDown(self):
+        self.tearDownDirs()
+
     def init(self):
         maildb = self._maildb = self.createMailDB()
         g = Generator(maildb)
@@ -1233,21 +1236,46 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         index_html_name = os.path.join(self._html_dir, 'index.html')
         return heaplib.file_to_string(index_html_name)
 
-    def _sections(self, sections):
-        assert(isinstance(sections, list))
-        for i in range(len(sections)):
-            section = sections[i]
-            if isinstance(section[1], list):
-                sectionposts = [ self._posts[postindex] 
-                               for postindex in section[1] ]
-                sectionoptions = {} if len(section) == 2 else section[2]
-                sections[i] = (section[0], sectionposts, sectionoptions)
+    def _raw_section_to_section(self, raw_section):
+        """Converts a RawSection into a Section.
 
-        Generator.sections_setdefaultoptions(sections)
-        return sections
+        Type definitions:
+            PostList --- Represents a list of posts.
+                Real type: [(Post | postindex)]
+            RawSection --- It is a tuple that represents a Section. The first
+                member of a RawSection is the 'title' of the Section. The
+                second member of a RawSection is the 'posts' data member
+                member of the Section. If there is a third member in a
+                RawSection, then it should be a dictionary, that contains all
+                the other members of the Section as key-value pairs.
+                Real type: (title:str, posts:PostList) |
+                           (title:str, posts:PostList, options:dict)
 
-    def create_input(self, sections, options, sectionindex=None):
-        sections = self._sections(sections)
+        Arguments:
+            sections ---
+                Type: RawSection
+
+        Returns: Section
+        """
+
+        # Adding Section.title
+        section = Section(title = raw_section[0])
+
+        # Adding Section.posts
+        section.posts = \
+            [ self._posts[post] if isinstance(post, int) else post
+              for post in raw_section[1] ]
+
+        # Adding other data members of Section
+        if len(raw_section) > 2:
+            for optionkey, optionvalue in raw_section[2]:
+                setattr(section, optionkey, optionvalue)
+
+        return section
+
+    def create_input(self, raw_sections, options, sectionindex=None):
+        sections = [ self._raw_section_to_section(raw_section)
+                     for raw_section in raw_sections ]
         options2 = heapcustomlib.generator_defopts()
         options2['sections'] = sections
         options2.update(options)
@@ -1319,7 +1347,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
                 [('Sec1', [1]), ('Sec2', [4])],
                 {'date_fun': lambda post, section: None},
                 sectionindex=0)
-        section[2]['flat'] = True
+        section.is_flat = True
 
         table = Html.post_summary_table
         self.assertEquals(
@@ -1539,7 +1567,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
                 [('Sec', [1, 4])],
                 {},
                 sectionindex=0)
-        section[2]['flat'] = True
+        section.is_flat = True
         self.assertEquals(g.section(section, 0, options), flat_result(1, 4))
 
         # Tests flat printing with list in the reversed order.
@@ -1548,7 +1576,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
                 [('Sec', [4, 1])],
                 {},
                 sectionindex=0)
-        section[2]['flat'] = True
+        section.is_flat = True
         self.assertEquals(g.section(section, 0, options), flat_result(4, 1))
 
         # Tests flat printing with PostSet.
@@ -1557,7 +1585,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
                 [('Sec', maildb.postset([self._posts[1], self._posts[4]]))],
                 {},
                 sectionindex=0)
-        section[2]['flat'] = True
+        section.is_flat = True
         self.assertEquals(g.section(section, 0, options), flat_result(1, 4))
 
     def test_index(self):
@@ -1581,9 +1609,6 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             g.section(sections[0], 0, options) +
             g.section(sections[1], 1, options) +
             Html.doc_footer())
-
-    def tearDown(self):
-        self.tearDownDirs()
 
 
 if __name__ == '__main__':

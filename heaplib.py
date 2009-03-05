@@ -129,3 +129,7 @@ def calc_timestamp(date):
     The timestamp will be an UTC timestamp.
     """
     return email.utils.mktime_tz(email.utils.parsedate_tz(date))
+
+##### Constants #####
+
+class NOT_SET: pass

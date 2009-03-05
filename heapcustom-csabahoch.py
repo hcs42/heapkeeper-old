@@ -32,9 +32,9 @@ def sections(maildb):
     ps_all -= ps_cp
 
     # sections
-    return [("Heap", ps_heap),
-            ("Programozás", ps_cp),
-            ("Egyéb", ps_all)]
+    return [heapmanip.Section("Heap", ps_heap),
+            heapmanip.Section("Programozás", ps_cp),
+            heapmanip.Section("Egyéb", ps_all)]
 
 def gen_index(maildb):
 
