@@ -123,3 +123,72 @@ Explanation:
 Used in:
 
     heapmanip.MailDB
+
+-------
+OPTIONS
+-------
+
+Usage:
+
+    When we want to handle options dynamically so that we can pass them around
+    and they can have default values.
+
+Concept:
+
+    We create a class, and instances of that class will represent a
+    configuration of the options.
+
+Code example:
+
+    class MyOptions(object):
+
+        """Description.
+
+        Data attributes:
+        option1 --- Description.
+            Type: int
+        option2 --- Description.
+            Type: str
+            Default value: ''
+        """
+
+        def __init__(self,
+                     option1=heaplib.NOT_SET,
+                     option2=''):
+
+            """Constructor."""
+
+            super(MyOptions, self).__init__()
+            for var, value in locals().items():
+                if var != 'self':
+                    setattr(self, var, value)
+
+    def f(myoptions):
+        if myoptions.option1:
+            ...
+
+    def g1():
+        myoptions = MyOptions()
+        myoptions.option1 = 0
+        myoptions.option2 = 'something'
+        f(myoptions)
+
+    def g2():
+        f(MyOptions(option1=0))
+
+Explanation:
+    
+    One instance of the MyOptions class represents a configuration of the
+    options.
+    
+    The options whose default value is `heaplib.NOT_SET` do not really have a
+    default value. Functions like `f` expect that none of the options is
+    `NOT_SET`, so the options whose default value is `NOT_SET` should be set
+    when functions like `f` are called.
+
+Used in:
+
+    heapmanip.GeneratorOptions
+    heapmanip.Section
+    heapcustomlib.DateOptions # not yet
+    heapia.Options # not yet

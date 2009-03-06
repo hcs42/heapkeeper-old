@@ -147,3 +147,32 @@ No:
     c = f(111, 222, 333)
 
 --------------------------------------------------------------------------------
+
+- When you format a string with the % operator and you have only one parameter
+  to format, use the tuple syntax.
+
+Yes:
+    "%s" % (x,)
+
+No:
+    "%s" % x
+No:
+    "%s" % (x)
+
+The reason is that printing a tuple may lead to surprises. To reduce the
+possibility of a bug, always follow this convention, even if you are sure that
+the parameter after the % operator is not a tuple.
+
+    >>> x = (1,2)
+    >>> "%s" % (x,)
+    '(1, 2)'
+    >>> "%s" % x
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: not all arguments converted during string formatting
+    >>> "%s" % (x)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: not all arguments converted during string formatting
+
+--------------------------------------------------------------------------------
