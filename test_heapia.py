@@ -17,7 +17,7 @@ import heapia
 
 class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
 
-    """Tests XXX."""
+    """Tests the heapia module."""
 
     # Thread structure:
     # 0 <- 1 <- 2
@@ -33,10 +33,13 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
         heapia.set_option('auto_threadstruct', False)
         heapia.set_option('maildb', self._maildb)
 
+    def tearDown(self):
+        self.tearDownDirs()
+
     def test_h(self):
         heapia.cmd_help()
 
-    def testTagSet(self):
+    def test_tagset(self):
         def test(pretagset, tagset):
             self.assertEquals(heapia.tagset(pretagset), tagset)
         test('t', set(['t']))
@@ -53,28 +56,25 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
     def tags(self):
         return [ self._posts[i].tags() for i in range(5) ]
 
-    def testPt1(self):
+    def test_pt_1(self):
         self.assertEquals(self.tags(), [[],[],[],[],[]])
         self._posts[1].add_tag('t')
         self.assertEquals(self.tags(), [[],['t'],[],[],[]])
         heapia.pt(1)
         self.assertEquals(self.tags(), [[],['t'],['t'],[],[]])
 
-    def testPt2(self):
+    def test_pt_2(self):
         self._posts[0].add_tag('t1')
         self._posts[1].add_tag('t2')
         heapia.pt(0)
         self.assertEquals(self.tags(), [['t1'],['t1','t2'],['t1'],['t1'],[]])
 
-    def testPt3(self):
+    def test_pt_3(self):
         self._posts[0].add_tag('t1')
         self._posts[0].add_tag('t2')
         heapia.pt(0)
         t = ['t1', 't2']
         self.assertEquals(self.tags(), [t, t, t, t, []])
-
-    def tearDown(self):
-        self.tearDownDirs()
 
 if __name__ == '__main__':
     heapmanip.set_log(False)
