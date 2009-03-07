@@ -159,9 +159,7 @@ Code example:
             """Constructor."""
 
             super(MyOptions, self).__init__()
-            for var, value in locals().items():
-                if var != 'self':
-                    setattr(self, var, value)
+            heaplib.set_dict_items(self, locals())
 
     def f(myoptions):
         if myoptions.option1:

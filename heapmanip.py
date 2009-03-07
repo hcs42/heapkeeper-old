@@ -1603,9 +1603,7 @@ class Section(object):
         """Constructor."""
 
         super(Section, self).__init__()
-        for var, value in locals().items():
-            if var != 'self':
-                setattr(self, var, value)
+        heaplib.set_dict_items(self, locals())
 
 
 ##### GeneratorOptions #####
@@ -1660,9 +1658,7 @@ class GeneratorOptions(object):
         """Constructor."""
 
         super(GeneratorOptions, self).__init__()
-        for var, value in locals().items():
-            if var != 'self':
-                setattr(self, var, value)
+        heaplib.set_dict_items(self, locals())
 
 
 ##### Generator #####
