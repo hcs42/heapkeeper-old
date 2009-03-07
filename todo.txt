@@ -42,6 +42,8 @@
 
 * Rename heapmanip to heaplib and heaplib to heaputils
 
+* Rename CamelCase function names in test modules
+
 + heapia.hh(): fast help (only the commands)
 
 + heapia: being able to customize what should happen after each command.

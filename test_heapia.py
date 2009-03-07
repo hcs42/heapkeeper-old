@@ -33,6 +33,9 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
         heapia.set_option('auto_threadstruct', False)
         heapia.set_option('maildb', self._maildb)
 
+    def test_h(self):
+        heapia.cmd_help()
+
     def testTagSet(self):
         def test(pretagset, tagset):
             self.assertEquals(heapia.tagset(pretagset), tagset)

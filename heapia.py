@@ -2,10 +2,17 @@
 
 """heapia - Interactive heapmanipulator
 
-For further help on a function type "help(<funname>)".
+Heapia contains commands that are actually Python functions in the heapia
+module. These functions do high-level manipulaton on the heap, and they tend to
+have very short names.
 
-Functions:
-h()                - prints this help
+For further help on a command type "help(<command name>)".
+
+------------------------------------------------------------
+Commands:
+
+h()                - prints a detailed help
+hh()               - print help about the commands
 s()                - save
 x()                - save and exit
 rl()               - reload the database (changes will be lost!)
@@ -39,6 +46,7 @@ maildb()           - the mail database object
 c()                - shorthand for maildb().all().collect
 set_option(option, value) - setting an option
 get_option(option) - the value of an option
+------------------------------------------------------------
 
 Argument types:
     pp = PrePost = int | str | Post
@@ -106,6 +114,7 @@ import sys
 import time
 import subprocess
 import ConfigParser
+import re
 
 import heaplib
 import heapmanip
@@ -113,6 +122,16 @@ import heapcustomlib
 
 def h():
     print __doc__
+
+def cmd_help():
+    r = re.compile('.*^' + ('-' * 60) + '\\n' +
+                   '(.*)' +
+                   '^' + ('-' * 60) + '\\n',
+                   re.DOTALL | re.MULTILINE)
+    return r.match(__doc__).group(1)
+
+def hh():
+    sys.stdout.write(cmd_help())
 
 def s():
     """Saves the mail database."""
