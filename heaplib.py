@@ -44,7 +44,7 @@ class HeapException(Exception):
         return repr(self.value)
 
 
-##### Option handling #####
+##### Option handling (currently not used) #####
 
 def arginfo(fun):
     """Returns a tuple based on the arguments of the given function.
@@ -96,6 +96,24 @@ def set_defaultoptions(options, fun, excluded):
     if len(unused_options) > 0:
         raise HeapException, \
               'Unused options %s in %s' % (list(unused_options), options)
+
+##### Option handling #####
+
+def set_dict_items(object, dict):
+    """Sets the items in the dictionary as attributes of the given object.
+
+    If 'self' is included in the dictionary as a key, it will be ignored.
+
+    Arguments:
+    object --
+        Type: object
+    dict --
+        Type: dict
+    """
+
+    for var, value in dict.items():
+        if var != 'self':
+            setattr(object, var, value)
 
 
 ##### Misc #####
