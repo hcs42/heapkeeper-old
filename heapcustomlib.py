@@ -5,7 +5,7 @@
 Type definitions:
 ShouldPrintDateFun -- A function that specifies when to print the date
     of a post in the post summary.
-    Real type: fun(post) -> bool
+    Real type: fun(post, genopts) -> bool
 DateOptions --- Options on how to handle and show dates.
     Real type: dict(str, object)
 
@@ -79,9 +79,9 @@ def create_should_print_date_fun(options):
     maildb = options['maildb']
     timedelta = options['timedelta']
 
-    def should_print_date_fun(post, section):
+    def should_print_date_fun(post, genopts):
         prev = maildb.prev(post)
-        if section.is_flat:
+        if genopts.section.is_flat:
             return True
         if prev == None:
             return True
@@ -109,8 +109,8 @@ def create_date_fun(options):
     else:
         should_print_date_fun = options['should_print_date_fun']
 
-    def date_fun(post, section):
-        if should_print_date_fun(post, section):
+    def date_fun(post, genopts):
+        if should_print_date_fun(post, genopts):
             return format_date(post, options)
         else:
             return None
@@ -129,11 +129,13 @@ def date_defopts(options={}):
 def gen_index(maildb):
     date_options = date_defopts({'maildb': maildb})
     date_fun = create_date_fun(date_options)
-    gen_options = heapmanip.GeneratorOptions()
-    heapmanip.Generator(maildb).index(gen_options)
+    genoptions = heapmanip.GeneratorOptions()
+    section = heapmanip.Section(maildb.all())
+    genoptions.indices = [heapmanip.Index([section])]
+    heapmanip.Generator(maildb).index(genoptions)
 
 def gen_post_html(maildb):
     date_options = date_defopts({'maildb': maildb})
     date_fun = create_date_fun(date_options)
-    gen_options = heapmanip.GeneratorOptions()
-    heapmanip.Generator(maildb).posts_to_html(gen_options)
+    genoptions = heapmanip.GeneratorOptions()
+    heapmanip.Generator(maildb).posts_to_html(genoptions)

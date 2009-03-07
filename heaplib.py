@@ -103,6 +103,8 @@ def set_dict_items(object, dict):
     """Sets the items in the dictionary as attributes of the given object.
 
     If 'self' is included in the dictionary as a key, it will be ignored.
+    If heaplib.NOT_SET is assigned to the key in the dictionary, that item will
+    be ignored.
 
     Arguments:
     object --
@@ -112,7 +114,7 @@ def set_dict_items(object, dict):
     """
 
     for var, value in dict.items():
-        if var != 'self':
+        if var != 'self' and value != NOT_SET:
             setattr(object, var, value)
 
 

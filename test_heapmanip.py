@@ -1227,385 +1227,340 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
     def tearDown(self):
         self.tearDownDirs()
 
-    def init(self):
+    def p(self, postindex):
+        return self._posts[postindex]
+
+    def init(self, create_threadst=True):
         maildb = self._maildb = self.createMailDB()
         g = Generator(maildb)
-        return maildb, g
+        if create_threadst:
+            self.create_threadst()
+        return maildb, g, self.p
 
     def index_html(self):
         index_html_name = os.path.join(self._html_dir, 'index.html')
         return heaplib.file_to_string(index_html_name)
 
-    def _raw_section_to_section(self, raw_section):
-        """Converts a RawSection into a Section.
-
-        Type definitions:
-            PostList --- Represents a list of posts.
-                Real type: [(Post | postindex)]
-            RawSection --- It is a tuple that represents a Section. The first
-                member of a RawSection is the 'title' of the Section. The
-                second member of a RawSection is the 'posts' data member
-                member of the Section. If there is a third member in a
-                RawSection, then it should be a dictionary, that contains all
-                the other members of the Section as key-value pairs.
-                Real type: (title:str, posts:PostList) |
-                           (title:str, posts:PostList, options:dict)
-
-        Arguments:
-            sections ---
-                Type: RawSection
-
-        Returns: Section
-        """
-
-        # Adding Section.title
-        section = Section(title = raw_section[0])
-
-        # Adding Section.posts
-        section.posts = \
-            [ self._posts[post] if isinstance(post, int) else post
-              for post in raw_section[1] ]
-
-        # Adding other data members of Section
-        if len(raw_section) > 2:
-            for optionkey, optionvalue in raw_section[2]:
-                setattr(section, optionkey, optionvalue)
-
-        return section
-
-    def create_input(self, raw_sections, options, sectionindex=None):
-        sections = [ self._raw_section_to_section(raw_section)
-                     for raw_section in raw_sections ]
-        genoptions = GeneratorOptions(sections=sections, **options)
-        if sectionindex == None:
-            return sections, genoptions
-        else:
-            return sections, genoptions, sections[sectionindex]
-
-
     def test_index_toc(self):
-        maildb, g = self.init()
+        maildb, g, p = self.init(create_threadst=False)
         self.create_threadst(skipdates=True)
         
-        sections, options = \
-            self.create_input(
-                [('Sec1', [1]), ('Sec2', [4])],
-                {})
+        genopts = GeneratorOptions()
+        sections = [Section('Sec1', [p(1)]),
+                    Section('Sec2', [p(4)])]
 
-        link = Html.link
         self.assertEquals(
-            g.index_toc(sections),
+            g.index_toc(sections, genopts),
             Html.list(
-                [link('#section_0', 'Sec1'),
-                 link('#section_1', 'Sec2')],
+                [Html.link('#section_0', 'Sec1'),
+                 Html.link('#section_1', 'Sec2')],
                 'tableofcontents'))
 
     def test_post_summary(self):
-        maildb, g = self.init()
-        self.create_threadst()
-
-        sections, options, section = \
-            self.create_input(
-                [('Sec1', [1]), ('Sec2', [4])],
-                {'date_fun': lambda post, section: None},
-                sectionindex=0)
-
+        maildb, g, p = self.init()
         div = Html.post_summary_div
+
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec1', [p(1)]),
+                            Section('Sec2', [p(4)])]
+        genopts.section = genopts.sections[0]
 
         # basic case
         self.assertEquals(
-            g.post_summary(self._posts[0], section, options),
+            g.post_summary(p(0), genopts),
             div('0.html', 'author0', 'subject0', [], '0', None, False))
 
         # subject
         self.assertEquals(
-            g.post_summary(self._posts[0], section, options, 'mysubject'),
+            g.post_summary(p(0), genopts, 'mysubject'),
             div('0.html', 'author0', 'mysubject', [], '0', None, False))
 
         self.assertEquals(
-            g.post_summary(self._posts[0], section, options, STAR),
+            g.post_summary(p(0), genopts, STAR),
             div('0.html', 'author0', STAR, [], '0', None, False))
 
         # tags
         self.assertEquals(
-            g.post_summary(self._posts[0], section, options,tags=['t1','t2']),
+            g.post_summary(p(0), genopts,tags=['t1','t2']),
             div('0.html', 'author0', 'subject0', ['t1', 't2'], '0', None,
                 False))
 
         self.assertEquals(
-            g.post_summary(self._posts[0], section, options, tags=STAR),
+            g.post_summary(p(0), genopts, tags=STAR),
             div('0.html', 'author0', 'subject0', STAR, '0', None, False))
 
     def test_post_summary__flat(self):
-        maildb, g = self.init()
-        self.create_threadst()
+        maildb, g, p = self.init()
 
-        sections, options, section = \
-            self.create_input(
-                [('Sec1', [1]), ('Sec2', [4])],
-                {'date_fun': lambda post, section: None},
-                sectionindex=0)
-        section.is_flat = True
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec1', [p(1)], is_flat=True),
+                            Section('Sec2', [p(4)])]
+        genopts.section = genopts.sections[0]
 
         table = Html.post_summary_table
         self.assertEquals(
-            g.post_summary(self._posts[0], section, options),
+            g.post_summary(p(0), genopts),
             table('0.html', 'author0', 'subject0', [], '0', None, False))
 
     def test_post_summary__date(self):
         
-        def date_fun(post, sectionarg):
-            self.assertEquals(sectionarg, section)
+        def date_fun(post, genopts2):
             self.assertEquals(post.heapid(), str((self._posts.index(post))))
             return 'date%s' % (self._posts.index(post),)
 
-        maildb, g = self.init()
-        self.create_threadst()
+        maildb, g, p = self.init()
 
-        sections, options, section = \
-            self.create_input(
-                [('Sec1', [1]), ('Sec2', [4])],
-                {'date_fun': date_fun},
-                sectionindex=0)
+        genopts = GeneratorOptions()
+        genopts.date_fun = date_fun
+        genopts.sections = [Section('Sec1', [p(1)]),
+                            Section('Sec2', [p(4)])]
+        genopts.section = genopts.sections[0]
 
         div = Html.post_summary_div
         self.assertEquals(
-            g.post_summary(self._posts[0], section, options),
+            g.post_summary(p(0), genopts),
             div('0.html', 'author0', 'subject0', [], '0', 'date0', False))
 
     def test_thread(self):
-        maildb, g = self.init()
-        self.create_threadst()
+        maildb, g, p = self.init()
 
-        sections, options, section = \
-            self.create_input(
-                [('Sec1', [1]), ('Sec2', [4])],
-                {},
-                sectionindex=0)
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec1', [p(1)]),
+                            Section('Sec2', [p(4)])]
+        genopts.section = genopts.sections[0]
 
         self.assertEquals(
-            g.thread(self._posts[2], section, options),
-            g.post_summary(self._posts[2], section, options) +
+            g.thread(p(2), genopts),
+            g.post_summary(p(2), genopts) +
             g.post_summary_end())
 
         self.assertEquals(
-            g.thread(self._posts[1], section, options),
-            g.post_summary(self._posts[1], section, options) +
-            g.post_summary(self._posts[2], section, options) +
+            g.thread(p(1), genopts),
+            g.post_summary(p(1), genopts) +
+            g.post_summary(p(2), genopts) +
             g.post_summary_end() +
             g.post_summary_end())
 
         self.assertEquals(
-            g.thread(self._posts[0], section, options),
-            g.post_summary(self._posts[0], section, options) +
-            g.post_summary(self._posts[1], section, options) +
-            g.post_summary(self._posts[2], section, options) +
+            g.thread(p(0), genopts),
+            g.post_summary(p(0), genopts) +
+            g.post_summary(p(1), genopts) +
+            g.post_summary(p(2), genopts) +
             g.post_summary_end() + # end of 2
             g.post_summary_end() + # end of 1
-            g.post_summary(self._posts[3], section, options) +
+            g.post_summary(p(3), genopts) +
             g.post_summary_end() + # end of 3
             g.post_summary_end()) # end of 0
 
-        sections, options, section = \
-            self.create_input(
-                [('Sec', [1, 4])],
-                {},
-                sectionindex=0)
+        genopts.sections = [Section('Sec', [p(1), p(4)])]
+        genopts.section = genopts.sections[0]
 
         self.assertEquals(
-            g.thread(None, section, options),
-            g.post_summary(self._posts[0], section, options) +
-            g.post_summary(self._posts[1], section, options) +
-            g.post_summary(self._posts[2], section, options) +
+            g.thread(None, genopts),
+            g.post_summary(self._posts[0], genopts) +
+            g.post_summary(self._posts[1], genopts) +
+            g.post_summary(self._posts[2], genopts) +
             g.post_summary_end() + # end of 2
             g.post_summary_end() + # end of 1
-            g.post_summary(self._posts[3], section, options) +
+            g.post_summary(self._posts[3], genopts) +
             g.post_summary_end() + # end of 3
             g.post_summary_end() + # end of 0
-            g.post_summary(self._posts[4], section, options) +
+            g.post_summary(self._posts[4], genopts) +
             g.post_summary_end()) # end of 4
 
     def test_thread__shortsubject(self):
-        maildb, g = self.init()
-        self.create_threadst()
+        maildb, g, p = self.init()
 
-        sections, options, section = \
-            self.create_input(
-                [('Sec', [1, 4])],
-                {'shortsubject': True},
-                sectionindex=0)
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec', [p(1), p(4)])]
+        genopts.section = genopts.sections[0]
+        genopts.shortsubject = True
 
         # All posts have the same subject.
 
         for i in range(5):
-            self._posts[i].set_subject('subject')
+            p(i).set_subject('subject')
 
         self.assertEquals(
-            g.thread(None, section, options),
-            g.post_summary(self._posts[0], section, options) +
-            g.post_summary(self._posts[1], section, options, subject=STAR) +
-            g.post_summary(self._posts[2], section, options, subject=STAR) +
+            g.thread(None, genopts),
+            g.post_summary(p(0), genopts) +
+            g.post_summary(p(1), genopts, subject=STAR) +
+            g.post_summary(p(2), genopts, subject=STAR) +
             g.post_summary_end() + # end of 2
             g.post_summary_end() + # end of 1
-            g.post_summary(self._posts[3], section, options, subject=STAR) +
+            g.post_summary(p(3), genopts, subject=STAR) +
             g.post_summary_end() + # end of 3
             g.post_summary_end() + # end of 0
-            g.post_summary(self._posts[4], section, options) +
+            g.post_summary(p(4), genopts) +
             g.post_summary_end()) # end of 4
 
         # All but one posts have the same subject.
 
-        self._posts[3].set_subject('subject3')
+        p(3).set_subject('subject3')
 
         self.assertEquals(
-            g.thread(None, section, options),
-            g.post_summary(self._posts[0], section, options) +
-            g.post_summary(self._posts[1], section, options, subject=STAR) +
-            g.post_summary(self._posts[2], section, options, subject=STAR) +
+            g.thread(None, genopts),
+            g.post_summary(p(0), genopts) +
+            g.post_summary(p(1), genopts, subject=STAR) +
+            g.post_summary(p(2), genopts, subject=STAR) +
             g.post_summary_end() + # end of 2
             g.post_summary_end() + # end of 1
-            g.post_summary(self._posts[3], section, options) +
+            g.post_summary(p(3), genopts) +
             g.post_summary_end() + # end of 3
             g.post_summary_end() + # end of 0
-            g.post_summary(self._posts[4], section, options) +
+            g.post_summary(p(4), genopts) +
             g.post_summary_end()) # end of 4
 
     def test_thread__cycles(self):
-        maildb, g = self.init()
-        self.create_threadst()
-        maildb.post('1').set_inreplyto('2')
+        maildb, g, p = self.init()
+        p(1).set_inreplyto('2')
+
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec', [p(1), p(4)])]
+        genopts.section = genopts.sections[0]
 
         # One thread.
-        sections, options, section = \
-            self.create_input(
-                [('Sec', [1, 4])],
-                {},
-                sectionindex=0)
-
         self.assertEquals(
-            g.thread(self._posts[0], section, options),
-            g.post_summary(self._posts[0], section, options) +
-            g.post_summary(self._posts[3], section, options) +
+            g.thread(p(0), genopts),
+            g.post_summary(p(0), genopts) +
+            g.post_summary(p(3), genopts) +
             g.post_summary_end() + # end of 3
             g.post_summary_end()) # end of 0
 
         # All threads.
-        sections, options, section = \
-            self.create_input(
-                [('Sec', [1, 4])],
-                {},
-                sectionindex=0)
+
         self.assertEquals(
-            g.thread(None, section, options),
-            g.post_summary(self._posts[0], section, options) +
-            g.post_summary(self._posts[3], section, options) +
+            g.thread(None, genopts),
+            g.post_summary(p(0), genopts) +
+            g.post_summary(p(3), genopts) +
             g.post_summary_end() + # end of 3
             g.post_summary_end() + # end of 0
-            g.post_summary(self._posts[4], section, options) +
+            g.post_summary(p(4), genopts) +
             g.post_summary_end()) # end of 4
 
     def test_section(self):
-        maildb, g = self.init()
-        self.create_threadst()
+        maildb, g, p = self.init()
 
         # Tests empty section.
-        sections, options, section = \
-            self.create_input(
-                [('Sec', [])],
-                {},
-                sectionindex=0)
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec', [])]
+        genopts.section = genopts.sections[0]
 
         self.assertEquals(
-            g.section(section, 0, options),
+            g.section(0, genopts),
             Html.section_begin('section_0', 'Sec') +
             Html.section_end())
 
         # Tests where not every post is in the section.
-        sections, options, section = \
-            self.create_input(
-                [('Sec1', [1]), ('Sec2', [4])],
-                {},
-                sectionindex=0)
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec1', [p(1)]),
+                            Section('Sec2', [p(4)])]
+        genopts.section = genopts.sections[0]
 
         self.assertEquals(
-            g.section(section, 0, options),
+            g.section(0, genopts),
             Html.section_begin('section_0', 'Sec1') +
-            g.thread(self._posts[0], section, options) +
+            g.thread(p(0), genopts) +
             Html.section_end())
 
         # Tests where more than one threads are in the section.
-        sections, options, section = \
-            self.create_input(
-                [('Sec', [1, 4])],
-                {},
-                sectionindex=0)
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec', [p(1), p(4)])]
+        genopts.section = genopts.sections[0]
 
         self.assertEquals(
-            g.section(section, 0, options),
+            g.section(0, genopts),
             Html.section_begin('section_0', 'Sec') +
-            g.thread(self._posts[0], section, options) +
-            g.thread(self._posts[4], section, options) +
+            g.thread(p(0), genopts) +
+            g.thread(p(4), genopts) +
             Html.section_end())
 
-        # Tests flat printing
+    def flat_result(self, generator, genopts, posts):
+        """Prints the posts flatly and puts them into a section called
+        'Sec', which should have index 0."""
+        return \
+            (Html.section_begin('section_0', 'Sec') +
+             Html.enclose(
+                 'flatlist',
+                 ''.join([ generator.post_summary(post, genopts)
+                           for post in posts ]),
+                 tag='table', newlines=True) +
+             Html.section_end())
 
-        def flat_result(postindex1, postindex2):
-            return \
-                (Html.section_begin('section_0', 'Sec') +
-                 Html.enclose(
-                     'flatlist',
-                     g.post_summary(self._posts[postindex1], section,options)+
-                     g.post_summary(self._posts[postindex2], section,options),
-                     tag='table', newlines=True) +
-                 Html.section_end())
+    def test_section__flat(self):
+        maildb, g, p = self.init()
 
         # Tests flat printing with list.
-        sections, options, section = \
-            self.create_input(
-                [('Sec', [1, 4])],
-                {},
-                sectionindex=0)
-        section.is_flat = True
-        self.assertEquals(g.section(section, 0, options), flat_result(1, 4))
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec', [p(1), p(4)])]
+        genopts.section = genopts.sections[0]
+        genopts.section.is_flat = True
+
+        self.assertEquals(
+            g.section(0, genopts),
+            self.flat_result(g, genopts, [p(1), p(4)]))
 
         # Tests flat printing with list in the reversed order.
-        sections, options, section = \
-            self.create_input(
-                [('Sec', [4, 1])],
-                {},
-                sectionindex=0)
-        section.is_flat = True
-        self.assertEquals(g.section(section, 0, options), flat_result(4, 1))
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec', [p(4), p(1)])]
+        genopts.section = genopts.sections[0]
+        genopts.section.is_flat = True
+
+        self.assertEquals(
+            g.section(0, genopts),
+            self.flat_result(g, genopts, [p(4), p(1)]))
 
         # Tests flat printing with PostSet.
-        sections, options, section = \
-            self.create_input(
-                [('Sec', maildb.postset([self._posts[1], self._posts[4]]))],
-                {},
-                sectionindex=0)
-        section.is_flat = True
-        self.assertEquals(g.section(section, 0, options), flat_result(1, 4))
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec', maildb.postset([p(1), p(4)]))]
+        genopts.section = genopts.sections[0]
+        genopts.section.is_flat = True
+        self.assertEquals(
+            g.section(0, genopts),
+            self.flat_result(g, genopts, [p(1), p(4)]))
+
+    def test_section__cycle(self):
+        maildb, g, p = self.init()
+        p(1).set_inreplyto('2')
+
+        # Tests empty section.
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec', CYCLES)]
+        genopts.section = genopts.sections[0]
+        genopts.maildb = maildb
+
+        self.assertEquals(
+            g.section(0, genopts),
+            self.flat_result(g, genopts, [p(1), p(2)]))
 
     def test_index(self):
 
-        maildb, g = self.init()
-        self.create_threadst()
+        maildb, g, p = self.init()
 
-        options = GeneratorOptions()
-        sections, options = \
-            self.create_input(
-                [('Sec1', [1]), ('Sec2', [4])],
-                 {'write_toc': False,
-                  'html_title': 'myhtmltitle',
-                  'html_h1': 'myhtmlh1',
-                  'cssfile': 'mycssfile'})
+        index = Index()
+        index.sections = [Section('Sec1', [p(1)]),
+                          Section('Sec2', [p(4)])]
 
-        g.index(options)
+        genopts = GeneratorOptions()
+        genopts.indices = [index]
+        genopts.write_toc = False
+        genopts.html_title = 'myhtmltitle'
+        genopts.html_h1 = 'myhtmlh1'
+        genopts.cssfile = 'mycssfile'
+
+        genopts.section = index.sections[0]
+        section0_html = g.section(0, genopts)
+        genopts.section = index.sections[1]
+        section1_html = g.section(1, genopts)
+        del genopts.section
+
+        g.index(genopts)
+
         self.assertEquals(
             self.index_html(),
             Html.doc_header('myhtmltitle', 'myhtmlh1', 'mycssfile') +
-            g.section(sections[0], 0, options) +
-            g.section(sections[1], 1, options) +
+            section0_html +
+            section1_html +
             Html.doc_footer())
 
 

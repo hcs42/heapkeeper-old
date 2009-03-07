@@ -46,7 +46,7 @@ def gen_index(maildb):
 
     # Generator options
     gen_options = heapmanip.GeneratorOptions()
-    gen_options.sections = sections(maildb)
+    gen_options.indices = [heapmanip.Index(sections(maildb))]
     gen_options.write_toc = True
     gen_options.shortsubject = True
     gen_options.shorttags = True

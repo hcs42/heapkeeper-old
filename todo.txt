@@ -24,6 +24,10 @@
       (name, heapmanip.CYCLES) instead of
       (name, [Post]) or (name, PostSet), then we print cycles.
     * Generator.index should be able to get the threads as an argument.
+    * Some data attributes of the GeneratorOptions could be moved to Section or
+      Index (or an idea: we will look up the date_fun in the Section; if we
+      can't find, we will look up in the Index; if we can't find there, we will
+      finally look up in the GeneratorOptions)
 
 * Tests:
     * Generator: posts_to_html (precond: #1)

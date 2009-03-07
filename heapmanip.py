@@ -16,7 +16,7 @@ HtmlStr --- normal string, but it contains HTML.
 DateFun --- Function that specifies how to print the dates of the
     posts. It will be called for each post summary that is written
     into the index. When it returns None, no date will be printed.
-    Type: fun(Post, Section) -> (str | None)
+    Type: fun(Post, GeneratorOptions) -> (str | None)
 """
 
 from __future__ import with_statement
@@ -56,6 +56,7 @@ def log(*args):
 
 STAR = 0
 NORMAL = 1
+CYCLES = 2
 
 ##### Post #####
 
@@ -1576,6 +1577,7 @@ class Html():
         l.append('</ul>\n')
         return ''.join(l)
 
+
 ##### Section #####
 
 class Section(object):
@@ -1587,8 +1589,10 @@ class Section(object):
         Type: str
     posts --- The posts that are in the section. If it is a list, the order of
         the posts can matter. (E.g. when printed flatly, the posts will be
-        printed in the same order as they are in the list.)
-        Type: [Post] | PostSet
+        printed in the same order as they are in the list.) If it is the
+        CYCLES constant, the posts that are in a cycle in the database will be
+        printed.
+        Type: [Post] | PostSet | heapmanip.CYCLES
     is_flat --- If true, the section should be printed flatly, otherwise in a
         threaded structure.
         Type: bool
@@ -1600,9 +1604,31 @@ class Section(object):
                  posts=heaplib.NOT_SET,
                  is_flat=False):
 
-        """Constructor."""
-
         super(Section, self).__init__()
+        heaplib.set_dict_items(self, locals())
+
+
+##### Index #####
+
+class Index(object):
+    """Represents a list of sections that should be printed into an HTML file
+    according to the specified options.
+
+    Data attributes:
+    sections --- The sections that are contained by the index.
+        Type: [Section]
+    filename --- The name of the HTML file where the index should be printed.
+        It is either an absolute path or it is relative to the HTML dir of the
+        mail database.
+        Type: str
+        Default: 'index.html'
+    """
+
+    def __init__(self,
+                 sections=heaplib.NOT_SET,
+                 filename='index.html'):
+
+        super(Index, self).__init__()
         heaplib.set_dict_items(self, locals())
 
 
@@ -1613,11 +1639,11 @@ class GeneratorOptions(object):
     """Options that are used by the Generator.
 
     Data attributes:
-    sections --- The sections to print into the index. 'None' means that
-        everything should be printed into one section.
-        Type: None | [Section]
+    indices --- The indices to print.
+        Type: [Index]
     write_toc --- If True, the index will contain a Table of Contents.
         Type: bool
+        Default: False
     shortsubject --- If True, the posts that have the same subject as
         their parent will show a dash instead of their subject.
         Type: bool
@@ -1629,7 +1655,7 @@ class GeneratorOptions(object):
     date_fun --- Function that specifies how to print the dates of the
         posts.
         Type: DateFun
-        Default: (lambda post, section: None)
+        Default: (lambda post, options: None)
     html_title --- The string to print as the <title> of the HTML file.
         Type: str
         Default: 'Heap'
@@ -1642,20 +1668,26 @@ class GeneratorOptions(object):
         post HTML.
         Type: bool
         Default: False
+    section --- The section that is printed at the moment. It is normally not
+        set by the user of this module.
+        Type: Section
+    index --- The index that is printed at the moment. It is normally not
+        set by the user of this module.
+        Type: Index
     """
 
     def __init__(self,
-                 sections=heaplib.NOT_SET,
-                 write_toc=heaplib.NOT_SET,
+                 indices=heaplib.NOT_SET,
+                 write_toc=False,
                  shortsubject=False,
                  shorttags=False,
-                 date_fun=lambda post, section: None,
+                 date_fun=lambda post, options: None,
                  html_title='Heap index',
                  html_h1='Heap index',
                  cssfile='heapindex.css',
-                 print_thread_of_post=False):
-
-        """Constructor."""
+                 print_thread_of_post=False,
+                 section=heaplib.NOT_SET,
+                 index=heaplib.NOT_SET):
 
         super(GeneratorOptions, self).__init__()
         heaplib.set_dict_items(self, locals())
@@ -1701,8 +1733,10 @@ class Generator(object):
         # thread
         if options.print_thread_of_post:
             section = Section(title='Thread', posts=[post])
+            options.section = section
             thread = \
-                self.thread(self._maildb.root(post), section, options)
+                self.thread(self._maildb.root(post), options)
+            del options.section
             l.append(thread)
 
         l.append(Html.enclose('postbody', Html.escape(post.body()), tag='pre'))
@@ -1717,13 +1751,15 @@ class Generator(object):
                 f.write(self.post(post, options))
         log('Post HTMLs generated.')
 
-    def index_toc(self, sections):
+    def index_toc(self, sections, options):
         """Creates a table of contents for the sections and for the posts in
         cycles.
 
         Arguments:
         sections ---
             Type: [Section]
+        options ---
+            Type: GeneratorOptions
         
         Returns: HtmlStr
         """
@@ -1733,15 +1769,12 @@ class Generator(object):
             items.append(Html.link("#section_%s" % (i,), section.title))
         return Html.list(items, 'tableofcontents')
         
-    def post_summary(self, post, section, options, subject=NORMAL,
-                     tags=NORMAL):
+    def post_summary(self, post, options, subject=NORMAL, tags=NORMAL):
         """Creates a summary for the post.
         
         Arguments:
         post ---
             Type: Post
-        section --- The section which is printed.
-            Type: Section
         options ---
             Type: GeneratorOptions
 
@@ -1760,10 +1793,16 @@ class Generator(object):
             tags = post.tags()
 
         # Date
-        date_str = options.date_fun(post, section)
+        date_str = options.date_fun(post, options)
+
+        section = options.section
+        if section.posts == CYCLES:
+            active = True
+        else:
+            active = post in section.posts
 
         args = (post.htmlfilebasename(), author, subject, tags, post.heapid(),
-                date_str, post in section.posts)
+                date_str, active)
 
         if section.is_flat: 
             return Html.post_summary_table(*args)
@@ -1779,7 +1818,7 @@ class Generator(object):
 
         return '</div>\n'
 
-    def thread(self, post, section, options):
+    def thread(self, post, options):
         """Prints the summaries of posts in a thread into an HTML string.
         
         Warning: if the given post is in a cycle, this function will go into
@@ -1788,8 +1827,6 @@ class Generator(object):
         Arguments:
         post --- The root of the thread to be printed.
             Type: None | Post
-        section --- The section that is printed.
-            Type: Section
         options ---
             Type: GeneratorOptions
 
@@ -1813,7 +1850,6 @@ class Generator(object):
 
         while len(stack) > 0:
             item = stack.pop()
-            #print 'item:', item
 
             if isinstance(item, str):
                 strings.append(item)
@@ -1821,7 +1857,6 @@ class Generator(object):
             else:
                 if item != None:
                     post = item
-                    #print 'post:', post
                     parent = self._maildb.prev(post)
                     subject = post.subject()
                     if (options.shortsubject and parent != None and
@@ -1838,16 +1873,14 @@ class Generator(object):
                         tags_to_print = tags
 
                     strings.append(
-                        self.post_summary(post, section, options,
-                                          subject_to_print, tags_to_print))
+                        self.post_summary(post, options, subject_to_print,
+                                          tags_to_print))
 
                     stack.append(self.post_summary_end())
-                #print 'children:', children
                 stack += reversed(self._maildb.children(item))
-            #print 'stack:', stack
         return ''.join(strings)
 
-    def section(self, section, sectionid, options):
+    def section(self, sectionid, options):
         """Prints a section.
 
         When the section is flat, the 'sectionpost' specifies in what order to
@@ -1855,8 +1888,6 @@ class Generator(object):
         is a PostSet, they will be sorted by their date.
 
         Arguments:
-        section ---
-            Type: Section
         sectionid --- The identifier of the section.
             Type: int
         options ---
@@ -1868,16 +1899,24 @@ class Generator(object):
         l = []
         roots = self._maildb.roots()
         threads = self._maildb.threads()
+        section = options.section
 
         l.append(Html.section_begin('section_%s' % (sectionid,),section.title))
 
         posts = section.posts
-        if section.is_flat:
+
+        if posts == CYCLES:
+            posts = options.maildb.cycles()
+            is_flat = True
+        else:
+            is_flat = section.is_flat
+
+        if is_flat:
             l.append('<table class="flatlist">\n')
             if isinstance(posts, PostSet):
                 posts = posts.sorted_list()
             for post in posts:
-                l.append(self.post_summary(post, section, options))
+                l.append(self.post_summary(post, options))
             l.append('</table>\n')
         else:
             if isinstance(posts, list):
@@ -1885,42 +1924,37 @@ class Generator(object):
             for root in roots:
                 thread = threads[root]
                 if not (thread & posts).is_set([]):
-                    l.append(self.thread(root, section, options))
+                    l.append(self.thread(root, options))
         l.append(Html.section_end())
 
         return ''.join(l)
 
     def index(self, options):
-        """Creates the index HTML file.
-        
-        The created file is named 'index.html' and is placed in the html_dir
-        directory.
+        """Creates the index HTML files as specified in 'options'.
         
         Arguments:
+        options -- 
+            Type: GeneratorOptions
         """
 
-        # sections
-        sections = options.sections
-        if sections == None:
-            sections = [ Section(title='All posts', posts=self._maildb.all()) ]
-        if self._maildb.has_cycle():
-            section = Section(name='Posts in cycles',
-                              posts=self._maildb.cycles(),
-                              is_flat='flat')
-            sections.append(section)
-
-        # generating the index
         threadst = self._maildb.threadstruct()
-        filename = os.path.join(self._maildb.html_dir(), 'index.html')
-        with open(filename, 'w') as f:
-            doc_header = Html.doc_header(options.html_title,
-                                         options.html_h1,
-                                         options.cssfile)
-            f.write(doc_header)
-            if options.write_toc:
-                f.write(self.index_toc(sections))
-            for i, section in enumerate(sections):
-                f.write(self.section(section, i, options))
-            f.write(Html.doc_footer())
-        log('Index generated.')
+        for index in options.indices:
+            options.index = index
+            filename = os.path.join(self._maildb.html_dir(),
+                                    index.filename)
+            with open(filename, 'w') as f:
+                doc_header = Html.doc_header(options.html_title,
+                                             options.html_h1,
+                                             options.cssfile)
+                f.write(doc_header)
+                if options.write_toc:
+                    f.write(self.index_toc(index.sections, options))
+                for i, section in enumerate(index.sections):
+                    options.section = section
+                    f.write(self.section(i, options))
+                    del options.section
+                f.write(Html.doc_footer())
+            del options.index
+
+        log('Indices generated.')
 

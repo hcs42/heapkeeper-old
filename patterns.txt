@@ -188,5 +188,6 @@ Used in:
 
     heapmanip.GeneratorOptions
     heapmanip.Section
+    heapmanip.Index
     heapcustomlib.DateOptions # not yet
     heapia.Options # not yet

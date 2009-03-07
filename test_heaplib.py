@@ -57,17 +57,36 @@ class TestOptionHandling(unittest.TestCase):
             heaplib.set_defaultoptions(options, f, ['other1', 'other2'])
         self.assertRaises(heaplib.HeapException, try_)
 
-    def test_set_dict_items(self):
+    def test_set_dict_items_1(self):
+
         class A:
             pass
         a = A()
-        d = {'self': 0, 'something': 1}
+        d = {'self': 0, 'something': 1, 'notset': heaplib.NOT_SET}
         heaplib.set_dict_items(a, d)
         self.assertEquals(a.something, 1)
 
         def f():
             a.self
         self.assertRaises(AttributeError, f)
+
+        def f():
+            a.notset
+        self.assertRaises(AttributeError, f)
+
+    def test_set_dict_items_2(self):
+
+        NOT_SET = heaplib.NOT_SET
+        class A(object):
+            def __init__(self, x1=NOT_SET, x2=NOT_SET, x3=0, x4=0):
+                super(A, self).__init__()
+                heaplib.set_dict_items(self, locals())
+
+        a = A(x1=1, x3=1)
+        self.assertEquals(a.x1, 1)
+        self.assertFalse(hasattr(a, 'x2'))
+        self.assertEquals(a.x3, 1)
+        self.assertEquals(a.x4, 0)
 
 if __name__ == '__main__':
     unittest.main()
