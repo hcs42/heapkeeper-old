@@ -117,6 +117,11 @@ def set_dict_items(object, dict):
         if var != 'self' and value != NOT_SET:
             setattr(object, var, value)
 
+def check(object, attributes):
+    for attr in attributes:
+        getattr(object, attr)
+    return True
+
 
 ##### Misc #####
 

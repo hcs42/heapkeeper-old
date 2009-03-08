@@ -1936,6 +1936,11 @@ class Generator(object):
             Type: GeneratorOptions
         """
 
+        heaplib.check(
+            options,
+            ['indices', 'write_toc', 'shortsubject', 'shorttags',
+             'date_fun', 'html_title', 'html_h1', 'cssfile'])
+
         threadst = self._maildb.threadstruct()
         for index in options.indices:
             options.index = index
@@ -1964,6 +1969,11 @@ class Generator(object):
         options -- 
             Type: GeneratorOptions
         """
+
+        heaplib.check(
+            options,
+            ['date_fun', 'html_title', 'html_h1', 'cssfile',
+             'print_thread_of_post'])
 
         for post in self._maildb.posts():
             with open(post.htmlfilename(), 'w') as f:

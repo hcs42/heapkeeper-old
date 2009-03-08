@@ -88,5 +88,16 @@ class TestOptionHandling(unittest.TestCase):
         self.assertEquals(a.x3, 1)
         self.assertEquals(a.x4, 0)
 
+    def test_check(self):
+
+        class A(object):
+            pass
+
+        a = A()
+        a.x = 1
+        self.assertTrue(heaplib.check(a, ['x']))
+        self.assertRaises(AttributeError, lambda: heaplib.check(a, ['y']))
+
+
 if __name__ == '__main__':
     unittest.main()
