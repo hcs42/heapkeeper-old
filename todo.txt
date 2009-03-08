@@ -1,54 +1,27 @@
-* <#1> Generator.posts_to_html should be refactored.
-    * the post HTML generator should now about the index to allow #2
-    * generating a file different from index.html; probably using another data
-      structure that encapsulates the sections:
-
-        indexlist = [('index.html', 'Normal', sections_normal),
-                     ('monthly.html', 'Monthly, sections_monthly)]
-        Generator.indexes(indexlist)
-
-* Refactoring:
-    * Handling options
-        * adding a 'check' function that checks for certain paramters in the
-          beginning of Generator.index
-    * A heapcustomlib module should be created to include common things of
-      customlibs.
-    * heapmanip.Post.date_str: the date format is hardcoded in the function.
-      The date format should be extracted.
-
 * Generator: 
-    * Should sections be classes? Or should the "sections" be one class? Or
-      should the whole "indexlist" be one class?
-    * Printing whether to print cycles should be specified in the
-      "sections" or "indexlist". E.g. if the section is
-      (name, heapmanip.CYCLES) instead of
-      (name, [Post]) or (name, PostSet), then we print cycles.
-    * Generator.index should be able to get the threads as an argument.
-    * Some data attributes of the GeneratorOptions could be moved to Section or
-      Index (or an idea: we will look up the date_fun in the Section; if we
-      can't find, we will look up in the Index; if we can't find there, we will
-      finally look up in the GeneratorOptions)
+    * Generator.gen_threads
+    * Problem: some data attributes of the GeneratorOptions could be moved to
+      Section or Index. Proposal: we will look up the date_fun in the Section;
+      if we can't find, we will look up in the Index; if we can't find there,
+      we will finally look up in the GeneratorOptions.
+    - "Back to index" is buggy now, because it always goes back to the
+      'index.html'
+    + Index generator: now the user defines how to show the date in index.html;
+      the same could be done for other fields (e.g. the user could write a
+      function that creates 'very long...' from 'very long subject')
 
 * Tests:
-    * Generator: posts_to_html (precond: #1)
-    * Generator.index: more tests.
-        * 'write_date'
-        * 'write_toc'
-        * cycles
     * heapia
     * Post.load
     * heapmanip.Post.{set_tags, remove_tag}
         * set_tags: test unsorted lists and sets as argument
     * heapmanip.Post.{before, after, between}
     * doc&test: MailDB.{children, roots, threads}
-        * dependencies?
-        * Html.table
+    * Html.table
 
 * Rename heapmanip to heaplib and heaplib to heaputils
 
 * Rename CamelCase function names in test modules
-
-+ heapia.hh(): fast help (only the commands)
 
 + heapia: being able to customize what should happen after each command.
   * Now the heapia.auto function is called after each command, and it
@@ -59,26 +32,22 @@
     that are called before/after each command. The user could manipulate these
     lists. The functions would also get the function from which they were
     called.
+  * Putting the options into the new option system.
 
 * heapcustomlib: refactoring DateOptions to use the Options pattern
 
-* docstrings:
-    * object instead of "something" and "andthing"
-
 * Developers' Guide
+    * rename to Developer's Guide
     * architecture
-        * relation of Post, MailDB and PostSet
-    * performance improvement possibilities (iterators)
+    * performance improvement possibilities (iterators for some PrePost and
+      MailDB functions)
     * using wrappers to protect e.g. MailDB.posts()
-    * consistent terminology: previous, parent or cause? next, child or
-      consequence?
     * Coding Conventions:
         * templates for documentation
-        * templates for tests (test<class>, test_<method>)
-    * using wiki or asciidoc instead of plain text files
+        * templates for tests (test<class>, test_<method>,
+          test_<method>__<other stuff>)
+    * using wiko
     * putting the documentation files into a separate directory (e.g. heap/doc)
-
-* hepia: Putting the options into the new option system.
 
 * heapia: atr, rt, rtr, sr, str_ are almost the same, they could use the same
   function and contain only the differences:
@@ -89,15 +58,12 @@
 
 * STAR should be renamed
 
-* A heaplib module should be created from the functions that have nothing to do
-  with the heap, for example datetime handling functions.
-
 + It would be nice if we could regenerate the post HTMLs only for the posts
   that has been modified.
 
 + Being able to reload heapcustom without restarting the Manipulator
 
-+ <#2> Post generator: (precond: #1)
++ <#2> Post generator:
     + parent, children into Post HTML (easy)
     + put prev and next links into Post HTML (the post generator should know
       about the generated index)
@@ -108,12 +74,8 @@
 + Thread HTML-s (precond: #1): every thread could have an HTML. Threads could
   be identified by the id of their root post.
 
-+ Index generator: now the user defines how to show the date in index.html; the
-  same could be done for other fields (e.g. the user could write a function that
-  creates 'very long...' from 'very long subject')
-
 + Post body parsing:
-    This should be discussed.
+    This should be discussed. A proposal should be written.
     + creating real links form http://... text
     + creating links from post-references. Idea:
       Original post: <<<!post: 123>>>

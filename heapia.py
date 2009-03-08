@@ -179,7 +179,7 @@ def get_option(option):
     option -- The name of the option.
         Type: str
 
-    Returns: something
+    Returns: object
     """
 
     return options[option]
@@ -189,9 +189,9 @@ def set_option(option, value):
     
     Arguments:
     option -- The name of the option.
-        Type:
+        Type: str
     value -- The new value of the option.
-        Type: something
+        Type: object
     """
 
     if option not in options:

@@ -53,7 +53,7 @@ def arginfo(fun):
     a default value. The second element is a dictionary that assigns the
     default values to the arguments that do have a default value.
     
-    Returns: ([str], dict(str, anything))
+    Returns: ([str], dict(str, object))
     """
 
     args, varargs, varkw, defaults = inspect.getargspec(fun)
@@ -70,7 +70,7 @@ def set_defaultoptions(options, fun, excluded):
 
     Arguments:
     options --- The dictionary that should be updated with the default options.
-        Type: dict(str, anything)
+        Type: dict(str, object)
     fun --- The list of options and the default options will be read from
         this function.
         Type: function
