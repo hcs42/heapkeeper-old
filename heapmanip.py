@@ -1744,13 +1744,6 @@ class Generator(object):
         l.append(Html.doc_footer())
         return ''.join(l)
 
-    def posts_to_html(self, options):
-        """Creates an HTML file for each post that are not deleted."""
-        for post in self._maildb.posts():
-            with open(post.htmlfilename(), 'w') as f:
-                f.write(self.post(post, options))
-        log('Post HTMLs generated.')
-
     def index_toc(self, sections, options):
         """Creates a table of contents for the sections and for the posts in
         cycles.
@@ -1957,4 +1950,11 @@ class Generator(object):
             del options.index
 
         log('Indices generated.')
+
+    def posts_to_html(self, options):
+        """Creates an HTML file for each post that are not deleted."""
+        for post in self._maildb.posts():
+            with open(post.htmlfilename(), 'w') as f:
+                f.write(self.post(post, options))
+        log('Post HTMLs generated.')
 
