@@ -21,6 +21,9 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
         self._maildb = self.createMailDB()
         self.create_threadst()
 
+    def tearDown(self):
+        self.tearDownDirs()
+
     def test_format_date(self):
 
         options = date_defopts({'localtime_fun': time.gmtime})
@@ -82,9 +85,6 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
         self.assertEquals(f(self._posts[2], genopts), None)
         self.assertNotEquals(f(self._posts[3], genopts), None)
         self.assertEquals(f(self._posts[4], genopts), None)
-
-    def tearDown(self):
-        self.tearDownDirs()
 
 if __name__ == '__main__':
     heapmanip.set_log(False)

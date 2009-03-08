@@ -17,7 +17,6 @@ import ConfigParser
 import re
 
 from heapmanip import *
-import heapcustomlib
 
 
 class MailDBHandler(object):
@@ -46,15 +45,27 @@ class MailDBHandler(object):
         return os.path.join(self._postfile_dir, fname)
 
     def add_post(self, index, inreplyto=None):
-        """Adds a new post to maildb."""
-        messid = str(index) + '@'
+        """Adds a new post to maildb.
+        
+        The attributes of the post will be created as follows:
+        - The author will be 'author'+index.
+        - The subject will be 'subject'+index.
+        - The message id will be index+'@'.
+        - The parent will be `inreplyto`, if specified.
+        - If self._skipdates is False, the post with a newer index will
+          have a newer date; otherwise the post will not have a date.
+        - The body will be 'body'+index.
+        """
+
         inreplyto = str(inreplyto) + '@' if inreplyto != None else ''
         s = ('From: author%s\n' % (index,) +
              'Subject: subject%s\n' % (index,) +
-             'Message-Id: %s\n' % (messid,) +
+             'Message-Id: %s@\n' % (index,) +
              'In-Reply-To: %s\n' % (inreplyto,))
         if not self._skipdates:
-            s += MailDBHandler.dates[index]
+            s += MailDBHandler.dates[index] + '\n'
+        s += ('\n' +
+              'body%s' % (index,))
         self._maildb.add_new_post(Post.from_str(s))
 
     def create_threadst(self, skipdates=False):
@@ -1241,6 +1252,66 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         index_html_name = os.path.join(self._html_dir, 'index.html')
         return heaplib.file_to_string(index_html_name)
 
+    def test_post(self):
+        maildb, g, p = self.init()
+        
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec1', [p(1)]),
+                            Section('Sec2', [p(4)])]
+
+        h1 = Html.escape('author0') + ': ' + Html.escape('subject0')
+        self.assertEquals(
+            g.post(p(0), genopts),
+            Html.doc_header(h1, h1, 'heapindex.css') +
+            Html.link('index.html', 'Back to the index') +
+            '\n' +
+            Html.enclose('index', Html.escape('<0>')) +
+            '\n' +
+            Html.enclose('postbody', Html.escape('body0\n'), tag='pre') +
+            Html.doc_footer())
+
+        # Printing date
+
+        def date_fun(post, genopts2):
+            return 'date%s' % (self._posts.index(post),)
+        genopts.date_fun = date_fun
+
+        h1 = Html.escape('author0') + ': ' + Html.escape('subject0')
+        self.assertEquals(
+            g.post(p(0), genopts),
+            Html.doc_header(h1, h1, 'heapindex.css') +
+            Html.link('index.html', 'Back to the index') +
+            '\n' +
+            Html.enclose('index', Html.escape('<0>')) +
+            '\n' +
+            Html.enclose('date', 'date0') +
+            '\n' +
+            Html.enclose('postbody', Html.escape('body0\n'), tag='pre') +
+            Html.doc_footer())
+        
+        # Printing thread
+
+        genopts.date_fun = lambda post, genopts: None
+        genopts.print_thread_of_post = True
+        gen_post_html = g.post(p(2), genopts)
+        
+        genopts.section = Section('Thread', [p(2)])
+        h1 = Html.escape('author2') + ': ' + Html.escape('subject2')
+        my_post_html = \
+            (Html.doc_header(h1, h1, 'heapindex.css') +
+             Html.link('index.html', 'Back to the index') +
+             '\n' +
+             Html.enclose('index', Html.escape('<2>')) +
+             '\n' +
+             g.thread(p(0), genopts) +
+             Html.enclose('postbody', Html.escape('body2\n'), tag='pre') +
+             Html.doc_footer())
+        del genopts.section
+
+        self.assertEquals(
+            gen_post_html,
+            my_post_html)
+
     def test_index_toc(self):
         maildb, g, p = self.init(create_threadst=False)
         self.create_threadst(skipdates=True)
@@ -1533,7 +1604,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             g.section(0, genopts),
             self.flat_result(g, genopts, [p(1), p(2)]))
 
-    def test_index(self):
+    def test_gen_indices(self):
 
         maildb, g, p = self.init()
 
@@ -1554,14 +1625,52 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         section1_html = g.section(1, genopts)
         del genopts.section
 
-        g.index(genopts)
+        # normal
 
+        g.gen_indices(genopts)
         self.assertEquals(
             self.index_html(),
             Html.doc_header('myhtmltitle', 'myhtmlh1', 'mycssfile') +
             section0_html +
             section1_html +
             Html.doc_footer())
+
+        # write_toc option
+
+        genopts.write_toc = True
+        g.gen_indices(genopts)
+
+        self.assertEquals(
+            self.index_html(),
+            Html.doc_header('myhtmltitle', 'myhtmlh1', 'mycssfile') +
+            g.index_toc(index.sections, genopts) +
+            section0_html +
+            section1_html +
+            Html.doc_footer())
+
+    def test_gen_posts(self):
+
+        maildb, g, p = self.init()
+
+        index = Index()
+        index.sections = [Section('Sec1', [p(1)]),
+                          Section('Sec2', [p(4)])]
+
+        genopts = GeneratorOptions()
+        genopts.indices = [index]
+        genopts.html_title = 'myhtmltitle'
+        genopts.html_h1 = 'myhtmlh1'
+        genopts.cssfile = 'mycssfile'
+
+        # normal
+
+        g.gen_posts(genopts)
+        post0_htmlfile = os.path.join(self._html_dir, '0.html')
+        post0_htmlstr = heaplib.file_to_string(post0_htmlfile)
+
+        self.assertEquals(
+            post0_htmlstr,
+            g.post(p(0), genopts))
 
 
 if __name__ == '__main__':

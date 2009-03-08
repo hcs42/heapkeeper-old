@@ -126,16 +126,18 @@ def date_defopts(options={}):
     options0.update(options)
     return options0
 
-def gen_index(maildb):
+def gen_indices(maildb):
     date_options = date_defopts({'maildb': maildb})
     date_fun = create_date_fun(date_options)
-    genoptions = heapmanip.GeneratorOptions()
+    genopts = heapmanip.GeneratorOptions()
+    genopts.maildb = maildb
     section = heapmanip.Section(maildb.all())
-    genoptions.indices = [heapmanip.Index([section])]
-    heapmanip.Generator(maildb).index(genoptions)
+    genopts.indices = [heapmanip.Index([section])]
+    heapmanip.Generator(maildb).gen_indices(genopts)
 
-def gen_post_html(maildb):
+def gen_posts(maildb):
     date_options = date_defopts({'maildb': maildb})
     date_fun = create_date_fun(date_options)
-    genoptions = heapmanip.GeneratorOptions()
-    heapmanip.Generator(maildb).posts_to_html(genoptions)
+    genopts = heapmanip.GeneratorOptions()
+    genopts.maildb = maildb
+    heapmanip.Generator(maildb).gen_posts(genopts)

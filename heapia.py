@@ -88,7 +88,7 @@ Callback functions (that can be defined in heapcustom.py):
         Returns: whether the given file was modified and should be reread from
         the disk.
 
-    gen_index(maildb):
+    gen_indices(maildb):
         It should generate the index.html file.
 
         Args:
@@ -96,7 +96,7 @@ Callback functions (that can be defined in heapcustom.py):
 
         Returns: -
 
-    gen_post_html(maildb):
+    gen_posts(maildb):
 
         It should generate HTML for all posts.
 
@@ -168,8 +168,8 @@ options = {'maildb': None,
            'auto_threadstruct': True,
            'heapcustom': 'heapcustom',
            'callbacks': {'sections': lambda maildb: None,
-                         'gen_index': heapcustomlib.gen_index,
-                         'gen_post_html': heapcustomlib.gen_post_html,
+                         'gen_indices': heapcustomlib.gen_indices,
+                         'gen_posts': heapcustomlib.gen_posts,
                          'edit': edit_default}}
 
 def get_option(option):
@@ -212,7 +212,7 @@ def c():
 def auto():
     """(Re-)generates index.html if the auto option is true."""
     if options['auto_gen_var']:
-        gen_index()
+        gen_indices()
         sys.stdout.flush()
     if options['auto_save']:
         maildb().save()
@@ -230,29 +230,29 @@ def end_timing():
     if options['timing']:
         print "%f seconds." % (time.time() - start)
 
-def gen_index():
+def gen_indices():
     """Generates index.html."""
-    options['callbacks']['gen_index'](maildb())
+    options['callbacks']['gen_indices'](maildb())
 
-def gen_post_html():
+def gen_posts():
     """Generates the html files for the posts."""
-    options['callbacks']['gen_post_html'](maildb())
+    options['callbacks']['gen_posts'](maildb())
 
 def g():
     start_timing()
-    gen_index()
+    gen_indices()
     end_timing()
 
 def ga():
     start_timing()
-    gen_index()
-    gen_post_html()
+    gen_indices()
+    gen_posts()
     end_timing()
 
 def gs():
     start_timing()
     maildb().save()
-    gen_index()
+    gen_indices()
     end_timing()
 
 def ps(pps):

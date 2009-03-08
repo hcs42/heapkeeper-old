@@ -1697,10 +1697,12 @@ class GeneratorOptions(object):
 
 class Generator(object):
 
-    """A Generator object can generate HTML from the posts.
+    """A Generator object can generate various HTML files from the mail
+    database.
     
-    It can generate an index page that contains all posts, and an HTML file
-    for each post.
+    Currently it can generate HTML versions of indices and posts. The methods
+    that start with 'gen_' prefix write into files, the other methods mostly
+    return strings can contain HTML.
 
     Data attributes:
     _maildb -- The mail database.
@@ -1727,8 +1729,12 @@ class Generator(object):
         l.append('\n')
         l.append(Html.enclose('index', Html.escape('<%s>' % (post.heapid(),))))
         l.append('\n')
-        l.append(Html.enclose('date', '(%s)' % (post.date_str(),)))
-        l.append('\n')
+
+        # date
+        date_str = options.date_fun(post, options)
+        if date_str != None:
+            l.append(Html.enclose('date', date_str))
+            l.append('\n')
 
         # thread
         if options.print_thread_of_post:
@@ -1922,7 +1928,7 @@ class Generator(object):
 
         return ''.join(l)
 
-    def index(self, options):
+    def gen_indices(self, options):
         """Creates the index HTML files as specified in 'options'.
         
         Arguments:
@@ -1951,8 +1957,14 @@ class Generator(object):
 
         log('Indices generated.')
 
-    def posts_to_html(self, options):
-        """Creates an HTML file for each post that are not deleted."""
+    def gen_posts(self, options):
+        """Creates an HTML file for each post that are not deleted.
+        
+        Arguments:
+        options -- 
+            Type: GeneratorOptions
+        """
+
         for post in self._maildb.posts():
             with open(post.htmlfilename(), 'w') as f:
                 f.write(self.post(post, options))

@@ -36,7 +36,7 @@ def sections(maildb):
             heapmanip.Section("Programozás", ps_cp),
             heapmanip.Section("Egyéb", ps_all)]
 
-def gen_index(maildb):
+def gen_indices(maildb):
 
     # Date options
     date_options = heapcustomlib.date_defopts()
@@ -45,12 +45,13 @@ def gen_index(maildb):
     date_fun = heapcustomlib.create_date_fun(date_options)
 
     # Generator options
-    gen_options = heapmanip.GeneratorOptions()
-    gen_options.indices = [heapmanip.Index(sections(maildb))]
-    gen_options.write_toc = True
-    gen_options.shortsubject = True
-    gen_options.shorttags = True
-    gen_options.date_fun = date_fun
+    genopts = heapmanip.GeneratorOptions()
+    genopts.maildb = maildb
+    genopts.indices = [heapmanip.Index(sections(maildb))]
+    genopts.write_toc = True
+    genopts.shortsubject = True
+    genopts.shorttags = True
+    genopts.date_fun = date_fun
 
     # Generating the index
-    heapmanip.Generator(maildb).index(gen_options)
+    heapmanip.Generator(maildb).gen_indices(genopts)
