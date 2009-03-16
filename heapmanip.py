@@ -204,10 +204,14 @@ class Post(object):
 
         assert(not (maildb != None and heapid == None))
         super(Post, self).__init__()
-        self._header, self._body = Post.parse(f)
-        self._heapid = heapid
-        self._maildb = maildb
-        self._modified = not self.postfile_exists()
+        try:
+            self._header, self._body = Post.parse(f)
+            self._heapid = heapid
+            self._maildb = maildb
+            self._modified = not self.postfile_exists()
+        except:
+            raise HeapException, \
+                  'Error parsing message file "%s"' %  f.name
 
     @staticmethod
     def from_str(s, heapid=None, maildb=None):
