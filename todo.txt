@@ -196,4 +196,6 @@
 * PostSet: method inherited from set should be reviewed whether they should be
   inherited, overriden or removed.
 
+* Using code coverage tools
+
 Next free id: #5
