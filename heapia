@@ -5,7 +5,7 @@ then
     python -i -c 'from heapia import *; main([])'
 elif [ "$#" = 2 -a "$1" = '--custom' ]
 then
-    python -i -c "from heapia import *; from $2 import*; main([])"
+    python -i -c "from heapia import *; from $2 import *; main([])"
 elif [ "$1" = '-h' -o "$1" = '--help' ]
 then
     cat <<END
