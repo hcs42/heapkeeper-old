@@ -136,7 +136,7 @@ Usage:
 Concept:
 
     We create a class, and instances of that class will represent a
-    configuration of the options.
+    configuration of the options. One instance variable will represent one option.
 
 Code example:
 

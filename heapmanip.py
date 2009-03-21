@@ -1588,6 +1588,8 @@ class Section(object):
     """Represents a set of posts that should be printed with a title
     according to the specified options.
 
+    This class follows the Options pattern.
+
     Data attributes:
     title --- The title of the section.
         Type: str
@@ -1618,6 +1620,8 @@ class Index(object):
     """Represents a list of sections that should be printed into an HTML file
     according to the specified options.
 
+    This class follows the Options pattern.
+
     Data attributes:
     sections --- The sections that are contained by the index.
         Type: [Section]
@@ -1641,6 +1645,8 @@ class Index(object):
 class GeneratorOptions(object):
 
     """Options that are used by the Generator.
+
+    This class follows the Options pattern.
 
     Data attributes:
     indices --- The indices to print.
