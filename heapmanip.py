@@ -210,9 +210,8 @@ class Post(object):
             self._maildb = maildb
             self._modified = not self.postfile_exists()
         except:
-            raise (HeapException,
-                  'Error parsing message file "%s"'
-                    % getattr(f, name, ""))
+            raise HeapException, \
+                  'Error parsing post "%s"' % getattr(f, 'name', '')
 
     @staticmethod
     def from_str(s, heapid=None, maildb=None):
