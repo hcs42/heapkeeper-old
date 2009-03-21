@@ -77,7 +77,7 @@ No:
 
 - But be very caseful with the raise statement, because "raise x,y" means
   instantiating class x with a parameter y, but "raise (x,y)" means something
-  else.
+  else. But you may put parens around y, if it is long.
 
 Yes:
     raise heaplib.HeapException, \
@@ -86,6 +86,11 @@ Yes:
 No:
     raise (heaplib.HeapException,
            'We have a problem')
+
+Yes:
+    raise heaplib.HeapException, \
+          ('We have a problem with %s, which is very serious.' %
+           problematic_thing)
 
 --------------------------------------------------------------------------------
 
