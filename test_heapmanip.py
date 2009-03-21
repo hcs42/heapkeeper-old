@@ -143,6 +143,10 @@ class TestPost1(unittest.TestCase):
         self.assertEquals(Post.parse_header(sio), post1_dict1)
         sio.close()
 
+        self.assertRaises(
+            HeapException,
+            lambda: Post.from_str('Malformatted post.'))
+
     def testEmpty(self):
         p = Post.from_str('')
         self.assertEquals(p.heapid(), None)
