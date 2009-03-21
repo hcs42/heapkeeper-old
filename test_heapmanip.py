@@ -144,7 +144,7 @@ class TestPost1(unittest.TestCase):
         sio.close()
 
         self.assertRaises(
-            HeapException,
+            heaplib.HeapException,
             lambda: Post.from_str('Malformatted post.'))
 
     def testEmpty(self):
