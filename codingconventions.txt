@@ -75,6 +75,18 @@ No:
            command that does not \
            fit into one line
 
+- But be very caseful with the raise statement, because "raise x,y" means
+  instantiating class x with a parameter y, but "raise (x,y)" means something
+  else.
+
+Yes:
+    raise heaplib.HeapException, \
+          'We have a problem'
+
+No:
+    raise (heaplib.HeapException,
+           'We have a problem')
+
 --------------------------------------------------------------------------------
 
 Yes:
