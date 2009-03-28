@@ -68,9 +68,9 @@ def sections(maildb):
             heapmanip.Section("C és C++", ps_ccpp),
             heapmanip.Section("Python", ps_py),
             heapmanip.Section("Egyéb", ps_all)]
-    monthly = do_monthly(maildb)
-    if monthly != None:
-        res.extend(monthly)
+#    monthly = do_monthly(maildb)
+#    if monthly != None:
+#        res.extend(monthly)
     return res
 
 def get_date_limits(maildb):
@@ -145,7 +145,7 @@ def gen_indices(maildb):
     # Generator options
     genopts = heapmanip.GeneratorOptions()
     genopts.maildb = maildb
-    genopts.indices = [heapmanip.Index(sections(maildb))]
+    genopts.indices = [heapmanip.Index(sections(maildb)), heapmanip.Index(do_monthly(maildb),"monthly.html")]
     genopts.write_toc = True
     genopts.shortsubject = True
     genopts.shorttags = True
