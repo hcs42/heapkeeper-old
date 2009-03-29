@@ -1,78 +1,7 @@
-HEAPMANIPULATOR DEVELOPERS' GUIDE
+heapmanip explained
+===================
 
-This file is a high-level introduction to the Heapmanipulator program (or
-Manipulator for short) for the developer's eyes. More specific details can be
-found in the documentation inside the Python code. Thanks to Python's help system,
-the documentation can be accessed without opening the source code.
-
-
-FILES
-
-There are text files that contain information about the Manipulator:
-    README: This is for new users.
-    todo.txt: Our feature and bug tracking "system".
-    userguide.txt: User Guide.
-    developersguide.txt: Developers' Guide.
-    patterns.txt: Developers' Guide: Patterns.
-    codingconventions.txt: Developers' Guide: Coding Conventions.
-
-The Manipulator consists of Python modules.
-
-    heapmanip: The database and business logic of the Manipulator. It
-        implements Post, MailDB, PostSet and Generator, which are the most
-        important classes of the program.
-    heapia: The interactive interface of the Manipulator.
-
-We use unit tests to test the Manipulator's code. Each module has a module that
-tests it.
-
-    test_heapmanip: Tests the heapmanip module.
-    test_heapia: Tests the heapia module.
-    test: Tests all modules.
-
-There is also a CSS file for the generated HTML files:
-
-    heapindex.css
-
-
-HELP
-
-For getting help on testing, type:
-
-    $ python test.py --help
-
-
-TODO FILE
-
-This file is our feature and bug tracking "system".
-
-It contains items that may contain other items. The items may have identifiers
-(#1, #2 etc). There are several kinds of items, and the type of the item is
-shows before its text:
-+ feature
-- problem which should be fixed
-* other: documentation, testing, refactoring
-
-The items are in sorted in a descending order according to their prorities.
-
-
-GLOSSARY (TODO)
-
-delegate -
-Heap -
-heapcustom -
-heapia -
-heapid -
-manipulator -
-messid - 
-post -
-postset -
-prepostset -
-tag -
-
-CLASSES
-
-MailDB Class
+:class:`heapmanip.MailDB`
 
 This class serves as both an outermost container for all posts
 and as a representation of the relationships among them. The
@@ -120,13 +49,14 @@ from the two authentic sources, heapid_to_post and messid_to_heapid.
 Generating all these data members is expensive, so it is done only
 when necessary. The necessity of regenerating is indicated by calling
 touch(). This simple method does nothing but discard these generated
-data members, the names of which can be found here:
-    _posts
-    _all
-    _threadstruct
-    _cycles
-    _roots
-    _threads
+data members, the names of which can be found here::
+
+   _posts
+   _all
+   _threadstruct
+   _cycles
+   _roots
+   _threads
 
 The names are pretty much self-explanatory, the exact structure is
 documented in MailDB's docstring. (Here too, maybe in more detail.)
@@ -181,16 +111,18 @@ of terminology (respect!), please take note of this before reading on.
 
 The following rules govern the structure of the posts in a MailDB:
 
-* Post 'A' is said to be the parent of post 'B' iff the header of
-'A' contains a particular type of reference to 'B'. (For the sake of
-clarity, this is the "In-Reply-To:" reference, the taken directly from
-the terminology of e-mail, but the reference here is via a heapid rather
-than a Message-ID. More on this later.)  * Every post may have zero or
-one parent.  * Every post may have any number of children.  * A post
-is in the same thread as its parent and its children. (Posts that are
-connected through parent/child relations form a thread.)
+* Post 'A' is said to be the parent of post 'B' iff the header of 'A' contains
+  a particular type of reference to 'B'. (For the sake of clarity, this is the
+  "In-Reply-To:" reference, the taken directly from the terminology of e-mail,
+  but the reference here is via a heapid rather than a Message-ID. More on this
+  later.)
+* Every post may have zero or one parent.
+* Every post may have any number of children.
+* A post is in the same thread as its parent and its children. (Posts that are
+  connected through parent/child relations form a thread.)
 
-TODO Sync this with Csabi's recent hh-post on the revised nomenclature of thread relations.
+TODO Sync this with Csabi's recent hh-post on the revised nomenclature of
+thread relations.
 
 With all this made clear, we can now safely dive into the analysis of
 the way MailDB represents these relations.
@@ -263,15 +195,15 @@ functions do not fail completely on such thread structures; however,
 some posts will be inaccessible. It is this assumption upon which
 the generation of _cycles, the list of threads contained in cycles is
 based. This leads to some nontrivial but totally acceptable results. See
-thís example:
+this example::
 
-0: 1
-1: 2
-2: 3
-4: 5
-5: 4, 6
-6: 7
-7: 8
+   0: 1
+   1: 2
+   2: 3
+   4: 5
+   5: 4, 6
+   6: 7
+   7: 8
 
 Here, we would say that 4 and 5 are in a cycle. From the algorithm's
 standpoint, "everything not reachable from roots is in a cycle", posts 4
@@ -312,5 +244,4 @@ present in the set, return None. (I like to think of this approach as
 the snake-game rule: the snake that hits itself dies.)
 
 TODO Consider the time saved by eliminating this data structure.
-
 

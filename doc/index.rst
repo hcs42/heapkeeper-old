@@ -6,5 +6,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   developersguide
    keyprinciples
+   heapmanip_explained
 

@@ -1,5 +1,8 @@
-Key principles
+Key Principles
 ==============
+
+This page contains the key principles that concern the Heapmanipulator and its
+development.
 
 User experience
 """""""""""""""
