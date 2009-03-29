@@ -1,5 +1,5 @@
-HEAPMANIPULATOR USER GUIDE
-
+User's Guide
+============
 
 Heap is a data structure that consists of posts. It is primarily represented in
 mailfiles, but HTML files may be generated from them. The posts have fields,
@@ -15,11 +15,11 @@ Developer guide. The heapia module is the interactive interface of the
 Heapmanipulator, that's designed for end-users. The User Guide will explain how
 to use the Heapmanipulator via the heapia module.
 
-
-CONFIGURATION
+Configuration
+-------------
 
 A config file has to be created in the current directory with the name
-"heap.cfg". An example config file:
+``heap.cfg``. An example config file::
 
     [server]
     host=imap.gmail.com
@@ -39,35 +39,35 @@ If the directory of the mail database does not exists, it will be created.
 The html directory should contain heapindex.css; you can make for example a
 symbolic link to the heapindex.css in the heap directory.
 
-
-USING THE INTERACTIVE INTERFACE
+Using the interactive interface
+-------------------------------
 
 After creating the configuration file, the interactive interface can be started
-by typing the following:
+by typing the following::
 
     $ ./heapia
 
 This will start a Python shell and define the interactive commands as global
 functions. You can type the h command (i.e. call the h function) to see the
-available commands:
+available commands::
 
     >>> h()
 
 If you type a command, the index.html will be automatically regenerated.
 Most of the commands take a postset as their arguments. A postset can be
 given in many ways:
-- the heapid as a string (e.g. '42')
-- the heapid as an integer (e.g. 42)
-- the post as a Post object (e.g. maildb().post(42))
-- a list or set of objects of any previous type (e.g. [42, '43'])
-- a PostSet object (e.g. maildb().all())
+* the heapid as a string (e.g. '42')
+* the heapid as an integer (e.g. 42)
+* the post as a Post object (e.g. maildb().post(42))
+* a list or set of objects of any previous type (e.g. [42, '43'])
+* a PostSet object (e.g. maildb().all())
 
 E.g. the j command joins two posts (so the first given post will be the parent
-of the second given post). To join posts with heapid 10 and 11:
+of the second given post). To join posts with heapid 10 and 11::
 
     >>> j(10, 11)
 
-Further examples:
+Further examples::
 
     >>> e(12)           # Editing post 12. A GVim will open by default with the
                         # mail file that represents post 12. The following
@@ -85,21 +85,22 @@ Further examples:
 The heapmanip modul can be used for more complicated tasks which does not have
 an interface command. The following example collects the posts with [heap] tag
 in the same threads as 11 and 14, and adds a 'Hey!\n' prefix to their bodies.
-Then the mail HTML is regenerated.
+Then the mail HTML is regenerated. ::
 
     >>> heapmail = ps([11,14]).exp().collect.has_tag('heap')
     >>> heapmail.forall(lambda post: post.set_body('Hey!\n' + post.body()))
     >>> ga() # regenerate all HTML
 
-
-CUSTOMIZING THE INTERFACE
+Customizing the interface
+-------------------------
 
 heapia can be customized by creating a Python module called heapcustom. If the
 appropriate callback functions are defined here, they will be used by heapia
 instead of the default behaviour.
 
-E.g. the following heapcustom.py changes the arguments of the HTML-generator so
-that it includes the table of contents in the generated HTML and omits the dates.
+E.g. the following ``heapcustom.py`` changes the arguments of the
+HTML-generator so that it includes the table of contents in the generated HTML
+and omits the dates. ::
 
     import heapmanip
 
@@ -108,7 +109,7 @@ that it includes the table of contents in the generated HTML and omits the dates
         g.index_html(write_toc=True, write_date=False)
 
 The same can be done by hand from the Heapmanipulator's interactive shell,
-without creating heapcustom module:
+without creating ``heapcustom`` module::
 
     >>> def my_gen_index_html(maildb):
     ...     g = heapmanip.Generator(maildb)
@@ -117,7 +118,7 @@ without creating heapcustom module:
     >>> set_callback('gen_index_html', my_gen_index_html)
 
 If you want to use another editor (e.g. console Vim instead of GVim), put these
-into the heapcustom.py:
+into the ``heapcustom.py``::
 
     import subprocess
 
@@ -125,13 +126,13 @@ into the heapcustom.py:
         subprocess.call(['vim', file])
         return True
 
-See heapcustom-csabahoch.py as an example.
+See module :mod:`heapcustom-csabahoch` as an example.
 
-
-USING THE INTERFACE WITHOUT PYTHON SHELL
+Using the interface without Python shell
+----------------------------------------
 
 The interface can be also used without interaction. Just call the heapia module
 and give the commands as arguments. E.g. the following line typed into a Unix
-shell will download the new mail and regenerate the HTML files:
+shell will download the new mail and regenerate the HTML files::
 
     $ python heapia.py 'dl()' 'ga()'  # dl = download, ga = generate all HTML
