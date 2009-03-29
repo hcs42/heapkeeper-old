@@ -33,7 +33,7 @@ Yes::
 
    class A(object):
 
-       __init__(self):
+       def __init__(self):
            super(A, self).__init__()
            self._stuff = 0
 

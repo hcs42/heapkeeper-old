@@ -9,6 +9,7 @@ Contents:
    usersguide
    developersguide
    codingconventions
+   patterns
    keyprinciples
    heapmanip_explained
    todo
