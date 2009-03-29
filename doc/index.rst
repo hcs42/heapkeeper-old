@@ -8,6 +8,7 @@ Contents:
 
    usersguide
    developersguide
+   codingconventions
    keyprinciples
    heapmanip_explained
 

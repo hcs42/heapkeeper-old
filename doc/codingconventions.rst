@@ -1,0 +1,252 @@
+Coding conventions
+==================
+
+This file described the coding conventions used by the Heap project.
+
+You should also read the Style Guide for Python code: :pep:`8`.
+However, some recommendations of PEP 8 are overridden by this document.
+
+General
+-------
+
+* Use four spaces as one indentation level.
+* Use CamelCaseIdentifiers for class names, identifiers_with_underscore for
+  function names and variable names. The only exception is when deriving from
+  an existing class with CamelCase function names; in that case the methods of
+  the derived class may have CamelCase letters, as well. Constants should be
+  written with UPPER_CASE_LETTERS.
+
+Classes
+-------
+
+* Use only new-style classes, so if there is no other base class, 'object' is
+  the base class.
+* Always write a 'super' call into the __init__ function.
+  (See http://fuhm.net/super-harmful/).
+* Use underscore to prefix the private instance variables.
+* If there is a function that returns the value of the instance variable, it
+  should be called 'stuff' (and not 'get_stuff').
+* If there is a function that sets the value of the instance variable, it
+  should be called 'set_stuff'.
+
+Yes::
+
+   class A(object):
+
+       __init__(self):
+           super(A, self).__init__()
+           self._stuff = 0
+
+       def stuff():
+           """Returns stuff."""
+           return self._stuff
+
+       def set_stuff(stuff):
+           """Sets stuff."""
+           self._stuff = stuff
+
+Branches
+--------
+
+* When writing a branch based on whether a variable is None or not, use
+  explicit comparison.
+* When writing a branch based on the value of a Boolean variable, use implicit
+  comparison.
+
+Yes::
+
+   # thing is either None or something else
+   if thing == None:
+
+No::
+
+   if thing:
+
+Yes::
+
+   # is_happy is a bool
+   if is_happy:
+
+No::
+
+   if is_happy == False:
+
+Backslashes at the end of the line
+----------------------------------
+
+* Try to omit backslashes at the and of the lines if possible.
+
+Yes::
+
+   return (this is a very long
+           command that does not
+           fit into one line)
+
+No::
+
+   return this is a very long \
+          command that does not \
+          fit into one line
+
+* But be very caseful with the ``raise`` statement, because ``"raise x,y"``
+  means instantiating class ``x`` with a parameter ``y``, but ``"raise (x,y)"``
+  means something else. But you may put parens around ``y``, if it is long.
+
+   Yes::
+   
+      raise heaplib.HeapException, \
+             'We have a problem'
+   
+   No::
+   
+      raise (heaplib.HeapException,
+             'We have a problem')
+   
+   Yes::
+   
+      raise heaplib.HeapException, \
+            ('We have a problem with %s, which is very serious.' %
+             problematic_thing)
+
+Function arguments
+------------------
+
+* Don't put extra (more than one) spaces anywhere (except for indentation).
+
+Yes::
+
+   a = f(1, 2, 3)
+   b = f(11, 22, 33)
+   c = f(111, 222, 333)
+
+No::
+
+   a = f(1,   2,   3)
+   b = f(11,  22,   33)
+   c = f(111, 222, 333)
+
+Long argument list
+^^^^^^^^^^^^^^^^^^
+
+Yes::
+
+   my_function(one_long_argument, another_long_argument,
+                a_third_long_argument_that_does_not_fit_into_the_prev_line)
+
+Yes::
+
+   my_function(one_long_argument,
+               another_long_argument,
+               a_third_long_argument_that_does_not_fit_into_the_prev_line)
+
+No::
+
+   my_function(short_arg,
+               short_arg2,
+               short_arg3)
+
+Yes::
+
+   my_function(
+       one_long_argument,
+       another_long_argument,
+       a_third_long_argument)
+
+No::
+
+   my_function(
+       one_long_argument, another_long_argument,
+       a_third_long_argument)
+
+No::
+
+   my_function(one_long_argument,
+       another_long_argument,
+       a_third_long_argument)
+
+Initializing dictionaries and lists
+-----------------------------------
+
+* If you break a dictionary into several lines, all entry should go into a
+  separate line.
+* This does not apply to lists.
+
+Yes::
+
+   d = {'something': 'anything',
+        'anything': 'something',
+        1:2}
+
+Yes::
+
+   dictionary_with_very_long_name = \
+       {'something': 'anything',
+        'anything': 'something',
+        1:2}
+
+No::
+
+   d = {'something': 'anything', 'anything': 'something',
+        1:2}
+
+Yes::
+
+   l = [something_very_very_long_1, something_very_very_long_2,
+        something_very_very_long_3, something_very_very_long_4]
+
+Yes::
+
+   l = [something_very_very_long_1,
+        something_very_very_long_2,
+        something_very_very_long_3,
+        something_very_very_long_4]
+
+Yes::
+
+   list_with_very_long_name = \
+       [something_very_very_long_1, something_very_very_long_2,
+        something_very_very_long_3, something_very_very_long_4]
+
+Yes::
+
+   list_with_very_long_name = \
+       [something_very_very_long_1,
+        something_very_very_long_2,
+        something_very_very_long_3,
+        something_very_very_long_4]
+
+
+``%`` operator
+--------------
+
+* When you format a string with the % operator and you have only one parameter
+  to format, use the tuple syntax.
+
+Yes::
+
+    "%s" % (x,)
+
+No::
+
+    "%s" % x
+
+No::
+
+    "%s" % (x)
+
+The reason is that printing a tuple may lead to surprises. To reduce the
+possibility of a bug, always follow this convention, even if you are sure that
+the parameter after the ``%`` operator is not a tuple. ::
+
+    >>> x = (1,2)
+    >>> "%s" % (x,)
+    '(1, 2)'
+    >>> "%s" % x
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: not all arguments converted during string formatting
+    >>> "%s" % (x)
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    TypeError: not all arguments converted during string formatting
+
