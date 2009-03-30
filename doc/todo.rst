@@ -6,22 +6,108 @@ Notation
 
 * ``+``: new feature
 * ``-``: bug to fix
+* ``[prop]``: this should be discussed in a proposal
+* ``[disc]``: this should be discussed on Hh
+* ``[ongoing]``: the work on this item has been started
 
 Todo items
 ----------
+
+* Management
+
+   * ``[disc]`` Licence: should we licence Hm under GPL2, GPL3, MIT licence or
+     something else?
+   * ``[disc]`` Talk about some kind of roadmap. How do we envision the
+     progress of Hm?
+
+* ``[ongoing]`` more flexible heapia:
+   * event handling in heapia
+   * heapia should use the "Options" pattern
 
 * Generator:
 
   * Generator.gen_threads
   * Problem: some data attributes of the GeneratorOptions could be moved to
-    Section or Index. Proposal: we will look up the date_fun in the Section; if
-    we can't find, we will look up in the Index; if we can't find there, we
-    will finally look up in the GeneratorOptions.
+    Section or Index. (A function as a generator option that can take the
+    section into account is as good as a section option or an index option.)
   * ``-`` "Back to index" is buggy now, because it always goes back to the
     'index.html'
   * ``+`` Index generator: now the user defines how to show the date in index.html;
     the same could be done for other fields (e.g. the user could write a
     function that creates 'very long...' from 'very long subject')
+
+* heapia
+
+  * When ls command is invoked with no parameter, it should list the posts
+    that changed last time
+  * Modify heapia commands to use decorators instead of ``event`` functions.
+    So e.g. the ``s`` command should look like this::
+
+       @WithHeapiaEvent
+       def s():
+           """Saves the mail database."""
+           maildb().save()
+
+    instead of the current implementation (in my local branch... -- Csabi)::
+
+       def s():
+           """Saves the mail database."""
+           event('before', 's')
+           maildb().save()
+           event('after', 's')
+
+  * Modify how heapia runs user-created code. Currently the user can define a special
+    ``heapcustom`` module that is read by :mod:`heapia`, and other commands
+    can be executed before loading it. It is messy.
+    
+    The new design is much cleaner: :mod:`heapia` will have two command line
+    options to specify code to run before (``-b`` or ``--command-before``)
+    and after (``-c`` or ``--command-after``) loading heapia. E.g.::
+
+       $ ./heapia -b 'options.someoption1 = somevalue' \
+                  -b 'options.someoption2 = somevalue2' \
+                  -c 'import myheapcustom' \
+                  -c 'from myheapcommands import *' \
+                  -c 'myheapia.myinit()'
+    
+    ``myheapcustom`` has to be written like this: ::
+
+       import heapia
+       
+       def gen_indices():
+           ...
+       
+       heapia.options.callbacks.gen_indices = gen_indices
+
+   It is a bit more verbose than the current solution, but as one of Python's
+   mantra says, "Explicit is better than implicit".
+
+  * heapia's output can be set as an option: ``heapia.options.output``
+
+  * ``catch_exceptions`` option.
+
+    Usage::
+
+       def f():
+           if ok:
+               ...
+           else:
+               error('File not found: %s' % (filename,))
+
+    Library::
+
+       def error(error_message):
+           if options.catch_exceptions:
+               raise HeapException, error_message
+           else:
+               options.output(error_message)
+
+  * ``atr``, ``rt``, ``rtr``, ``sr``, ``str_`` are almost the same, they
+    could use the same function and contain only the differences. ::
+
+       def rtr(pps, tags):
+           """..."""
+           tag_operation(lambda post, tags: post.set_tags(set(post.tags()) - tags))
 
 * Tests:
 
@@ -35,46 +121,47 @@ Todo items
   * doc&test: MailDB.{children, roots, threads}
   * Html.table
 
-* Rename heapmanip to heaplib and heaplib to heaputils
+* Renamings
 
-* Rename CamelCase function names in test modules
+  * heapmanip to heaplib
+  * heaplib to heaputils
+  *  ``[prop]`` ``*.mail`` files to ``*.post``
+  * CamelCase function names to lower_case in test modules
 
-* ``+`` heapia: being able to customize what should happen after each command.
-
-  * Now the heapia.auto function is called after each command, and it
-    regenerates the index. But sometimes all the posts should be generated.
-  * Maybe also the timing could be extracted into a before_commands and
-    after_command callback function?
-  * heapia should have two lists of functions called after_funs and before_funs
-    that are called before/after each command. The user could manipulate these
-    lists. The functions would also get the function from which they were
-    called.
-  * Putting the options into the new option system.
+* ``[prop]`` Moving the github/hcs42/heap repository to github/hcs42/heapmanipulator
 
 * heapcustomlib: refactoring DateOptions to use the Options pattern
 
-* Developers' Guide
+* Documentation
 
-  * rename to Developer's Guide
-  * architecture
-  * performance improvement possibilities (iterators for some PrePost and
-    MailDB functions)
-  * using wrappers to protect e.g. MailDB.posts()
+  * ``[prop]`` DevGuide: git commit messages (don't write period at the end,
+    always mention incompatibility issues)
+
+  * howto on using ctags/etags on the project
+  * howto on using Sphinx
+  * documentation about the architecture of Hm
+
+  * not important things
+
+    * performance improvement possibilities (iterators for some PrePost and
+      MailDB functions)
+    * using wrappers to protect e.g. MailDB.posts()
+
   * Coding Conventions:
 
       * templates for documentation
       * templates for tests (test<class>, test_<method>,
         test_<method>__<other stuff>)
 
-  * using wiko
-  * putting the documentation files into a separate directory (e.g. heap/doc)
+  * rethinking the structure of the documentation
 
-* heapia: ``atr``, ``rt``, ``rtr``, ``sr``, ``str_`` are almost the same, they
-  could use the same function and contain only the differences::
+    * current structure:
 
-     def rtr(pps, tags):
-         """..."""
-         tag_operation(lambda post, tags: post.set_tags(set(post.tags()) - tags))
+        * general overview documents (e.g. usersguide, developersguide, keyprinciples)
+        * more concrete overview documents (developerguide as written by Attis)
+        * docstrings
+        * documenting the module's interface (currently included in the docstrings)
+        * rules of development (coding conventions, patterns)
 
 * STAR should be renamed
 
@@ -95,7 +182,8 @@ Todo items
 * ``+`` Thread HTML-s (precond: #1): every thread could have an HTML. Threads could
   be identified by the id of their root post.
 
-* ``+`` Post body parsing: This should be discussed. A proposal should be written.
+* ``[prop]`` ``+`` Post body parsing. This should be discussed, a proposal
+  should be written.
 
     * ``+`` creating real links form http://... text
     * ``+`` creating links from post-references. Idea:
@@ -131,9 +219,9 @@ Todo items
 * ``+`` <#4> PostSetGrepDelegate (precond: #3): it would be similar to grep (but
   smarter of course in our domain)::
 
-      ps.grep('unix stuff')  -->  [('12', ['I said that unix stuff, you know']),
-                                   ('13', ['> I said that unix stuff, you know'],
-                                           'Yes, but your unix stuff is very'])]
+     ps.grep('unix stuff')  -->  [('12', ['I said that unix stuff, you know']),
+                                  ('13', ['> I said that unix stuff, you know'],
+                                          'Yes, but your unix stuff is very'])]
 
   The quote could be excluded from the result of grep.
 
@@ -226,5 +314,14 @@ Todo items
   inherited, overriden or removed.
 
 * Using code coverage tools
+
+* Small performance and design improvements
+
+  * HTML generation: we could handle lists of strings instead of strings (I'm
+    not sure it would be that efficient; probably string concatenation does not
+    really mean copying all the characters. The Python implementation could be
+    much better, since the strings are immutable.)
+  * Maybe MailDB.messid_to_heapid can be handled lazily as the other attributes
+    of MailDB?
 
 Next free id: #5
