@@ -13,12 +13,13 @@ Notation
 Todo items
 ----------
 
-* Management
+* Management, propaganda
 
    * ``[disc]`` Licence: should we licence Hm under GPL2, GPL3, MIT licence or
      something else?
    * ``[disc]`` Talk about some kind of roadmap. How do we envision the
      progress of Hm?
+   * ``[disc]`` Elevator speech, slogan, motto, logo.
 
 * ``[ongoing]`` more flexible heapia:
    * event handling in heapia
