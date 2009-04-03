@@ -1,6 +1,12 @@
 Coding conventions
 ==================
 
+   *Thus spake the Lord: Thou shalt indent with four spaces. No more, no
+   less. Four shall be the number of spaces thou shalt indent, and the
+   number of thy indenting shall be four. Eight shalt thou not indent,
+   nor either indent thou two, excepting that thou then proceed to four.
+   Tabs are right out.*
+
 This file described the coding conventions used by the Heap project.
 
 You should also read the Style Guide for Python code: :pep:`8`.

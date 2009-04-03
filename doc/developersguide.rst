@@ -6,6 +6,15 @@ Manipulator or Hm for short) for the developer's eyes. More specific details
 can be found in the documentation inside the Python code. Thanks to Python's
 help system, the documentation can be accessed without opening the source code.
 
+Development method
+------------------
+
+Reading
+^^^^^^^
+
+* `Karl Fogel: Producing Open Source Software -- How to Run a Successful Free
+  Software Project <http://producingoss.com/>`_
+
 Directory structure
 -------------------
 
