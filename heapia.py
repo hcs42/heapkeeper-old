@@ -518,11 +518,12 @@ def e(pp):
     event('after', 'j')
 
 def dl(from_=0):
+    event('before', 'dl')
     server = heapmanip.Server(maildb(), options.config)
     server.connect()
     server.download_new(int(from_))
     server.close()
-    auto()
+    event('after', 'dl')
 
 
 ##### Commands / tags #####
