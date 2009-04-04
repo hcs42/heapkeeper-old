@@ -118,6 +118,12 @@ Yes:
          'anything': 'something',
          1:2}
 
+Yes:
+    dictionary_with_very_long_name = \
+        {'something': 'anything',
+         'anything': 'something',
+         1:2}
+
 No:
     d = {'something': 'anything', 'anything': 'something',
          1:2}
@@ -128,6 +134,18 @@ Yes:
 
 Yes:
     l = [something_very_very_long_1,
+         something_very_very_long_2,
+         something_very_very_long_3,
+         something_very_very_long_4]
+
+Yes:
+    list_with_very_long_name = \
+        [something_very_very_long_1, something_very_very_long_2,
+         something_very_very_long_3, something_very_very_long_4]
+
+Yes:
+    list_with_very_long_name = \
+        [something_very_very_long_1,
          something_very_very_long_2,
          something_very_very_long_3,
          something_very_very_long_4]

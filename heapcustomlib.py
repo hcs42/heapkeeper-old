@@ -126,6 +126,8 @@ def date_defopts(options={}):
     options0.update(options)
     return options0
 
+##### Generation #####
+
 def gen_indices(maildb):
     date_options = date_defopts({'maildb': maildb})
     date_fun = create_date_fun(date_options)
@@ -141,3 +143,10 @@ def gen_posts(maildb):
     genopts = heapmanip.GeneratorOptions()
     genopts.maildb = maildb
     heapmanip.Generator(maildb).gen_posts(genopts)
+
+##### Misc #####
+
+def edit_file(file):
+    subprocess.call(['gvim', '-f', file])
+    return True
+
