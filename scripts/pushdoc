@@ -1,0 +1,25 @@
+#!/bin/sh
+
+if [ "$1" = "-h" -o "$1" = "--help" ];
+then
+    cat <<END
+pushdoc
+
+Description:
+    Copies the documentation of Heapmanipulator to hste.uw.hu/heapmanipulator.
+
+Usage:
+    Run pushdoc without arguments and type the hste.uw.hu password.
+
+Prerequitites:
+    This script needs the ncftp program (which contains the ncftpput command).
+    In Ubuntu, just install the ncftp package.
+
+Note:
+    You can run the script from any directory, it will work. (Unless you copy
+    the script itself to somewhere else, in which case it will not.)
+END
+fi
+
+dir=`dirname "$0"`
+ncftpput -R -u hste ftp.uw.hu heapmanipulator "$dir/../doc/_build/html"
