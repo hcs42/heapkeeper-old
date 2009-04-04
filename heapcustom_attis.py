@@ -154,3 +154,17 @@ def gen_indices(maildb):
     # Generating the index
     heapmanip.Generator(maildb).gen_indices(genopts)
 
+def gen_posts(maildb):
+    # Generator options
+    genopts = heapmanip.GeneratorOptions()
+    genopts.maildb = maildb
+    genopts.write_toc = True
+    genopts.print_thread_of_post = True
+    genopts.indices = [heapmanip.Index(sections(maildb)), heapmanip.Index(do_monthly(maildb),"monthly.html")]
+
+    # Generating the posts
+    heapmanip.Generator(maildb).gen_posts(genopts)
+
+def main(listeners):
+    pass # for now
+

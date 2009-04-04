@@ -1762,7 +1762,13 @@ class Generator(object):
         h1 = Html.escape(post.author()) + ': ' + \
              Html.escape(post.subject())
         l.append(Html.doc_header(h1, h1, 'heapindex.css'))
-        l.append(Html.link('index.html', 'Back to the index'))
+        try:
+            for index in options.indices:
+                l.append(Html.link(index.filename,
+                                   'Back to ' + index.filename))
+                l.append('<br/>\n')
+        except AttributeError:
+            l.append(Html.link('index.html', 'Back to the index'))
         l.append('\n')
         l.append(Html.enclose('index', Html.escape('<%s>' % (post.heapid(),))))
         l.append('\n')

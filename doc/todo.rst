@@ -41,6 +41,9 @@ Todo items
     way to do this, in which using a custom CSS file should be as easy as now,
     but which is more convenient for the user who does not care about
     customized CSS.
+  * Problem: now, if gen_posts adds an indices option, the posts will contain
+    backlinks to each of these indices. It would be nicer if only those
+    indices would be backlinked that really contain the post in question.
 
 * heapia
 
