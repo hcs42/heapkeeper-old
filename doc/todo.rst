@@ -37,6 +37,10 @@ Todo items
   * ``+`` Index generator: now the user defines how to show the date in index.html;
     the same could be done for other fields (e.g. the user could write a
     function that creates 'very long...' from 'very long subject')
+  * Now CSS has to be copied manually to the html files. We should find another
+    way to do this, in which using a custom CSS file should be as easy as now,
+    but which is more convenient for the user who does not care about
+    customized CSS.
 
 * heapia
 
