@@ -139,7 +139,7 @@ class Post(object):
         """Should be called each time after the post is modified."""
         self._modified = True
         if self._maildb != None:
-            self._maildb.touch()
+            self._maildb.touch(self)
 
     def is_modified(self):
         return self._modified
@@ -470,7 +470,7 @@ class Post(object):
             self._header, self._body = Post.parse(f)
         self._modified = False
         if not silent:
-            self._maildb.touch()
+            self._maildb.touch(self)
 
     # Filenames
 
@@ -557,6 +557,23 @@ class Post(object):
             self._header['Tag'].append(tag)
 
 
+##### MailDBEvent #####
+
+class MailDBEvent(object):
+    """Represents an event.
+
+    Data attributes:
+    TODO
+    """
+
+    def __init__(self,
+                 type=heaplib.NOT_SET,
+                 post=None):
+
+        super(MailDBEvent, self).__init__()
+        heaplib.set_dict_items(self, locals())
+
+
 ##### MailDB #####
 
 class MailDB(object):
@@ -606,6 +623,8 @@ class MailDB(object):
         self._next_heapid = 0
         self.heapid_to_post = {}
         self.messid_to_heapid = {}
+        self.listeners = []
+
         self._load_from_disk()
 
     @staticmethod
@@ -664,7 +683,11 @@ class MailDB(object):
 
     # Modifications
 
-    def touch(self):
+    def notify_listeners(self, event):
+        for listener in self.listeners:
+            listener(event)
+
+    def touch(self, post=None):
         """If something in the database changes, this function should be
         called.
         
@@ -678,6 +701,7 @@ class MailDB(object):
         self._cycles = None
         self._roots = None
         self._threads = None
+        self.notify_listeners(MailDBEvent(type='touch', post=post))
 
     # Get-set functions
 
