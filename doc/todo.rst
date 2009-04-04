@@ -20,9 +20,12 @@ Todo items
    * ``[disc]`` Talk about some kind of roadmap. How do we envision the
      progress of Hm?
    * ``[disc]`` Elevator speech, slogan, motto, logo.
+
      * "The past is just our perception of the past."
+     * "Edit the past!"
 
 * ``[ongoing]`` more flexible heapia:
+
   * event handling in heapia
   * heapia should use the "Options" pattern
 
