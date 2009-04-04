@@ -563,7 +563,10 @@ class MailDBEvent(object):
     """Represents an event.
 
     Data attributes:
-    TODO
+    type --- The type of the event. Currently always 'touch'.
+        Type: str
+    post --- The post which was touched.
+        Type: Post | None
     """
 
     def __init__(self,
