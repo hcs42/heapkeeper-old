@@ -13,23 +13,47 @@ Notation
 Todo items
 ----------
 
-* Management, propaganda
+* **Documentation**
 
-   * ``[disc]`` Licence: should we licence Hm under GPL2, GPL3, MIT licence or
-     something else?
-   * ``[disc]`` Talk about some kind of roadmap. How do we envision the
-     progress of Hm?
-   * ``[disc]`` Elevator speech, slogan, motto, logo.
+  * ``[prop]`` DevGuide: git commit messages (don't write period at the end,
+    always mention incompatibility issues)
+  * howto on using ctags/etags on the project
+  * howto on using Sphinx
+  * documentation about the architecture of Hm
+  * not important things
 
-     * "The past is just our perception of the past."
-     * "Edit the past!"
+    * performance improvement possibilities (iterators for some PrePost and
+      MailDB functions)
+    * using wrappers to protect e.g. MailDB.posts()
 
-* ``[ongoing]`` more flexible heapia:
+  * Coding Conventions:
 
-  * event handling in heapia
-  * heapia should use the "Options" pattern
+    * templates for documentation
+    * templates for tests (test<class>, test_<method>,
+      test_<method>__<other stuff>)
 
-* Generator:
+  * rethinking the structure of the documentation
+
+    * current structure:
+
+      * general overview documents (e.g. usersguide, developersguide, keyprinciples)
+      * more concrete overview documents (developerguide as written by Attis)
+      * docstrings
+      * documenting the module's interface (currently included in the docstrings)
+      * rules of development (coding conventions, patterns)
+
+* **Management, propaganda**
+
+  * ``[disc]`` Licence: should we licence Hm under GPL2, GPL3, MIT licence or
+    something else?
+  * ``[disc]`` Talk about some kind of roadmap. How do we envision the
+    progress of Hm?
+  * ``[disc]`` Elevator speech, slogan, motto, logo.
+
+    * "The past is just our perception of the past."
+    * "Edit the past!"
+
+* **Generator**
 
   * Generator.gen_threads
   * Problem: some data attributes of the GeneratorOptions could be moved to
@@ -48,7 +72,7 @@ Todo items
     backlinks to each of these indices. It would be nicer if only those
     indices would be backlinked that really contain the post in question.
 
-* heapia
+* **heapia**
 
   * When ls command is invoked with no parameter, it should list the posts
     that changed last time
@@ -121,7 +145,7 @@ Todo items
            """..."""
            tag_operation(lambda post, tags: post.set_tags(set(post.tags()) - tags))
 
-* Tests:
+* **Tests**
 
   * heapia
   * Post.load
@@ -133,7 +157,7 @@ Todo items
   * doc&test: MailDB.{children, roots, threads}
   * Html.table
 
-* Renamings
+* **Renamings**
 
   * heapmanip to heaplib
   * heaplib to heaputils
@@ -143,37 +167,6 @@ Todo items
 * ``[prop]`` Moving the github/hcs42/heap repository to github/hcs42/heapmanipulator
 
 * heapcustomlib: refactoring DateOptions to use the Options pattern
-
-* Documentation
-
-  * ``[prop]`` DevGuide: git commit messages (don't write period at the end,
-    always mention incompatibility issues)
-
-  * howto on using ctags/etags on the project
-  * howto on using Sphinx
-  * documentation about the architecture of Hm
-
-  * not important things
-
-    * performance improvement possibilities (iterators for some PrePost and
-      MailDB functions)
-    * using wrappers to protect e.g. MailDB.posts()
-
-  * Coding Conventions:
-
-      * templates for documentation
-      * templates for tests (test<class>, test_<method>,
-        test_<method>__<other stuff>)
-
-  * rethinking the structure of the documentation
-
-    * current structure:
-
-        * general overview documents (e.g. usersguide, developersguide, keyprinciples)
-        * more concrete overview documents (developerguide as written by Attis)
-        * docstrings
-        * documenting the module's interface (currently included in the docstrings)
-        * rules of development (coding conventions, patterns)
 
 * STAR should be renamed
 
@@ -194,32 +187,32 @@ Todo items
 * ``+`` Thread HTML-s (precond: #1): every thread could have an HTML. Threads could
   be identified by the id of their root post.
 
-* ``[prop]`` ``+`` Post body parsing. This should be discussed, a proposal
+* ``[prop]`` ``+`` **Post body parsing**. This should be discussed, a proposal
   should be written.
 
-    * ``+`` creating real links form http://... text
-    * ``+`` creating links from post-references. Idea:
-      Original post: <<<!post: 123>>>
-      In Post HTML: <a href="123.post">&lt;&lt;&lt;post: 123&gt;&gt;&gt;</a>
-    * ``+`` any inline links (instead of cites):
-      Original post: what about [this|http://...] thing?
-      In Post HTML:  what about <a href="http://...">this</a> thing?
-    * ``+`` creating flags from <<<metatext>>> (e.g. todo flag)
+  * ``+`` creating real links form http://... text
+  * ``+`` creating links from post-references. Idea:
+    Original post: <<<!post: 123>>>
+    In Post HTML: <a href="123.post">&lt;&lt;&lt;post: 123&gt;&gt;&gt;</a>
+  * ``+`` any inline links (instead of cites):
+    Original post: what about [this|http://...] thing?
+    In Post HTML:  what about <a href="http://...">this</a> thing?
+  * ``+`` creating flags from <<<metatext>>> (e.g. todo flag)
 
-      * How to show the flags like "todo" in the index? Maybe they should be
-        tags, and not flags?
+    * How to show the flags like "todo" in the index? Maybe they should be
+      tags, and not flags?
 
-    * ``+`` dealing with cites
-    * ``+`` showing the authors of the quotes
-    * ``+`` do automatic actions based on metatext? E.g. <<<!delete>>>,
-      <<<!addtagtothread unix>>>
-    * ``+`` formatting _underline_ and *bold* text: do we want it? (probably not)
-    * ``+`` the post's HTML could contain the whole thread of the post below the post
-      itself?
-    * ``+`` post references for non-existent posts with explicit id-s:
-      Original post1: <<<post:id=boring_stuff>>>
-      Original post2: As I said in [this|post:id=boring_stuff] mail...
-      Post2 in HTML:  what about <a href="http://...">this</a> thing?
+  * ``+`` dealing with cites
+  * ``+`` showing the authors of the quotes
+  * ``+`` do automatic actions based on metatext? E.g. <<<!delete>>>,
+    <<<!addtagtothread unix>>>
+  * ``+`` formatting _underline_ and *bold* text: do we want it? (probably not)
+  * ``+`` the post's HTML could contain the whole thread of the post below the post
+    itself?
+  * ``+`` post references for non-existent posts with explicit id-s:
+    Original post1: <<<post:id=boring_stuff>>>
+    Original post2: As I said in [this|post:id=boring_stuff] mail...
+    Post2 in HTML:  what about <a href="http://...">this</a> thing?
 
 * ``+`` Generator: different colours for the posts that are not in a section but
   their thread is
@@ -275,24 +268,24 @@ Todo items
 
 * ``+`` tags, flags
 
-    * ``+`` Implementing tags and flags as frozensets
-    * ``+`` Tags dependencies, TagInfo class
-    * ``+`` Flag: New-thead flag to indicate that the email begins a new thread.
-      Post.inreplyto should return None if the post has a new-thread flag.
-      Post.real_inreplyto would be the current Post.inreplyto.
-    * ``+`` should the tags be case insensitive?
-    * ``+`` tag aliases: py = python
+  * ``+`` Implementing tags and flags as frozensets
+  * ``+`` Tags dependencies, TagInfo class
+  * ``+`` Flag: New-thead flag to indicate that the email begins a new thread.
+    Post.inreplyto should return None if the post has a new-thread flag.
+    Post.real_inreplyto would be the current Post.inreplyto.
+  * ``+`` should the tags be case insensitive?
+  * ``+`` tag aliases: py = python
 
 * CSS
 
-    * Try out including heapindex.css into the customized heapindex.css
-    * Write about CSS into the user documentation (currently you have to make a
-      symlink by hand to get it work; we should say something about this)
+  * Try out including heapindex.css into the customized heapindex.css
+  * Write about CSS into the user documentation (currently you have to make a
+    symlink by hand to get it work; we should say something about this)
 
 * ``+`` Post: cleanup functionality. Something like Post.normalize_subject, but with
   a broader scope.
 
-    * ``+`` deleting in-reply-to if the referenced post is not in the DB
+  * ``+`` deleting in-reply-to if the referenced post is not in the DB
 
 * Post, MailDB: a better system for 'touch': it should know what should be
   recalculated and what should not be. It would improve only efficiently, not
