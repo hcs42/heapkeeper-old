@@ -740,7 +740,6 @@ def load_custom():
         except AttributeError:
             heapmanip.log(funname, \
                           ' custom function: not found, using the default.')
-    getattr(module, 'main')(listeners)
 
 def read_maildb():
     config = ConfigParser.ConfigParser()
