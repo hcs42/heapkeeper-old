@@ -1,10 +1,8 @@
-Welcome to Heapmanipulator's documentation!
-===========================================
-
-Contents:
+Heapmanipulator documentation
+=============================
 
 .. toctree::
-   :maxdepth: 2
+   :hidden:
 
    usersguide
    heapia
@@ -15,3 +13,62 @@ Contents:
    heapmanip_explained
    todo
    modules
+
+*Heapmanipulator* is a program to store, manipulate and display email archives,
+especially mailing list archives. Manipulating means that the archive is not
+really an archive, rather it is a living document like a wiki: it can be
+modified (hopefully improved) by collaborators.
+
+Emails (that are e.g. sent to a mailing list) are downloaded by
+Heapmanipulator. After an email is downloaded, it is called a *post*. Posts are
+stored in Heapmanipulator's database, which is called *the heap*. The heap is
+stored in a set of text files; each file contains one post. Posts can be
+changed (=manipulated) either from Heapmanipulator's console interface or by
+directly modifying the text files in which the posts are stored. Posts are
+organized in threads, as emails in mailing list archives usually are. Posts may
+have tags as well. When manipulating the heap, the content of the posts can be
+modified, threads can be restructured, tags can be added; or really anything
+can be done. If Heapmanipulator's console interface does not support the kind
+of modification that is to be performed, the user can either write a custom
+command using Python, or modify directly the files that store the posts. HTML
+*index pages* can be generated to display certain views of the heap. One of the
+most simple indices is just showing all posts in a threaded structure. When the
+user clicks on a post in an index in the browser, the browser will display the
+HTML generated from the corresponding post.
+
+Currently Heapmanipulator is a console tool with the following features:
+
+* Storing posts in text files. These are human readable files with a format
+  that is similar to the standard email file format (:rfc:`2822`).
+* Downloading new emails via the IMAP SSL protocol.
+* Console interface with commands to manipulate the heap. This is actually a
+  Python shell with functions. See the available commands :doc:`here <heapia>`.
+* Generating HTML pages from the heap. There are two kinds of HTML page: index
+  pages and post pages. Index pages show the structure of the threads. Post
+  pages contain one post.
+
+We plan to implement a web version of the tool in the future. It would download
+new emails automatically, and it would have a web interface for manipulating
+the heap.
+
+Heapmanipulator is under the GPLv3 license. 
+It is hosted by `github <http://github.com>`_, the repository can be found
+`here. <http://github.com/hcs42/heap>`_
+It is written in Python; more precisely, it runs with Python 2.5 or 2.6.
+
+
+For users
+---------
+
+* :doc:`usersguide`
+* :doc:`heapia`
+
+For developers
+--------------
+
+* :doc:`developersguide`
+* :doc:`codingconventions`
+* :doc:`patterns`
+* :doc:`keyprinciples`
+* :doc:`modules`
+* :doc:`todo`

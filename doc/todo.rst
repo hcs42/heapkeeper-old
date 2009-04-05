@@ -15,8 +15,8 @@ Todo items
 
 * **Documentation**
 
-  * ``[prop]`` DevGuide: git commit messages (don't write period at the end,
-    always mention incompatibility issues)
+  * tutorial
+  * glossary
   * howto on using ctags/etags on the project
   * howto on using Sphinx
   * documentation about the architecture of Hm
@@ -44,8 +44,7 @@ Todo items
 
 * **Management, propaganda**
 
-  * ``[disc]`` Licence: should we licence Hm under GPL2, GPL3, MIT licence or
-    something else?
+  * Screenshots
   * ``[disc]`` Talk about some kind of roadmap. How do we envision the
     progress of Hm?
   * ``[disc]`` Elevator speech, slogan, motto, logo.
@@ -117,8 +116,6 @@ Todo items
 
    It is a bit more verbose than the current solution, but as one of Python's
    mantra says, "Explicit is better than implicit".
-
-  * heapia's output can be set as an option: ``heapia.options.output``
 
   * ``catch_exceptions`` option.
 

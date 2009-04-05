@@ -1,5 +1,5 @@
-Coding conventions
-==================
+Documentation and coding conventions
+====================================
 
    *Thus spake the Lord: Thou shalt indent with four spaces. No more, no
    less. Four shall be the number of spaces thou shalt indent, and the
@@ -7,15 +7,54 @@ Coding conventions
    nor either indent thou two, excepting that thou then proceed to four.
    Tabs are right out.*
 
-This file described the coding conventions used by the Heap project.
+This file describes the documentation and coding conventions used by the Heap
+project.
 
 You should also read the Style Guide for Python code: :pep:`8`.
 However, some recommendations of PEP 8 are overridden by this document.
 
+Commit messages
+---------------
+
+A commit message has two parts: a mandatory title and an optional description.
+
+* The title should not be more than 50 characters.
+* It is generally a good idea to begin the title with a word that describes the
+  scope of the change (e.g. the name of a module or a class).
+* Do not put a period after the title.
+* The description should be preceded by a blank line.
+* The description should not contain lines that have more than 79 characters. *
+  If the changes introduce incompatibilities that the users can notice (e.g.
+  the format of the config file changes), it is generally worth describing
+  them.
+
+Example:
+
+.. code-block:: none
+
+   Doc: improved docstrings
+
+   Two classes have been documented with docstrings and the docstring of
+   two functions have been modified. The current format shall be used in
+   all docstrings.
+
+
+Documentation
+-------------
+
+These conventions apply both to docstrings and documentation stored in ``rst``
+files, since they are both reStructuredText texts.
+
+* Use lines no longer than 79 characters.
+
+Python code
+-----------
+
 General
--------
+^^^^^^^
 
 * Use four spaces as one indentation level.
+* Use lines no longer than 79 characters.
 * Use CamelCaseIdentifiers for class names, identifiers_with_underscore for
   function names and variable names. The only exception is when deriving from
   an existing class with CamelCase function names; in that case the methods of
@@ -23,7 +62,7 @@ General
   written with UPPER_CASE_LETTERS.
 
 Classes
--------
+^^^^^^^
 
 * Use only new-style classes, so if there is no other base class, 'object' is
   the base class.
@@ -52,7 +91,7 @@ Yes::
            self._stuff = stuff
 
 Branches
---------
+^^^^^^^^
 
 * When writing a branch based on whether a variable is None or not, use
   explicit comparison.
@@ -78,7 +117,7 @@ No::
    if is_happy == False:
 
 Backslashes at the end of the line
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Try to omit backslashes at the and of the lines if possible.
 
@@ -94,7 +133,7 @@ No::
           command that does not \
           fit into one line
 
-* But be very caseful with the ``raise`` statement, because ``"raise x,y"``
+* But be very careful with the ``raise`` statement, because ``"raise x,y"``
   means instantiating class ``x`` with a parameter ``y``, but ``"raise (x,y)"``
   means something else. But you may put parens around ``y``, if it is long.
 
@@ -115,7 +154,7 @@ No::
              problematic_thing)
 
 Function arguments
-------------------
+^^^^^^^^^^^^^^^^^^
 
 * Don't put extra (more than one) spaces anywhere (except for indentation).
 
@@ -171,7 +210,7 @@ No::
        a_third_long_argument)
 
 Initializing dictionaries and lists
------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * If you break a dictionary into several lines, all entry should go into a
   separate line.
@@ -223,7 +262,7 @@ Yes::
 
 
 ``%`` operator
---------------
+^^^^^^^^^^^^^^
 
 * When you format a string with the % operator and you have only one parameter
   to format, use the tuple syntax.
