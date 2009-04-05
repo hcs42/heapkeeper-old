@@ -460,21 +460,19 @@ def perform_operation(pps, command, operation):
     event('after', command, postset=posts)
 
 def d(pps):
-    """Deletes given postset.
+    """Deletes the posts in *pps*.
     
-    Arguments:
-    pps --
-        Type: PrePostSet
+    :param pps:
+    :type pps: PrePostSet
     """
 
     perform_operation(pps, 'd', lambda posts: posts.forall.delete())
 
 def dr(pps):
-    """Deletes the posts of the given postset and all their consequences.
+    """Deletes the posts in *pps* and all their children.
 
-    Arguments:
-    pps --
-        Type: PrePostSet
+    :param pps:
+    :type pps: PrePostSet
     """
 
     perform_operation(pps, 'dr',
