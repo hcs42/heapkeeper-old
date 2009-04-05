@@ -164,16 +164,27 @@ class Test__3(unittest.TestCase, test_heapmanip.MailDBHandler):
     # 4
 
     def setUp(self):
-        reload(heapia)
+
+        # Reload is necessary only when the test cases do not clean up after
+        # themselves (e.g. they do not set the default heapia values).
+
+        # reload(heapia)
+
         self.setUpDirs()
         self._maildb = self.createMailDB()
         self.create_threadst()
+        heapia.options.maildb = self._maildb
+
+        # Redirect the output of heapia to nowhere.
+        class NullOutput():
+            def write(self, str):
+                pass
+        heapia.options.output = NullOutput()
 
     def tearDown(self):
         self.tearDownDirs()
 
     def init_heapia(self):
-        heapia.options.maildb = self._maildb
         heapia.init()
 
     def my_cmd(self, fun):

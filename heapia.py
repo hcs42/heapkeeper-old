@@ -271,13 +271,13 @@ def gen_posts_listener(e):
 def save_listener(e):
     if (e.type == 'after' and len(modification_listener.touched_posts()) > 0):
         maildb().save()
-        print 'saved.'
+        write('Mail database saved.\n')
 
 def timer_listener(e, start=[None]):
     if e.type == 'before':
         start[0] = time.time()
     elif e.type == 'after':
-        print "%f seconds." % (time.time() - start[0])
+        write('%f seconds.\n' % (time.time() - start[0],))
 
 
 class TouchedPostPrinterListener(object):
@@ -291,17 +291,17 @@ class TouchedPostPrinterListener(object):
         if e.type == 'before':
             self.command = e.command
         elif e.type == 'after' and self.command in self.commands:
-            w = options.output.write
             touched_posts = modification_listener.touched_posts()
             if len(touched_posts) == 0:
-                w('No post has been touched.\n')
+                write('No post has been touched.\n')
             else:
                 if len(touched_posts) == 1:
-                    w('1 post has been touched:\n')
+                    write('1 post has been touched:\n')
                 else:
-                    w('%s posts have been touched:\n' % (len(touched_posts),))
-                w('%s\n' %
-                  [ post.heapid() for post in touched_posts.sorted_list()])
+                    write('%s posts have been touched:\n' % 
+                          (len(touched_posts),))
+                write('%s\n' %
+                      [ post.heapid() for post in touched_posts.sorted_list()])
 
 # Commands after which the touched_post_printer should print the touched posts
 touching_commands = \
@@ -319,12 +319,12 @@ def set_listener_feature(listener, state):
         try:
             append_listener(listener)
         except heaplib.HeapException:
-            print 'Feature already set.'
+            write('Feature already set.\n')
     else: # state == 'off'
         try:
             remove_listener(listener)
         except heaplib.HeapException:
-            print 'Feature not set.'
+            write('Feature not set.\n')
 
 def get_listener_feature(listener):
     """Returns whether the given listener feature is turned on."""
@@ -345,7 +345,7 @@ def set_feature(state, feature):
     elif feature in ['tpp', 'touched_post_printer']:
         set_listener_feature(touched_post_printer_listener, state)
     else:
-        print 'Unknown feature.'
+        write('Unknown feature.\n')
 
 def features():
     g = get_listener_feature
@@ -363,6 +363,9 @@ def off(feature):
 
 
 ##### Generic functionality #####
+
+def write(str):
+    options.output.write(str)
 
 def cmd_help():
     r = re.compile('.*^' + ('-' * 60) + '\\n' +
@@ -418,7 +421,7 @@ def tagset(tags):
 ##### Commands #####
 
 def h():
-    print __doc__
+    write(__doc__)
 
 def hh():
     sys.stdout.write(cmd_help())
@@ -466,7 +469,7 @@ def ls(ps):
     for p in ps:
         sum = p.subject() if len(p.subject()) < 40 \
             else p.subject()[:37] + '...'
-        print p.author() + ' ' + p.date() + '  ' + sum
+        write('%s %s %s\n' % (p.author(), p.date(), sum))
     event('after', 'ls')
 
 def perform_operation(pps, command, operation):
