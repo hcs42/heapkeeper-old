@@ -1,7 +1,24 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# My (Attis) heapcustom.
+# This file is part of Heapmanipulator.
+#
+# Heapmanipulator is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# Heapmanipulator is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Heapmanipulator.  If not, see <http://www.gnu.org/licenses/>.
+
+# Copyright (C) 2009 Attila Nagy
+# Copyright (C) 2009 Csaba Hoch
+
+"""My (Attis) heapcustom."""
 
 import heapmanip
 import heapcustomlib
