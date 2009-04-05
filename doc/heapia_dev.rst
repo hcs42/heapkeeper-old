@@ -8,8 +8,19 @@ heapia - Developer Documentation
 
 .. module:: heapia
 
-.. autofunction:: dr
-
-   test
-
+Options
+-------
    
+.. autoclass:: Callbacks()
+
+.. autoclass:: Options()
+
+General functions
+-----------------
+
+Commands
+--------
+
+.. autofunction:: d
+
+.. autofunction:: dr

@@ -146,10 +146,20 @@ import heapcustomlib
 ##### Callbacks #####
 
 class Callbacks(object):
-    """Represents a heapia option object.
+    """Stores callback functions or objects that are used by :mod:`heapia`.
+    
+    The attributes are mentioned as functions, but they can be objects with
+    *__call__* method, as well.
 
-    Data attributes:
-    TODO
+    **Attributes:**
+
+    * *gen_indices* (fun(MailDB)) -- Function that generates indices.
+    * *gen_posts* (fun(MailDB)) -- Function that generates the HTML files of
+      the posts.
+    * *edit_file* (fun(str) -> bool) -- Function that opens an editor with the
+      given file. It should return ``True`` or ``False`` when the user finished
+      editing the file. If the changed file should be taken into account, it
+      should return ``True``, otherwise ``False``.
     """
 
     def __init__(self,
@@ -166,18 +176,15 @@ class Callbacks(object):
 class Options(object):
     """Represents a heapia option object.
 
-    Data attributes:
-    config --- Configuration object.
-        Type: ConfigParser.ConfigParser
-    heapcustom --- The name of the customization module.
-        Type: str
-        Default value: 'heapcustom',
-    output --- When a heapia function wants to print something, it calls the
-        output's write method.
-        Type: object that has a write(str) method
-        Default value: sys.stdout
-    callbacks ---
-        Type: Callbacks
+    **Attributes:**
+
+    * *config* (ConfigParser.ConfigParser) -- Configuration object.
+    * *heapcustom* (str) -- The name of the customization module.
+      Default value: ``'heapcustom'``.
+    * *output* (object) -- When a heapia function wants to print something, it
+      calls *output*'s write method.
+      Default value: sys.stdout
+    * *callbacks* (Callbacks)
     """
 
     def __init__(self,
@@ -483,8 +490,9 @@ def perform_operation(pps, command, operation):
 def d(pps):
     """Deletes the posts in *pps*.
     
-    :param pps:
-    :type pps: PrePostSet
+    **Argument:**
+
+    * *pps* (PrePostSet)
     """
 
     perform_operation(pps, 'd', lambda posts: posts.forall.delete())
@@ -492,8 +500,9 @@ def d(pps):
 def dr(pps):
     """Deletes the posts in *pps* and all their children.
 
-    :param pps:
-    :type pps: PrePostSet
+    **Argument:**
+
+    * *pps* (PrePostSet)
     """
 
     perform_operation(pps, 'dr',
