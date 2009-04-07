@@ -162,7 +162,18 @@ def gen_indices(maildb):
     # Generator options
     genopts = heapmanip.GeneratorOptions()
     genopts.maildb = maildb
-    genopts.indices = [heapmanip.Index(sections(maildb)), heapmanip.Index(do_monthly(maildb),"monthly.html")]
+#    genopts.indices = [heapmanip.Index(sections(maildb)), heapmanip.Index(do_monthly(maildb),"monthly.html")]
+    # new idea is:
+    # - add static main index,
+    # - do_montly() and store its results,
+    # - iterate on months, add one new index per month, one section per index
+
+    genopts.indices = [heapmanip.Index(sections(maildb))]
+    months = do_monthly(maildb)
+    for n in range(0, len(months)):
+        genopts.indices.append(heapmanip.Index([months[n]],
+                               "month_" + str(n + 1) + ".html"))
+
     genopts.write_toc = True
     genopts.shortsubject = True
     genopts.shorttags = True
@@ -177,11 +188,13 @@ def gen_posts(maildb):
     genopts.maildb = maildb
     genopts.write_toc = True
     genopts.print_thread_of_post = True
-    genopts.indices = [heapmanip.Index(sections(maildb)), heapmanip.Index(do_monthly(maildb),"monthly.html")]
+#    genopts.indices = [heapmanip.Index(sections(maildb)), heapmanip.Index(do_monthly(maildb),"monthly.html")]
+    genopts.indices = [heapmanip.Index(sections(maildb))]
+    n = 0
+    for month in do_monthly(maildb):
+        genopts.indices.append(heapmanip.Index(month, str(n) + "html"))
+        n += 1
 
     # Generating the posts
     heapmanip.Generator(maildb).gen_posts(genopts)
-
-def main(listeners):
-    pass # for now
 
