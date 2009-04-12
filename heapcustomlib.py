@@ -45,6 +45,7 @@ localtime_fun --- A function that calculates the tm structure based on a
 import time
 import datetime
 import heapmanip
+import subprocess
 
 ##### Generator #####
 
