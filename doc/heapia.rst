@@ -1,12 +1,7 @@
-:mod:`heapia` - User Documentation
-==================================
+:mod:`heapia` user documentation
+================================
 
 See the :doc:`developer documentation of heapia <heapia_dev>` for more details.
-
-.. x automodule:: heapia
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 .. module:: heapia
 

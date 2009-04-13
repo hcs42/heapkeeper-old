@@ -1,5 +1,11 @@
-Todo
-====
+Todo - "feature and bug tracking system"
+========================================
+
+This file is our feature and bug tracking "system". The items are in sorted in
+a descending order according to their priorities.
+
+The items may have identifiers (``#1``, ``#2`` etc). Next free identifier:
+``#5``
 
 Notation
 --------
@@ -15,24 +21,24 @@ Todo items
 
 * **Documentation**
 
+  * writing :doc:`architecture`
   * The :doc:`tutorial` should be updated (probably a separate *customization*
     page should be created).
-  * A glossary page should be created
-  * howto on using ctags/etags on the project
-  * howto on using Sphinx
-  * documentation about the architecture of Hm
+  * words to include in the :doc:`glossary`: Heap, heapid, messid , post,
+    postset, prepostset, tag
+  * Explain these concepts somewhere: delegate, heapcustom
+  * Coding Conventions:
+
+    * templates for documentation
+    * templates for tests (``test<class>``, ``test_<method>``,
+      ``test_<method>__<other stuff>``)
+    * markup language for commit messages
+
   * not important things
 
     * performance improvement possibilities (iterators for some PrePost and
       MailDB functions)
     * using wrappers to protect e.g. MailDB.posts()
-
-  * Coding Conventions:
-
-    * templates for documentation
-    * templates for tests (test<class>, test_<method>,
-      test_<method>__<other stuff>)
-    * markup language for commit messages
 
 * **Management, propaganda**
 
@@ -165,7 +171,7 @@ Todo items
 
 * ``+`` Being able to reload heapcustom without restarting the Manipulator
 
-* ``+`` <#2> Post generator:
+* ``+`` ``<#2>`` Post generator:
 
   * ``+`` parent, children into Post HTML (easy)
   * ``+`` put prev and next links into Post HTML (the post generator should
@@ -174,8 +180,8 @@ Todo items
     HTML-id-s should be put to each thread in the index to implement this.
     Idea: would it make sense to put id-s to each post in the index? -- Csabi
 
-* ``+`` Thread HTML-s (precond: #1): every thread could have an HTML. Threads
-  could be identified by the id of their root post.
+* ``+`` Thread HTML-s (precondition: ``#1``): every thread could have an HTML.
+  Threads could be identified by the id of their root post.
 
 * ``[prop]`` ``+`` **Post body parsing**. This should be discussed, a proposal
   should be written.
@@ -207,12 +213,12 @@ Todo items
 * ``+`` Generator: different colours for the posts that are not in a section
   but their thread is
 
-* ``+`` <#3> PostSetMapDelegate::
+* ``+`` ``<#3>`` PostSetMapDelegate::
 
      MailDB.postset([p1, p2, p3]).map.heapid()  -->  ['1', '2', '3']
 
-* ``+`` <#4> PostSetGrepDelegate (precond: #3): it would be similar to grep
-  (but smarter of course in our domain)::
+* ``+`` ``<#4>`` PostSetGrepDelegate (precond: ``#3``): it would be similar to
+  grep (but smarter of course in our domain)::
 
      ps.grep('unix stuff')  -->
         [('12', ['I said that unix stuff, you know']),
@@ -244,7 +250,7 @@ Todo items
 
      grep(ps, 'unix stuff')  -->  as in th previous example
 
-* ``+`` Integrating the search into Vim. (precond: #4) ::
+* ``+`` Integrating the search into Vim. (precondition: ``#4``) ::
 
     :h setqflist()
 
@@ -320,5 +326,3 @@ Todo items
     much better, since the strings are immutable.)
   * Maybe MailDB.messid_to_heapid can be handled lazily as the other attributes
     of MailDB?
-
-Next free id: #5
