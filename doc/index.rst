@@ -66,7 +66,7 @@ the heap.
 .. _`GNU General Public License version 3`: http://gplv3.fsf.org/
 .. _`Git`: http://git-scm.com/
 .. _`GitHub`: http://github.com/
-.. _`Heapkeeper repository`: http://github.com/hcs42/heap/
+.. _`Heapkeeper repository`: http://github.com/hcs42/heapkeeper/
 .. _`Download page`: http://github.com/hcs42/heap/downloads/
 .. _`Python`: http://www.python.org/
 .. _`reStructuredText`: http://docutils.sourceforge.net/rst.html  
