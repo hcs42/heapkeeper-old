@@ -540,7 +540,6 @@ def e(pp):
         result = options.callbacks.edit_file(p.postfilename())
         if result == True:
             p.load()
-            auto()
     else:
         log('Post not found.')
     event('after', 'j')
