@@ -9,6 +9,23 @@ help system, the documentation can be accessed without opening the source code.
 Development method
 ------------------
 
+Development tools
+^^^^^^^^^^^^^^^^^
+
+The following programs should be installed on a developer's computer:
+
+* Python_: executes Heapkeeper (version 2.5 or 2.6)
+* Git_: version control system (we use version 1.6, but probably previous
+  versions are fine)
+* Sphinx_: compiles the documentation (version 0.6)
+* Pygments_: used by Sphinx to syntax highlight the Python code in the
+  documentation (0.8 is enough)
+
+.. _`Python`: http://www.python.org/
+.. _`Git`: http://git-scm.com/
+.. _`Sphinx`: http://sphinx.pocoo.org/
+.. _`Pygments`: http://pygments.org/
+
 Reading
 ^^^^^^^
 
