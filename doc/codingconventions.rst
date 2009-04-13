@@ -13,6 +13,10 @@ project.
 You should also read the Style Guide for Python code: :pep:`8`.
 However, some recommendations of PEP 8 are overridden by this document.
 
+This is an evolving set of conventions. Most of them were not used from the
+beginning, thus there may be some code that does not use certain conventions.
+This does not mean that you should not use them.
+
 Commit messages
 ---------------
 
