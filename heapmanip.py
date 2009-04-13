@@ -189,7 +189,7 @@ class Post(object):
     def subject(self):
         """The subject with the 'Re:' prefix removed."""
         subject = self._header['Subject']
-        if re.match('[Rr]e:', subject):
+        if re.match('[Rr][Ee]:', subject):
             subject = subject[3:]
         return subject.strip()
 
