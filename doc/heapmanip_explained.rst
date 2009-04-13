@@ -1,5 +1,5 @@
-heapmanip explained
-===================
+:mod:`heapmanip` explained
+==========================
 
 :class:`heapmanip.MailDB`
 
@@ -142,7 +142,7 @@ their respective heapids. In other words, indexing this dictionary with
 a post's heapid yields a list of the heapids of the children of that
 post. Posts without parents are assigned to None.
 
-TODO It is still to be determined whether Heapmanipulator would benefit
+TODO It is still to be determined whether Heapkeeper would benefit
 from a more explicit representation of the thread structure.
 
 Cycles are dangerous to this system. Some functions are written in a
@@ -155,7 +155,7 @@ unlikely; in the case of GMail, it would also probably require a date
 wraparound. Beware Y10K!
 * Error in the IMAP server when generating Message-ID's. More likely,
 still not common.
-* Error in Heapmanipulator during the parsing, storing or matching of
+* Error in Heapkeeper during the parsing, storing or matching of
 Message-ID's. A fearsome possibility.
 * Corruption of mail files. Since mail files are very often edited by
 hand, this is the most probable reason why anyone will ever encounter

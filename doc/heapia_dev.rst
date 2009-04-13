@@ -1,26 +1,6 @@
-heapia - Developer Documentation
-================================
+:mod:`heapia` - Developer Documentation
+=======================================
 
-.. x automodule:: heapia
-   :members:
-   :undoc-members:
-   :show-inheritance:
+See the :doc:`user documentation of heapia <heapia>` for less details.
 
-.. module:: heapia
-
-Options
--------
-   
-.. autoclass:: Callbacks()
-
-.. autoclass:: Options()
-
-General functions
------------------
-
-Commands
---------
-
-.. autofunction:: d
-
-.. autofunction:: dr
+TODO

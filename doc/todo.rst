@@ -15,8 +15,9 @@ Todo items
 
 * **Documentation**
 
-  * tutorial
-  * glossary
+  * The :doc:`tutorial` should be updated (probably a separate *customization*
+    page should be created).
+  * A glossary page should be created
   * howto on using ctags/etags on the project
   * howto on using Sphinx
   * documentation about the architecture of Hm
@@ -31,16 +32,7 @@ Todo items
     * templates for documentation
     * templates for tests (test<class>, test_<method>,
       test_<method>__<other stuff>)
-
-  * rethinking the structure of the documentation
-
-    * current structure:
-
-      * general overview documents (e.g. usersguide, developersguide, keyprinciples)
-      * more concrete overview documents (developerguide as written by Attis)
-      * docstrings
-      * documenting the module's interface (currently included in the docstrings)
-      * rules of development (coding conventions, patterns)
+    * markup language for commit messages
 
 * **Management, propaganda**
 
@@ -60,9 +52,9 @@ Todo items
     section into account is as good as a section option or an index option.)
   * ``-`` "Back to index" is buggy now, because it always goes back to the
     'index.html'
-  * ``+`` Index generator: now the user defines how to show the date in index.html;
-    the same could be done for other fields (e.g. the user could write a
-    function that creates 'very long...' from 'very long subject')
+  * ``+`` Index generator: now the user defines how to show the date in
+    index.html; the same could be done for other fields (e.g. the user could
+    write a function that creates 'very long...' from 'very long subject')
   * Now CSS has to be copied manually to the html files. We should find another
     way to do this, in which using a custom CSS file should be as easy as now,
     but which is more convenient for the user who does not care about
@@ -91,9 +83,9 @@ Todo items
            maildb().save()
            event('after', 's')
 
-  * Modify how heapia runs user-created code. Currently the user can define a special
-    ``heapcustom`` module that is read by :mod:`heapia`, and other commands
-    can be executed before loading it. It is messy.
+  * Modify how heapia runs user-created code. Currently the user can define a
+    special ``heapcustom`` module that is read by :mod:`heapia`, and other
+    commands can be executed before loading it. It is messy.
     
     The new design is much cleaner: :mod:`heapia` will have two command line
     options to specify code to run before (``-b`` or ``--command-before``)
@@ -140,7 +132,8 @@ Todo items
 
        def rtr(pps, tags):
            """..."""
-           tag_operation(lambda post, tags: post.set_tags(set(post.tags()) - tags))
+           tag_operation(lambda post,
+                         tags: post.set_tags(set(post.tags()) - tags))
 
 * **Tests**
 
@@ -161,28 +154,28 @@ Todo items
   *  ``[prop]`` ``*.mail`` files to ``*.post``
   * CamelCase function names to lower_case in test modules
 
-* ``[prop]`` Moving the github/hcs42/heap repository to github/hcs42/heapmanipulator
+* ``[prop]`` Moving the github/hcs42/heap repository to github/hcs42/heapkeeper
 
 * heapcustomlib: refactoring DateOptions to use the Options pattern
 
 * STAR should be renamed
 
-* ``+`` It would be nice if we could regenerate the post HTMLs only for the posts
-  that has been modified.
+* ``+`` It would be nice if we could regenerate the post HTMLs only for the
+  posts that has been modified.
 
 * ``+`` Being able to reload heapcustom without restarting the Manipulator
 
 * ``+`` <#2> Post generator:
 
   * ``+`` parent, children into Post HTML (easy)
-  * ``+`` put prev and next links into Post HTML (the post generator should know
-    about the generated index)
+  * ``+`` put prev and next links into Post HTML (the post generator should
+    know about the generated index)
   * ``+`` "back to thread" link.
     HTML-id-s should be put to each thread in the index to implement this.
     Idea: would it make sense to put id-s to each post in the index? -- Csabi
 
-* ``+`` Thread HTML-s (precond: #1): every thread could have an HTML. Threads could
-  be identified by the id of their root post.
+* ``+`` Thread HTML-s (precond: #1): every thread could have an HTML. Threads
+  could be identified by the id of their root post.
 
 * ``[prop]`` ``+`` **Post body parsing**. This should be discussed, a proposal
   should be written.
@@ -204,26 +197,27 @@ Todo items
   * ``+`` do automatic actions based on metatext? E.g. <<<!delete>>>,
     <<<!addtagtothread unix>>>
   * ``+`` formatting _underline_ and *bold* text: do we want it? (probably not)
-  * ``+`` the post's HTML could contain the whole thread of the post below the post
-    itself?
+  * ``+`` the post's HTML could contain the whole thread of the post below the
+    post itself?
   * ``+`` post references for non-existent posts with explicit id-s:
     Original post1: <<<post:id=boring_stuff>>>
     Original post2: As I said in [this|post:id=boring_stuff] mail...
     Post2 in HTML:  what about <a href="http://...">this</a> thing?
 
-* ``+`` Generator: different colours for the posts that are not in a section but
-  their thread is
+* ``+`` Generator: different colours for the posts that are not in a section
+  but their thread is
 
 * ``+`` <#3> PostSetMapDelegate::
 
      MailDB.postset([p1, p2, p3]).map.heapid()  -->  ['1', '2', '3']
 
-* ``+`` <#4> PostSetGrepDelegate (precond: #3): it would be similar to grep (but
-  smarter of course in our domain)::
+* ``+`` <#4> PostSetGrepDelegate (precond: #3): it would be similar to grep
+  (but smarter of course in our domain)::
 
-     ps.grep('unix stuff')  -->  [('12', ['I said that unix stuff, you know']),
-                                  ('13', ['> I said that unix stuff, you know'],
-                                          'Yes, but your unix stuff is very'])]
+     ps.grep('unix stuff')  -->
+        [('12', ['I said that unix stuff, you know']),
+         ('13', ['> I said that unix stuff, you know'],
+         'Yes, but your unix stuff is very'])]
 
   The quote could be excluded from the result of grep.
 
@@ -244,8 +238,9 @@ Todo items
                  else:
                      return (post.heapid(), lines)
              return f
-         return [ result for result in ps.map(find_lines_in_post('unix stuff'))\
-                         if result != None ]
+         return \
+            [ result for result in ps.map(find_lines_in_post('unix stuff'))
+              if result != None ]
 
      grep(ps, 'unix stuff')  -->  as in th previous example
 
@@ -279,8 +274,8 @@ Todo items
   * Write about CSS into the user documentation (currently you have to make a
     symlink by hand to get it work; we should say something about this)
 
-* ``+`` Post: cleanup functionality. Something like Post.normalize_subject, but with
-  a broader scope.
+* ``+`` Post: cleanup functionality. Something like Post.normalize_subject,
+  but with a broader scope.
 
   * ``+`` deleting in-reply-to if the referenced post is not in the DB
 
@@ -301,13 +296,13 @@ Todo items
   Workaround: if we go to the heap account regularly and archive the emails in
   the inbox, downloading new mail will remain fast.
 
-* ``+`` MailDB.sync: unison-like method to synchronize the data between the MailDB in
-  the memory and the mail files on the disk
+* ``+`` MailDB.sync: unison-like method to synchronize the data between the
+  MailDB in the memory and the mail files on the disk
 
 * Migration to Python 3
 
-* ``+`` Inline posts: the body of the specified posts could be shown in the index.
-  JavaScript (or CSS?) could be used for folding the inline posts.
+* ``+`` Inline posts: the body of the specified posts could be shown in the
+  index. JavaScript (or CSS?) could be used for folding the inline posts.
 
 * Distant future: use Django or some other web framework to manipulate the heap
   instead of heapia.
