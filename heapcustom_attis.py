@@ -36,7 +36,7 @@ def sections(maildb):
 
     # todo
     ps_todo = ps_all.collect.has_tag('todo')
-    ps_todo |= ps_all.collect.body_contains("^<<<")
+    ps_todo |= ps_all.collect.body_contains("^<<<\!*todo")
 
     # heap
     ps_heap = ps_all.collect.has_tag('heap')
