@@ -1,0 +1,8 @@
+digraph {
+    heapmanip -> heaplib;
+    heapcustomlib -> heapmanip;
+    heapcustomlib -> heaplib;
+    heapia -> heaplib;
+    heapia -> heapmanip;
+    heapia -> heapcustomlib;
+}

@@ -43,6 +43,8 @@ Used in
    * :class:`heapmanip.Html`
    * :class:`heapmanip.Generator`
 
+.. _patterns_lazy_data_calculation:
+
 Lazy data calculation
 ---------------------
 

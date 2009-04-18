@@ -17,7 +17,8 @@ and coding conventions.
 Concepts
 --------
 
-The main abstract concepts in the implementation of Heapkeeper.
+The main abstract concepts in the implementation of Heapkeeper. It is worth to
+know them as a Heapkeeper developer.
 
 .. toctree::
 

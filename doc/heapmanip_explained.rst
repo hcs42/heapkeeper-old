@@ -64,6 +64,7 @@ documented in MailDB's docstring. (Here too, maybe in more detail.)
 It is important to keep in mind that MailDB takes a lazy approach on
 handling these members. If they are needed, and they are not there
 (i.e. their value is None), they are produced, but no sooner.
+See the :ref:`patterns_lazy_data_calculation` for the design pattern.
 
 _posts is the first of these cached data structures. It gets generated
 by _recalc_posts(), and cleared by touch(), of course. _recalc_posts()
@@ -76,9 +77,7 @@ _recalc_posts(), the latter only performs the calculation if its results
 are not cached in _posts.
 
 posts() is a 'public' function, that is, other classes are welcome to
-use it. Important it may seem, but at the time of writing, this function
-gets accessed only once outside the Post class, namely in Generator's
-posts_to_html().
+use it.
 
 There is a reason for this. _all is another of those cached data
 structure. At first sight, it may seem superfluous; how are "posts" and
@@ -102,7 +101,7 @@ the parent-child relationships among them. The resulting structure is
 mathematically a forest, that is, a set of trees. (TODO Ask Csabi if
 this is correct.)
 
-For now, a given installation of Heap (the program) supports exactly one
+For now, a given installation of Heapkeeper supports exactly one
 heap (the  data structure), with exactly one config file describing one
 mail directory, one HTML directory, and one IMAP message store -- hence
 one MailDB. So, from now on, I'll be speaking of "the posts in a MailDB"
@@ -186,7 +185,7 @@ threads. From this dictionary, one can reconstruct the threads by starting
 from each parentless thread, and indexing the dictionary with the heapid
 obtained in the previous step, branching as needed.
 
-The function iter_tread() is MailDB's built-in facility for traversing
+The function iter_thread() is MailDB's built-in facility for traversing
 _threadstruct. It is also one of the more complicated parts of the
 program.
 

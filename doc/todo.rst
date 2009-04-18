@@ -157,10 +157,12 @@ Todo items
 
   * heapmanip to heaplib
   * heaplib to heaputils
+  * heapia to hkshell
   *  ``[prop]`` ``*.mail`` files to ``*.post``
+  *  ``[prop]`` :class:`heapmanip.MailDB` to ``PostDB``
   * CamelCase function names to lower_case in test modules
-
-* ``[prop]`` Moving the github/hcs42/heap repository to github/hcs42/heapkeeper
+  * :func:`heapmanip.Post.inreplyto` and :func:`heapmanip.MailDB.prev` to
+    ``parent``
 
 * heapcustomlib: refactoring DateOptions to use the Options pattern
 
