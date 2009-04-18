@@ -34,6 +34,16 @@ def sections(maildb):
     # ps_all = összes levél
     ps_all = maildb.all().copy()
 
+    # tidy
+    # posts that belong here either:
+    # * contain more quote lines than non-quote
+    # * contain Google-ish quote introduction, eg.
+    #    > 2008/10/12 Csaba Hoch <csaba.hoch@gmail.com>:
+    #    a possible regex for this:
+    #    >*\s*2\([0-9]\+\/\)\+[0-9]\+\s*.*<[a-z.-]\+@[a-z.-]\+>\s*:\s*
+    ps_tidy = ps_all.collect.body_contains('\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>')
+    ps_tidy |= ps_all.collect.body_contains('wrote:')
+
     # todo
     ps_todo = ps_all.collect.has_tag('todo')
     ps_todo |= ps_all.collect.body_contains("^<<<\!*todo")
@@ -79,7 +89,8 @@ def sections(maildb):
     if eliminate:
         ps_all -= ps_pol
 
-    res = [ heapmanip.Section("Todo", ps_todo, {'flat': True}),
+    res = [ heapmanip.Section("Tidy", ps_tidy, {'flat': True}),
+            heapmanip.Section("Todo", ps_todo, {'flat': True}),
             heapmanip.Section("Heap", ps_heap),
             heapmanip.Section("Programozás", ps_prog),
             heapmanip.Section("C és C++", ps_ccpp),
@@ -137,7 +148,7 @@ def do_monthly(maildb):
 def format_date(post):
     "post -> str"
     if post.date() == '':
-        return "(nincs dátum!)"
+        return "(no date)"
     else:
         d = time.localtime(heaplib.calc_timestamp(post.date()))
         return "(" + time.strftime('%Y.%m.%d.', d) + ')'
@@ -156,7 +167,7 @@ def gen_indices(maildb):
     # Date options
     date_options = heapcustomlib.date_defopts()
     date_options.update({'maildb': maildb,
-                         'timedelta': datetime.timedelta(days=5)})
+                         'timedelta': datetime.timedelta(days=0)})
     date_fun = heapcustomlib.create_date_fun(date_options)
 
     # Generator options
@@ -188,12 +199,11 @@ def gen_posts(maildb):
     genopts.maildb = maildb
     genopts.write_toc = True
     genopts.print_thread_of_post = True
-#    genopts.indices = [heapmanip.Index(sections(maildb)), heapmanip.Index(do_monthly(maildb),"monthly.html")]
     genopts.indices = [heapmanip.Index(sections(maildb))]
-    n = 0
-    for month in do_monthly(maildb):
-        genopts.indices.append(heapmanip.Index(month, str(n) + "html"))
-        n += 1
+#    n = 0
+#    for month in do_monthly(maildb):
+#        genopts.indices.append(heapmanip.Index(month, str(n) + "html"))
+#        n += 1
 
     # Generating the posts
     heapmanip.Generator(maildb).gen_posts(genopts)
