@@ -1778,16 +1778,21 @@ class Generator(object):
         h1 = Html.escape(post.author()) + ': ' + \
              Html.escape(post.subject())
         l.append(Html.doc_header(h1, h1, 'heapindex.css'))
+        l.append('<div id="subheader">\n')
         try:
+            first = True
             for index in options.indices:
+                if not first:
+                    l.append('<br/>\n')
+                first = False
                 l.append(Html.link(index.filename,
                                    'Back to ' + index.filename))
-                l.append('<br/>\n')
         except AttributeError:
             l.append(Html.link('index.html', 'Back to the index'))
         l.append('\n')
         l.append(Html.enclose('index', Html.escape('<%s>' % (post.heapid(),))))
         l.append('\n')
+        l.append('</div>\n')
 
         # date
         date_str = options.date_fun(post, options)
