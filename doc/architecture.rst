@@ -91,6 +91,15 @@ but later it may be modified in the *heap*.
     format (:rfc:`2822`), but a little modification. The format is described in
     the documentation of :func:`heapmanip.Post.parse` (not yet).
 
+    A post may have a *message id*, which is an attribute in the header. The
+    message id is the message id of the email from which the post was created.
+    It is supposed to be unique.
+
+    There are different relations between the posts: the most basic one is when
+    a post is the child of another post. It usually means that the latter one
+    is a reply to the former one. For more information about the relations, see
+    :ref:`post_relations`.
+
 :class:`MailDB` (*PostDB*)
     
     A :class:`MailDB <heapmanip.MailDB>` object (called a *post database*)

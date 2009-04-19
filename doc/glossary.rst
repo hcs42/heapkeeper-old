@@ -1,14 +1,15 @@
 Glossary
 ========
 
+.. _post_relations:
+
 Relation between the posts
 --------------------------
 
-* "primitive" means that it cannot be defined using other concepts
-  mentioned here, because they are stored by the post object. Where it
-  is not explicitly noted that a concept is primitive, it is not
-  primitive. Actually, there are only two primitives: 'parent' and
-  'reference'.
+*Primitive* means that it cannot be defined using other concepts mentioned
+here, because they are stored by the post. All primitive concepts are
+explicitly noted to be primitive. Actually, there are only two primitives:
+*parent* and *reference*.
 
 **Parent (primitive), child:**
     Post X and Y can be in a parent-child relation. A post may have
