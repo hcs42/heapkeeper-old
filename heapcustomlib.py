@@ -98,6 +98,8 @@ def create_should_print_date_fun(options):
 
     def should_print_date_fun(post, genopts):
         prev = maildb.prev(post)
+        if not hasattr(genopts, 'section'):
+            return True
         if genopts.section.is_flat:
             return True
         if prev == None:

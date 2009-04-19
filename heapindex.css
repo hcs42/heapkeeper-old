@@ -33,6 +33,12 @@ a
 	font-size: 18;
 }
 
+#subheader + .date
+{
+    margin-left: 1em; 
+    color: #006;
+}
+
 #header
 {
     margin: 0;

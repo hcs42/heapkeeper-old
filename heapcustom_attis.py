@@ -37,6 +37,26 @@ def overquoted(post):
             quoted += 1
     return 100 * quoted / all > 70
 
+def date_fun(post, options):
+    root = post._maildb.root(post)
+    if hasattr(options, 'section'):
+        section = options.section
+        if section.is_flat or \
+           root == post:
+            return format_date(post)
+    if post.date() != '' and root.date() != '':
+        diff = read_date(post) - read_date(root)
+        if diff.days > 0:
+            return '(+%d days)' % diff.days
+        elif diff.seconds > 3600:
+            return '(+%d hours)' % (diff.seconds / 3600)
+        elif diff.seconds > 60:
+            return '(+%d minutes)' % (diff.seconds / 60)
+        else:
+            return None
+    else:
+        return "(nincs dátum!)"
+
 def sections(maildb):
     exp = False
     eliminate = False
@@ -175,10 +195,10 @@ def read_date(post):
 def gen_indices(maildb):
 
     # Date options
-    date_options = heapcustomlib.date_defopts()
-    date_options.update({'maildb': maildb,
-                         'timedelta': datetime.timedelta(days=0)})
-    date_fun = heapcustomlib.create_date_fun(date_options)
+    #date_options = heapcustomlib.date_defopts()
+    #date_options.update({'maildb': maildb,
+    #                     'timedelta': datetime.timedelta(days=0)})
+    #date_fun = heapcustomlib.create_date_fun(date_options)
 
     # Generator options
     genopts = heapmanip.GeneratorOptions()
@@ -205,10 +225,16 @@ def gen_indices(maildb):
 
 def gen_posts(maildb):
     # Generator options
+    date_options = heapcustomlib.date_defopts()
+    date_options.update({'maildb': maildb,
+                         'timedelta': datetime.timedelta(days=0)})
+    date_fun = heapcustomlib.create_date_fun(date_options)
+
     genopts = heapmanip.GeneratorOptions()
     genopts.maildb = maildb
     genopts.write_toc = True
     genopts.print_thread_of_post = True
+    genopts.date_fun = date_fun
     genopts.indices = [heapmanip.Index(sections(maildb))]
 #    n = 0
 #    for month in do_monthly(maildb):
