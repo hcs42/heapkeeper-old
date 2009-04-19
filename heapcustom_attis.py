@@ -26,6 +26,16 @@ import heaplib
 import subprocess
 import time
 import datetime
+import re
+
+def overquoted(post):
+    all = 0
+    quoted = 0
+    for line in post.body().splitlines():
+        all += 1
+        if re.search('^\s*\>', line):
+            quoted += 1
+    return 100 * quoted / all > 70
 
 def sections(maildb):
     exp = False
@@ -36,13 +46,13 @@ def sections(maildb):
 
     # tidy
     # posts that belong here either:
+    # * contain quote introduction (like "xyz wrote:")
     # * contain more quote lines than non-quote
-    # * contain Google-ish quote introduction, eg.
-    #    > 2008/10/12 Csaba Hoch <csaba.hoch@gmail.com>:
-    #    a possible regex for this:
-    #    >*\s*2\([0-9]\+\/\)\+[0-9]\+\s*.*<[a-z.-]\+@[a-z.-]\+>\s*:\s*
     ps_tidy = ps_all.collect.body_contains('\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>')
     ps_tidy |= ps_all.collect.body_contains('wrote:')
+    ps_tidy |= [post for post in maildb.all() if overquoted(post)]
+    ps_tidy |= [post for post in maildb.all() if overquoted(post)]
+    ps_tidy -= ps_all.collect.has_tag('reviewed')
 
     # todo
     ps_todo = ps_all.collect.has_tag('todo')
