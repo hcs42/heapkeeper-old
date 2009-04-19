@@ -521,6 +521,9 @@ class Post(object):
         else:
             return False
 
+    def __repr__(self):
+        return self._heapid
+
     # Misc
 
     def remove_google_stuff(self):
