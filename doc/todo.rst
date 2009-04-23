@@ -34,6 +34,9 @@ Todo items
       ``test_<method>__<other stuff>``)
     * markup language for commit messages
 
+  * Write about rules somewhere. For example: "Run the tests always before you
+    commit. If not feasable, run the tests before you push."
+
   * not important things
 
     * performance improvement possibilities (iterators for some PrePost and
