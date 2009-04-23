@@ -1,4 +1,9 @@
-This is Heapmanipulator v0.2.
+This is Heapkeeper v0.2.
 
-See the project homepage for information:
-http://hste.uw.hu/heapmanipulator/html/index.html
+Heapkeeper is a program to store, modify and display email archives,
+especially mailing list archives. "Modifying" means that the archive is not
+really an archive, rather it is a living document like a wiki: it can be
+modified (hopefully improved) by collaborators.
+
+For more information, please visit the project homepage:
+http://hste.uw.hu/heapkeeper/index.html

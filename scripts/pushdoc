@@ -22,4 +22,4 @@ END
 fi
 
 dir=`dirname "$0"`
-ncftpput -R -u hste ftp.uw.hu heapmanipulator "$dir/../doc/_build/html"
+ncftpput -R -u hste ftp.uw.hu heapkeeper "$dir"/../doc/_build/html/*
