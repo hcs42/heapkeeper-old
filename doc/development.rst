@@ -1,20 +1,24 @@
 Development
 ===========
 
-This file is a high-level introduction to the Heapkeeper program (or Hk for
-short) for the developer's eyes. More specific details can be found in the
-documentation inside the Python code. Thanks to Python's help system, the
-documentation can be accessed without opening the source code.
+This page describes the development methods and the tools that are used.
 
 Development method
 ------------------
+
+There are some rules to follow when developing Heapkeeper.
+These are described in the :doc:`developmentrules`.
+About more specific conventions regarding the documentation and the source
+code, see :doc:`codingconventions`.
 
 Reading
 ^^^^^^^
 
 * `Producing Open Source Software -- How to Run a Successful Free
-  Software Project by Karl Fogel`__
-* `The Elements of Style by William Strunk, Jr.`__
+  Software Project by Karl Fogel`__: A book that gives a lot of practical
+  advice to the kinds of projects we are.
+* `The Elements of Style by William Strunk, Jr.`__: A book that helps write
+  in good English style.
 
 __ http://producingoss.com/
 __ http://en.wikisource.org/wiki/The_Elements_of_Style
@@ -79,10 +83,10 @@ Until then, you can contact us via email as described on the
 The :doc:`todo` file is our "bug and feature tracking" system that we use to
 track the bugs we find and features that we want to implement.
 
-Directory structure
--------------------
+Content of the repository
+-------------------------
 
-The main directories and files in the Heapkeeper's repository:
+The main directories and files in Heapkeeper's repository:
 
 ``README``
   Usual README file.

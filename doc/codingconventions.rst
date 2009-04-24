@@ -17,32 +17,6 @@ This is an evolving set of conventions. Most of them were not used from the
 beginning, thus there may be some code that does not use certain conventions.
 This does not mean that you should not use them.
 
-Commit messages
----------------
-
-A commit message has two parts: a mandatory title and an optional description.
-
-* The title should not be more than 50 characters.
-* It is generally a good idea to begin the title with a word that describes the
-  scope of the change (e.g. the name of a module or a class).
-* Do not put a period after the title.
-* The description should be preceded by a blank line.
-* The description should not contain lines that have more than 79 characters. *
-  If the changes introduce incompatibilities that the users can notice (e.g.
-  the format of the config file changes), it is generally worth describing
-  them.
-
-Example:
-
-.. code-block:: none
-
-   Doc: improved docstrings
-
-   Two classes have been documented with docstrings and the docstring of
-   two functions have been modified. The current format shall be used in
-   all docstrings.
-
-
 Documentation
 -------------
 
@@ -71,12 +45,14 @@ Classes
 * Use only new-style classes, so if there is no other base class, 'object' is
   the base class.
 * Always write a 'super' call into the __init__ function.
-  (See http://fuhm.net/super-harmful/).
+  (See `"Python's Super is nifty, but you can't use it" by James Knight`__.)
 * Use underscore to prefix the private instance variables.
 * If there is a function that returns the value of the instance variable, it
   should be called 'stuff' (and not 'get_stuff').
 * If there is a function that sets the value of the instance variable, it
   should be called 'set_stuff'.
+
+__ http://fuhm.net/super-harmful/  
 
 Yes::
 
@@ -298,4 +274,3 @@ the parameter after the ``%`` operator is not a tuple. ::
     Traceback (most recent call last):
       File "<stdin>", line 1, in <module>
     TypeError: not all arguments converted during string formatting
-

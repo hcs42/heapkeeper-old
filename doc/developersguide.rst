@@ -6,12 +6,13 @@ This document describes what should be known by the developers of Heapkeeper.
 Development
 -----------
 
-Documentation about the development method in general, and the documentation
-and coding conventions.
+Documentation about the development method, tools that we use, rules and
+conventions.
 
 .. toctree::
 
     development
+    developmentrules
     codingconventions
 
 Concepts

@@ -139,3 +139,18 @@ other modules of Heapkeeper, but all the other modules may use it. Both
 :mod:`heapmanip` implements the data types that make the heap. :mod:`heapia`
 uses :mod:`heapcustomlib` only for setting sensible default values for certain
 callback functions.
+
+.. _testing:
+
+Testing
+-------
+
+We use unit tests to test the Heapkeeper's code, using the standard
+``unittest`` module. Each module has a corresponding module that tests it.
+Our aim is to reach almost 100% line coverage.
+
+All tests can be executed using the :mod:`test` module:
+
+.. code-block:: none
+
+    $ python test.py
