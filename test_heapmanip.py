@@ -1275,6 +1275,11 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         return heaplib.file_to_string(index_html_name)
 
     def test_post(self):
+
+        def subheader(content):
+             return Html.enclose(tag='div', class_=None, id='subheader',
+                                 content=content, newlines=True)
+
         maildb, g, p = self.init()
         
         genopts = GeneratorOptions()
@@ -1285,10 +1290,9 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         self.assertEquals(
             g.post(p(0), genopts),
             Html.doc_header(h1, h1, 'heapindex.css') +
-            '<div id="subheader">\n' +
-            Html.link('index.html', 'Back to the index') + '\n' +
-            Html.enclose('index', Html.escape('<0>')) + '\n' +
-            '</div>\n' +
+            subheader(
+                Html.link('index.html', 'Back to the index') + '\n' +
+                Html.enclose('index', Html.escape('<0>')) + '\n') +
             Html.enclose('postbody', Html.escape('body0\n'), tag='pre') +
             Html.doc_footer())
 
@@ -1302,10 +1306,9 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         self.assertEquals(
             g.post(p(0), genopts),
             Html.doc_header(h1, h1, 'heapindex.css') +
-            '<div id="subheader">\n' +
-            Html.link('index.html', 'Back to the index') + '\n' +
-            Html.enclose('index', Html.escape('<0>')) + '\n' +
-            '</div>\n' +
+            subheader(
+                Html.link('index.html', 'Back to the index') + '\n' +
+                Html.enclose('index', Html.escape('<0>')) + '\n') +
             Html.enclose('date', 'date0') + '\n' +
             Html.enclose('postbody', Html.escape('body0\n'), tag='pre') +
             Html.doc_footer())
@@ -1320,10 +1323,9 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         h1 = Html.escape('author2') + ': ' + Html.escape('subject2')
         my_post_html = \
             (Html.doc_header(h1, h1, 'heapindex.css') +
-            '<div id="subheader">\n' +
-             Html.link('index.html', 'Back to the index') + '\n' +
-             Html.enclose('index', Html.escape('<2>')) + '\n' +
-            '</div>\n' +
+             subheader(
+                 Html.link('index.html', 'Back to the index') + '\n' +
+                 Html.enclose('index', Html.escape('<2>')) + '\n') +
              g.thread(p(0), genopts) +
              Html.enclose('postbody', Html.escape('body2\n'), tag='pre') +
              Html.doc_footer())

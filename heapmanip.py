@@ -1548,11 +1548,33 @@ class Html():
         return '<a href="%s">%s</a>' % (link, content)
 
     @staticmethod
-    def enclose(class_, content, tag='span', newlines=False):
-        """Encloses the given content into a tag."""
+    def enclose(class_, content, tag='span', newlines=False, id=None):
+        """Encloses the given content into a tag.
+
+        A ``"<tag attribs>content</tag>"`` string will be created. An example:
+
+        .. code-block:: html
+
+            <div class="myclass" id="myid">mycontent</div>
+
+        **Arguments:**
+
+        * *class_* (str | None) -- The ``class`` of the tag. If ``None``, the
+          tag will not have a ``class`` attribute.
+        * *content* -- The content to be placed between the opening and closing
+          tags.
+        * *tag* (str) -- The name of the tag to be printed.
+        * *newlines* (bool) -- If ``True``, a newline character will be placed
+          after both the opening and the tags.
+        * *id* (str | None) -- The ``id`` of the tag. If ``None``, the
+          tag will not have an ``id`` attribute.
+        """
+
         newline = '\n' if newlines else ''
-        return '<%s class="%s">%s%s</%s>%s' % \
-               (tag, class_, newline, content, tag, newline)
+        classstr = (' class="%s"' % (class_,)) if class_ != None else ''
+        idstr = (' id="%s"' % (id,)) if id != None else ''
+        return '<%s%s%s>%s%s</%s>%s' % \
+               (tag, classstr, idstr, newline, content, tag, newline)
 
     @staticmethod
     def post_summary(postlink, author, subject, tags, index, date, tag):
@@ -1781,21 +1803,30 @@ class Generator(object):
         h1 = Html.escape(post.author()) + ': ' + \
              Html.escape(post.subject())
         l.append(Html.doc_header(h1, h1, 'heapindex.css'))
-        l.append('<div id="subheader">\n')
+
+        l2 = []
         try:
             first = True
             for index in options.indices:
                 if not first:
-                    l.append('<br/>\n')
+                    l2.append('<br/>\n')
                 first = False
-                l.append(Html.link(index.filename,
+                l2.append(Html.link(index.filename,
                                    'Back to ' + index.filename))
         except AttributeError:
-            l.append(Html.link('index.html', 'Back to the index'))
-        l.append('\n')
-        l.append(Html.enclose('index', Html.escape('<%s>' % (post.heapid(),))))
-        l.append('\n')
-        l.append('</div>\n')
+            l2.append(Html.link('index.html', 'Back to the index'))
+
+        l2.append('\n')
+        l2.append(Html.enclose('index', Html.escape('<%s>' % (post.heapid(),))))
+        l2.append('\n')
+
+        l.append(
+            Html.enclose(
+                tag='div',
+                class_=None,
+                id='subheader',
+                content=''.join(l2),
+                newlines=True))
 
         # date
         date_str = options.date_fun(post, options)
