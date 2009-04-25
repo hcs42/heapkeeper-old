@@ -36,8 +36,8 @@ customizable tool: it can be customized primarily by writing Python functions.
 The functions and classes of :mod:`heapcustomlib` help to implement these
 custom functions.
 
-We use unit tests to test the Heapkeeper's code, using the standard
-``unittest`` module. Each module has a corresponding module that tests it.
+We use unit tests to test Heapkeeper's code, using the standard ``unittest``
+module. Each module has a corresponding module that tests it.
 
 :mod:`test_lib`
     Module that tests the :mod:`heaplib` module.
@@ -91,21 +91,52 @@ but later it may be modified in the *heap*.
     format (:rfc:`2822`), but a little modification. The format is described in
     the documentation of :func:`heapmanip.Post.parse` (not yet).
 
-    A post may have a *message id*, which is an attribute in the header. The
-    message id is the message id of the email from which the post was created.
-    It is supposed to be unique.
+    A post may have a *message id*, which is the ``Message-Id`` attribute in
+    the header. The message id is the message id of the email from which the
+    post was created. It is supposed to be unique.
 
     There are different relations between the posts: the most basic one is when
     a post is the child of another post. It usually means that the latter one
-    is a reply to the former one. For more information about the relations, see
+    is a reply to the former one. This information is stored in the ``In-Reply-To``
+    attribute of the header of the child post: this attribute contains the
+    heapid or message id of the parent of the post. If there is no post with
+    such heapid or message id, or it is ``None``, the post does not have a
+    parent. For more information about the relations, see
     :ref:`post_relations`.
+
+    A post may have *tags*, which tell us information about the topic of the
+    post. They are written into brackets when displayed: ``[computer
+    science]``, ``[humor]``. If the subject of an email contains character
+    sequences in brackets, they will be parsed as tags. The post created from
+    the email will contain the tags as tags, and the subject of the post will
+    not contain them. E.g. if the subject of the email was ``[humor][computer]
+    The Website Is Down``, the subject of the post will be ``The Website Is
+    Down``, but the post will have tag ``[humor]`` and tag ``[computer]``.
+
+    A post may have *flags*, which tells Heapkeeper special information about
+    the post. Currently there is only one flag, the ``deleted`` flag. When a
+    post is deleted, it will not be removed entirely: the corresponding post
+    object and post file will not be removed from the memory and the disk. The
+    post will only obtain a ``deleted`` flag instead. It will keep its heapid
+    and message id; this way we achieve that no other post will have the same
+    heapid ever [#same_heapid]_. To save space and time, most attributes and
+    the body of the post will be deleted, so the deletion cannot really be
+    undone by Heapkeeper. Heapkeeper's database will handle deleted posts as if
+    they would not exist, except that their heapid is reserved.
+
+    The body of a post is currently a plain string. We plan to parse this
+    string so that we can identify quotes (lines that start with ``>``),
+    footnotes (e.g. ``This page [1] says:``) and so-called *meta text* (text
+    written between ``<<<`` and ``>>>``). Meta text is either meta information
+    about the post for the readers or the maintainers of the *heap* (e.g.
+    ``<<<todo The subject of this email should be corrected>>>``), or command
+    that should be processed by Heapkeeper (e.g. ``<<<!delpost>>>``, which
+    means that the current post should be deleted).
 
 :class:`MailDB` (*PostDB*)
     
     A :class:`MailDB <heapmanip.MailDB>` object (called a *post database*)
     represents the *heap*.
-    
-    
 
 :class:`Server` (*EmailDownloader*)
 
@@ -145,12 +176,23 @@ callback functions.
 Testing
 -------
 
-We use unit tests to test the Heapkeeper's code, using the standard
-``unittest`` module. Each module has a corresponding module that tests it.
-Our aim is to reach almost 100% line coverage.
+We use unit tests to test Heapkeeper's code, using the standard ``unittest``
+module. Each module has a corresponding module that tests it. Our aim is to
+reach almost 100% line coverage.
 
 All tests can be executed using the :mod:`test` module:
 
 .. code-block:: none
 
     $ python test.py
+
+.. rubric:: Footnotes
+
+.. [#same_heapid]
+    Why is it important that heapids cannot be recycled? Imagine the following
+    situation: the ``In-Reply-To`` field of post ``y`` contains the heapid of
+    ``x``, so ``x`` is the parent of ``y``. Then we delete ``x``: ``y`` does
+    not have a parent now. If a new post ``z`` would be created with the heapid
+    of ``x``, Heapkeeper would think it is the parent of ``y``, altough they
+    may have nothing to do with each other.
+
