@@ -16,23 +16,23 @@
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
-"""Module that manipulates the Heap data structure.
+"""Implements the heap data structure.
 
-Type definitions:
-PrePost --- An object that can be converted into a Post.
-    When it is an int, it will be converted to a string that should represent a
-    heapid. The heapid is converted to a Post based on the mail database.
-    Real type: heapid | int | Post
-PrePostSet --- An object that can be converted into a PostSet.
-    Real type: set(PrePest) | PostSet(PrePost) | [PrePost] | PrePost
-    Actually, PrePostSet can be any iterable object that iterates over PrePost
-    objects.
-HtmlStr --- normal string, but it contains HTML.
-    Real type: str
-DateFun --- Function that specifies how to print the dates of the
-    posts. It will be called for each post summary that is written
-    into the index. When it returns None, no date will be printed.
-    Type: fun(Post, GeneratorOptions) -> (str | None)
+**Type definitions:**
+
+- ``PrePost`` (``heapid | int |`` :class:`Post`) -- An object that can be
+  converted into a :class:`Post`. When it is an ``int``, it will be converted
+  to a string that should represent a heapid. The ``heapid`` is converted to a
+  :class:`Post` based on the post database.
+- ``PrePostSet`` (``set(PrePost) | [PrePost] | PrePost |`` :class:`PostSet`)
+  -- An object that can be converted into a :class:`PostSet`. Actually,
+  ``PrePostSet`` can be any iterable object that iterates over
+  ``PrePost`` objects.
+- ``HtmlStr`` (``str``) -- String that contains HTML.
+- ``DateFun`` (``fun(``:class:`Post`, :class:`GeneratorOptions` ``) ->
+  (str | None)``) -- Function that specifies how to print the dates of the
+  posts. It will be called for each post summary that is written into an index
+  page. When it returns ``None``, no date will be printed.
 """
 
 from __future__ import with_statement
@@ -1559,14 +1559,14 @@ class Html():
 
         **Arguments:**
 
-        * *class_* (str | None) -- The ``class`` of the tag. If ``None``, the
-          tag will not have a ``class`` attribute.
-        * *content* -- The content to be placed between the opening and closing
-          tags.
-        * *tag* (str) -- The name of the tag to be printed.
-        * *newlines* (bool) -- If ``True``, a newline character will be placed
-          after both the opening and the tags.
-        * *id* (str | None) -- The ``id`` of the tag. If ``None``, the
+        - *class_* (``str | None``) -- The ``class`` of the tag. If ``None``,
+          the tag will not have a ``class`` attribute.
+        - *content* (``str``) -- The content to be placed between the opening
+          and closing tags.
+        - *tag* (``str``) -- The name of the tag to be printed.
+        - *newlines* (``bool``) -- If ``True``, a newline character will be
+          placed after both the opening and the tags.
+        - *id* (``str | None``) -- The ``id`` of the tag. If ``None``, the
           tag will not have an ``id`` attribute.
         """
 
@@ -1775,30 +1775,42 @@ class GeneratorOptions(object):
 
 class Generator(object):
 
-    """A Generator object can generate various HTML files from the mail
-    database.
+    """A Generator object can generate various HTML strings and files from the
+    post database.
     
-    Currently it can generate HTML versions of indices and posts. The methods
-    that start with 'gen_' prefix write into files, the other methods mostly
-    return strings can contain HTML.
+    Currently it can generate two kinds of HTML files: index pages and post
+    pages.
+    
+    The methods that start with ``gen_`` prefix write into files, the other
+    methods mostly return HTML strings.
 
-    Data attributes:
-    _maildb -- The mail database.
-        Type: MailDB
+    **Attributes:**
+
+    * *_maildb* (``MailDB``) -- The mail database.
     """
 
     def __init__(self, maildb):
-        """Constructor
+        """Constructor.
 
-        Arguments:
-        maildb -- Initialises self._maildb.
-            Type: MailDB
+        **Arguments:**
+
+        - *maildb* (:class:`MailDB`) -- Initializes ``self._maildb``.
         """
 
         super(Generator, self).__init__()
         self._maildb = maildb
     
     def post(self, post, options):
+        """Converts the post into HTML.
+
+        **Arguments:**
+
+        - *post* (:class:`Post`)
+        - *options* (:class:`GeneratorOptions`)
+        
+        **Returns:** ``HtmlStr``
+        """
+
         l = []
         h1 = Html.escape(post.author()) + ': ' + \
              Html.escape(post.subject())
@@ -1849,16 +1861,16 @@ class Generator(object):
         return ''.join(l)
 
     def index_toc(self, sections, options):
-        """Creates a table of contents for the sections and for the posts in
-        cycles.
-
-        Arguments:
-        sections ---
-            Type: [Section]
-        options ---
-            Type: GeneratorOptions
+        """Creates a table of contents.
         
-        Returns: HtmlStr
+        Each section will be one item in the table of contents.
+
+        **Arguments:**
+        
+        - *sections* (``[`` :class:`Section` ``]``)
+        - *options* (:class:`GeneratorOptions`)
+        
+        **Returns:** ``HtmlStr``
         """
 
         items = []
@@ -1869,13 +1881,12 @@ class Generator(object):
     def post_summary(self, post, options, subject=NORMAL, tags=NORMAL):
         """Creates a summary for the post.
         
-        Arguments:
-        post ---
-            Type: Post
-        options ---
-            Type: GeneratorOptions
+        **Arguments:**
 
-        Returns: HtmlStr
+        - *post* (:class:`Post`)
+        - *options* (:class:`GeneratorOptions`)
+
+        **Returns:** ``HtmlStr``
         """
 
         # Author
@@ -1908,26 +1919,26 @@ class Generator(object):
 
     def post_summary_end(self):
         """Returns an HTML string that closes the HTML returned by
-        Generator.post_summary.
+        :func:`post_summary`.
         
-        Returns: HtmlStr
+        **Returns:** ``HtmlStr``
         """
 
         return '</div>\n'
 
     def thread(self, post, options):
-        """Prints the summaries of posts in a thread into an HTML string.
+        """Converts the summaries of posts in a thread into HTML.
         
         Warning: if the given post is in a cycle, this function will go into
         an endless loop.
 
-        Arguments:
-        post --- The root of the thread to be printed.
-            Type: None | Post
-        options ---
-            Type: GeneratorOptions
+        **Arguments:**
 
-        Returns: HtmlString
+        - *post* (``None |`` :class:`Post`) -- The root of the thread to be
+          printed.
+        - *options* (:class:`GeneratorOptions`)
+
+        **Returns:** ``HtmlStr``
         """
 
         # stack will contain heapids and strings.
@@ -1978,19 +1989,23 @@ class Generator(object):
         return ''.join(strings)
 
     def section(self, sectionid, options):
-        """Prints a section.
+        """Converts a section into HTML.
 
-        When the section is flat, the 'sectionpost' specifies in what order to
-        print them. If it is a list, the order of the list will be kept. If it
-        is a PostSet, they will be sorted by their date.
+        When the section is not flat, the section will be printed in a threaded
+        structure. The order of the posts whose parent is the same is
+        determined by their order in the thread structure.
 
-        Arguments:
-        sectionid --- The identifier of the section.
-            Type: int
-        options ---
-            Type: GeneratorOptions
+        When the section is flat, the ``posts`` attribute of the section
+        specifies the order the posts. If ``posts`` is a list, the order of the
+        list will be kept. If it is a :class:`PostSet`, the posts will be
+        sorted by their date.
 
-        Returns: HtmlString
+        **Arguments:**
+
+        - *sectionid* (``int``) -- The identifier of the section.
+        - *options* (:class:`GeneratorOptions`)
+
+        **Returns:** ``HtmlStr``
         """
 
         l = []
@@ -2027,11 +2042,11 @@ class Generator(object):
         return ''.join(l)
 
     def gen_indices(self, options):
-        """Creates the index HTML files as specified in 'options'.
+        """Creates the index pages.
         
-        Arguments:
-        options -- 
-            Type: GeneratorOptions
+        **Arguments:**
+
+        - *options* (:class:`GeneratorOptions`)
         """
 
         heaplib.check(
@@ -2061,11 +2076,11 @@ class Generator(object):
         log('Indices generated.')
 
     def gen_posts(self, options):
-        """Creates an HTML file for each post that are not deleted.
+        """Creates a post page for each post that is not deleted.
         
-        Arguments:
-        options -- 
-            Type: GeneratorOptions
+        **Arguments:**
+
+        - *options* (:class:`GeneratorOptions`)
         """
 
         heaplib.check(

@@ -4,21 +4,25 @@
 See the :doc:`developer documentation of heapmanip <heapmanip_dev>` for more
 details.
 
-.. module:: heapmanip
+-------------------------------------------------------------------------------
+
+.. automodule:: heapmanip
 
 Html
 ----
    
 .. autoclass:: Html
 
+    **Methods:**
+
     .. automethod:: enclose
 
 .. class:: Post
 
-    .. function:: subject
+    **Methods:**
 
-    .. function:: set_subject
-
+    .. method:: subject
+    .. method:: set_subject
     .. method:: real_subject
 
 .. class:: MailDB
@@ -27,4 +31,17 @@ Html
 .. class:: Section
 .. class:: Index
 .. class:: GeneratorOptions
-.. class:: Generator
+
+.. autoclass:: Generator
+    
+    **Methods:**
+
+    .. automethod:: __init__
+    .. automethod:: post
+    .. automethod:: index_toc
+    .. automethod:: post_summary
+    .. automethod:: post_summary_end
+    .. automethod:: thread
+    .. automethod:: section
+    .. automethod:: gen_indices
+    .. automethod:: gen_posts
