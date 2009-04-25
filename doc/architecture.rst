@@ -144,9 +144,6 @@ but later it may be modified in the *heap*.
     emails, create new posts based on the emails, and save them to the
     post database.
 
-stored in Heapkeeper's database, which is called *the heap*. The heap is
-stored in a set of text files; each file contains one post. Posts can be
-    
 :mod:`heapia`
 ^^^^^^^^^^^^^
 
