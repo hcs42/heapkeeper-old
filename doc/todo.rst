@@ -22,8 +22,9 @@ Todo items
 * **Documentation**
 
   * writing :doc:`architecture`
-  * The :doc:`tutorial` should be updated (probably a separate *customization*
-    page should be created).
+  * The :doc:`tutorial` should be rewritten (probably a separate
+    *customization* page should be created). A new document called Heapkeeper
+    Basics should be created.
   * words to include in the :doc:`glossary`: Heap, heapid, messid , post,
     postset, prepostset, tag
   * Explain these concepts somewhere: delegate, heapcustom

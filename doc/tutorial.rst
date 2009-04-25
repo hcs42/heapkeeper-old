@@ -1,6 +1,19 @@
 Tutorial
 ========
 
+This page needs a major rewrite. It will contain a step-by-step example of the
+followings:
+* Creating a heap (with a Google Groups account and GMail account).
+* Posting a few emails in order to create a non-trivial thread structure.
+* Generating HTML from the heap.
+* Modifying posts, thread structure and other things from the hkshell.
+
+It should also have screenshots. (Most users will be lazy to do the tutorial
+anyway, they just want to read it through in a few minutes in order to
+understand how Heapkeeper works.)
+
+Until then, here is the old content of the page:
+
 Configuration
 -------------
 
