@@ -1,8 +1,12 @@
-Development rules
+Development Rules
 =================
 
 These are rules that should be followed by the developers of Heapkeeper.
 Developers may broke them, but not without a good reason.
+
+There are rules that use the word "try". These are soft rules: the developers
+should try to follow them, but it is not a big problem is they sometimes do not
+succeed.
 
 Using the version control system
 --------------------------------
@@ -14,8 +18,29 @@ Using the version control system
   Probably the best is not commit incorrect code. (Note: it is about *commit*,
   the developers strictly should not *push* code intentionally that is not
   correct.)
+* Try to do larger independent changes in independent commits. E.g. if you add
+  50 lines to the documentation and add a new class, and these have nothing to
+  do with each other, it is better to have two separate commits for them. Of
+  course if the documentation is about the new class, it is better to have them
+  in the same commit.
+
+Special commits
+---------------
+
 * Documentation that does not document code (e.g. this page, the :doc:`todo
   <todo>` page) should be modified only on the master branch.
+* If you change the Development Rules, it must be done in a separate commit on
+  the master branch with a commit message title that starts with ``DevRules:``.
+  This way every developer will be able to follow easily what are the current
+  rules of development.
+* If you add a :doc:`todo <todo>` item, it must be done in a separate commit on
+  the master branch with a commit message title that starts with ``Todo:``.
+  This way every developer will be able to follow easily the current plans and
+  goals of development.
+* If you implement a :doc:`todo <todo>` item, try to do the implementation and
+  the removal of the todo item in the same commit.
+* Try to modify the :doc:`todo <todo>` items either in separate commits, or in
+  commits where the reason of the modification is implemented.
 
 Commit messages
 ^^^^^^^^^^^^^^^
