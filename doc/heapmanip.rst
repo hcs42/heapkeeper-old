@@ -12,3 +12,19 @@ Html
 .. autoclass:: Html
 
     .. automethod:: enclose
+
+.. class:: Post
+
+    .. function:: subject
+
+    .. function:: set_subject
+
+    .. method:: real_subject
+
+.. class:: MailDB
+.. class:: PostSet
+.. class:: Server
+.. class:: Section
+.. class:: Index
+.. class:: GeneratorOptions
+.. class:: Generator

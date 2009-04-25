@@ -55,6 +55,8 @@ explicitly noted to be primitive. Actually, there are only two primitives:
     
     * :func:`heapmanip.MailDB.threadstruct`
 
+.. _cycle:
+
 **Cycle:**
     Each post is in exactly one thread; except for the posts that are
     in a cycle. Those posts are not present in any thread. A post is

@@ -65,11 +65,12 @@ the :mod:`heapmanip` module.
 
 Heapkeeper stores the *heap* on the disk. Each post is stored in a *post file*.
 When Heapkeeper runs, the *heap* on the disk is read and the *heap* is stored
-in the memory as a :class:`MailDB` object, which is called *post database*.
-Each post is then stored in a :class:`Post` object, which we call *post object*
-or just *post*. A post object can be re-written into its post file, and re-read
-from its post file. A post is usually created from an email in the first place,
-but later it may be modified in the *heap*.
+in the memory as a :class:`MailDB <heapmanip.MailDB>` object, which is called
+*post database*. Each post is then stored in a :class:`Post <heapmanip.Post>`
+object, which we call *post object* or just *post*. A post object can be
+re-written into its post file, and re-read from its post file. A post is
+usually created from an email in the first place, but later it may be modified
+in the *heap*.
 
 :class:`Post <heapmanip.Post>`
 
@@ -133,16 +134,54 @@ but later it may be modified in the *heap*.
     that should be processed by Heapkeeper (e.g. ``<<<!delpost>>>``, which
     means that the current post should be deleted).
 
-:class:`MailDB` (*PostDB*)
+:class:`MailDB <heapmanip.MailDB>` (*PostDB*)
     
     A :class:`MailDB <heapmanip.MailDB>` object (called a *post database*)
-    represents the *heap*.
+    represents the *heap* in the memory. It stores the post object of all
+    posts. During initialization, it reads all the post files from the disk and
+    creates the corresponding post objects. It can write the modified post
+    files back at any time, or it can reload them from the disk.
+    
+    The post database calculates and stores the *thread structure*. The thread
+    structure is a forest where the nodes are posts and the connections are
+    :ref:`parent-child relations <post_relations>` between them. (Forest is a
+    tree-like structure where having a root node it not necessary). The roots
+    of the forest are the posts without parents. There may be posts that are
+    excluded from the thread structure because they are in :ref:`cycles <cycle>`.
+    
+    The users of the post database can use the dictionary that describes the
+    thread structure directly in order to get thread information. There are
+    methods in :class:`MailDB <heapmanip.MailDB>`, however, that make obtaining
+    most thread information easier. E.g. there are methods for calculating the
+    root, the parent and the children of a post. There are also methods to find
+    the cycles in the thread structure.
 
-:class:`Server` (*EmailDownloader*)
+:class:`PostSet <heapmanip.PostSet>`
 
-    A :class:`Server` object can connect to an IMAP server, download new
-    emails, create new posts based on the emails, and save them to the
-    post database.
+    todo
+
+:class:`Server <heapmanip.Server>` (*EmailDownloader*)
+
+    A :class:`Server <heapmanip.Server>` object can connect to an IMAP server,
+    download new emails, create new posts based on the emails, and save them to
+    the post database.
+
+It may help to make a comparison between Heapkeeper and a program
+that implements a relational database, e.g. MySQL:
+
++--------------------------------------+-------------------------+
+| Heapkeeper                           | MySQL                   |
++======================================+=========================+
+| heap                                 | relation database       |
++--------------------------------------+-------------------------+
+| :class:`MailDB <heapmanip.MailDB>`   | a data table            |
++--------------------------------------+-------------------------+
+| :class:`Post <heapmanip.Post>`       | a row in the data table |
++--------------------------------------+-------------------------+
+| Python                               | query language (SQL)    |
++--------------------------------------+-------------------------+
+| :class:`PostSet <heapmanip.PostSet>` | result of a query       |
++--------------------------------------+-------------------------+
 
 :mod:`heapia`
 ^^^^^^^^^^^^^
