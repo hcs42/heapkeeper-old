@@ -1786,7 +1786,11 @@ class Generator(object):
 
     **Attributes:**
 
-    * *_maildb* (``MailDB``) -- The mail database.
+    - *_maildb* (``MailDB``) -- The mail database.
+
+    **Used patterns:**
+
+    - :ref:`creating_a_long_string_pattern`
     """
 
     def __init__(self, maildb):

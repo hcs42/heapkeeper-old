@@ -60,8 +60,11 @@ written after their name in parens.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The main concept of Heapkeeper is the *heap*. The *heap* is an abstract data
-structure that consists of *posts*. The *heap* data structure is implemented in
-the :mod:`heapmanip` module.
+structure that consists of *posts*. The *heap* data structure and its
+visualization in HTML is implemented in the :mod:`heapmanip` module.
+
+Classes that implement and manipulate the heap
+""""""""""""""""""""""""""""""""""""""""""""""
 
 Heapkeeper stores the *heap* on the disk. Each post is stored in a *post file*.
 When Heapkeeper runs, the *heap* on the disk is read and the *heap* is stored
@@ -72,7 +75,7 @@ re-written into its post file, and re-read from its post file. A post is
 usually created from an email in the first place, but later it may be modified
 in the *heap*.
 
-:class:`Post <heapmanip.Post>`
+:class:`heapmanip.Post`
 
     A :class:`Post <heapmanip.Post>` object (called a *post object*) represents
     a post.
@@ -134,7 +137,7 @@ in the *heap*.
     that should be processed by Heapkeeper (e.g. ``<<<!delpost>>>``, which
     means that the current post should be deleted).
 
-:class:`MailDB <heapmanip.MailDB>` (*PostDB*)
+:class:`heapmanip.MailDB` (*PostDB*)
     
     A :class:`MailDB <heapmanip.MailDB>` object (called a *post database*)
     represents the *heap* in the memory. It stores the post object of all
@@ -160,7 +163,7 @@ in the *heap*.
 
     todo
 
-:class:`Server <heapmanip.Server>` (*EmailDownloader*)
+:class:`heapmanip.Server` (*EmailDownloader*)
 
     A :class:`Server <heapmanip.Server>` object can connect to an IMAP server,
     download new emails, create new posts based on the emails, and save them to
@@ -182,6 +185,66 @@ that implements a relational database, e.g. MySQL:
 +--------------------------------------+-------------------------+
 | :class:`PostSet <heapmanip.PostSet>` | result of a query       |
 +--------------------------------------+-------------------------+
+
+Classes that visualize the heap
+"""""""""""""""""""""""""""""""
+
+The content of the *heap* can be visualized by converting it to HTML pages.
+(The word *page* means HTML page in this context.) Heapkeeper can create two
+kinds of pages:
+
+* A *post page* displays one post. It usually contains a *post summary* and the
+  post's body. The post summary consists of a few important details of the
+  post, e.g. author, subject and date. Posts may have different summaries at
+  different places, and different summaries may include different details.
+* An *index page* displays many posts. It does not show the body of the
+  posts, it only shows a post summary for each post, which is a link to the
+  *post page* of that post. An index page is created from an *index* (an
+  :class:`Index <heapmanip.Index>` object), which descibres which posts should
+  be printed on the index page and how. An index contains the posts indirectly:
+  it contains sections, and the sections contain posts. A *section* (a
+  :class:`Section <heapmanip.Section>` object) is a list of posts that should
+  be printed as one section of the page, and a few options on how they should
+  be printed. An index page contains sections generated from the sections of
+  the index.
+  
+:class:`heapmanip.Html`
+
+    The :class:`Html <heapmanip.Html>` class is rather a namespace than a
+    class: it contains only static methods. :class:`Html <heapmanip.Html>`
+    objects are never created.
+
+:class:`heapmanip.Section`
+
+    A :class:`Section <heapmanip.Section>` is a list of posts. The
+    :class:`heapmanip.Generator` class can generate HTML from a section by
+    printing the summaries of its posts in either a threaded or a non-threaded
+    (*flat*) structure.
+
+:class:`heapmanip.Index`
+
+    todo
+
+:class:`heapmanip.GeneratorOptions`
+
+    todo
+
+:class:`heapmanip.Generator`
+
+    A :class:`Generator <heapmanip.Generator>` object generates HTML strings
+    and HTML pages.
+    
+    Most of its methods generate an HTML string that represents something,
+    which is usually shown in the name of the method. E.g. the
+    :func:`Generator.post <heapmanip.Generator.post>` method generates HTML
+    string from a post, while the :func:`Generator.section
+    <heapmanip.Generator.section>` method generates HTML string from a section.
+
+    The minority of the :class:`Generator <heapmanip.Generator>` methods print
+    the HTML they generate into files. These methods start with the ``gen_``
+    prefix. E.g. the :func:`Generator.gen_indices
+    <heapmanip.Generator.gen_indices>` method prints the index pages into index
+    files.
 
 :mod:`heapia`
 ^^^^^^^^^^^^^

@@ -64,7 +64,7 @@ documented in MailDB's docstring. (Here too, maybe in more detail.)
 It is important to keep in mind that MailDB takes a lazy approach on
 handling these members. If they are needed, and they are not there
 (i.e. their value is None), they are produced, but no sooner.
-See the :ref:`patterns_lazy_data_calculation` for the design pattern.
+See the :ref:`lazy_data_calculation_pattern` for the design pattern.
 
 _posts is the first of these cached data structures. It gets generated
 by _recalc_posts(), and cleared by touch(), of course. _recalc_posts()

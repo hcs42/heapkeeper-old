@@ -4,6 +4,8 @@ Patterns
 This file contains design patterns and code patterns that are used in the Heap
 system.
 
+.. _creating_a_long_string_pattern:
+
 Creating a long string
 ----------------------
 
@@ -43,7 +45,7 @@ Used in
    * :class:`heapmanip.Html`
    * :class:`heapmanip.Generator`
 
-.. _patterns_lazy_data_calculation:
+.. _lazy_data_calculation_pattern:
 
 Lazy data calculation
 ---------------------
@@ -129,6 +131,8 @@ Explanation
 Used in
 
    * :class:`heapmanip.MailDB`
+
+.. _options_pattern:
 
 Options
 -------
