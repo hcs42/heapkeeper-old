@@ -32,7 +32,7 @@ import test_hklib
 from hkcustomlib import *
 
 
-class Test1(unittest.TestCase, test_hklib.PostDBHandler):
+class Test__1(unittest.TestCase, test_hklib.PostDBHandler):
 
     def setUp(self):
         self.setUpDirs()

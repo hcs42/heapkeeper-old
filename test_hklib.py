@@ -147,11 +147,11 @@ post1_output = post_output + '\n'
 post4_output = post_output + 'Hi\n'
 
 
-class TestPost1(unittest.TestCase):
+class Test_Post__1(unittest.TestCase):
 
     """Tests the Post class."""
 
-    def testParsing(self):
+    def test__parsing(self):
 
         sio = StringIO.StringIO(post1_text)
         self.assertEquals(Post.parse_header(sio), post1_dict1)
@@ -165,7 +165,7 @@ class TestPost1(unittest.TestCase):
             hkutils.HkException,
             lambda: Post.from_str('Malformatted post.'))
 
-    def testEmpty(self):
+    def test__empty(self):
         p = Post.from_str('')
         self.assertEquals(p.heapid(), None)
         self.assertEquals(p.author(), '')
@@ -179,7 +179,7 @@ class TestPost1(unittest.TestCase):
         p2 = Post.create_empty()
         self.assertEquals(p, p2)
 
-    def testInit(self):
+    def test_init(self):
         p = Post.from_str(post4_text)
 
         # testing initialisation
@@ -218,7 +218,7 @@ class TestPost1(unittest.TestCase):
         p.delete()
         self.assertEquals(p.is_deleted(), True)
 
-    def testWrite(self):
+    def test_write(self):
 
         def check_write(input, output):
             """Checks that if a post is read from input, it will produce
@@ -232,7 +232,7 @@ class TestPost1(unittest.TestCase):
         check_write(post1_text, post1_output)
         check_write(post4_text, post4_output)
 
-    def testBodyStripping(self):
+    def test__body_stripping(self):
         p1 = Post.from_str(post1_text)
         p2 = Post.from_str(post2_text)
         p3 = Post.from_str(post3_text)
@@ -247,7 +247,7 @@ class TestPost1(unittest.TestCase):
         self.assertEquals(p4, p5)
         self.assertEquals(p4, p6)
 
-    def testSubject(self):
+    def test__subject(self):
         def post_ws(subject):
             """Creates a post with the given subject."""
             return Post.from_str('Subject: ' + subject)
@@ -268,7 +268,7 @@ class TestPost1(unittest.TestCase):
         for p in l:
             self.assertEquals(p.subject(), 'subject')
 
-    def testTagsFlags(self):
+    def test__tags_flags(self):
 
         p = Post.from_str('Flag: f1\nFlag: f2\nTag: t1\nTag: t2')
         self.assertEquals(p.flags(), ['f1', 'f2'])
@@ -302,7 +302,7 @@ class TestPost1(unittest.TestCase):
         self.assertEquals(p.flags(), ['f1', 'f2']) # flags are sorted
         self.assertEquals(p.tags(), ['t1', 't2'])  # tags are sorted
 
-    def testParseTagsInSubject(self):
+    def test__parse_tags_in_subject(self):
 
         def test(subject1, subject2, tags):
             self.assertEquals((subject2, tags), Post.parse_subject(subject1))
@@ -325,7 +325,7 @@ class TestPost1(unittest.TestCase):
         self.assertEquals(p.tags(), ['t3', 't1', 't2'])
 
 
-class TestPost2(unittest.TestCase):
+class Test_Post__2(unittest.TestCase):
 
     """Tests the Post class.
 
@@ -334,7 +334,10 @@ class TestPost2(unittest.TestCase):
     def setUp(self):
         self._dir = tempfile.mkdtemp()
 
-    def testFromFile(self):
+    def tearDown(self):
+        shutil.rmtree(self._dir)
+
+    def test_from_file(self):
         fname = os.path.join(self._dir, 'postfile')
         hkutils.string_to_file(post1_text, fname)
         p = Post.from_file(fname)
@@ -349,11 +352,8 @@ class TestPost2(unittest.TestCase):
         self.assertEquals(p.is_modified(), True)
         self.assertEquals(p.body(), '\n')
 
-    def tearDown(self):
-        shutil.rmtree(self._dir)
 
-
-class TestPostDB1(unittest.TestCase, PostDBHandler):
+class Test_PostDB__1(unittest.TestCase, PostDBHandler):
 
     """Tests the PostDB class (and its cooperation with the Post class)."""
 
@@ -361,6 +361,9 @@ class TestPostDB1(unittest.TestCase, PostDBHandler):
         self._dir = tempfile.mkdtemp()
         self._postfile_dir = os.path.join(self._dir, 'mail')
         self._html_dir = os.path.join(self._dir, 'html')
+
+    def tearDown(self):
+        shutil.rmtree(self._dir)
 
     def createDirs(self):
         os.mkdir(self._postfile_dir)
@@ -514,9 +517,6 @@ html=%s
               '3': ['4']}
         self.assertEquals(ts, postdb.threadstruct())
 
-    def tearDown(self):
-        shutil.rmtree(self._dir)
-
 
 class TestPostDB2(unittest.TestCase, PostDBHandler):
 
@@ -525,7 +525,10 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
         self._postdb = self.createPostDB()
         self.create_threadst()
 
-    def testThreadstruct(self):
+    def tearDown(self):
+        self.tearDownDirs()
+
+    def test_threadstruct(self):
         """Tests the thread structure computing method."""
 
         postdb = self._postdb
@@ -560,8 +563,7 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
         ts = {None: []}
         self.assertEquals(ts, postdb.threadstruct())
 
-    def testIterThread(self):
-        """Tests the PostDB.iter_thread method."""
+    def test_iter_thread(self):
         postdb = self._postdb
         p = self._posts
 
@@ -581,8 +583,7 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
             test(Post.from_str(''), [])
         self.assertRaises(AssertionError, f)
     
-    def testParent(self):
-        """Tests the 'parent' method."""
+    def test_parent(self):
         postdb = self._postdb
 
         def test(post_heapid, parent_heapid):
@@ -599,8 +600,7 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
         test('3', '0')
         test('4', None)
 
-    def testRoot(self):
-        """Tests the 'root' method."""
+    def test_root(self):
         postdb = self._postdb
 
         def test(post_heapid, parent_heapid):
@@ -617,7 +617,7 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
         test('3', '0')
         test('4', '4')
 
-    def threadstructCycle_general(self, parents, threadstruct, cycles):
+    def threadstruct_cycle_general(self, parents, threadstruct, cycles):
         """The general function that tests the cycle detection of the thread
         structure computing method.
 
@@ -646,16 +646,16 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
         else:
             self.assert_(postdb.has_cycle())
 
-    def testThreadstructCycle1(self):
-        self.threadstructCycle_general(
+    def test_threadstruct_cycle__1(self):
+        self.threadstruct_cycle_general(
             {},
             {None: ['0', '4'],
              '0': ['1', '3'],
              '1': ['2']},
             [])
 
-    def testThreadstructCycle2(self):
-        self.threadstructCycle_general(
+    def test_threadstruct_cycle__2(self):
+        self.threadstruct_cycle_general(
             {'1': '2'},
             {None: ['0', '4'],
                   '0': ['3'],
@@ -663,8 +663,8 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
                   '2': ['1']},
             ['1', '2'])
 
-    def testThreadstructCycle3(self):
-        self.threadstructCycle_general(
+    def test_threadstruct_cycle__3(self):
+        self.threadstruct_cycle_general(
             {'0': '2'},
             {None: ['4'],
              '0': ['1', '3'],
@@ -672,19 +672,16 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
              '2': ['0']},
             ['0', '1', '2', '3'])
 
-    def testThreadstructCycle4(self):
-        self.threadstructCycle_general(
+    def test_threadstruct_cycle__4(self):
+        self.threadstruct_cycle_general(
             {'0': '0'},
             {None: ['4'],
              '0': ['0', '1', '3'],
              '1': ['2']},
             ['0', '1', '2', '3'])
 
-    def tearDown(self):
-        self.tearDownDirs()
 
-
-class TestPostSet(unittest.TestCase, PostDBHandler):
+class Test_PostSet(unittest.TestCase, PostDBHandler):
 
     """Tests the PostSet class."""
 
@@ -701,7 +698,10 @@ class TestPostSet(unittest.TestCase, PostDBHandler):
         hkutils.string_to_file('Message-Id: 3@\nIn-Reply-To: 1@', postfile3)
         self._postdb = self.createPostDB()
 
-    def testEmpty(self):
+    def tearDown(self):
+        self.tearDownDirs()
+
+    def test__empty(self):
         postdb = self._postdb
         p1 = postdb.post('1')
         p2 = postdb.post('2')
@@ -716,7 +716,7 @@ class TestPostSet(unittest.TestCase, PostDBHandler):
         self.assert_(ps1 == PostSet(postdb, []))
         self.assertFalse(ps1 != PostSet(postdb, []))
 
-    def testCopy(self):
+    def test_copy(self):
         """Tests PostSet.copy and PostSet.empty_clone."""
 
         postdb = self._postdb
@@ -743,7 +743,7 @@ class TestPostSet(unittest.TestCase, PostDBHandler):
         self.assert_(ps2.is_set(set([])))
         self.assert_(ps_all._postdb is ps2._postdb)
 
-    def test1(self):
+    def test__1(self):
         postdb = self._postdb
         p1 = postdb.post('1')
         p2 = postdb.post('2')
@@ -906,7 +906,7 @@ class TestPostSet(unittest.TestCase, PostDBHandler):
         ps1.update(set([p1, p2]))
         self.assert_(ps1.is_set([p1, p2]))
 
-    def testGetAttr(self):
+    def test_get_attr(self):
         """Tests the PostSet.__get_attr__ method."""
 
         postdb = self._postdb
@@ -914,7 +914,7 @@ class TestPostSet(unittest.TestCase, PostDBHandler):
             PostSet(postdb, []).nonexisting_method
         self.assertRaises(AttributeError, f)
 
-    def testForall(self):
+    def test_forall(self):
         """Tests the PostSet.forall method."""
 
         def testSubjects(s1, s2, s3):
@@ -946,7 +946,7 @@ class TestPostSet(unittest.TestCase, PostDBHandler):
         PostSet(postdb, []).forall.nonexisting_method()
         testSubjects('y', 'y', 'y')
 
-    def testCollect(self):
+    def test_collect(self):
         """Tests the PostSet.collect method."""
 
         postdb = self._postdb
@@ -973,11 +973,8 @@ class TestPostSet(unittest.TestCase, PostDBHandler):
         ps_roots = postdb.all().collect.is_root()
         self.assert_(ps_roots.is_set([p1]))
 
-    def tearDown(self):
-        self.tearDownDirs()
 
-
-class TestPostSetThreads(unittest.TestCase, PostDBHandler):
+class Test_PostSet__threads(unittest.TestCase, PostDBHandler):
 
     """Tests thread centric methods of the PostSet class."""
 
@@ -991,7 +988,10 @@ class TestPostSetThreads(unittest.TestCase, PostDBHandler):
         self._postdb = self.createPostDB()
         self.create_threadst()
 
-    def _testExp(self, methodname):
+    def tearDown(self):
+        self.tearDownDirs()
+
+    def _test_exp(self, methodname):
         """Tests the PostSet's method that has the given name.
         
         This function returns a function that can test the given method of
@@ -1006,7 +1006,7 @@ class TestPostSetThreads(unittest.TestCase, PostDBHandler):
         input_postset.methodname() = output_postset
         """
 
-        def testExp2(heapids_1, heapids_2):
+        def test_exp_2(heapids_1, heapids_2):
             p = self._posts
             posts_1 = [ self._posts[int(i)] for i in heapids_1 ]
             posts_2 = [ self._posts[int(i)] for i in heapids_2 ]
@@ -1018,10 +1018,10 @@ class TestPostSetThreads(unittest.TestCase, PostDBHandler):
             # Testing that the exp() method did not change ps
             self.assert_(ps.is_set(posts_1))
 
-        return testExp2
+        return test_exp_2
 
-    def testExpb(self):
-        test = self._testExp('expb')
+    def test_expb(self):
+        test = self._test_exp('expb')
 
         # 0 in, 4 out
         test('0', '0')
@@ -1063,8 +1063,8 @@ class TestPostSetThreads(unittest.TestCase, PostDBHandler):
         test('124', '0124')
         test('1234', '01234')
 
-    def testExpf(self):
-        test = self._testExp('expf')
+    def test_expf(self):
+        test = self._test_exp('expf')
 
         # 0 in, 4 out
         test('0', '0123')
@@ -1106,8 +1106,8 @@ class TestPostSetThreads(unittest.TestCase, PostDBHandler):
         test('124', '124')
         test('1234', '1234')
 
-    def testExp(self):
-        test = self._testExp('exp')
+    def test_exp(self):
+        test = self._test_exp('exp')
 
         # 0 in, 4 out
         test('0', '0123')
@@ -1149,17 +1149,14 @@ class TestPostSetThreads(unittest.TestCase, PostDBHandler):
         test('124', '01234')
         test('1234', '01234')
     
-    def testSortedList(self):
+    def test_sorted_list(self):
         ps = self._postdb.postset(self._posts)
         self.assertEquals(ps.sorted_list(), self._posts)
 
-    def tearDown(self):
-        self.tearDownDirs()
 
+class Test_Html(unittest.TestCase):
 
-class TestHtml(unittest.TestCase):
-
-    def testEscape(self):
+    def test_escape(self):
 
         def test(unescaped, escaped):
             self.assertEquals(Html.escape(unescaped), escaped)
@@ -1168,7 +1165,7 @@ class TestHtml(unittest.TestCase):
         test('a>b', 'a&gt;b')
         test('a&b', 'a&amp;b')
 
-    def testDocHeader(self):
+    def test_doc_header(self):
         r = re.compile(
                 '<title>mytitle</title>.*'
                 '<link rel=stylesheet href="mycss" type="text/css">.*'
@@ -1177,17 +1174,17 @@ class TestHtml(unittest.TestCase):
         search = r.search(Html.doc_header('mytitle', 'myh1', 'mycss'))
         self.assertNotEquals(search, None)
 
-    def testLink(self):
+    def test_link(self):
         self.assertEquals(Html.link('mylink', 'mystuff'),
                           '<a href="mylink">mystuff</a>')
 
-    def testEnclose(self):
+    def test_enclose(self):
         self.assertEquals(Html.enclose('myclass', 'mystuff'),
                           '<span class="myclass">mystuff</span>')
         self.assertEquals(Html.enclose('myclass', 'mystuff', 'mytag'),
                           '<mytag class="myclass">mystuff</mytag>')
 
-    def testPostSummary(self):
+    def test_post_summary(self):
         enc = Html.enclose
         link = Html.link
 
@@ -1235,7 +1232,7 @@ class TestHtml(unittest.TestCase):
             '\n' +
             enc('date', link('mylink', 'mydate'), 'mytag') + '\n')
 
-    def testList(self):
+    def test_list(self):
         self.assertEquals(
             Html.list(['item 1', 'item 2']),
             '<ul>\n'
@@ -1250,7 +1247,7 @@ class TestHtml(unittest.TestCase):
             '</ul>\n')
 
 
-class TestGenerator(unittest.TestCase, PostDBHandler):
+class Test_Generator(unittest.TestCase, PostDBHandler):
 
     """Tests the Generator class."""
 
