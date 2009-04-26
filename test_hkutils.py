@@ -18,6 +18,13 @@
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
+"""Tests the hkutils module.
+
+Usage:
+    
+    $ python test_hkutils.py
+"""
+
 from __future__ import with_statement
 import unittest
 

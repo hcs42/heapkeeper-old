@@ -22,7 +22,7 @@
 
 Usage:
     
-    python hkshelltest.py
+    $ python test_hkshell.py
 """
 
 from __future__ import with_statement
@@ -36,7 +36,7 @@ import hkshell
 
 class Test__1(unittest.TestCase):
     
-    """Tests that do not require a MailDB."""
+    """Tests that do not require a PostDB."""
 
     def test__listeners(self):
 
@@ -99,9 +99,9 @@ class Test__1(unittest.TestCase):
         self.assertEquals(event_list[1].command, 'mycommand')
 
 
-class Test__2(unittest.TestCase, test_hklib.MailDBHandler):
+class Test__2(unittest.TestCase, test_hklib.PostDBHandler):
 
-    """Tests that require a MailDB."""
+    """Tests that require a PostDB."""
 
     # Thread structure:
     # 0 <- 1 <- 2
@@ -110,7 +110,7 @@ class Test__2(unittest.TestCase, test_hklib.MailDBHandler):
 
     def setUp(self):
         self.setUpDirs()
-        self._maildb = self.createMailDB()
+        self._postdb = self.createPostDB()
         self.create_threadst()
 
     def tearDown(self):
@@ -118,7 +118,7 @@ class Test__2(unittest.TestCase, test_hklib.MailDBHandler):
 
     def test_ModificationListener(self):
 
-        maildb = self._maildb
+        postdb = self._postdb
 
         def my_cmd(fun):
             hkshell.event(type='before')
@@ -126,8 +126,8 @@ class Test__2(unittest.TestCase, test_hklib.MailDBHandler):
             hkshell.event(type='after')
         
         # Adding the listener
-        mod_listener = hkshell.ModificationListener(maildb)
-        self.assertEquals(maildb.listeners, [mod_listener])
+        mod_listener = hkshell.ModificationListener(postdb)
+        self.assertEquals(postdb.listeners, [mod_listener])
         hkshell.append_listener(mod_listener)
 
         # Using the listener
@@ -151,10 +151,10 @@ class Test__2(unittest.TestCase, test_hklib.MailDBHandler):
         # Removing the listener
         hkshell.remove_listener(mod_listener)
         mod_listener.close()
-        self.assertEquals(maildb.listeners, [])
+        self.assertEquals(postdb.listeners, [])
 
 
-class Test__3(unittest.TestCase, test_hklib.MailDBHandler):
+class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
     """Tests that require a hkshell."""
 
@@ -171,9 +171,9 @@ class Test__3(unittest.TestCase, test_hklib.MailDBHandler):
         # reload(hkshell)
 
         self.setUpDirs()
-        self._maildb = self.createMailDB()
+        self._postdb = self.createPostDB()
         self.create_threadst()
-        hkshell.options.maildb = self._maildb
+        hkshell.options.postdb = self._postdb
 
         # Redirect the output of hkshell to nowhere.
         class NullOutput():
@@ -209,9 +209,9 @@ class Test__3(unittest.TestCase, test_hklib.MailDBHandler):
 
         call_count = [0]
 
-        def gen_indices(maildb):
+        def gen_indices(postdb):
             call_count[0] += 1
-            self.assertEquals(maildb, self._maildb)
+            self.assertEquals(postdb, self._postdb)
         
         # Initializing hkshell
         hkshell.options.callbacks.gen_indices = gen_indices

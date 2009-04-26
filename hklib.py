@@ -95,9 +95,9 @@ class Post(object):
         Type: str.
     _heapid -- The identifier of the post.
         Type: NoneType | str.
-    _maildb -- The MailDB object that contains the post.
-        If _maildb is None, _heapid must not be None.
-        Type: NoneType | MailDB.
+    _postdb -- The PostDB object that contains the post.
+        If _postdb is None, _heapid must not be None.
+        Type: NoneType | PostDB.
     _modified -- It is false if the file on the disk that represents the post
         is up-to-date. It is true if there is no such file or the post
         has been modified since the last synchronization.
@@ -106,46 +106,46 @@ class Post(object):
 
     # Constructors
 
-    def __init__(self, f, heapid=None, maildb=None):
+    def __init__(self, f, heapid=None, postdb=None):
         """Constructor.
 
         Arguments:
         f -- A file descriptor from which the header and the body of the post
              will be read. It will not be closed.
         heapid -- See _heapid.
-        maildb -- See _maildb.
+        postdb -- See _postdb.
         """
 
-        assert(not (maildb != None and heapid == None))
+        assert(not (postdb != None and heapid == None))
         super(Post, self).__init__()
         try:
             self._header, self._body = Post.parse(f)
             self._heapid = heapid
-            self._maildb = maildb
+            self._postdb = postdb
             self._modified = not self.postfile_exists()
         except:
             raise hkutils.HkException, \
                   'Error parsing post "%s"' % getattr(f, 'name', '')
 
     @staticmethod
-    def from_str(s, heapid=None, maildb=None):
+    def from_str(s, heapid=None, postdb=None):
         """Creates a Post object from the given string."""
         sio = StringIO.StringIO(s)
-        p = Post(sio, heapid, maildb)
+        p = Post(sio, heapid, postdb)
         sio.close()
         return p
 
     @staticmethod
-    def from_file(fname, heapid=None, maildb=None):
+    def from_file(fname, heapid=None, postdb=None):
         """Creates a Post object from a file."""
         with open(fname, 'r') as f:
-            return Post(f, heapid, maildb)
+            return Post(f, heapid, postdb)
 
     @staticmethod
-    def create_empty(heapid=None, maildb=None):
+    def create_empty(heapid=None, postdb=None):
         """Creates an empty Post object."""
         sio = StringIO.StringIO('')
-        p = Post(sio, heapid, maildb)
+        p = Post(sio, heapid, postdb)
         sio.close()
         return p
 
@@ -154,17 +154,17 @@ class Post(object):
     def touch(self):
         """Should be called each time after the post is modified."""
         self._modified = True
-        if self._maildb != None:
-            self._maildb.touch(self)
+        if self._postdb != None:
+            self._postdb.touch(self)
 
     def is_modified(self):
         return self._modified
 
-    def add_to_maildb(self, heapid, maildb):
-        """Adds the post to the maildb."""
-        assert(self._maildb == None)
+    def add_to_postdb(self, heapid, postdb):
+        """Adds the post to the postdb."""
+        assert(self._postdb == None)
         self._heapid = heapid
-        self._maildb = maildb
+        self._postdb = postdb
         self.touch()
 
     # Get-set functions
@@ -469,7 +469,7 @@ class Post(object):
         f.write(self._body)
 
     def save(self):
-        assert(self._maildb != None)
+        assert(self._postdb != None)
         if self._modified:
             with open(self.postfilename(), 'w') as f:
                 self.write(f)
@@ -479,21 +479,21 @@ class Post(object):
         """(Re)loads the Post from the disk.
         
         Arguments:
-        silent --- Do not call maildb.touch.
+        silent --- Do not call postdb.touch.
         """
 
         with open(self.postfilename(), 'r') as f:
             self._header, self._body = Post.parse(f)
         self._modified = False
         if not silent:
-            self._maildb.touch(self)
+            self._postdb.touch(self)
 
     # Filenames
 
     def postfilename(self):
         """The name of the postfile in which the post is (or can be) stored."""
-        assert(self._maildb != None)
-        return os.path.join(self._maildb.postfile_dir(), \
+        assert(self._postdb != None)
+        return os.path.join(self._postdb.postfile_dir(), \
                             self._heapid + '.mail')
 
     def htmlfilebasename(self):
@@ -503,11 +503,11 @@ class Post(object):
 
     def htmlfilename(self):
         """The name of the HTML file that can be generated from the post."""
-        assert(self._maildb != None)
-        return os.path.join(self._maildb.html_dir(), self._heapid + '.html')
+        assert(self._postdb != None)
+        return os.path.join(self._postdb.html_dir(), self._heapid + '.html')
 
     def postfile_exists(self):
-        if self._maildb == None:
+        if self._postdb == None:
             return False
         else:
             return os.path.exists(self.postfilename())
@@ -576,9 +576,9 @@ class Post(object):
             self._header['Tag'].append(tag)
 
 
-##### MailDBEvent #####
+##### PostDBEvent #####
 
-class MailDBEvent(object):
+class PostDBEvent(object):
     """Represents an event.
 
     Data attributes:
@@ -592,15 +592,15 @@ class MailDBEvent(object):
                  type=hkutils.NOT_SET,
                  post=None):
 
-        super(MailDBEvent, self).__init__()
+        super(PostDBEvent, self).__init__()
         hkutils.set_dict_items(self, locals())
 
 
-##### MailDB #####
+##### PostDB #####
 
-class MailDB(object):
+class PostDB(object):
 
-    """The mail database that stores and handles the posts.
+    """The post database that stores and handles the posts.
 
     Data attributes:
     heapid_to_post -- Stores the posts assigned to their heapid-s.
@@ -639,7 +639,7 @@ class MailDB(object):
         html_dir: Initialises self._html_dir.
         """
 
-        super(MailDB, self).__init__()
+        super(PostDB, self).__init__()
         self._postfile_dir = postfile_dir
         self._html_dir = html_dir
         self._next_heapid = 0
@@ -651,7 +651,7 @@ class MailDB(object):
 
     @staticmethod
     def from_config(config):
-        """Creates a MailDB with the given configuration.
+        """Creates a PostDB with the given configuration.
 
         Arguments:
         config -- Configuration object. The paths/mail and paths/html options
@@ -661,12 +661,12 @@ class MailDB(object):
         
         postfile_dir = config.get('paths', 'mail')
         html_dir = config.get('paths', 'html')
-        return MailDB(postfile_dir, html_dir)
+        return PostDB(postfile_dir, html_dir)
 
     def _load_from_disk(self):
         """Loading the database from the disk."""
 
-        # We need the original_heapid_to_post when reloading the mail database.
+        # We need the original_heapid_to_post when reloading the post database.
         original_heapid_to_post = self.heapid_to_post
 
         self.heapid_to_post = {}
@@ -723,7 +723,7 @@ class MailDB(object):
         self._cycles = None
         self._roots = None
         self._threads = None
-        self.notify_listeners(MailDBEvent(type='touch', post=post))
+        self.notify_listeners(PostDBEvent(type='touch', post=post))
 
     # Get-set functions
 
@@ -802,13 +802,13 @@ class MailDB(object):
     # New posts
 
     def add_new_post(self, post):
-        """Adds a new post to the maildb.
+        """Adds a new post to the postdb.
         
         The heapid of the post will be changed to the next free heapid of the
-        maildb."""
+        postdb."""
 
         heapid = self.next_heapid()
-        post.add_to_maildb(heapid, self)
+        post.add_to_postdb(heapid, self)
         self._add_post_to_dicts(post)
         return post
 
@@ -879,7 +879,7 @@ class MailDB(object):
         
         Warning: if the thread structure contains cycles, calling this
         function may result in an endless loop. Before calling this function,
-        the called should check that maildb.has_cycle() == False.
+        the called should check that postdb.has_cycle() == False.
         """
 
         assert(post in self.all())
@@ -1014,26 +1014,26 @@ class PostSet(set):
     """A set of posts.
 
     Data attributes:
-    _maildb -- Mail database.
-        Type: MailDB
+    _postdb -- Mail database.
+        Type: PostDB
     """
 
-    def __init__(self, maildb, posts):
+    def __init__(self, postdb, posts):
         """Constructor.
 
         Arguments:
-        maildb -- Initialises self._maildb.
-            Type: MailDB
+        postdb -- Initialises self._postdb.
+            Type: PostDB
         posts -- Initialises the set.
             Type: PrePostSet
         """
 
-        super(PostSet, self).__init__(PostSet._to_set(maildb, posts))
-        self._maildb = maildb
+        super(PostSet, self).__init__(PostSet._to_set(postdb, posts))
+        self._postdb = postdb
 
     def empty_clone(self):
-        """Returns an empty PostSet that has the same MailDB as this one."""
-        return PostSet(self._maildb, [])
+        """Returns an empty PostSet that has the same PostDB as this one."""
+        return PostSet(self._postdb, [])
 
     def copy(self):
         """Copies the object.
@@ -1042,10 +1042,10 @@ class PostSet(set):
         objects.
         """
 
-        return PostSet(self._maildb, self)
+        return PostSet(self._postdb, self)
 
     @staticmethod
-    def _to_set(maildb, prepostset):
+    def _to_set(postdb, prepostset):
         """Converts a PrePostSet object to a set of Posts.
         
         Arguments:
@@ -1060,14 +1060,14 @@ class PostSet(set):
         elif isinstance(prepostset, str) or \
              isinstance(prepostset, int) or \
              isinstance(prepostset, Post):
-            return PostSet._to_set(maildb, [prepostset])
+            return PostSet._to_set(postdb, [prepostset])
         else:
             result = set()
             for prepost in prepostset:
                 # calculating the post for prepost
                 if isinstance(prepost, str) or isinstance(prepost, int):
                     # prepost is a heapid
-                    post = maildb.post(prepost, True)
+                    post = postdb.post(prepost, True)
                 elif isinstance(prepost, Post): # prepost is a Post
                     post = prepost
                 else:
@@ -1079,7 +1079,7 @@ class PostSet(set):
 
     def is_set(self, s):
         """The given set equals to the set of contained posts."""
-        return set.__eq__(self, PostSet._to_set(self._maildb, s))
+        return set.__eq__(self, PostSet._to_set(self._postdb, s))
 
     def __getattr__(self, funname):
         if funname == 'forall':
@@ -1096,14 +1096,14 @@ class PostSet(set):
         Returns: PostSet
         """
 
-        result = PostSet(self._maildb, [])
+        result = PostSet(self._postdb, [])
         for post in self:
             # if post is in result, then it has already been processed
             # (and all its consequences has been added to result)
             if post not in result:
                 while True:
                     result.add(post)
-                    post = self._maildb.prev(post)
+                    post = self._postdb.prev(post)
                     if post == None:
                         break
         return result
@@ -1114,12 +1114,12 @@ class PostSet(set):
         Returns: PostSet
         """
 
-        result = PostSet(self._maildb, [])
+        result = PostSet(self._postdb, [])
         for post in self:
             # if post is in result, then it has already been processed
             # (and all its consequences has been added to result)
             if post not in result:
-                for post2 in self._maildb.iter_thread(post):
+                for post2 in self._postdb.iter_thread(post):
                     result.add(post2)
         return result
 
@@ -1140,11 +1140,11 @@ class PostSet(set):
         """Constructs a new PostSet from self by calling the specified method
         of the set class with the specified arguments."""
         try:
-            other = PostSet(self._maildb, other)
+            other = PostSet(self._postdb, other)
         except TypeError:
             return NotImplemented
         result = getattr(set, methodname)(self, other)
-        result._maildb = self._maildb
+        result._postdb = self._postdb
         return result
 
     def __and__(self, other):
@@ -1336,7 +1336,7 @@ class PostSetCollectDelegate(object):
 
     def is_root(self):
         """Returns the posts that are roots of a thread."""
-        return self.__call__(lambda p: self._postset._maildb.prev(p) == None)
+        return self.__call__(lambda p: self._postset._postdb.prev(p) == None)
 
     def __getattr__(self, funname):
         """Returns a function that collects posts whose return value is true
@@ -1346,32 +1346,32 @@ class PostSetCollectDelegate(object):
         return collect_fun
 
 
-##### Server #####
+##### EmailDownloader #####
 
-class Server(object):
+class EmailDownloader(object):
     
-    """A Server object can be used to connect to the server and download new
-    posts.
+    """A EmailDownloader object can be used to connect to the server and
+    download new posts.
     
     Data attributes:
-    _maildb -- The mail database..
-        Type: MailDB
+    _postdb -- The post database..
+        Type: PostDB
     _config -- The configuration.
         Type: ConfigParser
     _server -- The object that represents the IMAP server.
         Type: IMAP4_SSL | NoneType
     """
 
-    def __init__(self, maildb, config):
+    def __init__(self, postdb, config):
         """Constructor.
 
         Arguments:
-        maildb: Initialises self._maildb.
+        postdb: Initialises self._postdb.
         config: Initialises self._config.
         """
 
-        super(Server, self).__init__()
-        self._maildb = maildb
+        super(EmailDownloader, self).__init__()
+        self._postdb = postdb
         self._config = config
         self._server = None
 
@@ -1455,7 +1455,7 @@ class Server(object):
 
     def download_new(self, lower_value=0):
         """Downloads the new emails from the INBOX of the IMAP server and adds
-        them to the mail database.
+        them to the post database.
 
         Arguments:
         lower_value -- Only the email indices that are greater or equal to the
@@ -1472,10 +1472,10 @@ class Server(object):
                              '(BODY[HEADER.FIELDS (MESSAGE-ID)])')[1][0][1]
                     messid = email.message_from_string(header)['Message-Id']
                     # post: the post in the database if already exists
-                    post = self._maildb.post_by_messid(messid)
+                    post = self._postdb.post_by_messid(messid)
                     if post == None:
                         post = self.download_email(email_index)
-                        self._maildb.add_new_post(post)
+                        self._postdb.add_new_post(post)
                         log('Post #%s (#%s in INBOX) downloaded.' % \
                             (post.heapid(), email_index))
                     else:
@@ -1695,7 +1695,7 @@ class Index(object):
         Type: [Section]
     filename --- The name of the HTML file where the index should be printed.
         It is either an absolute path or it is relative to the HTML dir of the
-        mail database.
+        post database.
         Type: str
         Default: 'index.html'
     """
@@ -1786,23 +1786,23 @@ class Generator(object):
 
     **Attributes:**
 
-    - *_maildb* (``MailDB``) -- The mail database.
+    - *_postdb* (``PostDB``) -- The post database.
 
     **Used patterns:**
 
     - :ref:`creating_a_long_string_pattern`
     """
 
-    def __init__(self, maildb):
+    def __init__(self, postdb):
         """Constructor.
 
         **Arguments:**
 
-        - *maildb* (:class:`MailDB`) -- Initializes ``self._maildb``.
+        - *postdb* (:class:`PostDB`) -- Initializes ``self._postdb``.
         """
 
         super(Generator, self).__init__()
-        self._maildb = maildb
+        self._postdb = postdb
     
     def post(self, post, options):
         """Converts the post into HTML.
@@ -1855,7 +1855,7 @@ class Generator(object):
             section = Section(title='Thread', posts=[post])
             options.section = section
             thread = \
-                self.thread(self._maildb.root(post), options)
+                self.thread(self._postdb.root(post), options)
             del options.section
             l.append(thread)
 
@@ -1957,7 +1957,7 @@ class Generator(object):
         #        the heapid into 'strings'
         #      - puts the summary of the the post's all children into 'strings'
         stack = [post]
-        threadstruct = self._maildb.threadstruct()
+        threadstruct = self._postdb.threadstruct()
         strings = []
 
         while len(stack) > 0:
@@ -1969,7 +1969,7 @@ class Generator(object):
             else:
                 if item != None:
                     post = item
-                    parent = self._maildb.prev(post)
+                    parent = self._postdb.prev(post)
                     subject = post.subject()
                     if (options.shortsubject and parent != None and
                         subject == parent.subject()):
@@ -1989,7 +1989,7 @@ class Generator(object):
                                           tags_to_print))
 
                     stack.append(self.post_summary_end())
-                stack += reversed(self._maildb.children(item))
+                stack += reversed(self._postdb.children(item))
         return ''.join(strings)
 
     def section(self, sectionid, options):
@@ -2013,8 +2013,8 @@ class Generator(object):
         """
 
         l = []
-        roots = self._maildb.roots()
-        threads = self._maildb.threads()
+        roots = self._postdb.roots()
+        threads = self._postdb.threads()
         section = options.section
 
         l.append(Html.section_begin('section_%s' % (sectionid,),section.title))
@@ -2022,7 +2022,7 @@ class Generator(object):
         posts = section.posts
 
         if posts == CYCLES:
-            posts = options.maildb.cycles()
+            posts = options.postdb.cycles()
             is_flat = True
         else:
             is_flat = section.is_flat
@@ -2058,10 +2058,10 @@ class Generator(object):
             ['indices', 'write_toc', 'shortsubject', 'shorttags',
              'date_fun', 'html_title', 'html_h1', 'cssfile'])
 
-        threadst = self._maildb.threadstruct()
+        threadst = self._postdb.threadstruct()
         for index in options.indices:
             options.index = index
-            filename = os.path.join(self._maildb.html_dir(),
+            filename = os.path.join(self._postdb.html_dir(),
                                     index.filename)
             with open(filename, 'w') as f:
                 doc_header = Html.doc_header(options.html_title,
@@ -2092,7 +2092,7 @@ class Generator(object):
             ['date_fun', 'html_title', 'html_h1', 'cssfile',
              'print_thread_of_post'])
 
-        for post in self._maildb.posts():
+        for post in self._postdb.posts():
             with open(post.htmlfilename(), 'w') as f:
                 f.write(self.post(post, options))
         log('Post HTMLs generated.')

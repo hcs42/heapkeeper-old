@@ -22,7 +22,7 @@
 
 Usage:
     
-    python hklibtest.py
+    $ python test_hklib.py
 """
 
 import time
@@ -32,11 +32,11 @@ import test_hklib
 from hkcustomlib import *
 
 
-class Test1(unittest.TestCase, test_hklib.MailDBHandler):
+class Test1(unittest.TestCase, test_hklib.PostDBHandler):
 
     def setUp(self):
         self.setUpDirs()
-        self._maildb = self.createMailDB()
+        self._postdb = self.createPostDB()
         self.create_threadst()
 
     def tearDown(self):
@@ -55,11 +55,11 @@ class Test1(unittest.TestCase, test_hklib.MailDBHandler):
     def test_create_should_print_date_fun(self):
 
         genopts = hklib.GeneratorOptions()
-        genopts.sections = [hklib.Section('', self._maildb.all())]
+        genopts.sections = [hklib.Section('', self._postdb.all())]
         genopts.section = genopts.sections[0]
 
         # date options
-        options = date_defopts({'maildb': self._maildb,
+        options = date_defopts({'postdb': self._postdb,
                                 'timedelta': datetime.timedelta(seconds=3)})
         f = create_should_print_date_fun(options)
 
@@ -88,13 +88,13 @@ class Test1(unittest.TestCase, test_hklib.MailDBHandler):
     def test_create_date_fun(self):
 
         genopts = hklib.GeneratorOptions()
-        genopts.sections = [hklib.Section('', self._maildb.all())]
+        genopts.sections = [hklib.Section('', self._postdb.all())]
         genopts.section = genopts.sections[0]
 
         def my_should_fun(post, genopts):
             return post.heapid() in ['1', '3']
         # date options
-        options = date_defopts({'maildb': self._maildb,
+        options = date_defopts({'postdb': self._postdb,
                                 'should_print_date_fun': my_should_fun})
         f = create_date_fun(options)
 

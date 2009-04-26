@@ -61,8 +61,8 @@ j(pp, pp)          - join two threads
 e(pp)              - edit the post as a file
 dl()               - download new mail
 
-maildb()           - the mail database object
-c()                - shorthand for maildb().all().collect
+postdb()           - the post database object
+c()                - shorthand for postdb().all().collect
 on(feature)        - turning a feature on
 off(feature)       - turning a feature off
 ------------------------------------------------------------
@@ -80,7 +80,7 @@ Features:
     t, timer -
     tpp, touched_post_printer -
 
-    auto_save --- If True, the mail database will be saved after each command.
+    auto_save --- If True, the post database will be saved after each command.
         Type: bool
     timing --- If True, the real (wall clock) time taken by commands is
         reported.
@@ -105,25 +105,25 @@ Callback functions (that can be defined in hkrc.py):
         is finished.
 
         Args:
-            file --- The name of the mail file to be edited.
+            file --- The name of the post file to be edited.
 
         Returns: whether the given file was modified and should be reread from
         the disk.
 
-    gen_indices(maildb):
+    gen_indices(postdb):
         It should generate the index.html file.
 
         Args:
-            maildb --- MailDB
+            postdb --- PostDB
 
         Returns: -
 
-    gen_posts(maildb):
+    gen_posts(postdb):
 
         It should generate HTML for all posts.
 
         Args:
-            maildb --- MailDB
+            postdb --- PostDB
 
         Returns: -
 
@@ -153,8 +153,8 @@ class Callbacks(object):
 
     **Attributes:**
 
-    * *gen_indices* (fun(MailDB)) -- Function that generates indices.
-    * *gen_posts* (fun(MailDB)) -- Function that generates the HTML files of
+    * *gen_indices* (fun(PostDB)) -- Function that generates indices.
+    * *gen_posts* (fun(PostDB)) -- Function that generates the HTML files of
       the posts.
     * *edit_file* (fun(str) -> bool) -- Function that opens an editor with the
       given file. It should return ``True`` or ``False`` when the user finished
@@ -188,7 +188,7 @@ class Options(object):
     """
 
     def __init__(self,
-                 maildb=hkutils.NOT_SET,
+                 postdb=hkutils.NOT_SET,
                  config=hkutils.NOT_SET,
                  hkrc='hkrc',
                  output=sys.stdout,
@@ -246,19 +246,19 @@ class ModificationListener(object):
     
     """TODO"""
     
-    def __init__(self, maildb_arg=None):
+    def __init__(self, postdb_arg=None):
         super(ModificationListener, self).__init__()
-        self._maildb = maildb_arg if maildb_arg != None else maildb()
-        self._maildb.listeners.append(self)
-        self._posts = self._maildb.postset([])
+        self._postdb = postdb_arg if postdb_arg != None else postdb()
+        self._postdb.listeners.append(self)
+        self._posts = self._postdb.postset([])
 
     def close(self):
-        self._maildb.listeners.remove(self)
+        self._postdb.listeners.remove(self)
 
     def __call__(self, e):
         if e.type == 'before':
-            self._posts = self._maildb.postset([])
-        elif isinstance(e, hklib.MailDBEvent) and e.type == 'touch':
+            self._posts = self._postdb.postset([])
+        elif isinstance(e, hklib.PostDBEvent) and e.type == 'touch':
             self._posts.add(e.post)
 
     def touched_posts(self):
@@ -277,7 +277,7 @@ def gen_posts_listener(e):
 
 def save_listener(e):
     if (e.type == 'after' and len(modification_listener.touched_posts()) > 0):
-        maildb().save()
+        postdb().save()
         write('Mail database saved.\n')
 
 def timer_listener(e, start=[None]):
@@ -381,24 +381,24 @@ def cmd_help():
                    re.DOTALL | re.MULTILINE)
     return r.match(__doc__).group(1)
 
-def maildb():
-    return options.maildb
+def postdb():
+    return options.postdb
 
 def c():
-    return maildb().all().collect
+    return postdb().all().collect
 
 def gen_indices():
-    options.callbacks.gen_indices(maildb())
+    options.callbacks.gen_indices(postdb())
 
 def gen_posts(posts=None):
     # TODO: add arguments about the posts to gen_posts()
     #
     # The following line will be replaced with this line:
-    # options.callbacks.gen_posts(maildb(), posts)
-    options.callbacks.gen_posts(maildb())
+    # options.callbacks.gen_posts(postdb(), posts)
+    options.callbacks.gen_posts(postdb())
 
 def ps(pps):
-    res = maildb().postset(pps)
+    res = postdb().postset(pps)
     return res
 
 def tagset(tags):
@@ -434,30 +434,30 @@ def hh():
     sys.stdout.write(cmd_help())
 
 def s():
-    """Saves the mail database."""
+    """Saves the post database."""
     event('before', 's')
-    maildb().save()
+    postdb().save()
     event('after', 's')
 
 def x():
-    """Saves the mail database and exits.
+    """Saves the post database and exits.
 
     If you want to exit without saving, just quit by hitting Ctrl-D.
     """
 
     event('before', 'x')
-    maildb().save()
+    postdb().save()
     event('after', 'x')
     sys.exit()
 
 def rl():
-    """Reloads the mail from the mail database.
+    """Reloads the post from the disk.
 
     Changes that have not been saved (e.g. with the x() command) will be lost.
     """
 
     event('before', 'rl')
-    maildb().reload()
+    postdb().reload()
     event('after', 'rl')
 
 def g():
@@ -509,7 +509,7 @@ def dr(pps):
                       lambda posts: posts.expf().forall.delete())
 
 def j(pp1, pp2):
-    """Joins two mails.
+    """Joins two posts.
 
     Arguments:
     pp1 -- The post that will be the parent.
@@ -519,8 +519,8 @@ def j(pp1, pp2):
     """
 
     event('before', 'j')
-    p1 = maildb().post(pp1)
-    p2 = maildb().post(pp2)
+    p1 = postdb().post(pp1)
+    p2 = postdb().post(pp2)
     event('postset_calculated', 'j')
     if p1 != None and p2 != None:
         p2.set_inreplyto(p1.heapid())
@@ -534,9 +534,9 @@ def e(pp):
         Type: PrePost"""
 
     event('before', 'j')
-    p = maildb().post(pp)
+    p = postdb().post(pp)
     if p != None:
-        maildb().save()
+        postdb().save()
         result = options.callbacks.edit_file(p.postfilename())
         if result == True:
             p.load()
@@ -546,10 +546,10 @@ def e(pp):
 
 def dl(from_=0):
     event('before', 'dl')
-    server = hklib.Server(maildb(), options.config)
-    server.connect()
-    server.download_new(int(from_))
-    server.close()
+    email_downloader = hklib.EmailDownloader(postdb(), options.config)
+    email_downloader.connect()
+    email_downloader.download_new(int(from_))
+    email_downloader.close()
     event('after', 'dl')
 
 
@@ -568,7 +568,7 @@ def pt(pps):
             def add_tags(p):
                 for tag in post.tags():
                     p.add_tag(tag)
-            maildb().postset(post).expf().forall(add_tags)
+            postdb().postset(post).expf().forall(add_tags)
     perform_operation(pps, 'pt', operation)
 
 def at(pps, tags):
@@ -683,7 +683,7 @@ def pS(pps):
 
     def operation(posts):
         for post in posts:
-            maildb().postset(post).expf().forall.set_subject(post.subject())
+            postdb().postset(post).expf().forall.set_subject(post.subject())
     perform_operation(pps, 'pS', operation)
 
 def sS(pps, subject):
@@ -768,18 +768,18 @@ def load_custom():
             hklib.log(funname, \
                           ' custom function: not found, using the default.')
 
-def read_maildb():
+def read_postdb():
     config = ConfigParser.ConfigParser()
     config.read('hk.cfg')
-    return hklib.MailDB.from_config(config), config
+    return hklib.PostDB.from_config(config), config
 
 def init():
     global modification_listener
-    modification_listener = ModificationListener(maildb())
+    modification_listener = ModificationListener(postdb())
     listeners.append(modification_listener)
 
 def main(args):
-    options.maildb, options.config = read_maildb()
+    options.postdb, options.config = read_postdb()
     load_custom()
     init()
     for arg in args:

@@ -28,7 +28,7 @@ DateOptions --- Options on how to handle and show dates.
 DateOptions keys:
 date_format --- The format of the date as given to time.strftime.
     Type: str
-maildb --- The mail database to work on.
+postdb --- The post database to work on.
     Type: str
 should_print_date_fun -- The function that specifies when to print the date of
     a post in the post summary.
@@ -88,16 +88,16 @@ def create_should_print_date_fun(options):
         Type: Post
     options ---
         Type: DateOptions
-        Required options: maildb, timedelta
+        Required options: postdb, timedelta
 
     Returns: ShouldPrintDateFun
     """
 
-    maildb = options['maildb']
+    postdb = options['postdb']
     timedelta = options['timedelta']
 
     def should_print_date_fun(post, genopts):
-        prev = maildb.prev(post)
+        prev = postdb.prev(post)
         if not hasattr(genopts, 'section'):
             return True
         if genopts.section.is_flat:
@@ -117,8 +117,8 @@ def create_date_fun(options):
     Arguments:
     options --- DateOptions
         Required options:
-            date_format, maildb
-            Either maildb, timedelta or should_print_date_fun.
+            date_format, postdb
+            Either postdb, timedelta or should_print_date_fun.
 
     Returns: hklib.DateFun
     """
@@ -137,7 +137,7 @@ def create_date_fun(options):
 
 def date_defopts(options={}):
     options0 = \
-        {'maildb': None,
+        {'postdb': None,
          'date_format' : '(%Y.%m.%d.)',
          'localtime_fun': time.localtime,
          'should_print_date_fun': None,
@@ -147,21 +147,21 @@ def date_defopts(options={}):
 
 ##### Generation #####
 
-def gen_indices(maildb):
-    date_options = date_defopts({'maildb': maildb})
+def gen_indices(postdb):
+    date_options = date_defopts({'postdb': postdb})
     date_fun = create_date_fun(date_options)
     genopts = hklib.GeneratorOptions()
-    genopts.maildb = maildb
-    section = hklib.Section(maildb.all())
+    genopts.postdb = postdb
+    section = hklib.Section(postdb.all())
     genopts.indices = [hklib.Index([section])]
-    hklib.Generator(maildb).gen_indices(genopts)
+    hklib.Generator(postdb).gen_indices(genopts)
 
-def gen_posts(maildb):
-    date_options = date_defopts({'maildb': maildb})
+def gen_posts(postdb):
+    date_options = date_defopts({'postdb': postdb})
     date_fun = create_date_fun(date_options)
     genopts = hklib.GeneratorOptions()
-    genopts.maildb = maildb
-    hklib.Generator(maildb).gen_posts(genopts)
+    genopts.postdb = postdb
+    hklib.Generator(postdb).gen_posts(genopts)
 
 ##### Misc #####
 

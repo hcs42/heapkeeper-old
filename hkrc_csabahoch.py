@@ -34,8 +34,8 @@ def has_tag(tags):
         return False
     return has_tag_fun
 
-def indices0(maildb):
-    ps_all = maildb.all().copy()
+def indices0(postdb):
+    ps_all = postdb.all().copy()
 
     # heap
     heap_tags = ['heap', 'Heap']
@@ -67,17 +67,17 @@ def indices0(maildb):
     return [index_hm, index_hh, index_ums]
             
 
-def sections1(maildb):
-    ps = maildb.postset('1204').exp()
+def sections1(postdb):
+    ps = postdb.postset('1204').exp()
     # sections
     return [("Heap", ps)]
 
-def gen_indices(maildb):
+def gen_indices(postdb):
 
     # Date options
     date_options = hkcustomlib.date_defopts()
     date_options.update({
-                         'maildb': maildb,
+                         'postdb': postdb,
                          'timedelta': datetime.timedelta(days=5),
                          'date_format': '(%Y.%m.%d. %H:%M:%S)',
                          })
@@ -86,23 +86,23 @@ def gen_indices(maildb):
     # Generator options
 
     genopts = hklib.GeneratorOptions()
-    genopts.maildb = maildb
-    genopts.indices = indices0(maildb)
+    genopts.postdb = postdb
+    genopts.indices = indices0(postdb)
     genopts.write_toc = True
     genopts.shortsubject = True
     genopts.shorttags = True
     genopts.date_fun = date_fun
 
     # Generating the index
-    hklib.Generator(maildb).gen_indices(genopts)
+    hklib.Generator(postdb).gen_indices(genopts)
 
-def gen_posts(maildb):
-    date_options = hkcustomlib.date_defopts({'maildb': maildb})
+def gen_posts(postdb):
+    date_options = hkcustomlib.date_defopts({'postdb': postdb})
     date_fun = hkcustomlib.create_date_fun(date_options)
     genopts = hklib.GeneratorOptions()
-    genopts.maildb = maildb
+    genopts.postdb = postdb
     genopts.print_thread_of_post = True
-    hklib.Generator(maildb).gen_posts(genopts)
+    hklib.Generator(postdb).gen_posts(genopts)
 
 def main(handlers):
     pass

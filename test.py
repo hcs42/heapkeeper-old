@@ -23,7 +23,7 @@ If executed without arguments, it runs all tests:
 
 It can be used to run a specific test:
 
-    $ python test.py test_hklib TestMailDB2 testThreadstructCycle1
+    $ python test.py test_hklib TestPostDB2 testThreadstructCycle1
 """
 
 import sys

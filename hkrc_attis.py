@@ -38,7 +38,7 @@ def overquoted(post):
     return 100 * quoted / all > 70
 
 def date_fun(post, options):
-    root = post._maildb.root(post)
+    root = post._postdb.root(post)
     if hasattr(options, 'section'):
         section = options.section
         if section.is_flat or \
@@ -57,12 +57,12 @@ def date_fun(post, options):
     else:
         return "(nincs dátum!)"
 
-def sections(maildb):
+def sections(postdb):
     exp = False
     eliminate = False
 
     # ps_all = összes levél
-    ps_all = maildb.all().copy()
+    ps_all = postdb.all().copy()
 
     # tidy
     # posts that belong here either:
@@ -70,8 +70,8 @@ def sections(maildb):
     # * contain more quote lines than non-quote
     ps_tidy = ps_all.collect.body_contains('\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>')
     ps_tidy |= ps_all.collect.body_contains('wrote:')
-    ps_tidy |= [post for post in maildb.all() if overquoted(post)]
-    ps_tidy |= [post for post in maildb.all() if overquoted(post)]
+    ps_tidy |= [post for post in postdb.all() if overquoted(post)]
+    ps_tidy |= [post for post in postdb.all() if overquoted(post)]
     ps_tidy -= ps_all.collect.has_tag('reviewed')
 
     # todo
@@ -126,15 +126,15 @@ def sections(maildb):
             hklib.Section("C és C++", ps_ccpp),
             hklib.Section("Python", ps_py),
             hklib.Section("Egyéb", ps_all)]
-#    monthly = do_monthly(maildb)
+#    monthly = do_monthly(postdb)
 #    if monthly != None:
 #        res.extend(monthly)
     return res
 
-def get_date_limits(maildb):
-    "Gets the datetime of the earliest and newest posts in maildb."
+def get_date_limits(postdb):
+    "Gets the datetime of the earliest and newest posts in postdb."
     start_date, end_date = None, None
-    for post in maildb.roots():
+    for post in postdb.roots():
         if start_date == None:
             start_date = read_date(post)
         if end_date == None:
@@ -151,24 +151,24 @@ def get_month(year, month):
         'augusztus', 'szeptember', 'október', 'november', 'december'] 
     return "%d %s" % (year, months[month - 1])
 
-def get_posts_in_month(maildb, year, month):
+def get_posts_in_month(postdb, year, month):
     next_month = month + 1
     next_year = year
     if next_month == 13:
         next_year += 1
         next_month = 1
-    return maildb.postset([post._heapid for post in maildb.roots() \
+    return postdb.postset([post._heapid for post in postdb.roots() \
         if post.date() != '' \
             and read_date(post) > datetime.datetime(year, month, 1) \
             and read_date(post) < datetime.datetime(next_year, next_month, 1)])
 
-def do_monthly(maildb):
-    start_date, end_date = get_date_limits(maildb)
+def do_monthly(postdb):
+    start_date, end_date = get_date_limits(postdb)
     curr_year, curr_month = start_date.year, start_date.month
     monthlist = []
     while datetime.datetime(curr_year, curr_month,1) < end_date:
         monthlist.append((get_month(curr_year, curr_month), \
-            get_posts_in_month(maildb, curr_year, curr_month)))
+            get_posts_in_month(postdb, curr_year, curr_month)))
         curr_month += 1
         if curr_month == 13:
             curr_year += 1
@@ -192,25 +192,25 @@ def read_date(post):
     else:
         return None
 
-def gen_indices(maildb):
+def gen_indices(postdb):
 
     # Date options
     #date_options = hkcustomlib.date_defopts()
-    #date_options.update({'maildb': maildb,
+    #date_options.update({'postdb': postdb,
     #                     'timedelta': datetime.timedelta(days=0)})
     #date_fun = hkcustomlib.create_date_fun(date_options)
 
     # Generator options
     genopts = hklib.GeneratorOptions()
-    genopts.maildb = maildb
-#    genopts.indices = [hklib.Index(sections(maildb)), hklib.Index(do_monthly(maildb),"monthly.html")]
+    genopts.postdb = postdb
+#    genopts.indices = [hklib.Index(sections(postdb)), hklib.Index(do_monthly(postdb),"monthly.html")]
     # new idea is:
     # - add static main index,
     # - do_montly() and store its results,
     # - iterate on months, add one new index per month, one section per index
 
-    genopts.indices = [hklib.Index(sections(maildb))]
-    months = do_monthly(maildb)
+    genopts.indices = [hklib.Index(sections(postdb))]
+    months = do_monthly(postdb)
     for n in range(0, len(months)):
         genopts.indices.append(hklib.Index([months[n]],
                                "month_" + str(n + 1) + ".html"))
@@ -221,26 +221,26 @@ def gen_indices(maildb):
     genopts.date_fun = date_fun
 
     # Generating the index
-    hklib.Generator(maildb).gen_indices(genopts)
+    hklib.Generator(postdb).gen_indices(genopts)
 
-def gen_posts(maildb):
+def gen_posts(postdb):
     # Generator options
     date_options = hkcustomlib.date_defopts()
-    date_options.update({'maildb': maildb,
+    date_options.update({'postdb': postdb,
                          'timedelta': datetime.timedelta(days=0)})
     date_fun = hkcustomlib.create_date_fun(date_options)
 
     genopts = hklib.GeneratorOptions()
-    genopts.maildb = maildb
+    genopts.postdb = postdb
     genopts.write_toc = True
     genopts.print_thread_of_post = True
     genopts.date_fun = date_fun
-    genopts.indices = [hklib.Index(sections(maildb))]
+    genopts.indices = [hklib.Index(sections(postdb))]
 #    n = 0
-#    for month in do_monthly(maildb):
+#    for month in do_monthly(postdb):
 #        genopts.indices.append(hklib.Index(month, str(n) + "html"))
 #        n += 1
 
     # Generating the posts
-    hklib.Generator(maildb).gen_posts(genopts)
+    hklib.Generator(postdb).gen_posts(genopts)
 

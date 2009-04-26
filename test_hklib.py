@@ -22,7 +22,7 @@
 
 Usage:
     
-    python hklibtest.py
+    $ python test_hklib.py
 """
 
 from __future__ import with_statement
@@ -37,7 +37,7 @@ import re
 from hklib import *
 
 
-class MailDBHandler(object):
+class PostDBHandler(object):
 
     """A class that helps implementing the tester classes by containing
     functions commonly used by them."""
@@ -56,14 +56,14 @@ class MailDBHandler(object):
     def tearDownDirs(self):
         shutil.rmtree(self._dir)
 
-    def createMailDB(self):
-        return MailDB(self._postfile_dir, self._html_dir)
+    def createPostDB(self):
+        return PostDB(self._postfile_dir, self._html_dir)
 
     def postFileName(self, fname):
         return os.path.join(self._postfile_dir, fname)
 
     def add_post(self, index, inreplyto=None):
-        """Adds a new post to maildb.
+        """Adds a new post to postdb.
         
         The attributes of the post will be created as follows:
         - The author will be 'author'+index.
@@ -81,13 +81,13 @@ class MailDBHandler(object):
              'Message-Id: %s@\n' % (index,) +
              'In-Reply-To: %s\n' % (inreplyto,))
         if not self._skipdates:
-            s += MailDBHandler.dates[index] + '\n'
+            s += PostDBHandler.dates[index] + '\n'
         s += ('\n' +
               'body%s' % (index,))
-        self._maildb.add_new_post(Post.from_str(s))
+        self._postdb.add_new_post(Post.from_str(s))
 
     def create_threadst(self, skipdates=False):
-        """Adds a thread structure to the maildb with the following structure.
+        """Adds a thread structure to the postdb with the following structure.
 
         0 <- 1 <- 2
           <- 3
@@ -100,7 +100,7 @@ class MailDBHandler(object):
         self.add_post(2, 1)
         self.add_post(3, 0)
         self.add_post(4)
-        self._posts = [ self._maildb.post(str(i)) for i in range(5) ]
+        self._posts = [ self._postdb.post(str(i)) for i in range(5) ]
 
 
 # global strings for tests
@@ -353,9 +353,9 @@ class TestPost2(unittest.TestCase):
         shutil.rmtree(self._dir)
 
 
-class TestMailDB1(unittest.TestCase, MailDBHandler):
+class TestPostDB1(unittest.TestCase, PostDBHandler):
 
-    """Tests the MailDB class (and its cooperation with the Post class)."""
+    """Tests the PostDB class (and its cooperation with the Post class)."""
 
     def setUp(self):
         self._dir = tempfile.mkdtemp()
@@ -370,12 +370,12 @@ class TestMailDB1(unittest.TestCase, MailDBHandler):
         return os.path.join(self._postfile_dir, fname)
 
     def testEmpty(self):
-        """Tests the empty MailDB."""
-        maildb = self.createMailDB()
+        """Tests the empty PostDB."""
+        postdb = self.createPostDB()
         self.assert_(os.path.exists(self._postfile_dir))
-        self.assertEquals(maildb.postfile_dir(), self._postfile_dir)
-        self.assertEquals(maildb.html_dir(), self._html_dir)
-        self.assertEquals(maildb.heapids(), [])
+        self.assertEquals(postdb.postfile_dir(), self._postfile_dir)
+        self.assertEquals(postdb.html_dir(), self._html_dir)
+        self.assertEquals(postdb.heapids(), [])
 
     def testOnlyMail(self):
         """Tests that only the files with ".mail" postfix are read."""
@@ -384,12 +384,12 @@ class TestMailDB1(unittest.TestCase, MailDBHandler):
         hkutils.string_to_file('Subject: sx', self.postFileName('xy.mail'))
         hkutils.string_to_file('Subject: s2', self.postFileName('2.other'))
         hkutils.string_to_file('Subject: s3', self.postFileName('3mail'))
-        maildb = self.createMailDB()
-        self.assertEquals(set(maildb.heapids()), set(['1', 'xy']))
-        self.assertEquals(maildb.next_heapid(), '2')
+        postdb = self.createPostDB()
+        self.assertEquals(set(postdb.heapids()), set(['1', 'xy']))
+        self.assertEquals(postdb.next_heapid(), '2')
 
     def testConfig(self):
-        """Tests the MailDB.__init__ which has a ConfigParser argument."""
+        """Tests the PostDB.__init__ which has a ConfigParser argument."""
         self.createDirs()
         hkutils.string_to_file('Subject: s1', self.postFileName('1.mail'))
         configFileText = '''\
@@ -401,28 +401,28 @@ html=%s
         hkutils.string_to_file(configFileText, configFileName)
         config = ConfigParser.ConfigParser()
         config.read(configFileName)
-        maildb = MailDB.from_config(config)
-        self.assertEquals(set(maildb.heapids()), set(['1']))
+        postdb = PostDB.from_config(config)
+        self.assertEquals(set(postdb.heapids()), set(['1']))
 
     def testGetMethods(self):
-        """Tests the 'get' methods of MailDB."""
+        """Tests the 'get' methods of PostDB."""
         self.createDirs()
         hkutils.string_to_file('Message-Id: mess1',
                                self.postFileName('1.mail'))
         hkutils.string_to_file('Message-Id: mess2',
                                self.postFileName('2.mail'))
-        maildb = self.createMailDB()
-        self.assertEquals(set(maildb.heapids()), set(['1', '2']))
-        self.assertEquals(maildb.next_heapid(), '3')
-        self.assertEquals(maildb.next_heapid(), '4')
-        p1 = maildb.post('1')
-        p2 = maildb.post('2')
-        self.assertEquals(set([p1, p2]), set(maildb.posts()))
-        self.assert_(p1 is maildb.post_by_messid('mess1'))
-        self.assert_(p2 is maildb.post_by_messid('mess2'))
+        postdb = self.createPostDB()
+        self.assertEquals(set(postdb.heapids()), set(['1', '2']))
+        self.assertEquals(postdb.next_heapid(), '3')
+        self.assertEquals(postdb.next_heapid(), '4')
+        p1 = postdb.post('1')
+        p2 = postdb.post('2')
+        self.assertEquals(set([p1, p2]), set(postdb.posts()))
+        self.assert_(p1 is postdb.post_by_messid('mess1'))
+        self.assert_(p2 is postdb.post_by_messid('mess2'))
 
     def testModifications(self):
-        """Tests the 'set' methods of MailDB."""
+        """Tests the 'set' methods of PostDB."""
 
         # Initialisation
         self.createDirs()
@@ -430,9 +430,9 @@ html=%s
         postfile2 = self.postFileName('2.mail')
         hkutils.string_to_file('Message-Id: mess1', postfile1)
         hkutils.string_to_file('Message-Id: mess2', postfile2)
-        maildb = self.createMailDB()
-        p1 = maildb.post('1')
-        p2 = maildb.post('2')
+        postdb = self.createPostDB()
+        p1 = postdb.post('1')
+        p2 = postdb.post('2')
 
         # Modifying and saving a post
         p1.set_subject('subject')
@@ -440,7 +440,7 @@ html=%s
                           hkutils.file_to_string(postfile1))
         self.assertEquals('Message-Id: mess2',
                           hkutils.file_to_string(postfile2))
-        maildb.save()
+        postdb.save()
         postfile1_str = 'Subject: subject\nMessage-Id: mess1\n\n\n'
         self.assertEquals(postfile1_str,
                           hkutils.file_to_string(postfile1))
@@ -450,30 +450,30 @@ html=%s
         # Adding a new post
         postfile3 = self.postFileName('3.mail')
         p3 = Post.from_str('Subject: subject3')
-        maildb.add_new_post(p3)
-        self.assertEquals(set(maildb.heapids()), set(['1', '2', '3']))
+        postdb.add_new_post(p3)
+        self.assertEquals(set(postdb.heapids()), set(['1', '2', '3']))
         self.assertFalse(os.path.exists(postfile3))
-        maildb.save()
+        postdb.save()
         self.assert_(os.path.exists(postfile3))
 
         # Deleting a post
-        self.assertEquals(set([p1, p2, p3]), set(maildb.posts()))
-        self.assertEquals(set([p1, p2, p3]), set(maildb.real_posts()))
+        self.assertEquals(set([p1, p2, p3]), set(postdb.posts()))
+        self.assertEquals(set([p1, p2, p3]), set(postdb.real_posts()))
         p1.delete()
-        self.assertEquals(set([p2, p3]), set(maildb.posts()))
-        self.assertEquals(set([p1, p2, p3]), set(maildb.real_posts()))
+        self.assertEquals(set([p2, p3]), set(postdb.posts()))
+        self.assertEquals(set([p1, p2, p3]), set(postdb.real_posts()))
 
     def test_reload(self):
 
         # Initialization
         self.createDirs()
-        maildb = self.createMailDB()
-        maildb.add_new_post(Post.from_str(''))
-        p1 = maildb.post('0')
+        postdb = self.createPostDB()
+        postdb.add_new_post(Post.from_str(''))
+        p1 = postdb.post('0')
 
         # Saving a subject; setting a new one but abandoning it
         p1.set_subject('sub1')
-        maildb.save()
+        postdb.save()
 
         # A change that will be lost.
         p1.set_subject('sub2')
@@ -481,16 +481,16 @@ html=%s
         # A change on the disk that will be loaded.
         hkutils.string_to_file('Subject: sub_new', self.postFileName('x.mail'))
 
-        maildb.reload()
-        maildb.save()
+        postdb.reload()
+        postdb.save()
 
         # The subject of p1 is unchanged, x.mail is loaded
         self.assertEquals(p1.subject(), 'sub1')
-        self.assert_(maildb.post('0') is p1)
+        self.assert_(postdb.post('0') is p1)
         self.assertEquals(
             hkutils.file_to_string(p1.postfilename()),
             'Subject: sub1\n\n\n')
-        self.assertEquals(maildb.post('x').subject(), 'sub_new')
+        self.assertEquals(postdb.post('x').subject(), 'sub_new')
 
     def testThreadstructHeapid(self):
         """Testing that the thread structure also works when the In-Reply-To
@@ -502,72 +502,72 @@ html=%s
         # 3
         # 4 <- 5
         self.createDirs()
-        maildb = self.createMailDB()
-        maildb.add_new_post(Post.from_str(''))               # #0
-        maildb.add_new_post(Post.from_str('In-Reply-To: 0')) # #1
-        maildb.add_new_post(Post.from_str(''))               # #2
-        maildb.add_new_post(Post.from_str('Message-Id: 2'))  # #3
-        maildb.add_new_post(Post.from_str('In-Reply-To: 2')) # #4
+        postdb = self.createPostDB()
+        postdb.add_new_post(Post.from_str(''))               # #0
+        postdb.add_new_post(Post.from_str('In-Reply-To: 0')) # #1
+        postdb.add_new_post(Post.from_str(''))               # #2
+        postdb.add_new_post(Post.from_str('Message-Id: 2'))  # #3
+        postdb.add_new_post(Post.from_str('In-Reply-To: 2')) # #4
 
         ts = {None: ['0', '2', '3'],
               '0': ['1'],
               '3': ['4']}
-        self.assertEquals(ts, maildb.threadstruct())
+        self.assertEquals(ts, postdb.threadstruct())
 
     def tearDown(self):
         shutil.rmtree(self._dir)
 
 
-class TestMailDB2(unittest.TestCase, MailDBHandler):
+class TestPostDB2(unittest.TestCase, PostDBHandler):
 
     def setUp(self):
         self.setUpDirs()
-        self._maildb = self.createMailDB()
+        self._postdb = self.createPostDB()
         self.create_threadst()
 
     def testThreadstruct(self):
         """Tests the thread structure computing method."""
 
-        maildb = self._maildb
-        # Testing MailDB.threadstruct
+        postdb = self._postdb
+        # Testing PostDB.threadstruct
 
         ts = {None: ['0', '4'],
               '0': ['1', '3'],
               '1': ['2']}
-        self.assertEquals(ts, maildb.threadstruct())
+        self.assertEquals(ts, postdb.threadstruct())
 
-        # Modifying the MailDB
+        # Modifying the PostDB
         self.add_post(5, 0)
         ts = {None: ['0', '4'],
               '0': ['1', '3', '5'],
               '1': ['2']}
-        self.assertEquals(ts, maildb.threadstruct())
+        self.assertEquals(ts, postdb.threadstruct())
 
         # Deleting a post
-        maildb.post('1').delete()
+        postdb.post('1').delete()
         ts = {None: ['0', '2', '4'],
               '0': ['3', '5']}
-        self.assertEquals(ts, maildb.threadstruct())
+        self.assertEquals(ts, postdb.threadstruct())
 
-        maildb.post('0').delete()
+        postdb.post('0').delete()
         ts = {None: ['2', '3', '4', '5']}
-        self.assertEquals(ts, maildb.threadstruct())
+        self.assertEquals(ts, postdb.threadstruct())
 
-        maildb.post('2').delete()
-        maildb.post('3').delete()
-        maildb.post('4').delete()
-        maildb.post('5').delete()
+        postdb.post('2').delete()
+        postdb.post('3').delete()
+        postdb.post('4').delete()
+        postdb.post('5').delete()
         ts = {None: []}
-        self.assertEquals(ts, maildb.threadstruct())
+        self.assertEquals(ts, postdb.threadstruct())
 
     def testIterThread(self):
-        """Tests the MailDB.iter_thread method."""
-        maildb = self._maildb
+        """Tests the PostDB.iter_thread method."""
+        postdb = self._postdb
         p = self._posts
 
         def test(post, result):
             self.assertEquals(result, \
-                              [ p.heapid() for p in maildb.iter_thread(post)])
+                              [ p.heapid() for p in postdb.iter_thread(post)])
 
         test(None, ['0', '1', '2', '3', '4'])
         test(p[0], ['0', '1', '2', '3'])
@@ -576,21 +576,21 @@ class TestMailDB2(unittest.TestCase, MailDBHandler):
         test(p[3], ['3'])
         test(p[4], ['4'])
 
-        # if the post is not in the maildb, AssertionError will be raised
+        # if the post is not in the postdb, AssertionError will be raised
         def f():
             test(Post.from_str(''), [])
         self.assertRaises(AssertionError, f)
     
     def testPrev(self):
         """Tests the 'prev' method."""
-        maildb = self._maildb
+        postdb = self._postdb
 
         def test(post_heapid, prev_heapid):
             if prev_heapid != None:
-                prev_post = maildb.post(prev_heapid)
+                prev_post = postdb.post(prev_heapid)
             else:
                 prev_post = None
-            self.assertEquals(maildb.prev(maildb.post(post_heapid)), \
+            self.assertEquals(postdb.prev(postdb.post(post_heapid)), \
                               prev_post)
 
         test('0', None)
@@ -601,14 +601,14 @@ class TestMailDB2(unittest.TestCase, MailDBHandler):
 
     def testRoot(self):
         """Tests the 'root' method."""
-        maildb = self._maildb
+        postdb = self._postdb
 
         def test(post_heapid, prev_heapid):
             if prev_heapid != None:
-                prev_post = maildb.post(prev_heapid)
+                prev_post = postdb.post(prev_heapid)
             else:
                 prev_post = None
-            self.assertEquals(maildb.root(maildb.post(post_heapid)), \
+            self.assertEquals(postdb.root(postdb.post(post_heapid)), \
                               prev_post)
 
         test('0', '0')
@@ -621,7 +621,7 @@ class TestMailDB2(unittest.TestCase, MailDBHandler):
         """The general function that tests the cycle detection of the thread
         structure computing method.
 
-        It modifies the mail database according to the inreplytos argument,
+        It modifies the post database according to the inreplytos argument,
         then checks that the thread structture and the cycles of the modified
         database are as expected.
         
@@ -635,16 +635,16 @@ class TestMailDB2(unittest.TestCase, MailDBHandler):
             Type: [heapid]
         """
 
-        maildb = self._maildb
+        postdb = self._postdb
         p = self._posts
         for child, parent in inreplytos.items():
-            maildb.post(child).set_inreplyto(parent)
-        self.assertEquals(threadstruct, maildb.threadstruct())
-        self.assert_(maildb.cycles().is_set(cycles))
+            postdb.post(child).set_inreplyto(parent)
+        self.assertEquals(threadstruct, postdb.threadstruct())
+        self.assert_(postdb.cycles().is_set(cycles))
         if cycles == []:
-            self.assertFalse(maildb.has_cycle())
+            self.assertFalse(postdb.has_cycle())
         else:
-            self.assert_(maildb.has_cycle())
+            self.assert_(postdb.has_cycle())
 
     def testThreadstructCycle1(self):
         self.threadstructCycle_general(
@@ -684,7 +684,7 @@ class TestMailDB2(unittest.TestCase, MailDBHandler):
         self.tearDownDirs()
 
 
-class TestPostSet(unittest.TestCase, MailDBHandler):
+class TestPostSet(unittest.TestCase, PostDBHandler):
 
     """Tests the PostSet class."""
 
@@ -699,31 +699,31 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         hkutils.string_to_file('Message-Id: 1@', postfile1)
         hkutils.string_to_file('Message-Id: 2@\nIn-Reply-To: 1@', postfile2)
         hkutils.string_to_file('Message-Id: 3@\nIn-Reply-To: 1@', postfile3)
-        self._maildb = self.createMailDB()
+        self._postdb = self.createPostDB()
 
     def testEmpty(self):
-        maildb = self._maildb
-        p1 = maildb.post('1')
-        p2 = maildb.post('2')
-        ps1 = PostSet(maildb, set())
+        postdb = self._postdb
+        p1 = postdb.post('1')
+        p2 = postdb.post('2')
+        ps1 = PostSet(postdb, set())
 
         self.assertNotEquals(ps1, set())
         self.assert_(ps1 != set())
         self.assertFalse(ps1 == set())
         self.assert_(ps1.is_set(set()))
 
-        self.assertEquals(ps1, PostSet(maildb, []))
-        self.assert_(ps1 == PostSet(maildb, []))
-        self.assertFalse(ps1 != PostSet(maildb, []))
+        self.assertEquals(ps1, PostSet(postdb, []))
+        self.assert_(ps1 == PostSet(postdb, []))
+        self.assertFalse(ps1 != PostSet(postdb, []))
 
     def testCopy(self):
         """Tests PostSet.copy and PostSet.empty_clone."""
 
-        maildb = self._maildb
-        ps_all = self._maildb.all().copy()
-        p1 = maildb.post('1')
-        p2 = maildb.post('2')
-        p3 = maildb.post('3')
+        postdb = self._postdb
+        ps_all = self._postdb.all().copy()
+        p1 = postdb.post('1')
+        p2 = postdb.post('2')
+        p3 = postdb.post('3')
 
         ps1 = ps_all.copy()
         self.assert_(ps1 == ps_all)
@@ -736,27 +736,27 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
 
         self.assert_(ps_all.is_set(set([p1, p2, p3])))
         self.assert_(ps1.is_set(set([p2, p3])))
-        self.assert_(ps_all._maildb is ps1._maildb)
+        self.assert_(ps_all._postdb is ps1._postdb)
 
         ps2 = ps_all.empty_clone()
         self.assert_(ps_all.is_set(set([p1, p2, p3])))
         self.assert_(ps2.is_set(set([])))
-        self.assert_(ps_all._maildb is ps2._maildb)
+        self.assert_(ps_all._postdb is ps2._postdb)
 
     def test1(self):
-        maildb = self._maildb
-        p1 = maildb.post('1')
-        p2 = maildb.post('2')
-        p3 = maildb.post('3')
+        postdb = self._postdb
+        p1 = postdb.post('1')
+        p2 = postdb.post('2')
+        p3 = postdb.post('3')
 
         # __init__, _to_set
-        ps0 = PostSet(maildb, set([p1]))
-        ps02 = PostSet(maildb, [p1])
-        ps03 = PostSet(maildb, p1)
-        psh1= PostSet(maildb, set(['1']))
-        psh2 = PostSet(maildb, ['1'])
-        psh3 = PostSet(maildb, '1')
-        psh4 = PostSet(maildb, 1)
+        ps0 = PostSet(postdb, set([p1]))
+        ps02 = PostSet(postdb, [p1])
+        ps03 = PostSet(postdb, p1)
+        psh1= PostSet(postdb, set(['1']))
+        psh2 = PostSet(postdb, ['1'])
+        psh3 = PostSet(postdb, '1')
+        psh4 = PostSet(postdb, 1)
         self.assertEquals(ps0, ps02)
         self.assertEquals(ps0, ps03)
         self.assertEquals(ps0, psh1)
@@ -764,13 +764,13 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         self.assertEquals(ps0, psh3)
         self.assertEquals(ps0, psh4)
 
-        ps01 = maildb.postset(set([p1]))
-        ps02 = maildb.postset([p1])
-        ps03 = maildb.postset(p1)
-        psh1= maildb.postset(set(['1']))
-        psh2 = maildb.postset(['1'])
-        psh3 = maildb.postset('1')
-        psh3 = maildb.postset(1)
+        ps01 = postdb.postset(set([p1]))
+        ps02 = postdb.postset([p1])
+        ps03 = postdb.postset(p1)
+        psh1= postdb.postset(set(['1']))
+        psh2 = postdb.postset(['1'])
+        psh3 = postdb.postset('1')
+        psh3 = postdb.postset(1)
         self.assertEquals(ps0, ps01)
         self.assertEquals(ps0, ps02)
         self.assertEquals(ps0, ps03)
@@ -779,20 +779,20 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         self.assertEquals(ps0, psh3)
         self.assertEquals(ps0, psh4)
 
-        ps1 = PostSet(maildb, set([p1, p2]))
-        ps2 = PostSet(maildb, set([p2, p3]))
-        ps3 = PostSet(maildb, [p2, p3])
-        ps4 = PostSet(maildb, ps3)
+        ps1 = PostSet(postdb, set([p1, p2]))
+        ps2 = PostSet(postdb, set([p2, p3]))
+        ps3 = PostSet(postdb, [p2, p3])
+        ps4 = PostSet(postdb, ps3)
         self.assertNotEquals(ps1, ps2)
         self.assertEquals(ps2, ps3)
         self.assertEquals(ps2, ps4)
 
         def f():
-            PostSet(maildb, 'nosuchpost')
+            PostSet(postdb, 'nosuchpost')
         self.assertRaises(KeyError, f)
 
         def f():
-            PostSet(maildb, 1.0)
+            PostSet(postdb, 1.0)
         self.assertRaises(TypeError, f)
 
         # is_set
@@ -804,9 +804,9 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         self.assert_(ps2.is_set(ps3))
 
         # &, |, -, ^
-        ps1 = PostSet(maildb, [p1, p2])
-        ps2 = PostSet(maildb, [p1, p3])
-        ps3 = PostSet(maildb, [p2, p3])
+        ps1 = PostSet(postdb, [p1, p2])
+        ps2 = PostSet(postdb, [p1, p3])
+        ps3 = PostSet(postdb, [p2, p3])
         ps1l = [p1, p2]
         ps2l = [p1, p3]
         ps3l = [p2, p3]
@@ -893,12 +893,12 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
             test(1.0 & ps1, [p1])
         self.assertRaises(TypeError, f)
 
-        # MailDB.all
-        ps_all = PostSet(maildb, [p1, p2, p3])
-        ps2 = PostSet(maildb, set([p2, p3]))
-        self.assertEquals(ps_all, maildb.all())
+        # PostDB.all
+        ps_all = PostSet(postdb, [p1, p2, p3])
+        ps2 = PostSet(postdb, set([p2, p3]))
+        self.assertEquals(ps_all, postdb.all())
         p1.delete()
-        self.assertEquals(ps2, maildb.all())
+        self.assertEquals(ps2, postdb.all())
 
         # clear, update
         ps1.clear()
@@ -909,9 +909,9 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
     def testGetAttr(self):
         """Tests the PostSet.__get_attr__ method."""
 
-        maildb = self._maildb
+        postdb = self._postdb
         def f():
-            PostSet(maildb, []).nonexisting_method
+            PostSet(postdb, []).nonexisting_method
         self.assertRaises(AttributeError, f)
 
     def testForall(self):
@@ -922,62 +922,62 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
             self.assertEquals(s2, p2.subject())
             self.assertEquals(s3, p3.subject())
 
-        maildb = self._maildb
-        p1 = maildb.post('1')
-        p2 = maildb.post('2')
-        p3 = maildb.post('3')
+        postdb = self._postdb
+        p1 = postdb.post('1')
+        p2 = postdb.post('2')
+        p3 = postdb.post('3')
         testSubjects('', '', '')
 
-        PostSet(maildb, []).forall.set_subject('x')
+        PostSet(postdb, []).forall.set_subject('x')
         testSubjects('', '', '')
-        PostSet(maildb, [p1]).forall.set_subject('x')
+        PostSet(postdb, [p1]).forall.set_subject('x')
         testSubjects('x', '', '')
-        maildb.all().forall(lambda p: p.set_subject('z'))
+        postdb.all().forall(lambda p: p.set_subject('z'))
         testSubjects('z', 'z', 'z')
-        maildb.all().forall.set_subject('y')
+        postdb.all().forall.set_subject('y')
         testSubjects('y', 'y', 'y')
 
         # Nonexisting methods will cause exceptions...
         def f():
-            maildb.all().forall.nonexisting_method()
+            postdb.all().forall.nonexisting_method()
         self.assertRaises(AttributeError, f)
 
         # ...unless the postset is empty
-        PostSet(maildb, []).forall.nonexisting_method()
+        PostSet(postdb, []).forall.nonexisting_method()
         testSubjects('y', 'y', 'y')
 
     def testCollect(self):
         """Tests the PostSet.collect method."""
 
-        maildb = self._maildb
-        p1 = maildb.post('1')
+        postdb = self._postdb
+        p1 = postdb.post('1')
         p1.set_tags(['t1'])
-        p2 = maildb.post('2')
+        p2 = postdb.post('2')
         p2.set_tags(['t2'])
-        p3 = maildb.post('3')
+        p3 = postdb.post('3')
         p3.set_tags(['t1'])
 
-        ps1 = maildb.all().collect.has_tag('t1')
+        ps1 = postdb.all().collect.has_tag('t1')
         self.assert_(ps1.is_set([p1, p3]))
-        ps2 = maildb.all().collect(lambda p: False)
+        ps2 = postdb.all().collect(lambda p: False)
         self.assert_(ps2.is_set([]))
-        ps3 = maildb.all().collect(lambda p: True)
+        ps3 = postdb.all().collect(lambda p: True)
         self.assert_(ps3.is_set([p1, p2, p3]))
-        ps4 = maildb.all().collect(lambda p: p.has_tag('t1'))
+        ps4 = postdb.all().collect(lambda p: p.has_tag('t1'))
         self.assert_(ps4.is_set([p1, p3]))
 
         def f():
-            maildb.all().collect(lambda p: None)
+            postdb.all().collect(lambda p: None)
         self.assertRaises(AssertionError, f)
 
-        ps_roots = maildb.all().collect.is_root()
+        ps_roots = postdb.all().collect.is_root()
         self.assert_(ps_roots.is_set([p1]))
 
     def tearDown(self):
         self.tearDownDirs()
 
 
-class TestPostSetThreads(unittest.TestCase, MailDBHandler):
+class TestPostSetThreads(unittest.TestCase, PostDBHandler):
 
     """Tests thread centric methods of the PostSet class."""
 
@@ -988,7 +988,7 @@ class TestPostSetThreads(unittest.TestCase, MailDBHandler):
 
     def setUp(self):
         self.setUpDirs()
-        self._maildb = self.createMailDB()
+        self._postdb = self.createPostDB()
         self.create_threadst()
 
     def _testExp(self, methodname):
@@ -1010,7 +1010,7 @@ class TestPostSetThreads(unittest.TestCase, MailDBHandler):
             p = self._posts
             posts_1 = [ self._posts[int(i)] for i in heapids_1 ]
             posts_2 = [ self._posts[int(i)] for i in heapids_2 ]
-            ps = PostSet(self._maildb, posts_1)
+            ps = PostSet(self._postdb, posts_1)
 
             # Testing that the real output is the expected output.
             self.assert_(eval('ps.' + methodname + '()').is_set(posts_2))
@@ -1150,7 +1150,7 @@ class TestPostSetThreads(unittest.TestCase, MailDBHandler):
         test('1234', '01234')
     
     def testSortedList(self):
-        ps = self._maildb.postset(self._posts)
+        ps = self._postdb.postset(self._posts)
         self.assertEquals(ps.sorted_list(), self._posts)
 
     def tearDown(self):
@@ -1250,7 +1250,7 @@ class TestHtml(unittest.TestCase):
             '</ul>\n')
 
 
-class TestGenerator(unittest.TestCase, MailDBHandler):
+class TestGenerator(unittest.TestCase, PostDBHandler):
 
     """Tests the Generator class."""
 
@@ -1264,11 +1264,11 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
         return self._posts[postindex]
 
     def init(self, create_threadst=True):
-        maildb = self._maildb = self.createMailDB()
-        g = Generator(maildb)
+        postdb = self._postdb = self.createPostDB()
+        g = Generator(postdb)
         if create_threadst:
             self.create_threadst()
-        return maildb, g, self.p
+        return postdb, g, self.p
 
     def index_html(self):
         index_html_name = os.path.join(self._html_dir, 'index.html')
@@ -1280,7 +1280,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
              return Html.enclose(tag='div', class_=None, id='subheader',
                                  content=content, newlines=True)
 
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
         
         genopts = GeneratorOptions()
         genopts.sections = [Section('Sec1', [p(1)]),
@@ -1336,7 +1336,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             my_post_html)
 
     def test_index_toc(self):
-        maildb, g, p = self.init(create_threadst=False)
+        postdb, g, p = self.init(create_threadst=False)
         self.create_threadst(skipdates=True)
         
         genopts = GeneratorOptions()
@@ -1351,7 +1351,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
                 'tableofcontents'))
 
     def test_post_summary(self):
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
         div = Html.post_summary_div
 
         genopts = GeneratorOptions()
@@ -1384,7 +1384,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             div('0.html', 'author0', 'subject0', STAR, '0', None, False))
 
     def test_post_summary__flat(self):
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
 
         genopts = GeneratorOptions()
         genopts.sections = [Section('Sec1', [p(1)], is_flat=True),
@@ -1402,7 +1402,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             self.assertEquals(post.heapid(), str((self._posts.index(post))))
             return 'date%s' % (self._posts.index(post),)
 
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
 
         genopts = GeneratorOptions()
         genopts.date_fun = date_fun
@@ -1416,7 +1416,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             div('0.html', 'author0', 'subject0', [], '0', 'date0', False))
 
     def test_thread(self):
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
 
         genopts = GeneratorOptions()
         genopts.sections = [Section('Sec1', [p(1)]),
@@ -1463,7 +1463,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             g.post_summary_end()) # end of 4
 
     def test_thread__shortsubject(self):
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
 
         genopts = GeneratorOptions()
         genopts.sections = [Section('Sec', [p(1), p(4)])]
@@ -1506,7 +1506,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             g.post_summary_end()) # end of 4
 
     def test_thread__cycles(self):
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
         p(1).set_inreplyto('2')
 
         genopts = GeneratorOptions()
@@ -1533,7 +1533,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             g.post_summary_end()) # end of 4
 
     def test_section(self):
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
 
         # Tests empty section.
         genopts = GeneratorOptions()
@@ -1582,7 +1582,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
              Html.section_end())
 
     def test_section__flat(self):
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
 
         # Tests flat printing with list.
         genopts = GeneratorOptions()
@@ -1606,7 +1606,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 
         # Tests flat printing with PostSet.
         genopts = GeneratorOptions()
-        genopts.sections = [Section('Sec', maildb.postset([p(1), p(4)]))]
+        genopts.sections = [Section('Sec', postdb.postset([p(1), p(4)]))]
         genopts.section = genopts.sections[0]
         genopts.section.is_flat = True
         self.assertEquals(
@@ -1614,14 +1614,14 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
             self.flat_result(g, genopts, [p(1), p(4)]))
 
     def test_section__cycle(self):
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
         p(1).set_inreplyto('2')
 
         # Tests empty section.
         genopts = GeneratorOptions()
         genopts.sections = [Section('Sec', CYCLES)]
         genopts.section = genopts.sections[0]
-        genopts.maildb = maildb
+        genopts.postdb = postdb
 
         self.assertEquals(
             g.section(0, genopts),
@@ -1629,7 +1629,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 
     def test_gen_indices(self):
 
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
 
         index = Index()
         index.sections = [Section('Sec1', [p(1)]),
@@ -1673,7 +1673,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 
     def test_gen_posts(self):
 
-        maildb, g, p = self.init()
+        postdb, g, p = self.init()
 
         index = Index()
         index.sections = [Section('Sec1', [p(1)]),
