@@ -24,6 +24,7 @@ These conventions apply both to docstrings and documentation stored in ``rst``
 files, since they are both reStructuredText texts.
 
 * Use lines no longer than 79 characters.
+* Use US spelling.
 
 Python code
 -----------
