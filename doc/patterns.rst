@@ -42,8 +42,8 @@ Explanation
 
 Used in
 
-   * :class:`heapmanip.Html`
-   * :class:`heapmanip.Generator`
+   * :class:`hklib.Html`
+   * :class:`hklib.Generator`
 
 .. _lazy_data_calculation_pattern:
 
@@ -130,7 +130,7 @@ Explanation
 
 Used in
 
-   * :class:`heapmanip.MailDB`
+   * :class:`hklib.PostDB`
 
 .. _options_pattern:
 
@@ -165,13 +165,13 @@ Code example
           """
       
           def __init__(self,
-                       option1=heaplib.NOT_SET,
+                       option1=hkutils.NOT_SET,
                        option2=''):
       
               """Constructor."""
       
               super(MyOptions, self).__init__()
-              heaplib.set_dict_items(self, locals())
+              hkutils.set_dict_items(self, locals())
 
    Code that uses it::
 
@@ -193,15 +193,15 @@ Explanation
    One instance of the ``MyOptions`` class represents a configuration of the
    options.
 
-   The options whose default value is ``heaplib.NOT_SET`` do not really have a
+   The options whose default value is ``hkutils.NOT_SET`` do not really have a
    default value. Functions like ``f`` expect that none of the options is
    ``NOT_SET``, so the options whose default value is ``NOT_SET`` should be set
    when functions like ``f`` are called.
 
 Used in
 
-   * :class:`heapmanip.GeneratorOptions`
-   * :class:`heapmanip.Section`
-   * :class:`heapmanip.Index`
-   * :class:`heapcustomlib.DateOptions` (not yet)
-   * :class:`heapia.Options` (not yet)
+   * :class:`hklib.GeneratorOptions`
+   * :class:`hklib.Section`
+   * :class:`hklib.Index`
+   * :class:`hkcustomlib.DateOptions` (not yet)
+   * :class:`hkshell.Options` (not yet)

@@ -44,7 +44,7 @@ Using the interactive interface
 After creating the configuration file, the interactive interface can be started
 by typing the following::
 
-    $ ./heapia
+    $ ./hkshell
 
 This will start a Python shell and define the interactive commands as global
 functions. You can type the h command (i.e. call the h function) to see the
@@ -81,7 +81,7 @@ Further examples::
     >>> sS(ps([10,11,12]), 'something')  # Changing the subject of the given
                                          # posts to 'something'.
 
-The heapmanip module can be used for more complicated tasks which does not have
+The hklib module can be used for more complicated tasks which does not have
 an interface command. The following example collects the posts with [heap] tag
 in the same threads as 11 and 14, and adds a 'Hey!\n' prefix to their bodies.
 Then the mail HTML is regenerated. ::
@@ -93,25 +93,25 @@ Then the mail HTML is regenerated. ::
 Customizing the interface
 -------------------------
 
-heapia can be customized by creating a Python module called heapcustom. If the
-appropriate callback functions are defined here, they will be used by heapia
+hkshell can be customized by creating a Python module called heapcustom. If the
+appropriate callback functions are defined here, they will be used by hkshell
 instead of the default behaviour.
 
 E.g. the following ``heapcustom.py`` changes the arguments of the
 HTML-generator so that it includes the table of contents in the generated HTML
 and omits the dates. ::
 
-    import heapmanip
+    import hklib
 
     def gen_index_html(maildb):
-        g = heapmanip.Generator(maildb)
+        g = hklib.Generator(maildb)
         g.index_html(write_toc=True, write_date=False)
 
 The same can be done by hand from the Heapkeeper's interactive shell,
 without creating ``heapcustom`` module::
 
     >>> def my_gen_index_html(maildb):
-    ...     g = heapmanip.Generator(maildb)
+    ...     g = hklib.Generator(maildb)
     ...     g.index_html(write_toc=True, write_date=False)
     ...
     >>> set_callback('gen_index_html', my_gen_index_html)
@@ -130,8 +130,8 @@ See module :mod:`heapcustom-csabahoch` as an example.
 Using the interface without Python shell
 ----------------------------------------
 
-The interface can be also used without interaction. Just call the heapia module
+The interface can be also used without interaction. Just call the hkshell module
 and give the commands as arguments. E.g. the following line typed into a Unix
 shell will download the new mail and regenerate the HTML files::
 
-    $ python heapia.py 'dl()' 'ga()'  # dl = download, ga = generate all HTML
+    $ python hkshell.py 'dl()' 'ga()'  # dl = download, ga = generate all HTML

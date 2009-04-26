@@ -7,8 +7,8 @@ Documentation and coding conventions
    nor either indent thou two, excepting that thou then proceed to four.
    Tabs are right out.*
 
-This file describes the documentation and coding conventions used by the Heap
-project.
+This file describes the documentation and coding conventions used by the
+Heapkeeper project.
 
 You should also read the Style Guide for Python code: :pep:`8`.
 However, some recommendations of PEP 8 are overridden by this document.
@@ -119,17 +119,17 @@ No::
 
    Yes::
    
-      raise heaplib.HeapException, \
+      raise hkutils.HkException, \
              'We have a problem'
    
    No::
    
-      raise (heaplib.HeapException,
+      raise (hkutils.HkException,
              'We have a problem')
    
    Yes::
    
-      raise heaplib.HeapException, \
+      raise hkutils.HkException, \
             ('We have a problem with %s, which is very serious.' %
              problematic_thing)
 

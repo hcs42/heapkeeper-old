@@ -1,12 +1,12 @@
-:mod:`heapmanip` user documentation
-===================================
+:mod:`hklib` user documentation
+===============================
 
-See the :doc:`developer documentation of heapmanip <heapmanip_dev>` for more
+See the :doc:`developer documentation of hklib <hklib_dev>` for more
 details.
 
 -------------------------------------------------------------------------------
 
-.. automodule:: heapmanip
+.. automodule:: hklib
 
 Html
 ----
@@ -25,7 +25,7 @@ Html
     .. method:: set_subject
     .. method:: real_subject
 
-.. class:: MailDB
+.. class:: PostDB
 .. class:: PostSet
 .. class:: Server
 .. class:: Section

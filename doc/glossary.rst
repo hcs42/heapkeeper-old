@@ -27,9 +27,9 @@ explicitly noted to be primitive. Actually, there are only two primitives:
   
     See also:
     
-    * :func:`heapmanip.Post.inreplyto`
-    * :func:`heapmanip.MailDB.prev`
-    * :func:`heapmanip.MailDB.children`
+    * :func:`hklib.Post.inreplyto`
+    * :func:`hklib.PostDB.prev`
+    * :func:`hklib.PostDB.children`
 
     (The first two functions should be renamed to ``parent``.)
 
@@ -42,7 +42,7 @@ explicitly noted to be primitive. Actually, there are only two primitives:
 
     See also:
     
-    * :func:`heapmanip.MailDB.root`
+    * :func:`hklib.PostDB.root`
 
 **Thread:**
     A thread is a set of mails that have the same root. A thread
@@ -53,7 +53,7 @@ explicitly noted to be primitive. Actually, there are only two primitives:
 
     See also:
     
-    * :func:`heapmanip.MailDB.threadstruct`
+    * :func:`hklib.PostDB.threadstruct`
 
 .. _cycle:
 
@@ -66,8 +66,8 @@ explicitly noted to be primitive. Actually, there are only two primitives:
 
     See also:
     
-    * :func:`heapmanip.MailDB.has_cycle`
-    * :func:`heapmanip.MailDB.cycles`
+    * :func:`hklib.PostDB.has_cycle`
+    * :func:`hklib.PostDB.cycles`
 
 **Reference (primitive):**
     A post may refer to any number of other posts. Sometimes if Y is
@@ -86,7 +86,7 @@ explicitly noted to be primitive. Actually, there are only two primitives:
 
     See also:
     
-    * :func:`heapmanip.PostSet.expb`
+    * :func:`hklib.PostSet.expb`
 
 **Descendant:**
     If a post has no children, it has no descendants. Otherwise the
@@ -98,7 +98,7 @@ explicitly noted to be primitive. Actually, there are only two primitives:
 
     See also:
     
-    * :func:`heapmanip.PostSet.expf`
+    * :func:`hklib.PostSet.expf`
 
 **Thread mate:**
     (Is this phrase OK, or maybe you can suggest a better one?)
@@ -110,4 +110,4 @@ explicitly noted to be primitive. Actually, there are only two primitives:
 
     See also:
     
-    * :func:`heapmanip.PostSet.exp`
+    * :func:`hklib.PostSet.exp`

@@ -23,6 +23,5 @@ Design
 
 * Module dependencies::
 
-   heaplib <- heapmanip <- heapcustomlib <- heapcustom
-           <- heapia
-
+   hkutils <- hklib <- hkcustomlib <- heapcustom
+           <- hkshell

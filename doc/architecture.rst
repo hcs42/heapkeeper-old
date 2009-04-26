@@ -16,37 +16,37 @@ Module structure
 Heapkeeper consists of several Python modules. Each module is implemented in
 the file ``<module>.py``.
 
-:mod:`heaplib`
+:mod:`hkutils`
    Contains general library classes and functions.
-:mod:`heapmanip`
+:mod:`hklib`
    The database and business logic of Heapkeeper. Its classes can
    download, store, and modify posts and generate HTML from them.
-:mod:`heapia`
+:mod:`hkshell`
    The interactive interface of Heapkeeper.
-:mod:`heapcustomlib`
+:mod:`hkcustomlib`
    Contains functions and classes that are useful for the parametrization of
-   functions in other modules (especially functions of :mod:`heapmanip` and
-   :mod:`heapia`).
+   functions in other modules (especially functions of :mod:`hklib` and
+   :mod:`hkshell`).
 
-The central modules are :mod:`heapmanip` and :mod:`heapia`. The former contains
+The central modules are :mod:`hklib` and :mod:`hkshell`. The former contains
 the core functionality of Heapkeeper, while the latter provides the primary
 user interface. The general library functions that are not related to the
-concepts of Heapkeeper are collected in :mod:`heaplib`. Heapkeeper is a very
+concepts of Heapkeeper are collected in :mod:`hkutils`. Heapkeeper is a very
 customizable tool: it can be customized primarily by writing Python functions.
-The functions and classes of :mod:`heapcustomlib` help to implement these
+The functions and classes of :mod:`hkcustomlib` help to implement these
 custom functions.
 
 We use unit tests to test Heapkeeper's code, using the standard ``unittest``
 module. Each module has a corresponding module that tests it.
 
-:mod:`test_lib`
-    Module that tests the :mod:`heaplib` module.
-:mod:`test_heapmanip`
-    Module that tests the :mod:`heapmanip` module.
-:mod:`test_heapia`
-    Module that tests the :mod:`heapia` module.
-:mod:`test_heapcustomlib`
-    Module that tests the :mod:`heapcustomlib` module.
+:mod:`test_hkutils`
+    Module that tests the :mod:`hkutils` module.
+:mod:`test_hklib`
+    Module that tests the :mod:`hklib` module.
+:mod:`test_hkshell`
+    Module that tests the :mod:`hkshell` module.
+:mod:`test_hkcustomlib`
+    Module that tests the :mod:`hkcustomlib` module.
 :mod:`test`
     Module that tests all modules.
 
@@ -56,28 +56,28 @@ Module contents
 Some objects will be renamed. The proposed new name of these objects is
 written after their name in parens.
 
-:mod:`heapmanip` (*hklib*)
+:mod:`hklib` (*hklib*)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The main concept of Heapkeeper is the *heap*. The *heap* is an abstract data
 structure that consists of *posts*. The *heap* data structure and its
-visualization in HTML is implemented in the :mod:`heapmanip` module.
+visualization in HTML is implemented in the :mod:`hklib` module.
 
 Classes that implement and manipulate the heap
 """"""""""""""""""""""""""""""""""""""""""""""
 
 Heapkeeper stores the *heap* on the disk. Each post is stored in a *post file*.
 When Heapkeeper runs, the *heap* on the disk is read and the *heap* is stored
-in the memory as a :class:`MailDB <heapmanip.MailDB>` object, which is called
-*post database*. Each post is then stored in a :class:`Post <heapmanip.Post>`
+in the memory as a :class:`PostDB <hklib.PostDB>` object, which is called
+*post database*. Each post is then stored in a :class:`Post <hklib.Post>`
 object, which we call *post object* or just *post*. A post object can be
 re-written into its post file, and re-read from its post file. A post is
 usually created from an email in the first place, but later it may be modified
 in the *heap*.
 
-:class:`heapmanip.Post`
+:class:`hklib.Post`
 
-    A :class:`Post <heapmanip.Post>` object (called a *post object*) represents
+    A :class:`Post <hklib.Post>` object (called a *post object*) represents
     a post.
 
     Each post has a unique id called *heapid*, which is a string. (Often a
@@ -93,7 +93,7 @@ in the *heap*.
     Both the header and the body is stored in the post object as data members.
     They are stored in the post file similarly to the standard email file
     format (:rfc:`2822`), but a little modification. The format is described in
-    the documentation of :func:`heapmanip.Post.parse` (not yet).
+    the documentation of :func:`hklib.Post.parse` (not yet).
 
     A post may have a *message id*, which is the ``Message-Id`` attribute in
     the header. The message id is the message id of the email from which the
@@ -137,9 +137,9 @@ in the *heap*.
     that should be processed by Heapkeeper (e.g. ``<<<!delpost>>>``, which
     means that the current post should be deleted).
 
-:class:`heapmanip.MailDB` (*PostDB*)
+:class:`hklib.PostDB` (*PostDB*)
     
-    A :class:`MailDB <heapmanip.MailDB>` object (called a *post database*)
+    A :class:`PostDB <hklib.PostDB>` object (called a *post database*)
     represents the *heap* in the memory. It stores the post object of all
     posts. During initialization, it reads all the post files from the disk and
     creates the corresponding post objects. It can write the modified post
@@ -154,37 +154,37 @@ in the *heap*.
     
     The users of the post database can use the dictionary that describes the
     thread structure directly in order to get thread information. There are
-    methods in :class:`MailDB <heapmanip.MailDB>`, however, that make obtaining
+    methods in :class:`PostDB <hklib.PostDB>`, however, that make obtaining
     most thread information easier. E.g. there are methods for calculating the
     root, the parent and the children of a post. There are also methods to find
     the cycles in the thread structure.
 
-:class:`PostSet <heapmanip.PostSet>`
+:class:`PostSet <hklib.PostSet>`
 
     todo
 
-:class:`heapmanip.Server` (*EmailDownloader*)
+:class:`hklib.EmailDownloader`
 
-    A :class:`Server <heapmanip.Server>` object can connect to an IMAP server,
-    download new emails, create new posts based on the emails, and save them to
-    the post database.
+    A :class:`EmailDownloader <hklib.EmailDownloader>` object can connect to an
+    IMAP server, download new emails, create new posts based on the emails, and
+    save them to the post database.
 
 It may help to make a comparison between Heapkeeper and a program
 that implements a relational database, e.g. MySQL:
 
-+--------------------------------------+-------------------------+
-| Heapkeeper                           | MySQL                   |
-+======================================+=========================+
-| heap                                 | relation database       |
-+--------------------------------------+-------------------------+
-| :class:`MailDB <heapmanip.MailDB>`   | a data table            |
-+--------------------------------------+-------------------------+
-| :class:`Post <heapmanip.Post>`       | a row in the data table |
-+--------------------------------------+-------------------------+
-| Python                               | query language (SQL)    |
-+--------------------------------------+-------------------------+
-| :class:`PostSet <heapmanip.PostSet>` | result of a query       |
-+--------------------------------------+-------------------------+
++----------------------------------+-------------------------+
+| Heapkeeper                       | MySQL                   |
++==================================+=========================+
+| heap                             | relation database       |
++----------------------------------+-------------------------+
+| :class:`PostDB <hklib.PostDB>`   | a data table            |
++----------------------------------+-------------------------+
+| :class:`Post <hklib.Post>`       | a row in the data table |
++----------------------------------+-------------------------+
+| Python                           | query language (SQL)    |
++----------------------------------+-------------------------+
+| :class:`PostSet <hklib.PostSet>` | result of a query       |
++----------------------------------+-------------------------+
 
 Classes that visualize the heap
 """""""""""""""""""""""""""""""
@@ -200,56 +200,56 @@ kinds of pages:
 * An *index page* displays many posts. It does not show the body of the
   posts, it only shows a post summary for each post, which is a link to the
   *post page* of that post. An index page is created from an *index* (an
-  :class:`Index <heapmanip.Index>` object), which descibres which posts should
+  :class:`Index <hklib.Index>` object), which descibres which posts should
   be printed on the index page and how. An index contains the posts indirectly:
   it contains sections, and the sections contain posts. A *section* (a
-  :class:`Section <heapmanip.Section>` object) is a list of posts that should
+  :class:`Section <hklib.Section>` object) is a list of posts that should
   be printed as one section of the page, and a few options on how they should
   be printed. An index page contains sections generated from the sections of
   the index.
   
-:class:`heapmanip.Html`
+:class:`hklib.Html`
 
-    The :class:`Html <heapmanip.Html>` class is rather a namespace than a
-    class: it contains only static methods. :class:`Html <heapmanip.Html>`
+    The :class:`Html <hklib.Html>` class is rather a namespace than a
+    class: it contains only static methods. :class:`Html <hklib.Html>`
     objects are never created.
 
-:class:`heapmanip.Section`
+:class:`hklib.Section`
 
-    A :class:`Section <heapmanip.Section>` is a list of posts. The
-    :class:`heapmanip.Generator` class can generate HTML from a section by
+    A :class:`Section <hklib.Section>` is a list of posts. The
+    :class:`hklib.Generator` class can generate HTML from a section by
     printing the summaries of its posts in either a threaded or a non-threaded
     (*flat*) structure.
 
-:class:`heapmanip.Index`
+:class:`hklib.Index`
 
     todo
 
-:class:`heapmanip.GeneratorOptions`
+:class:`hklib.GeneratorOptions`
 
     todo
 
-:class:`heapmanip.Generator`
+:class:`hklib.Generator`
 
-    A :class:`Generator <heapmanip.Generator>` object generates HTML strings
+    A :class:`Generator <hklib.Generator>` object generates HTML strings
     and HTML pages.
     
     Most of its methods generate an HTML string that represents something,
     which is usually shown in the name of the method. E.g. the
-    :func:`Generator.post <heapmanip.Generator.post>` method generates HTML
+    :func:`Generator.post <hklib.Generator.post>` method generates HTML
     string from a post, while the :func:`Generator.section
-    <heapmanip.Generator.section>` method generates HTML string from a section.
+    <hklib.Generator.section>` method generates HTML string from a section.
 
-    The minority of the :class:`Generator <heapmanip.Generator>` methods print
+    The minority of the :class:`Generator <hklib.Generator>` methods print
     the HTML they generate into files. These methods start with the ``gen_``
     prefix. E.g. the :func:`Generator.gen_indices
-    <heapmanip.Generator.gen_indices>` method prints the index pages into index
+    <hklib.Generator.gen_indices>` method prints the index pages into index
     files.
 
-:mod:`heapia`
-^^^^^^^^^^^^^
+:mod:`hkshell`
+^^^^^^^^^^^^^^
 
-:class:`Options <heapia.Options>`
+:class:`Options <hkshell.Options>`
     todo
 
 Module dependencies
@@ -263,11 +263,11 @@ The module dependencies are shown in the following picture:
 
 .. image:: module_deps.png
 
-Since :mod:`heaplib` contains general library functions, it does not use any
+Since :mod:`hkutils` contains general library functions, it does not use any
 other modules of Heapkeeper, but all the other modules may use it. Both
-:mod:`heapia` and :mod:`heapcustomlib` use :mod:`heapmanip`, since
-:mod:`heapmanip` implements the data types that make the heap. :mod:`heapia`
-uses :mod:`heapcustomlib` only for setting sensible default values for certain
+:mod:`hkshell` and :mod:`hkcustomlib` use :mod:`hklib`, since
+:mod:`hklib` implements the data types that make the heap. :mod:`hkshell`
+uses :mod:`hkcustomlib` only for setting sensible default values for certain
 callback functions.
 
 .. _testing:
@@ -294,4 +294,3 @@ All tests can be executed using the :mod:`test` module:
     not have a parent now. If a new post ``z`` would be created with the heapid
     of ``x``, Heapkeeper would think it is the parent of ``y``, altough they
     may have nothing to do with each other.
-

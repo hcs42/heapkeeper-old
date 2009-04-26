@@ -27,7 +27,7 @@ Todo items
     Basics should be created.
   * words to include in the :doc:`glossary`: Heap, heapid, messid , post,
     postset, prepostset, tag
-  * Explain these concepts somewhere: delegate, heapcustom
+  * Explain these concepts somewhere: delegate, hkrc
   * Coding Conventions:
 
     * templates for documentation
@@ -38,8 +38,8 @@ Todo items
   * not important things
 
     * performance improvement possibilities (iterators for some PrePost and
-      MailDB functions)
-    * using wrappers to protect e.g. MailDB.posts()
+      PostDB functions)
+    * using wrappers to protect e.g. PostDB.posts()
 
 * **Management, propaganda**
 
@@ -70,11 +70,11 @@ Todo items
     backlinks to each of these indices. It would be nicer if only those
     indices would be backlinked that really contain the post in question.
 
-* **heapia**
+* **hkshell**
 
   * When ls command is invoked with no parameter, it should list the posts
     that changed last time
-  * Modify heapia commands to use decorators instead of ``event`` functions.
+  * Modify hkshell commands to use decorators instead of ``event`` functions.
     So e.g. the ``s`` command should look like this::
 
        @WithHeapiaEvent
@@ -90,28 +90,28 @@ Todo items
            maildb().save()
            event('after', 's')
 
-  * Modify how heapia runs user-created code. Currently the user can define a
-    special ``heapcustom`` module that is read by :mod:`heapia`, and other
+  * Modify how hkshell runs user-created code. Currently the user can define a
+    special ``hkrc`` module that is read by :mod:`hkshell`, and other
     commands can be executed before loading it. It is messy.
     
-    The new design is much cleaner: :mod:`heapia` will have two command line
+    The new design is much cleaner: :mod:`hkshell` will have two command line
     options to specify code to run before (``-b`` or ``--command-before``)
-    and after (``-c`` or ``--command-after``) loading heapia. E.g.::
+    and after (``-c`` or ``--command-after``) loading hkshell. E.g.::
 
-       $ ./heapia -b 'options.someoption1 = somevalue' \
+       $ ./hkshell -b 'options.someoption1 = somevalue' \
                   -b 'options.someoption2 = somevalue2' \
                   -c 'import myheapcustom' \
                   -c 'from myheapcommands import *' \
-                  -c 'myheapia.myinit()'
+                  -c 'myhkshell.myinit()'
     
     ``myheapcustom`` has to be written like this: ::
 
-       import heapia
+       import hkshell
        
        def gen_indices():
            ...
        
-       heapia.options.callbacks.gen_indices = gen_indices
+       hkshell.options.callbacks.gen_indices = gen_indices
 
    It is a bit more verbose than the current solution, but as one of Python's
    mantra says, "Explicit is better than implicit".
@@ -130,7 +130,7 @@ Todo items
 
        def error(error_message):
            if options.catch_exceptions:
-               raise HeapException, error_message
+               raise HkException, error_message
            else:
                options.output(error_message)
 
@@ -144,35 +144,35 @@ Todo items
 
 * **Tests**
 
-  * heapia
+  * hkshell
   * Post.load
-  * heapmanip.Post.{set_tags, remove_tag}
+  * hklib.Post.{set_tags, remove_tag}
 
     * set_tags: test unsorted lists and sets as argument
 
-  * heapmanip.Post.{before, after, between}
-  * doc&test: MailDB.{children, roots, threads}
+  * hklib.Post.{before, after, between}
+  * doc&test: PostDB.{children, roots, threads}
   * Html.table
 
 * **Renamings**
 
-  * heapmanip to heaplib
-  * heaplib to heaputils
-  * heapia to hkshell
+  * hklib to hkutils
+  * hkutils to heaputils
+  * hkshell to hkshell
   *  ``[prop]`` ``*.mail`` files to ``*.post``
-  *  ``[prop]`` :class:`heapmanip.MailDB` to ``PostDB``
+  *  ``[prop]`` :class:`hklib.PostDB` to ``PostDB``
   * CamelCase function names to lower_case in test modules
-  * :func:`heapmanip.Post.inreplyto` and :func:`heapmanip.MailDB.prev` to
+  * :func:`hklib.Post.inreplyto` and :func:`hklib.PostDB.prev` to
     ``parent``
 
-* heapcustomlib: refactoring DateOptions to use the Options pattern
+* hkcustomlib: refactoring DateOptions to use the Options pattern
 
 * STAR should be renamed
 
 * ``+`` It would be nice if we could regenerate the post HTMLs only for the
   posts that has been modified.
 
-* ``+`` Being able to reload heapcustom without restarting the Manipulator
+* ``+`` Being able to reload hkrc without restarting the Manipulator
 
 * ``+`` ``<#2>`` Post generator:
 
@@ -218,7 +218,7 @@ Todo items
 
 * ``+`` ``<#3>`` PostSetMapDelegate::
 
-     MailDB.postset([p1, p2, p3]).map.heapid()  -->  ['1', '2', '3']
+     PostDB.postset([p1, p2, p3]).map.heapid()  -->  ['1', '2', '3']
 
 * ``+`` ``<#4>`` PostSetGrepDelegate (precond: ``#3``): it would be similar to
   grep (but smarter of course in our domain)::
@@ -288,25 +288,25 @@ Todo items
 
   * ``+`` deleting in-reply-to if the referenced post is not in the DB
 
-* Post, MailDB: a better system for 'touch': it should know what should be
+* Post, PostDB: a better system for 'touch': it should know what should be
   recalculated and what should not be. It would improve only efficiently, not
   usability.
 
-* ``+`` heapia could print affected emails after executing a command. The
-  touch-system could be used to make an approximation, but probably the heapia
+* ``+`` hkshell could print affected emails after executing a command. The
+  touch-system could be used to make an approximation, but probably the hkshell
   improved to reach a 100% correct solution. E.g. condiser setting subject X
   for a post which already has that subject. The touch-system will say it
   changed; I think the Post should not care about whether it really changed or
   nor that, for efficiency reasons. On the other hand, the implementation of
-  heapia would be much less elegant if it monitored actual changes in posts.
+  hkshell would be much less elegant if it monitored actual changes in posts.
   -- Csabi
 
 * ``+`` Downloading emails since given date.
   Workaround: if we go to the heap account regularly and archive the emails in
   the inbox, downloading new mail will remain fast.
 
-* ``+`` MailDB.sync: unison-like method to synchronize the data between the
-  MailDB in the memory and the mail files on the disk
+* ``+`` PostDB.sync: unison-like method to synchronize the data between the
+  PostDB in the memory and the mail files on the disk
 
 * Migration to Python 3
 
@@ -314,7 +314,7 @@ Todo items
   index. JavaScript (or CSS?) could be used for folding the inline posts.
 
 * Distant future: use Django or some other web framework to manipulate the heap
-  instead of heapia.
+  instead of hkshell.
 
 * PostSet: method inherited from set should be reviewed whether they should be
   inherited, overriden or removed.
@@ -327,5 +327,5 @@ Todo items
     not sure it would be that efficient; probably string concatenation does not
     really mean copying all the characters. The Python implementation could be
     much better, since the strings are immutable.)
-  * Maybe MailDB.messid_to_heapid can be handled lazily as the other attributes
-    of MailDB?
+  * Maybe PostDB.messid_to_heapid can be handled lazily as the other attributes
+    of PostDB?

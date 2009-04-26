@@ -17,6 +17,6 @@ data structure: e.g. it can download new posts from an IMAP server, modify the
 posts, and generate HTML files.
 
 Heapkeeper consists of several modules that are described in the
-Developer guide. The heapia module is the interactive interface of
+Developer guide. The hkshell module is the interactive interface of
 Heapkeeper, that's designed for end-users. The User Guide will explain how
-to use Heapkeeper via the heapia module.
+to use Heapkeeper via the hkshell module.
