@@ -12,16 +12,3 @@ User experience
 * The static HTML file generated from a post, from a thread or from an index
   depends only on the mail database. It does not depend on what other posts,
   threads or indices are generated and how.
-
-Development
-"""""""""""
-
-* The ``todo.rst`` file is modified only in the main branch.
-
-Design
-""""""
-
-* Module dependencies::
-
-   hkutils <- hklib <- hkcustomlib <- heapcustom
-           <- hkshell
