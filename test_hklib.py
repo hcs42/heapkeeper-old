@@ -62,24 +62,24 @@ class PostDBHandler(object):
     def postFileName(self, fname):
         return os.path.join(self._postfile_dir, fname)
 
-    def add_post(self, index, inreplyto=None):
+    def add_post(self, index, parent=None):
         """Adds a new post to postdb.
         
         The attributes of the post will be created as follows:
         - The author will be 'author'+index.
         - The subject will be 'subject'+index.
         - The message id will be index+'@'.
-        - The parent will be `inreplyto`, if specified.
+        - The parent will be `parent`, if specified.
         - If self._skipdates is False, the post with a newer index will
           have a newer date; otherwise the post will not have a date.
         - The body will be 'body'+index.
         """
 
-        inreplyto = str(inreplyto) + '@' if inreplyto != None else ''
+        parent = str(parent) + '@' if parent != None else ''
         s = ('From: author%s\n' % (index,) +
              'Subject: subject%s\n' % (index,) +
              'Message-Id: %s@\n' % (index,) +
-             'In-Reply-To: %s\n' % (inreplyto,))
+             'In-Reply-To: %s\n' % (parent,))
         if not self._skipdates:
             s += PostDBHandler.dates[index] + '\n'
         s += ('\n' +
@@ -171,7 +171,7 @@ class TestPost1(unittest.TestCase):
         self.assertEquals(p.author(), '')
         self.assertEquals(p.subject(), '')
         self.assertEquals(p.messid(), '')
-        self.assertEquals(p.inreplyto(), '')
+        self.assertEquals(p.parent(), '')
         self.assertEquals(p.date(), '')
         self.assertEquals(p.is_deleted(), False)
         self.assertEquals(p.is_modified(), True)
@@ -187,7 +187,7 @@ class TestPost1(unittest.TestCase):
         self.assertEquals(p.author(), 'author')
         self.assertEquals(p.subject(), 'subject')
         self.assertEquals(p.messid(), '<0@gmail.com>')
-        self.assertEquals(p.inreplyto(), '')
+        self.assertEquals(p.parent(), '')
         self.assertEquals(p.date(), 'Wed, 20 Aug 2008 17:41:30 +0200')
         self.assertEquals(p.is_deleted(), False)
         self.assertEquals(p.is_modified(), True)
@@ -203,8 +203,8 @@ class TestPost1(unittest.TestCase):
         p.set_messid('@')
         self.assertEquals(p.messid(), '@')
 
-        p.set_inreplyto('@@')
-        self.assertEquals(p.inreplyto(), '@@')
+        p.set_parent('@@')
+        self.assertEquals(p.parent(), '@@')
 
         p.set_date('Wed, 20 Aug 2008 17:41:31 +0200')
         self.assertEquals(p.date(), \
@@ -343,7 +343,7 @@ class TestPost2(unittest.TestCase):
         self.assertEquals(p.author(), 'author')
         self.assertEquals(p.subject(), 'subject')
         self.assertEquals(p.messid(), '<0@gmail.com>')
-        self.assertEquals(p.inreplyto(), '')
+        self.assertEquals(p.parent(), '')
         self.assertEquals(p.date(), 'Wed, 20 Aug 2008 17:41:30 +0200')
         self.assertEquals(p.is_deleted(), False)
         self.assertEquals(p.is_modified(), True)
@@ -617,16 +617,16 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
         test('3', '0')
         test('4', '4')
 
-    def threadstructCycle_general(self, inreplytos, threadstruct, cycles):
+    def threadstructCycle_general(self, parents, threadstruct, cycles):
         """The general function that tests the cycle detection of the thread
         structure computing method.
 
-        It modifies the post database according to the inreplytos argument,
+        It modifies the post database according to the parents argument,
         then checks that the thread structture and the cycles of the modified
         database are as expected.
         
         Arguments:
-        inreplytos: Contains child->parent pairs, which indicate that the child
+        parents: Contains child->parent pairs, which indicate that the child
             post should be modified as if it were a reply to parent.
             Type: dict(heapid, heapid)
         threadstruct: The excepted thread structure.
@@ -637,8 +637,8 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
 
         postdb = self._postdb
         p = self._posts
-        for child, parent in inreplytos.items():
-            postdb.post(child).set_inreplyto(parent)
+        for child, parent in parents.items():
+            postdb.post(child).set_parent(parent)
         self.assertEquals(threadstruct, postdb.threadstruct())
         self.assert_(postdb.cycles().is_set(cycles))
         if cycles == []:
@@ -1507,7 +1507,7 @@ class TestGenerator(unittest.TestCase, PostDBHandler):
 
     def test_thread__cycles(self):
         postdb, g, p = self.init()
-        p(1).set_inreplyto('2')
+        p(1).set_parent('2')
 
         genopts = GeneratorOptions()
         genopts.sections = [Section('Sec', [p(1), p(4)])]
@@ -1615,7 +1615,7 @@ class TestGenerator(unittest.TestCase, PostDBHandler):
 
     def test_section__cycle(self):
         postdb, g, p = self.init()
-        p(1).set_inreplyto('2')
+        p(1).set_parent('2')
 
         # Tests empty section.
         genopts = GeneratorOptions()

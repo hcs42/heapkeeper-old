@@ -27,11 +27,9 @@ explicitly noted to be primitive. Actually, there are only two primitives:
   
     See also:
     
-    * :func:`hklib.Post.inreplyto`
-    * :func:`hklib.PostDB.prev`
+    * :func:`hklib.Post.parent`
+    * :func:`hklib.PostDB.parent`
     * :func:`hklib.PostDB.children`
-
-    (The first two functions should be renamed to ``parent``.)
 
 **Root:**
     Every post has a root, which is another post. If a post has no

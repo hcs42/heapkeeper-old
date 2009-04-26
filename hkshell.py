@@ -523,7 +523,7 @@ def j(pp1, pp2):
     p2 = postdb().post(pp2)
     event('postset_calculated', 'j')
     if p1 != None and p2 != None:
-        p2.set_inreplyto(p1.heapid())
+        p2.set_parent(p1.heapid())
     event('after', 'j')
 
 def e(pp):

@@ -206,13 +206,13 @@ class Post(object):
         self._header['Message-Id'] = messid
         self.touch()
 
-    # inreplyto field
+    # parent field
 
-    def inreplyto(self):
+    def parent(self):
         return self._header['In-Reply-To']
 
-    def set_inreplyto(self, inreplyto):
-        self._header['In-Reply-To'] = inreplyto
+    def set_parent(self, parent):
+        self._header['In-Reply-To'] = parent
         self.touch()
 
     # date field
@@ -854,19 +854,19 @@ class PostDB(object):
         """
 
         assert(post in self.all())
-        inreplyto = post.inreplyto()
+        postparent = post.parent()
 
-        if inreplyto == '':
+        if postparent == '':
             return None
         
         else:
 
             # try to get the parentpost by messid
-            parentpost = self.post_by_messid(inreplyto)
+            parentpost = self.post_by_messid(postparent)
 
             # try to get the parentpost by heapid
             if parentpost == None:
-                parentpost = self.post(inreplyto)
+                parentpost = self.post(postparent)
 
             # deleted posts do not count
             if parentpost != None and parentpost.is_deleted():
@@ -1440,7 +1440,7 @@ class EmailDownloader(object):
         post.set_author(headers.get('From', ''))
         post.set_subject(headers.get('Subject', ''))
         post.set_messid(headers.get('Message-Id', ''))
-        post.set_inreplyto(headers.get('In-Reply-To', ''))
+        post.set_parent(headers.get('In-Reply-To', ''))
         post.set_date(headers.get('Date', ''))
         post.set_body(text)
         post.remove_google_stuff()
