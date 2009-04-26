@@ -59,21 +59,21 @@ written after their name in parens.
 :mod:`hklib` (*hklib*)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The main concept of Heapkeeper is the *heap*. The *heap* is an abstract data
-structure that consists of *posts*. The *heap* data structure and its
+The main concept of Heapkeeper is the *heap*. The heap is an abstract data
+structure that consists of *posts*. The heap data structure and its
 visualization in HTML is implemented in the :mod:`hklib` module.
 
 Classes that implement and manipulate the heap
 """"""""""""""""""""""""""""""""""""""""""""""
 
-Heapkeeper stores the *heap* on the disk. Each post is stored in a *post file*.
-When Heapkeeper runs, the *heap* on the disk is read and the *heap* is stored
+Heapkeeper stores the heap on the disk. Each post is stored in a *post file*.
+When Heapkeeper runs, the heap on the disk is read and the heap is stored
 in the memory as a :class:`PostDB <hklib.PostDB>` object, which is called
 *post database*. Each post is then stored in a :class:`Post <hklib.Post>`
 object, which we call *post object* or just *post*. A post object can be
 re-written into its post file, and re-read from its post file. A post is
 usually created from an email in the first place, but later it may be modified
-in the *heap*.
+in the heap.
 
 :class:`hklib.Post`
 
@@ -132,7 +132,7 @@ in the *heap*.
     string so that we can identify quotes (lines that start with ``>``),
     footnotes (e.g. ``This page [1] says:``) and so-called *meta text* (text
     written between ``<<<`` and ``>>>``). Meta text is either meta information
-    about the post for the readers or the maintainers of the *heap* (e.g.
+    about the post for the readers or the maintainers of the heap (e.g.
     ``<<<todo The subject of this email should be corrected>>>``), or command
     that should be processed by Heapkeeper (e.g. ``<<<!delpost>>>``, which
     means that the current post should be deleted).
@@ -140,7 +140,7 @@ in the *heap*.
 :class:`hklib.PostDB` (*PostDB*)
     
     A :class:`PostDB <hklib.PostDB>` object (called a *post database*)
-    represents the *heap* in the memory. It stores the post object of all
+    represents the heap in the memory. It stores the post object of all
     posts. During initialization, it reads all the post files from the disk and
     creates the corresponding post objects. It can write the modified post
     files back at any time, or it can reload them from the disk.
@@ -189,7 +189,7 @@ that implements a relational database, e.g. MySQL:
 Classes that visualize the heap
 """""""""""""""""""""""""""""""
 
-The content of the *heap* can be visualized by converting it to HTML pages.
+The content of the heap can be visualized by converting it to HTML pages.
 (The word *page* means HTML page in this context.) Heapkeeper can create two
 kinds of pages:
 
