@@ -1,17 +1,17 @@
-# This file is part of Heapmanipulator.
+# This file is part of Heapkeeper.
 #
-# Heapmanipulator is free software: you can redistribute it and/or modify it
+# Heapkeeper is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# Heapmanipulator is distributed in the hope that it will be useful, but
+# Heapkeeper is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 #
 # You should have received a copy of the GNU General Public License along with
-# Heapmanipulator.  If not, see <http://www.gnu.org/licenses/>.
+# Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
@@ -47,9 +47,9 @@ def print_time(next_action = ''):
         print '%.6f' % (t)
 
 
-##### HeapException #####
+##### HkException #####
 
-class HeapException(Exception):
+class HkException(Exception):
 
     """A very simple exception class used by this module."""
 
@@ -102,7 +102,7 @@ def set_defaultoptions(options, fun, excluded):
             if optionname in options:
                 unused_options.discard(optionname)
             else:
-                raise HeapException, \
+                raise HkException, \
                       'Option "%s" should be specified in %s' % \
                       (optionname, options)
     for optionname, optiondefault in args_with_default.items():
@@ -110,7 +110,7 @@ def set_defaultoptions(options, fun, excluded):
             options.setdefault(optionname, optiondefault)
             unused_options.discard(optionname)
     if len(unused_options) > 0:
-        raise HeapException, \
+        raise HkException, \
               'Unused options %s in %s' % (list(unused_options), options)
 
 ##### Option handling #####
@@ -119,7 +119,7 @@ def set_dict_items(object, dict):
     """Sets the items in the dictionary as attributes of the given object.
 
     If 'self' is included in the dictionary as a key, it will be ignored.
-    If heaplib.NOT_SET is assigned to the key in the dictionary, that item will
+    If hkutils.NOT_SET is assigned to the key in the dictionary, that item will
     be ignored.
 
     Arguments:

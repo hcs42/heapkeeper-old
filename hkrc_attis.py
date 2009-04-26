@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
 
-# This file is part of Heapmanipulator.
+# This file is part of Heapkeeper.
 #
-# Heapmanipulator is free software: you can redistribute it and/or modify it
+# Heapkeeper is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# Heapmanipulator is distributed in the hope that it will be useful, but
+# Heapkeeper is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 #
 # You should have received a copy of the GNU General Public License along with
-# Heapmanipulator.  If not, see <http://www.gnu.org/licenses/>.
+# Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
 # Copyright (C) 2009 Attila Nagy
 # Copyright (C) 2009 Csaba Hoch
 
-"""My (Attis) heapcustom."""
+"""My (Attis) hkrc."""
 
-import heapmanip
-import heapcustomlib
-import heaplib
+import hklib
+import hkcustomlib
+import hkutils
 import subprocess
 import time
 import datetime
@@ -119,13 +119,13 @@ def sections(maildb):
     if eliminate:
         ps_all -= ps_pol
 
-    res = [ heapmanip.Section("Tidy", ps_tidy, {'flat': True}),
-            heapmanip.Section("Todo", ps_todo, {'flat': True}),
-            heapmanip.Section("Heap", ps_heap),
-            heapmanip.Section("Programozás", ps_prog),
-            heapmanip.Section("C és C++", ps_ccpp),
-            heapmanip.Section("Python", ps_py),
-            heapmanip.Section("Egyéb", ps_all)]
+    res = [ hklib.Section("Tidy", ps_tidy, {'flat': True}),
+            hklib.Section("Todo", ps_todo, {'flat': True}),
+            hklib.Section("Heap", ps_heap),
+            hklib.Section("Programozás", ps_prog),
+            hklib.Section("C és C++", ps_ccpp),
+            hklib.Section("Python", ps_py),
+            hklib.Section("Egyéb", ps_all)]
 #    monthly = do_monthly(maildb)
 #    if monthly != None:
 #        res.extend(monthly)
@@ -173,21 +173,21 @@ def do_monthly(maildb):
         if curr_month == 13:
             curr_year += 1
             curr_month = 1
-    return [heapmanip.Section(*month) for month in monthlist]
+    return [hklib.Section(*month) for month in monthlist]
 
 def format_date(post):
     "post -> str"
     if post.date() == '':
         return "(no date)"
     else:
-        d = time.localtime(heaplib.calc_timestamp(post.date()))
+        d = time.localtime(hkutils.calc_timestamp(post.date()))
         return "(" + time.strftime('%Y.%m.%d.', d) + ')'
 
 def read_date(post):
     "post_date -> datetime.datetime"
     if post.date():
         return datetime.datetime.fromtimestamp(
-                heaplib.calc_timestamp(post.date())
+                hkutils.calc_timestamp(post.date())
             )
     else:
         return None
@@ -195,24 +195,24 @@ def read_date(post):
 def gen_indices(maildb):
 
     # Date options
-    #date_options = heapcustomlib.date_defopts()
+    #date_options = hkcustomlib.date_defopts()
     #date_options.update({'maildb': maildb,
     #                     'timedelta': datetime.timedelta(days=0)})
-    #date_fun = heapcustomlib.create_date_fun(date_options)
+    #date_fun = hkcustomlib.create_date_fun(date_options)
 
     # Generator options
-    genopts = heapmanip.GeneratorOptions()
+    genopts = hklib.GeneratorOptions()
     genopts.maildb = maildb
-#    genopts.indices = [heapmanip.Index(sections(maildb)), heapmanip.Index(do_monthly(maildb),"monthly.html")]
+#    genopts.indices = [hklib.Index(sections(maildb)), hklib.Index(do_monthly(maildb),"monthly.html")]
     # new idea is:
     # - add static main index,
     # - do_montly() and store its results,
     # - iterate on months, add one new index per month, one section per index
 
-    genopts.indices = [heapmanip.Index(sections(maildb))]
+    genopts.indices = [hklib.Index(sections(maildb))]
     months = do_monthly(maildb)
     for n in range(0, len(months)):
-        genopts.indices.append(heapmanip.Index([months[n]],
+        genopts.indices.append(hklib.Index([months[n]],
                                "month_" + str(n + 1) + ".html"))
 
     genopts.write_toc = True
@@ -221,26 +221,26 @@ def gen_indices(maildb):
     genopts.date_fun = date_fun
 
     # Generating the index
-    heapmanip.Generator(maildb).gen_indices(genopts)
+    hklib.Generator(maildb).gen_indices(genopts)
 
 def gen_posts(maildb):
     # Generator options
-    date_options = heapcustomlib.date_defopts()
+    date_options = hkcustomlib.date_defopts()
     date_options.update({'maildb': maildb,
                          'timedelta': datetime.timedelta(days=0)})
-    date_fun = heapcustomlib.create_date_fun(date_options)
+    date_fun = hkcustomlib.create_date_fun(date_options)
 
-    genopts = heapmanip.GeneratorOptions()
+    genopts = hklib.GeneratorOptions()
     genopts.maildb = maildb
     genopts.write_toc = True
     genopts.print_thread_of_post = True
     genopts.date_fun = date_fun
-    genopts.indices = [heapmanip.Index(sections(maildb))]
+    genopts.indices = [hklib.Index(sections(maildb))]
 #    n = 0
 #    for month in do_monthly(maildb):
-#        genopts.indices.append(heapmanip.Index(month, str(n) + "html"))
+#        genopts.indices.append(hklib.Index(month, str(n) + "html"))
 #        n += 1
 
     # Generating the posts
-    heapmanip.Generator(maildb).gen_posts(genopts)
+    hklib.Generator(maildb).gen_posts(genopts)
 

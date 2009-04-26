@@ -2,22 +2,22 @@
 
 if [ "$#" = 0 ]
 then
-    python -i -c 'from heapia import *; main([])'
+    python -i -c 'from hkshell import *; main([])'
 elif [ "$#" = 2 -a "$1" = '--custom' ]
 then
-    python -i -c "from heapia import *; from $2 import *; main([])"
+    python -i -c "from hkshell import *; from $2 import *; main([])"
 elif [ "$1" = '-h' -o "$1" = '--help' ]
 then
     cat <<END
 This script starts the Heapmanipulator's interactive interface.
 
-The interface can be started by typing "./heapia". This should give a
+The interface can be started by typing "./hkshell". This should give a
 Python shell. Type "h()" into this shell to get help.
 
 The interface can be also used in a batch mode: give the commands to run
 (Python expressions) as arguments of this script, e.g.:
-    ./heapia 'dl()' 'g()'
+    ./hkshell 'dl()' 'g()'
 END
 else
-    python heapia.py "$@"
+    python hkshell.py "$@"
 fi

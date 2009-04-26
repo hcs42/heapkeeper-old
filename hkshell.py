@@ -1,28 +1,28 @@
 #!/usr/bin/python
 
-# This file is part of Heapmanipulator.
+# This file is part of Heapkeeper.
 #
-# Heapmanipulator is free software: you can redistribute it and/or modify it
+# Heapkeeper is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# Heapmanipulator is distributed in the hope that it will be useful, but
+# Heapkeeper is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 #
 # You should have received a copy of the GNU General Public License along with
-# Heapmanipulator.  If not, see <http://www.gnu.org/licenses/>.
+# Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
-"""heapia - Interactive heapmanipulator
+"""Heapkeeper's interactive shell.
 
-Heapia contains commands that are actually Python functions in the heapia
-module. These functions do high-level manipulaton on the heap, and they tend to
-have very short names.
+The interactive shell defines commands that are actually Python functions in
+the hkshell module. These functions do high-level manipulaton on the heap, and
+they tend to have very short names.
 
 For further help on a command type "help(<command name>)" or see the
 documentation.
@@ -73,7 +73,7 @@ Argument types:
     pts = PreTagSet = tag | set(tag) | [tag]
 
 Features:
-    gi, gen_indices - automatically regenerates the indices after heapia
+    gi, gen_indices - automatically regenerates the indices after hkshell
     commands that change the database.
     gp, gen_posts -
     s, save -
@@ -89,15 +89,15 @@ Features:
         each command. It has only efficiency consequences, because later it
         will be regenerated later anyway.
         Type: bool
-    heapcustom --- The module that is used to customize the behaviour of the
+    hkrc --- The module that is used to customize the behaviour of the
         commands.
         Type: str
     callbacks --- The callback functions. Don't change it manually, use the
-        customization feature (heapcustom). If you want to modify it directly,
+        customization feature (hkrc). If you want to modify it directly,
         use the set_callback function.
 
 
-Callback functions (that can be defined in heapcustom.py):
+Callback functions (that can be defined in hkrc.py):
 
     edit(file)
         Called when the user wants to edit a file (with the e() command). It
@@ -129,7 +129,7 @@ Callback functions (that can be defined in heapcustom.py):
 
 Arguments given to the script will be evaluated as commands.
 Example: generate the index HTML (and exit):
-    $ python heapia.py 'g()'
+    $ python hkshell.py 'g()'
 """
 
 import sys
@@ -138,15 +138,15 @@ import subprocess
 import ConfigParser
 import re
 
-import heaplib
-import heapmanip
-import heapcustomlib
+import hkutils
+import hklib
+import hkcustomlib
 
 
 ##### Callbacks #####
 
 class Callbacks(object):
-    """Stores callback functions or objects that are used by :mod:`heapia`.
+    """Stores callback functions or objects that are used by :mod:`hkshell`.
     
     The attributes are mentioned as functions, but they can be objects with
     *__call__* method, as well.
@@ -163,39 +163,39 @@ class Callbacks(object):
     """
 
     def __init__(self,
-                 gen_indices=heapcustomlib.gen_indices,
-                 gen_posts=heapcustomlib.gen_posts,
-                 edit_file=heapcustomlib.edit_file):
+                 gen_indices=hkcustomlib.gen_indices,
+                 gen_posts=hkcustomlib.gen_posts,
+                 edit_file=hkcustomlib.edit_file):
 
         super(Callbacks, self).__init__()
-        heaplib.set_dict_items(self, locals())
+        hkutils.set_dict_items(self, locals())
 
 
 ##### Options #####
 
 class Options(object):
-    """Represents a heapia option object.
+    """Represents a hkshell option object.
 
     **Attributes:**
 
     * *config* (ConfigParser.ConfigParser) -- Configuration object.
-    * *heapcustom* (str) -- The name of the customization module.
-      Default value: ``'heapcustom'``.
-    * *output* (object) -- When a heapia function wants to print something, it
+    * *hkrc* (str) -- The name of the customization module.
+      Default value: ``'hkrc'``.
+    * *output* (object) -- When a hkshell function wants to print something, it
       calls *output*'s write method.
       Default value: sys.stdout
     * *callbacks* (Callbacks)
     """
 
     def __init__(self,
-                 maildb=heaplib.NOT_SET,
-                 config=heaplib.NOT_SET,
-                 heapcustom='heapcustom',
+                 maildb=hkutils.NOT_SET,
+                 config=hkutils.NOT_SET,
+                 hkrc='hkrc',
                  output=sys.stdout,
-                 callbacks=heaplib.NOT_SET):
+                 callbacks=hkutils.NOT_SET):
 
         super(Options, self).__init__()
-        heaplib.set_dict_items(self, locals())
+        hkutils.set_dict_items(self, locals())
 
 options = Options(callbacks=Callbacks())
 
@@ -215,7 +215,7 @@ class Event(object):
                  postset=None):
 
         super(Event, self).__init__()
-        heaplib.set_dict_items(self, locals())
+        hkutils.set_dict_items(self, locals())
 
 
 listeners = []
@@ -224,12 +224,12 @@ def append_listener(listener):
     if listener not in listeners:
         listeners.append(listener)
     else:
-        raise heaplib.HeapException, \
+        raise hkutils.HkException, \
               'Listener already among listeners: %s' % (listener,)
 
 def remove_listener(listener):
     if listener not in listeners:
-        raise heaplib.HeapException, \
+        raise hkutils.HkException, \
               'Listener not among listeners: %s' % (listener,)
     else:
         listeners.remove(listener)
@@ -258,7 +258,7 @@ class ModificationListener(object):
     def __call__(self, e):
         if e.type == 'before':
             self._posts = self._maildb.postset([])
-        elif isinstance(e, heapmanip.MailDBEvent) and e.type == 'touch':
+        elif isinstance(e, hklib.MailDBEvent) and e.type == 'touch':
             self._posts.add(e.post)
 
     def touched_posts(self):
@@ -325,12 +325,12 @@ def set_listener_feature(listener, state):
     if state == 'on':
         try:
             append_listener(listener)
-        except heaplib.HeapException:
+        except hkutils.HkException:
             write('Feature already set.\n')
     else: # state == 'off'
         try:
             remove_listener(listener)
-        except heaplib.HeapException:
+        except hkutils.HkException:
             write('Feature not set.\n')
 
 def get_listener_feature(listener):
@@ -422,7 +422,7 @@ def tagset(tags):
     elif isinstance(tags, list):
         return set(tags)
     else:
-        raise heaplib.HeapException, \
+        raise hkutils.HkException, \
               'Cannot convert object to tagset: %s' % (tags,)
 
 ##### Commands #####
@@ -546,7 +546,7 @@ def e(pp):
 
 def dl(from_=0):
     event('before', 'dl')
-    server = heapmanip.Server(maildb(), options.config)
+    server = hklib.Server(maildb(), options.config)
     server.connect()
     server.download_new(int(from_))
     server.close()
@@ -752,26 +752,26 @@ def load_custom():
     """Loads the custom function when possible."""
 
     try:
-        modname = options.heapcustom
+        modname = options.hkrc
         module = __import__(modname)
-        heapmanip.log('Customization module found (name: %s).' % (modname,))
+        hklib.log('Customization module found (name: %s).' % (modname,))
     except ImportError:
-        heapmanip.log('No customization module found.')
+        hklib.log('No customization module found.')
         return
 
     callbacks = options.callbacks
     for funname in ['gen_indices', 'gen_posts', 'edit_file']:
         try:
             setattr(callbacks, funname, getattr(module, funname))
-            heapmanip.log(funname, ' custom function: loaded.')
+            hklib.log(funname, ' custom function: loaded.')
         except AttributeError:
-            heapmanip.log(funname, \
+            hklib.log(funname, \
                           ' custom function: not found, using the default.')
 
 def read_maildb():
     config = ConfigParser.ConfigParser()
-    config.read('heap.cfg')
-    return heapmanip.MailDB.from_config(config), config
+    config.read('hk.cfg')
+    return hklib.MailDB.from_config(config), config
 
 def init():
     global modification_listener

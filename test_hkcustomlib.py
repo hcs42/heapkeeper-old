@@ -1,38 +1,38 @@
 #!/usr/bin/python
 
-# This file is part of Heapmanipulator.
+# This file is part of Heapkeeper.
 #
-# Heapmanipulator is free software: you can redistribute it and/or modify it
+# Heapkeeper is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# Heapmanipulator is distributed in the hope that it will be useful, but
+# Heapkeeper is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 #
 # You should have received a copy of the GNU General Public License along with
-# Heapmanipulator.  If not, see <http://www.gnu.org/licenses/>.
+# Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
-"""Tests the heapmanip module.
+"""Tests the hklib module.
 
 Usage:
     
-    python heapmaniptest.py
+    python hklibtest.py
 """
 
 import time
 import unittest
-import heapmanip
-import test_heapmanip
-from heapcustomlib import *
+import hklib
+import test_hklib
+from hkcustomlib import *
 
 
-class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
+class Test1(unittest.TestCase, test_hklib.MailDBHandler):
 
     def setUp(self):
         self.setUpDirs()
@@ -54,8 +54,8 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
 
     def test_create_should_print_date_fun(self):
 
-        genopts = heapmanip.GeneratorOptions()
-        genopts.sections = [heapmanip.Section('', self._maildb.all())]
+        genopts = hklib.GeneratorOptions()
+        genopts.sections = [hklib.Section('', self._maildb.all())]
         genopts.section = genopts.sections[0]
 
         # date options
@@ -87,8 +87,8 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
 
     def test_create_date_fun(self):
 
-        genopts = heapmanip.GeneratorOptions()
-        genopts.sections = [heapmanip.Section('', self._maildb.all())]
+        genopts = hklib.GeneratorOptions()
+        genopts.sections = [hklib.Section('', self._maildb.all())]
         genopts.section = genopts.sections[0]
 
         def my_should_fun(post, genopts):
@@ -105,5 +105,5 @@ class Test1(unittest.TestCase, test_heapmanip.MailDBHandler):
         self.assertEquals(f(self._posts[4], genopts), None)
 
 if __name__ == '__main__':
-    heapmanip.set_log(False)
+    hklib.set_log(False)
     unittest.main()

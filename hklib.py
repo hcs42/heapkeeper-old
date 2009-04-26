@@ -1,17 +1,17 @@
-# This file is part of Heapmanipulator.
+# This file is part of Heapkeeper.
 #
-# Heapmanipulator is free software: you can redistribute it and/or modify it
+# Heapkeeper is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# Heapmanipulator is distributed in the hope that it will be useful, but
+# Heapkeeper is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 #
 # You should have received a copy of the GNU General Public License along with
-# Heapmanipulator.  If not, see <http://www.gnu.org/licenses/>.
+# Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
@@ -51,7 +51,7 @@ import time
 import StringIO
 import datetime
 
-import heaplib
+import hkutils
 
 
 ##### logging #####
@@ -124,7 +124,7 @@ class Post(object):
             self._maildb = maildb
             self._modified = not self.postfile_exists()
         except:
-            raise heaplib.HeapException, \
+            raise hkutils.HkException, \
                   'Error parsing post "%s"' % getattr(f, 'name', '')
 
     @staticmethod
@@ -233,7 +233,7 @@ class Post(object):
         """
 
         date = self.date()
-        return heaplib.calc_timestamp(date) if date != '' else 0
+        return hkutils.calc_timestamp(date) if date != '' else 0
 
     def datetime(self):
         """Returns the datetime object that describes the date of the post.
@@ -405,7 +405,7 @@ class Post(object):
             try:
                 [value] = d.pop(key, [''])
             except ValueError:
-                raise heaplib.HeapException, \
+                raise hkutils.HkException, \
                       ('Multiple "%s" keys.' % key)
             h[key] = value
 
@@ -431,12 +431,12 @@ class Post(object):
         elif flags == None:
             pass
         else:
-            raise heaplib.HeapException, \
+            raise hkutils.HkException, \
                   ('Unknown "Flags" tag: "%s"' % (flags,))
         # }
 
         if d != {}:
-            raise heaplib.HeapException, \
+            raise hkutils.HkException, \
                   ('Additional keys: "%s".' % d)
         return h
 
@@ -589,11 +589,11 @@ class MailDBEvent(object):
     """
 
     def __init__(self,
-                 type=heaplib.NOT_SET,
+                 type=hkutils.NOT_SET,
                  post=None):
 
         super(MailDBEvent, self).__init__()
-        heaplib.set_dict_items(self, locals())
+        hkutils.set_dict_items(self, locals())
 
 
 ##### MailDB #####
@@ -1071,7 +1071,7 @@ class PostSet(set):
                 elif isinstance(prepost, Post): # prepost is a Post
                     post = prepost
                 else:
-                    raise heaplib.HeapException, \
+                    raise hkutils.HkException, \
                           ("Object'type not compatible with Post: %prepost" % \
                            (prepost,))
                 result.add(post)
@@ -1420,7 +1420,7 @@ class Server(object):
                         first = False
                     else:
                         value += ' '
-                    value += heaplib.utf8(v[0], v[1])
+                    value += hkutils.utf8(v[0], v[1])
                 value = re.sub(r'\r\n',r'\n',value)
                 headers[attr] = value
 
@@ -1432,7 +1432,7 @@ class Server(object):
             elif encoding.lower() == 'quoted-printable':
                 text = quopri.decodestring(text)
         charset = message.get_content_charset()
-        text = heaplib.utf8(text, charset)
+        text = hkutils.utf8(text, charset)
 
         text = re.sub(r'\r\n',r'\n',text)
         post = Post.create_empty()
@@ -1666,7 +1666,7 @@ class Section(object):
         printed in the same order as they are in the list.) If it is the
         CYCLES constant, the posts that are in a cycle in the database will be
         printed.
-        Type: [Post] | PostSet | heapmanip.CYCLES
+        Type: [Post] | PostSet | hklib.CYCLES
     is_flat --- If true, the section should be printed flatly, otherwise in a
         threaded structure.
         Type: bool
@@ -1674,12 +1674,12 @@ class Section(object):
     """
 
     def __init__(self,
-                 title=heaplib.NOT_SET,
-                 posts=heaplib.NOT_SET,
+                 title=hkutils.NOT_SET,
+                 posts=hkutils.NOT_SET,
                  is_flat=False):
 
         super(Section, self).__init__()
-        heaplib.set_dict_items(self, locals())
+        hkutils.set_dict_items(self, locals())
 
 
 ##### Index #####
@@ -1701,11 +1701,11 @@ class Index(object):
     """
 
     def __init__(self,
-                 sections=heaplib.NOT_SET,
+                 sections=hkutils.NOT_SET,
                  filename='index.html'):
 
         super(Index, self).__init__()
-        heaplib.set_dict_items(self, locals())
+        hkutils.set_dict_items(self, locals())
 
 
 ##### GeneratorOptions #####
@@ -1755,7 +1755,7 @@ class GeneratorOptions(object):
     """
 
     def __init__(self,
-                 indices=heaplib.NOT_SET,
+                 indices=hkutils.NOT_SET,
                  write_toc=False,
                  shortsubject=False,
                  shorttags=False,
@@ -1764,11 +1764,11 @@ class GeneratorOptions(object):
                  html_h1='Heap index',
                  cssfile='heapindex.css',
                  print_thread_of_post=False,
-                 section=heaplib.NOT_SET,
-                 index=heaplib.NOT_SET):
+                 section=hkutils.NOT_SET,
+                 index=hkutils.NOT_SET):
 
         super(GeneratorOptions, self).__init__()
-        heaplib.set_dict_items(self, locals())
+        hkutils.set_dict_items(self, locals())
 
 
 ##### Generator #####
@@ -2053,7 +2053,7 @@ class Generator(object):
         - *options* (:class:`GeneratorOptions`)
         """
 
-        heaplib.check(
+        hkutils.check(
             options,
             ['indices', 'write_toc', 'shortsubject', 'shorttags',
              'date_fun', 'html_title', 'html_h1', 'cssfile'])
@@ -2087,7 +2087,7 @@ class Generator(object):
         - *options* (:class:`GeneratorOptions`)
         """
 
-        heaplib.check(
+        hkutils.check(
             options,
             ['date_fun', 'html_title', 'html_h1', 'cssfile',
              'print_thread_of_post'])

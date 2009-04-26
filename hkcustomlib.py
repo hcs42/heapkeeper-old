@@ -1,17 +1,17 @@
-# This file is part of Heapmanipulator.
+# This file is part of Heapkeeper.
 #
-# Heapmanipulator is free software: you can redistribute it and/or modify it
+# Heapkeeper is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# Heapmanipulator is distributed in the hope that it will be useful, but
+# Heapkeeper is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 #
 # You should have received a copy of the GNU General Public License along with
-# Heapmanipulator.  If not, see <http://www.gnu.org/licenses/>.
+# Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
@@ -44,7 +44,7 @@ localtime_fun --- A function that calculates the tm structure based on a
 
 import time
 import datetime
-import heapmanip
+import hklib
 import subprocess
 
 ##### Generator #####
@@ -120,7 +120,7 @@ def create_date_fun(options):
             date_format, maildb
             Either maildb, timedelta or should_print_date_fun.
 
-    Returns: heapmanip.DateFun
+    Returns: hklib.DateFun
     """
 
     if options['should_print_date_fun'] == None:
@@ -150,18 +150,18 @@ def date_defopts(options={}):
 def gen_indices(maildb):
     date_options = date_defopts({'maildb': maildb})
     date_fun = create_date_fun(date_options)
-    genopts = heapmanip.GeneratorOptions()
+    genopts = hklib.GeneratorOptions()
     genopts.maildb = maildb
-    section = heapmanip.Section(maildb.all())
-    genopts.indices = [heapmanip.Index([section])]
-    heapmanip.Generator(maildb).gen_indices(genopts)
+    section = hklib.Section(maildb.all())
+    genopts.indices = [hklib.Index([section])]
+    hklib.Generator(maildb).gen_indices(genopts)
 
 def gen_posts(maildb):
     date_options = date_defopts({'maildb': maildb})
     date_fun = create_date_fun(date_options)
-    genopts = heapmanip.GeneratorOptions()
+    genopts = hklib.GeneratorOptions()
     genopts.maildb = maildb
-    heapmanip.Generator(maildb).gen_posts(genopts)
+    hklib.Generator(maildb).gen_posts(genopts)
 
 ##### Misc #####
 

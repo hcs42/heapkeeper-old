@@ -1,21 +1,21 @@
 #!/usr/bin/python
 
-# This file is part of Heapmanipulator.
+# This file is part of Heapkeeper.
 #
-# Heapmanipulator is free software: you can redistribute it and/or modify it
+# Heapkeeper is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# Heapmanipulator is distributed in the hope that it will be useful, but
+# Heapkeeper is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 #
 # You should have received a copy of the GNU General Public License along with
-# Heapmanipulator.  If not, see <http://www.gnu.org/licenses/>.
+# Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
-"""test.py: tests the Heapmanipulator.
+"""Executes the unit tests on Heapkeeper.
 
 If executed without arguments, it runs all tests:
 
@@ -23,20 +23,20 @@ If executed without arguments, it runs all tests:
 
 It can be used to run a specific test:
 
-    $ python test.py test_heapmanip TestMailDB2 testThreadstructCycle1
+    $ python test.py test_hklib TestMailDB2 testThreadstructCycle1
 """
 
 import sys
 import unittest
-import heapmanip
+import hklib
 
-testmodules = ['test_heaplib',
-               'test_heapmanip',
-               'test_heapia',
-               'test_heapcustomlib']
+testmodules = ['test_hkutils',
+               'test_hklib',
+               'test_hkshell',
+               'test_hkcustomlib']
 
 def main(args):
-    heapmanip.set_log(False)
+    hklib.set_log(False)
     if args in [['-h'], '--help']:
         sys.stdout.write(__doc__)
     elif args == []:

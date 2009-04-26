@@ -1,28 +1,28 @@
 #!/usr/bin/python
 
-# This file is part of Heapmanipulator.
+# This file is part of Heapkeeper.
 #
-# Heapmanipulator is free software: you can redistribute it and/or modify it
+# Heapkeeper is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option) any
 # later version.
 #
-# Heapmanipulator is distributed in the hope that it will be useful, but
+# Heapkeeper is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 #
 # You should have received a copy of the GNU General Public License along with
-# Heapmanipulator.  If not, see <http://www.gnu.org/licenses/>.
+# Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
-"""Tests the heapmanip module.
+"""Tests the hklib module.
 
 Usage:
     
-    python heapmaniptest.py
+    python hklibtest.py
 """
 
 from __future__ import with_statement
@@ -34,7 +34,7 @@ import os.path
 import ConfigParser
 import re
 
-from heapmanip import *
+from hklib import *
 
 
 class MailDBHandler(object):
@@ -162,7 +162,7 @@ class TestPost1(unittest.TestCase):
         sio.close()
 
         self.assertRaises(
-            heaplib.HeapException,
+            hkutils.HkException,
             lambda: Post.from_str('Malformatted post.'))
 
     def testEmpty(self):
@@ -336,7 +336,7 @@ class TestPost2(unittest.TestCase):
 
     def testFromFile(self):
         fname = os.path.join(self._dir, 'postfile')
-        heaplib.string_to_file(post1_text, fname)
+        hkutils.string_to_file(post1_text, fname)
         p = Post.from_file(fname)
 
         self.assertEquals(p.heapid(), None)
@@ -380,10 +380,10 @@ class TestMailDB1(unittest.TestCase, MailDBHandler):
     def testOnlyMail(self):
         """Tests that only the files with ".mail" postfix are read."""
         self.createDirs()
-        heaplib.string_to_file('Subject: s1', self.postFileName('1.mail'))
-        heaplib.string_to_file('Subject: sx', self.postFileName('xy.mail'))
-        heaplib.string_to_file('Subject: s2', self.postFileName('2.other'))
-        heaplib.string_to_file('Subject: s3', self.postFileName('3mail'))
+        hkutils.string_to_file('Subject: s1', self.postFileName('1.mail'))
+        hkutils.string_to_file('Subject: sx', self.postFileName('xy.mail'))
+        hkutils.string_to_file('Subject: s2', self.postFileName('2.other'))
+        hkutils.string_to_file('Subject: s3', self.postFileName('3mail'))
         maildb = self.createMailDB()
         self.assertEquals(set(maildb.heapids()), set(['1', 'xy']))
         self.assertEquals(maildb.next_heapid(), '2')
@@ -391,14 +391,14 @@ class TestMailDB1(unittest.TestCase, MailDBHandler):
     def testConfig(self):
         """Tests the MailDB.__init__ which has a ConfigParser argument."""
         self.createDirs()
-        heaplib.string_to_file('Subject: s1', self.postFileName('1.mail'))
+        hkutils.string_to_file('Subject: s1', self.postFileName('1.mail'))
         configFileText = '''\
 [paths]
 mail=%s
 html=%s
 ''' % (self._postfile_dir, self._html_dir)
-        configFileName = os.path.join(self._dir, 'heap.cfg')
-        heaplib.string_to_file(configFileText, configFileName)
+        configFileName = os.path.join(self._dir, 'hk.cfg')
+        hkutils.string_to_file(configFileText, configFileName)
         config = ConfigParser.ConfigParser()
         config.read(configFileName)
         maildb = MailDB.from_config(config)
@@ -407,9 +407,9 @@ html=%s
     def testGetMethods(self):
         """Tests the 'get' methods of MailDB."""
         self.createDirs()
-        heaplib.string_to_file('Message-Id: mess1',
+        hkutils.string_to_file('Message-Id: mess1',
                                self.postFileName('1.mail'))
-        heaplib.string_to_file('Message-Id: mess2',
+        hkutils.string_to_file('Message-Id: mess2',
                                self.postFileName('2.mail'))
         maildb = self.createMailDB()
         self.assertEquals(set(maildb.heapids()), set(['1', '2']))
@@ -428,8 +428,8 @@ html=%s
         self.createDirs()
         postfile1 = self.postFileName('1.mail')
         postfile2 = self.postFileName('2.mail')
-        heaplib.string_to_file('Message-Id: mess1', postfile1)
-        heaplib.string_to_file('Message-Id: mess2', postfile2)
+        hkutils.string_to_file('Message-Id: mess1', postfile1)
+        hkutils.string_to_file('Message-Id: mess2', postfile2)
         maildb = self.createMailDB()
         p1 = maildb.post('1')
         p2 = maildb.post('2')
@@ -437,15 +437,15 @@ html=%s
         # Modifying and saving a post
         p1.set_subject('subject')
         self.assertEquals('Message-Id: mess1',
-                          heaplib.file_to_string(postfile1))
+                          hkutils.file_to_string(postfile1))
         self.assertEquals('Message-Id: mess2',
-                          heaplib.file_to_string(postfile2))
+                          hkutils.file_to_string(postfile2))
         maildb.save()
         postfile1_str = 'Subject: subject\nMessage-Id: mess1\n\n\n'
         self.assertEquals(postfile1_str,
-                          heaplib.file_to_string(postfile1))
+                          hkutils.file_to_string(postfile1))
         self.assertEquals('Message-Id: mess2',
-                          heaplib.file_to_string(postfile2))
+                          hkutils.file_to_string(postfile2))
         
         # Adding a new post
         postfile3 = self.postFileName('3.mail')
@@ -479,7 +479,7 @@ html=%s
         p1.set_subject('sub2')
 
         # A change on the disk that will be loaded.
-        heaplib.string_to_file('Subject: sub_new', self.postFileName('x.mail'))
+        hkutils.string_to_file('Subject: sub_new', self.postFileName('x.mail'))
 
         maildb.reload()
         maildb.save()
@@ -488,7 +488,7 @@ html=%s
         self.assertEquals(p1.subject(), 'sub1')
         self.assert_(maildb.post('0') is p1)
         self.assertEquals(
-            heaplib.file_to_string(p1.postfilename()),
+            hkutils.file_to_string(p1.postfilename()),
             'Subject: sub1\n\n\n')
         self.assertEquals(maildb.post('x').subject(), 'sub_new')
 
@@ -696,9 +696,9 @@ class TestPostSet(unittest.TestCase, MailDBHandler):
         postfile1 = self.postFileName('1.mail')
         postfile2 = self.postFileName('2.mail')
         postfile3 = self.postFileName('3.mail')
-        heaplib.string_to_file('Message-Id: 1@', postfile1)
-        heaplib.string_to_file('Message-Id: 2@\nIn-Reply-To: 1@', postfile2)
-        heaplib.string_to_file('Message-Id: 3@\nIn-Reply-To: 1@', postfile3)
+        hkutils.string_to_file('Message-Id: 1@', postfile1)
+        hkutils.string_to_file('Message-Id: 2@\nIn-Reply-To: 1@', postfile2)
+        hkutils.string_to_file('Message-Id: 3@\nIn-Reply-To: 1@', postfile3)
         self._maildb = self.createMailDB()
 
     def testEmpty(self):
@@ -1272,7 +1272,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 
     def index_html(self):
         index_html_name = os.path.join(self._html_dir, 'index.html')
-        return heaplib.file_to_string(index_html_name)
+        return hkutils.file_to_string(index_html_name)
 
     def test_post(self):
 
@@ -1689,7 +1689,7 @@ class TestGenerator(unittest.TestCase, MailDBHandler):
 
         g.gen_posts(genopts)
         post0_htmlfile = os.path.join(self._html_dir, '0.html')
-        post0_htmlstr = heaplib.file_to_string(post0_htmlfile)
+        post0_htmlstr = hkutils.file_to_string(post0_htmlfile)
 
         self.assertEquals(
             post0_htmlstr,
