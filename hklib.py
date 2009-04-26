@@ -847,8 +847,8 @@ class PostDB(object):
         self._recalc_threadstruct()
         return self._threadstruct
 
-    def prev(self, post):
-        """Returns the previous post relative to the given post.
+    def parent(self, post):
+        """Returns the parent of the given post.
         
         If there is no such post in the database, it returns None
         """
@@ -861,18 +861,18 @@ class PostDB(object):
         
         else:
 
-            # try to get the prev_post by messid
-            prev_post = self.post_by_messid(inreplyto)
+            # try to get the parentpost by messid
+            parentpost = self.post_by_messid(inreplyto)
 
-            # try to get the prev_post by heapid
-            if prev_post == None:
-                prev_post = self.post(inreplyto)
+            # try to get the parentpost by heapid
+            if parentpost == None:
+                parentpost = self.post(inreplyto)
 
             # deleted posts do not count
-            if prev_post != None and prev_post.is_deleted():
-                prev_post = None
+            if parentpost != None and parentpost.is_deleted():
+                parentpost = None
 
-            return prev_post
+            return parentpost
 
     def root(self, post):
         """Returns the root of the post.
@@ -884,11 +884,11 @@ class PostDB(object):
 
         assert(post in self.all())
         while True:
-            prevpost = self.prev(post)
-            if prevpost == None:
+            parentpost = self.parent(post)
+            if parentpost == None:
                 return post
             else:
-                post = prevpost
+                post = parentpost
 
     def children(self, post):
         """Returns the children of the given post.
@@ -922,12 +922,13 @@ class PostDB(object):
 
             threads = {None: []} # dict(heapid, [answered:(timestamp, heapid)])
             for post in self.posts():
-                prev_post = self.prev(post)
-                prev_heapid = prev_post.heapid() if prev_post != None else None
-                if prev_heapid in threads:
-                    threads[prev_heapid].append(add_timestamp(post))
+                parentpost = self.parent(post)
+                parent_heapid = \
+                    parentpost.heapid() if parentpost != None else None
+                if parent_heapid in threads:
+                    threads[parent_heapid].append(add_timestamp(post))
                 else:
-                    threads[prev_heapid] = [add_timestamp(post)]
+                    threads[parent_heapid] = [add_timestamp(post)]
             t = {}
             for heapid in threads:
                 threads[heapid].sort()
@@ -1103,7 +1104,7 @@ class PostSet(set):
             if post not in result:
                 while True:
                     result.add(post)
-                    post = self._postdb.prev(post)
+                    post = self._postdb.parent(post)
                     if post == None:
                         break
         return result
@@ -1336,7 +1337,7 @@ class PostSetCollectDelegate(object):
 
     def is_root(self):
         """Returns the posts that are roots of a thread."""
-        return self.__call__(lambda p: self._postset._postdb.prev(p) == None)
+        return self.__call__(lambda p: self._postset._postdb.parent(p) == None)
 
     def __getattr__(self, funname):
         """Returns a function that collects posts whose return value is true
@@ -1969,7 +1970,7 @@ class Generator(object):
             else:
                 if item != None:
                     post = item
-                    parent = self._postdb.prev(post)
+                    parent = self._postdb.parent(post)
                     subject = post.subject()
                     if (options.shortsubject and parent != None and
                         subject == parent.subject()):

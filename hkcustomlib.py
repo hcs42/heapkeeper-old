@@ -97,15 +97,15 @@ def create_should_print_date_fun(options):
     timedelta = options['timedelta']
 
     def should_print_date_fun(post, genopts):
-        prev = postdb.prev(post)
+        parent = postdb.parent(post)
         if not hasattr(genopts, 'section'):
             return True
         if genopts.section.is_flat:
             return True
-        if prev == None:
+        if parent == None:
             return True
-        if (post.date() != '' and prev.date() != '' and
-            (post.datetime() - prev.datetime() >= timedelta)):
+        if (post.date() != '' and parent.date() != '' and
+            (post.datetime() - parent.datetime() >= timedelta)):
             return True
         return False
 

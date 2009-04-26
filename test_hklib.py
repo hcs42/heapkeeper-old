@@ -581,17 +581,17 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
             test(Post.from_str(''), [])
         self.assertRaises(AssertionError, f)
     
-    def testPrev(self):
-        """Tests the 'prev' method."""
+    def testParent(self):
+        """Tests the 'parent' method."""
         postdb = self._postdb
 
-        def test(post_heapid, prev_heapid):
-            if prev_heapid != None:
-                prev_post = postdb.post(prev_heapid)
+        def test(post_heapid, parent_heapid):
+            if parent_heapid != None:
+                parentpost = postdb.post(parent_heapid)
             else:
-                prev_post = None
-            self.assertEquals(postdb.prev(postdb.post(post_heapid)), \
-                              prev_post)
+                parentpost = None
+            self.assertEquals(postdb.parent(postdb.post(post_heapid)), \
+                              parentpost)
 
         test('0', None)
         test('1', '0')
@@ -603,13 +603,13 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
         """Tests the 'root' method."""
         postdb = self._postdb
 
-        def test(post_heapid, prev_heapid):
-            if prev_heapid != None:
-                prev_post = postdb.post(prev_heapid)
+        def test(post_heapid, parent_heapid):
+            if parent_heapid != None:
+                parentpost = postdb.post(parent_heapid)
             else:
-                prev_post = None
+                parentpost = None
             self.assertEquals(postdb.root(postdb.post(post_heapid)), \
-                              prev_post)
+                              parentpost)
 
         test('0', '0')
         test('1', '0')
