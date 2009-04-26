@@ -45,7 +45,7 @@ Todo items
 
   * Screenshots
   * ``[disc]`` Talk about some kind of roadmap. How do we envision the
-    progress of Hm?
+    progress of Hk?
   * ``[disc]`` Elevator speech, slogan, motto, logo.
 
     * "The past is just our perception of the past."
@@ -156,14 +156,8 @@ Todo items
 
 * **Renamings**
 
-  * hklib to hkutils
-  * hkutils to heaputils
-  * hkshell to hkshell
   *  ``[prop]`` ``*.mail`` files to ``*.post``
-  *  ``[prop]`` :class:`hklib.PostDB` to ``PostDB``
   * CamelCase function names to lower_case in test modules
-  * :func:`hklib.Post.inreplyto` and :func:`hklib.PostDB.prev` to
-    ``parent``
 
 * hkcustomlib: refactoring DateOptions to use the Options pattern
 
