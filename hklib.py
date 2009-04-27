@@ -1071,6 +1071,8 @@ class PostSet(set):
                     post = postdb.post(prepost, True)
                 elif isinstance(prepost, Post): # prepost is a Post
                     post = prepost
+                elif prepost == None: # prepost is None
+                    continue
                 else:
                     raise hkutils.HkException, \
                           ("Object type not compatible with Post: %s" % \
