@@ -64,6 +64,14 @@ def sections(postdb):
     # ps_all = összes levél
     ps_all = postdb.all().copy()
 
+    # ps_attention = unanswered proposals
+    # ps_singles = all other mail w/o answers
+    ps_singles = postdb.roots()
+    for post in postdb.all():
+        ps_singles -= hklib.PostSet(postdb, [postdb.parent(post)])
+    ps_attention = ps_singles.collect.has_tag('prop')
+    ps_singles -= ps_attention
+
     # tidy
     # posts that belong here either:
     # * contain quote introduction (like "xyz wrote:")
@@ -119,8 +127,10 @@ def sections(postdb):
     if eliminate:
         ps_all -= ps_pol
 
-    res = [ hklib.Section("Tidy", ps_tidy, {'flat': True}),
-            hklib.Section("Todo", ps_todo, {'flat': True}),
+    res = [ hklib.Section("Nyitott javaslatok", ps_attention, {'flat': True}),
+            hklib.Section("Takarítani", ps_tidy, {'flat': True}),
+            hklib.Section("Tennivalók", ps_todo, {'flat': True}),
+            hklib.Section("Cipősdoboz", ps_singles, {'flat': True}),
             hklib.Section("Heap", ps_heap),
             hklib.Section("Programozás", ps_prog),
             hklib.Section("C és C++", ps_ccpp),
@@ -236,10 +246,6 @@ def gen_posts(postdb):
     genopts.print_thread_of_post = True
     genopts.date_fun = date_fun
     genopts.indices = [hklib.Index(sections(postdb))]
-#    n = 0
-#    for month in do_monthly(postdb):
-#        genopts.indices.append(hklib.Index(month, str(n) + "html"))
-#        n += 1
 
     # Generating the posts
     hklib.Generator(postdb).gen_posts(genopts)
