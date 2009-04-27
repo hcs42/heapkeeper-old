@@ -770,7 +770,11 @@ def load_custom():
 
 def read_postdb():
     config = ConfigParser.ConfigParser()
-    config.read('hk.cfg')
+    try:
+        config.readfp(open('hk.cfg'))
+    except IOError:
+        print 'Heapkeeper config file "hk.cfg" does not exist!'
+        sys.exit(1)
     return hklib.PostDB.from_config(config), config
 
 def init():
