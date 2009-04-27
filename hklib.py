@@ -1073,7 +1073,7 @@ class PostSet(set):
                     post = prepost
                 else:
                     raise hkutils.HkException, \
-                          ("Object'type not compatible with Post: %prepost" % \
+                          ("Object type not compatible with Post: %s" % \
                            (prepost,))
                 result.add(post)
             return result
