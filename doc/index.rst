@@ -62,7 +62,7 @@ the heap.
 .. _`Git`: http://git-scm.com/
 .. _`GitHub`: http://github.com/
 .. _`Heapkeeper repository`: http://github.com/hcs42/heapkeeper/
-.. _`Download page`: http://github.com/hcs42/heap/downloads/
+.. _`Download page`: http://github.com/hcs42/heapkeeper/downloads/
 .. _`Python`: http://www.python.org/
 .. _`reStructuredText`: http://docutils.sourceforge.net/rst.html  
 .. _`Sphinx`: http://sphinx.pocoo.org/
