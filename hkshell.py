@@ -137,6 +137,7 @@ import time
 import subprocess
 import ConfigParser
 import re
+from functools import wraps
 
 import hkutils
 import hklib
@@ -427,17 +428,24 @@ def tagset(tags):
 
 ##### Commands #####
 
+def events(f):
+    @wraps(f)
+    def events2(*args, **kw):
+        event('before', 's')
+        f(*args, **kw)
+        event('after', 's')
+    return events2
+
 def h():
     write(__doc__)
 
 def hh():
     sys.stdout.write(cmd_help())
 
+@events
 def s():
     """Saves the post database."""
-    event('before', 's')
     postdb().save()
-    event('after', 's')
 
 def x():
     """Saves the post database and exits.
