@@ -8,6 +8,40 @@ details.
 
 .. automodule:: hklib
 
+Post
+----
+
+.. autoclass:: Post
+
+    **Methods:**
+
+    .. method:: subject
+    .. method:: set_subject
+    .. method:: real_subject
+    .. method:: set_body
+
+PostDB
+------
+
+.. class:: PostDB
+
+PostSet
+-------
+
+.. class:: PostSet
+
+EmailDownloader
+---------------
+
+.. class:: EmailDownloader
+
+Section, Index
+--------------
+
+.. class:: Section
+
+.. class:: Index
+
 Html
 ----
    
@@ -17,19 +51,9 @@ Html
 
     .. automethod:: enclose
 
-.. class:: Post
+Generator
+---------
 
-    **Methods:**
-
-    .. method:: subject
-    .. method:: set_subject
-    .. method:: real_subject
-
-.. class:: PostDB
-.. class:: PostSet
-.. class:: Server
-.. class:: Section
-.. class:: Index
 .. class:: GeneratorOptions
 
 .. autoclass:: Generator

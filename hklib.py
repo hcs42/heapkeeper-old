@@ -78,30 +78,41 @@ CYCLES = 2
 
 class Post(object):
 
-    """Represents a posted message.
+    """Represents a posted message on the heap.
 
     A Post object is in the memory, but usually it represents a file that is in
     the filesystem.
 
-    Data attributes:
-    _header -- The header of the post.
-        Type: dict(str, (str | [str])).
-    _body -- The body of the post. The first character of the body is not a
-        whitespace. The last character is a newline character, and the but one
-        character is not a whitespace. It does not contain any '\\r'
-        characters, newlines are stored as '\\n'.
-        In regexp: (|\\S|\\S[^\\r]*\\S)\\n
-        The set_body function converts any given string into this format.
-        Type: str.
-    _heapid -- The identifier of the post.
-        Type: NoneType | str.
-    _postdb -- The PostDB object that contains the post.
-        If _postdb is None, _heapid must not be None.
-        Type: NoneType | PostDB.
-    _modified -- It is false if the file on the disk that represents the post
-        is up-to-date. It is true if there is no such file or the post
-        has been modified since the last synchronization.
-        Type: bool.
+    **Data attributes:**
+
+    - *_header* (``dict(str, (str | [str]))``) -- The header of the post. See
+      the contents below.
+    - *_body* (``str``) -- The body of the post. The first character of the
+      body is not a whitespace. The last character is a newline character, and
+      the last but one character is not a whitespace. It does not contain any
+      ``\\r`` characters, newlines are stored as ``\\n``. The form of the body
+      expressed as a regular expression: ``(\\S|\\S[^\\r]*\\S)\\n``. The
+      :func:`set_body` function converts any given string into this format.
+    - *_heapid* (``None | str``) -- The identifier of the post.
+    - *_postdb* (``None |`` :class:`PostDB` ``)`` -- The post database object
+      that contains the post. If *_postdb* is not ``None``, *_heapid* must
+      not be ``None`` either.
+    - *_modified* (``bool``) -- It is ``False`` if the post file that belongs
+      to the post object is up-to-date. It is ``True`` if there is no such file
+      or the post has been modified since the last synchronization.
+
+    The *_header* attribute is a dictonary that contains attributes of the post
+    such as the subject. The *_header* always contains all the following items:
+
+    - ``'From'`` (``str``) -- The author of the post.
+    - ``'Subject'`` (``str``) -- The subject of the post.
+    - ``'Tag'`` (``[str]``) -- The tags of the post.
+    - ``'Message-Id'`` (``str``) -- The message id of the post.
+    - ``'In-Reply-To'`` (``str``) -- The heapid or message id of the parent of
+      the post. It should be en empty string when the post has no parent.
+    - ``'Date'`` (``str``) -- The date of the post.
+    - ``'Flag'`` (``[str]``) -- The flags of the post. Currently there is only
+      one flag, the ``delete`` flag.
     """
 
     # Constructors
@@ -329,8 +340,17 @@ class Post(object):
         return 'deleted' in self._header['Flag']
 
     def delete(self):
-        self._header = {'Message-Id': self.messid(), 
-                         'Flag': ['deleted']}
+        for key, value in self._header.items():
+            if key == 'Message-Id':
+                pass
+            elif isinstance(value, str):
+                self._header[key] = ''
+            elif isinstance(value, list):
+                self._header[key] = []
+            else:
+                raise hkutils.HkException, \
+                      'Unknown type of field: %s' % (value,)
+        self._header['Flag'] = ['deleted']
         self._body = ''
         self.touch()
 
