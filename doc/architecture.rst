@@ -56,8 +56,8 @@ Module contents
 Some objects will be renamed. The proposed new name of these objects is
 written after their name in parens.
 
-:mod:`hklib` (*hklib*)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+:mod:`hklib`
+^^^^^^^^^^^^
 
 The main concept of Heapkeeper is the *heap*. The heap is an abstract data
 structure that consists of *posts*. The heap data structure and its

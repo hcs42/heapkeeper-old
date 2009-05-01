@@ -3,7 +3,9 @@ Tutorial
 
 This page needs a major rewrite. It will contain a step-by-step example of the
 followings:
+
 * Creating a heap (with a Google Groups account and GMail account).
+* Downloading and configuring Heapkeeper.
 * Posting a few emails in order to create a non-trivial thread structure.
 * Generating HTML from the heap.
 * Modifying posts, thread structure and other things from the hkshell.
