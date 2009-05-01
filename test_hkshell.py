@@ -215,6 +215,8 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.setUpDirs()
         self._postdb = self.createPostDB()
         self.create_threadst()
+        for post in self._postdb.posts():
+            post.set_subject('')
         hkshell.options.postdb = self._postdb
 
         # Redirect the output of hkshell to nowhere.
@@ -225,6 +227,9 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
     def tearDown(self):
         self.tearDownDirs()
+
+    def ae(self, x, y):
+        self.assertEquals(x, y)
 
     def init_hkshell(self):
         hkshell.init()
@@ -399,31 +404,91 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
             hkshell.tagset(0)
         self.assertRaises(hkutils.HkException, f)
 
+    def subjects(self):
+        return [ self._posts[i].subject() for i in range(5) ]
+
     def tags(self):
         return [ self._posts[i].tags() for i in range(5) ]
 
-    def test_pt_1(self):
+    def test_self(self):
         self.init_hkshell()
+        self.assertEquals(self.subjects(), ['','','','',''])
         self.assertEquals(self.tags(), [[],[],[],[],[]])
-        self._posts[1].add_tag('t')
+
+    def test_pt__1(self):
+        self.init_hkshell()
+        hkshell.at(1, 't')
         self.assertEquals(self.tags(), [[],['t'],[],[],[]])
         hkshell.pt(1)
         self.assertEquals(self.tags(), [[],['t'],['t'],[],[]])
 
-    def test_pt_2(self):
+    def test_pt__2(self):
         self.init_hkshell()
-        self._posts[0].add_tag('t1')
-        self._posts[1].add_tag('t2')
+        hkshell.at(0, 't1')
+        hkshell.at(1, 't2')
         hkshell.pt(0)
         self.assertEquals(self.tags(), [['t1'],['t1','t2'],['t1'],['t1'],[]])
 
-    def test_pt_3(self):
+    def test_pt__3(self):
         self.init_hkshell()
-        self._posts[0].add_tag('t1')
-        self._posts[0].add_tag('t2')
+        hkshell.at(0, 't1')
+        hkshell.at(0, 't2')
         hkshell.pt(0)
         t = ['t1', 't2']
         self.assertEquals(self.tags(), [t, t, t, t, []])
+
+    def test_at(self):
+        self.init_hkshell()
+        hkshell.at(1, 't')
+        self.assertEquals(self.tags(), [[],['t'],[],[],[]])
+        hkshell.at(1, ['t', 'u'])
+        self.assertEquals(self.tags(), [[],['t','u'],[],[],[]])
+
+    def test_atr(self):
+        self.init_hkshell()
+        hkshell.atr(1, 't')
+        self.assertEquals(self.tags(), [[],['t'],['t'],[],[]])
+        hkshell.atr(1, ['t', 'u'])
+        self.assertEquals(self.tags(), [[],['t','u'],['t','u'],[],[]])
+
+    def test_rt_AND_rtr(self):
+        self.init_hkshell()
+        hkshell.atr(0, ['t', 'u'])
+        self.ae(self.tags(), [['t','u'],['t','u'],['t','u'],['t','u'],[]])
+        hkshell.rt(1, ['t'])
+        self.ae(self.tags(), [['t','u'],['u'],['t','u'],['t','u'],[]])
+        hkshell.rtr(1, ['u'])
+        self.ae(self.tags(), [['t','u'],[],['t'],['t','u'],[]])
+
+    def test_st_AND_str_(self):
+        self.init_hkshell()
+        hkshell.atr(0, ['t', 'u'])
+        self.ae(self.tags(), [['t','u'],['t','u'],['t','u'],['t','u'],[]])
+        hkshell.st(1, ['x', 'y'])
+        self.ae(self.tags(), [['t','u'],['x','y'],['t','u'],['t','u'],[]])
+        hkshell.str_(1, 'z')
+        self.ae(self.tags(), [['t','u'],['z'],['z'],['t','u'],[]])
+
+    def test_sS_AND_pS(self):
+        self.init_hkshell()
+        hkshell.sS(1, 's')
+        self.assertEquals(self.subjects(), ['','s','','',''])
+        hkshell.pS(1)
+        self.assertEquals(self.subjects(), ['','s','s','',''])
+
+    def test_sSr(self):
+        self.init_hkshell()
+        hkshell.sSr(1, 's')
+        self.assertEquals(self.subjects(), ['','s','s','',''])
+
+    def test_cS_AND_cSr(self):
+        self.init_hkshell()
+        hkshell.sSr(0, 'su')
+        self.assertEquals(self.subjects(), ['su','su','su','su',''])
+        hkshell.cS(2)
+        self.assertEquals(self.subjects(), ['su','su','Su','su',''])
+        hkshell.cSr(0)
+        self.assertEquals(self.subjects(), ['Su','Su','Su','Su',''])
 
 if __name__ == '__main__':
     hklib.set_log(False)
