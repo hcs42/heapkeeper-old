@@ -385,9 +385,6 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
             self.assertEquals(hkshell.features()['touched_post_printer'], 'off')
         self._test_TouchedPostPrinter(on=on_fun, off=off_fun)
 
-    def test_cmd_help(self):
-        hkshell.cmd_help()
-
     def test_tagset(self):
         def test(pretagset, tagset):
             self.assertEquals(hkshell.tagset(pretagset), tagset)

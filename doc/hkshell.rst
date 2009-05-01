@@ -3,7 +3,7 @@
 
 See the :doc:`developer documentation of hkshell <hkshell_dev>` for more details.
 
-.. module:: hkshell
+.. automodule:: hkshell
 
 Options
 -------
@@ -22,6 +22,8 @@ General functions
 
 Commands
 --------
+
+.. autofunction:: ls(pps)
 
 .. autofunction:: d
 

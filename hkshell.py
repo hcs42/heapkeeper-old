@@ -24,11 +24,55 @@ The interactive shell defines commands that are actually Python functions in
 the hkshell module. These functions do high-level manipulaton on the heap, and
 they tend to have very short names.
 
-For further help on a command type "help(<command name>)" or see the
-documentation.
+To get help after from within hkshell, type ``h()``. It will print the list of
+features and commands with a short description.
 
-------------------------------------------------------------
-Commands:
+**Type definitions:**
+
+- ``PrePost`` (``heapid | int |`` :class:`hklib.Post`) -- An object that can be
+  converted into a :class:`hklib.Post`. When it is an ``int``, it will be
+  converted to a string that should represent a heapid. The ``heapid`` is
+  converted to a :class:`hklib.Post` based on the post database.
+- ``PrePostSet`` (``set(PrePost) | [PrePost] | PrePost |``
+  :class:`hklib.PostSet`) -- An object that can be converted into a
+  :class:`hklib.PostSet`. Actually, ``PrePostSet`` can be any iterable object
+  that iterates over ``PrePost`` objects.
+- ``Tag`` (``str``) -- A tag.
+- ``PreTagSet`` (``Tag | set(Tag) | [Tag]``) -- An object that can be converted
+  into a tagset.
+
+**Arguments of hkshell**
+
+Arguments given to the :mod:`hkshell` from the command line will be evaluated
+as commands.
+
+Example: generate the index HTML (and exit):
+
+.. code-block:: none
+
+    $ python hkshell.py 'g()'
+"""
+
+console_help = """\
+Types
+-----
+
+pp = PrePost = int | str | Post
+pps = PrePostSet = prepost | [prepost] | set(prepost) | PostSet
+pts = PreTagSet = tag | set(tag) | [tag]
+
+Features
+--------
+
+gen_indices        - automatically regenerates the index pages
+gen_posts          - automatically regenerates the post pages after 
+save               - automatically saves the post database after commands
+timer              - times the commands
+touched_post_printer - prints touched posts
+event_printer      - prints all events
+
+Commands
+--------
 
 h()                - prints a detailed help
 hh()               - print help about the commands
@@ -65,72 +109,11 @@ postdb()           - the post database object
 c()                - shorthand for postdb().all().collect
 on(feature)        - turning a feature on
 off(feature)       - turning a feature off
-------------------------------------------------------------
 
-Argument types:
-    pp = PrePost = int | str | Post
-    pps = PrePostSet = prepost | [prepost] | set(prepost) | PostSet
-    pts = PreTagSet = tag | set(tag) | [tag]
-
-Features:
-    gi, gen_indices - automatically regenerates the indices after hkshell
-    commands that change the database.
-    gp, gen_posts -
-    s, save -
-    t, timer -
-    tpp, touched_post_printer -
-
-    auto_save --- If True, the post database will be saved after each command.
-        Type: bool
-    timing --- If True, the real (wall clock) time taken by commands is
-        reported.
-        Type: bool
-    auto_threadstruct --- If True, the threadstruct will be regenerated after
-        each command. It has only efficiency consequences, because later it
-        will be regenerated later anyway.
-        Type: bool
-    hkrc --- The module that is used to customize the behaviour of the
-        commands.
-        Type: str
-    callbacks --- The callback functions. Don't change it manually, use the
-        customization feature (hkrc). If you want to modify it directly,
-        use the set_callback function.
-
-
-Callback functions (that can be defined in hkrc.py):
-
-    edit(file)
-        Called when the user wants to edit a file (with the e() command). It
-        should open some kind of text editor and return only when the editing
-        is finished.
-
-        Args:
-            file --- The name of the post file to be edited.
-
-        Returns: whether the given file was modified and should be reread from
-        the disk.
-
-    gen_indices(postdb):
-        It should generate the index.html file.
-
-        Args:
-            postdb --- PostDB
-
-        Returns: -
-
-    gen_posts(postdb):
-
-        It should generate HTML for all posts.
-
-        Args:
-            postdb --- PostDB
-
-        Returns: -
-
-Arguments given to the script will be evaluated as commands.
-Example: generate the index HTML (and exit):
-    $ python hkshell.py 'g()'
+For further help on a command type ``help(<command name>)`` or see the HTML
+documentation.
 """
+
 
 import sys
 import time
@@ -415,13 +398,6 @@ def off(feature):
 def write(str):
     options.output.write(str)
 
-def cmd_help():
-    r = re.compile('.*^' + ('-' * 60) + '\\n' +
-                   '(.*)' +
-                   '^' + ('-' * 60) + '\\n',
-                   re.DOTALL | re.MULTILINE)
-    return r.match(__doc__).group(1)
-
 def postdb():
     return options.postdb
 
@@ -469,10 +445,8 @@ def tagset(tags):
 ##### Commands #####
 
 def h():
-    write(__doc__)
-
-def hh():
-    sys.stdout.write(cmd_help())
+    """Prints the console help."""
+    write(console_help)
 
 @hkshell_events()
 def s():
@@ -494,23 +468,32 @@ def x():
 def rl():
     """Reloads the post from the disk.
 
-    Changes that have not been saved (e.g. with the x() command) will be lost.
+    Changes that have not been saved (e.g. with the :func:`x()` command) will
+    be lost.
     """
 
     postdb().reload()
 
 @hkshell_events()
 def g():
+    """Generates the index pages."""
     gen_indices()
 
 @hkshell_events()
 def ga():
+    """Generates the index and post pages."""
     gen_indices()
     gen_posts()
 
 @hkshell_events()
-def ls(ps):
-    for p in ps:
+def ls(pps):
+    """Lists the content of the given postset.
+    
+    **Arguments:**
+
+    - *ps* (``PrePostSet``)
+    """
+    for p in ps(pps):
         sum = p.subject() if len(p.subject()) < 40 \
             else p.subject()[:37] + '...'
         write('%s %s %s\n' % (p.author(), p.date(), sum))
