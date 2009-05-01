@@ -258,6 +258,60 @@ def hkshell_events(command=None):
     return inner
 
 
+def postset_operation(operation):
+    '''This function is a decorator to be used for decorating commands that
+    manipulate posts based on a given postset.
+
+    The decorated function will perform the following steps when invoked:
+
+    1. Raises ``event('before', command)``.
+    2. Calculates the postset to operate on. This will be referred as the
+       ``posts`` variable.
+    3. Raises ``event('postset_calculated', command, postset=posts)``.
+    4. If ``posts`` is not an empty set, invokes the original command with
+       ``posts`` as a first formal parameter and the other actual parameters as
+       other formal parameters.
+    5. Raises ``event('after', command, postset=posts)``.
+
+    Example on how to define a function that is decorated with
+    *postset_operation*::
+
+        @postset_operation
+        def d(posts):
+            """Deletes the posts in *pps*.
+            
+            **Arguments:**
+
+            - *pps* (``PrePostSet``)
+            """
+
+            posts.forall.delete()
+
+    Note that the first (and only) parameter of the original function is
+    *posts*, but the the first parameter of the decorated function is *pps*!
+    That is why the documentation of :func:`d` states that the name of the
+    parameter is *pps*.
+
+    A more complex example::
+
+        @postset_operation
+        def add_tags_recursively(posts, tags):
+            tags = tagset(tags)
+            for p in posts.expf():
+                p.set_tags(tags.union(p.tags()))
+    '''
+
+    @wraps(operation)
+    def inner(pps, *args, **kw):
+        command = operation.__name__
+        event('before', command)
+        posts = ps(pps)
+        event('postset_calculated', command, postset=posts)
+        if len(posts) != 0:
+            operation(posts, *args, **kw)
+        event('after', command, postset=posts)
+    return inner
+
 ##### Listeners #####
 
 class ModificationListener(object):
@@ -468,7 +522,7 @@ def x():
 def rl():
     """Reloads the post from the disk.
 
-    Changes that have not been saved (e.g. with the :func:`x()` command) will
+    Changes that have not been saved (e.g. with the :func:`s` command) will
     be lost.
     """
 
@@ -498,15 +552,8 @@ def ls(pps):
             else p.subject()[:37] + '...'
         write('%s %s %s\n' % (p.author(), p.date(), sum))
 
-def perform_operation(pps, command, operation):
-    event('before', command)
-    posts = ps(pps)
-    event('postset_calculated', command, postset=posts)
-    if len(posts) != 0:
-        operation(posts)
-    event('after', command, postset=posts)
-
-def d(pps):
+@postset_operation
+def d(posts):
     """Deletes the posts in *pps*.
     
     **Argument:**
@@ -514,9 +561,10 @@ def d(pps):
     - *pps* (PrePostSet)
     """
 
-    perform_operation(pps, 'd', lambda posts: posts.forall.delete())
+    posts.forall.delete()
 
-def dr(pps):
+@postset_operation
+def dr(posts):
     """Deletes the posts in *pps* and all their children.
 
     **Argument:**
@@ -524,18 +572,16 @@ def dr(pps):
     - *pps* (PrePostSet)
     """
 
-    perform_operation(pps, 'dr',
-                      lambda posts: posts.expf().forall.delete())
+    posts.expf().forall.delete()
 
 @hkshell_events()
 def j(pp1, pp2):
     """Joins two posts.
 
     Arguments:
-    pp1 -- The post that will be the parent.
-        Type: PrePost
-    pp2 -- The post that will be the child.
-        Type: PrePost
+
+    - *pp1* (``PrePost``) -- The post that will be the parent.
+    - *pp2* (``PrePost``) -- The post that will be the child.
     """
 
     p1 = postdb().post(pp1)
@@ -546,11 +592,12 @@ def j(pp1, pp2):
 
 @hkshell_events()
 def e(pp):
-    """Edits a mail.
+    """Edits a post.
 
-    Arguments:
-    pp --
-        Type: PrePost"""
+    **Argument:**
+
+    - *pp* (``PrePost``)
+    """
 
     p = postdb().post(pp)
     if p != None:
@@ -563,6 +610,14 @@ def e(pp):
 
 @hkshell_events()
 def dl(from_=0):
+    """Downloads new posts from an IMAP server.
+    
+    **Argument:**
+
+    - *from_* (``int``): the messages whose index in the INBOX is lower than
+      this parameter will not be downloaded.
+    """
+
     email_downloader = hklib.EmailDownloader(postdb(), options.config)
     email_downloader.connect()
     email_downloader.download_new(int(from_))
@@ -571,195 +626,178 @@ def dl(from_=0):
 
 ##### Commands / tags #####
 
-def pt(pps):
-    """Propagates the tags of the given postset to all its children.
+@postset_operation
+def pt(posts):
+    """Propagates the tags of the posts in *pps* to all their children.
     
-    Arguments:
-    pps --
-        Type: PrePostSet
+    **Argument:**
+
+    - *pps* (``PrePostSet``)
     """
 
-    def operation(posts):
-        for post in posts:
-            def add_tags(p):
-                for tag in post.tags():
-                    p.add_tag(tag)
-            postdb().postset(post).expf().forall(add_tags)
-    perform_operation(pps, 'pt', operation)
+    for post in posts:
+        def add_tags(p):
+            for tag in post.tags():
+                p.add_tag(tag)
+        postdb().postset(post).expf().forall(add_tags)
 
-def at(pps, tags):
-    """Adds the given tags to the given postset.
+@postset_operation
+def at(posts, tags):
+    """Adds the given tags to the posts in *pps*.
     
-    Arguments:
-    pps --
-        Type: PrePostSet
-    tags --
-        Type: PreTagSet
+    **Arguments:**
+
+    - *pps* (``PrePostSet``)
+    - *tags* (``PreTagSet``) -- Tags to be added.
     """
 
     tags = tagset(tags)
-    def operation(posts):
-        for p in posts:
-            p.set_tags(tags.union(p.tags()))
-    perform_operation(pps, 'at', operation)
+    for p in posts:
+        p.set_tags(tags.union(p.tags()))
 
-def atr(pps, tags):
+@postset_operation
+def atr(posts, tags):
     """Adds the given tags to the posts of the given postset and all their
-    consequences.
+    children.
 
-    Arguments:
-    pps --
-        Type: PrePostSet
-    tags --
-        Type: PreTagSet
+    **Arguments:**
+
+    - *pps* (``PrePostSet``)
+    - *tags* (``PreTagSet``) -- Tags to be added.
     """
 
     tags = tagset(tags)
-    def operation(posts):
-        for p in posts.expf():
-            p.set_tags(tags.union(p.tags()))
-    perform_operation(pps, 'atr', operation)
+    for p in posts.expf():
+        p.set_tags(tags.union(p.tags()))
 
-def rt(pps, tags):
-    """Removes the given tags to the given postset.
+@postset_operation
+def rt(posts, tags):
+    """Removes the given tags from the posts in *pps*.
     
-    Arguments:
-    pps --
-        Type: PrePostSet
-    tags --
-        Type: PreTagSet
+    **Arguments:**
+
+    - *pps* (``PrePostSet``)
+    - *tags* (``PreTagSet``) -- Tags to be removed.
     """
 
     tags = tagset(tags)
-    def operation(posts):
-        for p in posts:
-            p.set_tags(set(p.tags()) - tags)
-    perform_operation(pps, 'rt', operation)
+    for p in posts:
+        p.set_tags(set(p.tags()) - tags)
 
-def rtr(pps, tags):
-    """Removes the given tags from the posts of the given postset and all their
-    consequences.
+@postset_operation
+def rtr(posts, tags):
+    """Removes the given tags from the posts in *pps* and from all their
+    children.
 
-    Arguments:
-    pps --
-        Type: PrePostSet
-    tags --
-        Type: PreTagSet
+    **Arguments:**
+
+    - *pps* (``PrePostSet``)
+    - *tags* (``PreTagSet``) -- Tags to be removed.
     """
 
     tags = tagset(tags)
-    def operation(posts):
-        for p in posts.expf():
-            p.set_tags(set(p.tags()) - tags)
-    perform_operation(pps, 'rtr', operation)
+    for p in posts.expf():
+        p.set_tags(set(p.tags()) - tags)
 
-def st(pps, tags):
-    """Sets the given tags on the given postset.
+@postset_operation
+def st(posts, tags):
+    """Sets the given tags on the posts in *pps*.
     
-    Arguments:
-    pps --
-        Type: PrePostSet
-    tags --
-        Type: PreTagSet
+    **Arguments:**
+
+    - *pps* (``PrePostSet``)
+    - *tags* (``PreTagSet``) -- Tags to be set.
     """
 
     tags = tagset(tags)
-    def operation(posts):
-        for p in posts:
-            p.set_tags(tags)
-    perform_operation(pps, 'st', operation)
+    for p in posts:
+        p.set_tags(tags)
 
-def str_(pps, tags):
-    """Removes the given tags from the posts of the given postset and all their
-    consequences.
+@postset_operation
+def str_(posts, tags):
+    """Sets the given tags on the posts in *pps* and on all their children.
 
-    Arguments:
-    pps --
-        Type: PrePostSet
-    tags --
-        Type: PreTagSet
+    **Arguments:**
+
+    - pps (``PrePostSet``)
+    - *tags* (``PreTagSet``) -- Tags to be set.
     """
 
     tags = tagset(tags)
-    def operation(posts):
-        for p in posts.expf():
-            p.set_tags(tags)
-    perform_operation(pps, 'str_', operation)
+    for p in posts.expf():
+        p.set_tags(tags)
 
 
 ##### Commands / subject #####
 
-def pS(pps):
-    """Propagates the subject of the given postset to all its children.
+@postset_operation
+def pS(posts):
+    """Propagates the subject of the posts in *pps* and all their children.
     
-    Arguments:
-    pps --
-        Type: PrePostSet
+    **Argument:**
+
+    - *pps* (``PrePostSet``)
     """
 
-    def operation(posts):
-        for post in posts:
-            postdb().postset(post).expf().forall.set_subject(post.subject())
-    perform_operation(pps, 'pS', operation)
+    for post in posts:
+        postdb().postset(post).expf().forall.set_subject(post.subject())
 
-def sS(pps, subject):
-    """Sets the subject of given postset.
+@postset_operation
+def sS(posts, subject):
+    """Sets the given subject for the posts in *pps*.
     
-    Arguments:
-    pps --
-        Type: PrePostSet
-    tags --
-        Type: str
+    **Arguments:**
+
+    - pps (``PrePostSet``)
+    - subject (``str``) - Subject to be set.
     """
 
-    perform_operation(
-        pps, 'sS', lambda posts: posts.forall.set_subject(subject))
+    posts.forall.set_subject(subject)
 
-def sSr(pps, subject):
-    """Sets the subject of the posts of the given postset and all their
-    consequences.
+@postset_operation
+def sSr(posts, subject):
+    """Sets the given subject for the posts in *pps* and for all their
+    children.
 
-    Arguments:
-    pps --
-        Type: PrePostSet
-    subject --
-        Type: str
+    **Arguments:**
+
+    - pps (``PrePostSet``)
+    - subject (``str``) - Subject to be set.
     """
 
-    perform_operation(
-        pps, 'sSr', lambda posts: posts.expf().forall.set_subject(subject))
+    posts.expf().forall.set_subject(subject)
 
 def capitalize_subject(post):
-    """Capitalizes the subject of the given post.
+    """Capitalizes the subject of *post*
 
-    Arguments:
-    post --
-        Type: Post
+    **Arguments:**
+
+    - post (``Post``)
     """
 
     post.set_subject(post.subject().capitalize())
 
-def cS(pps):
-    """Capitalizes the subject of given postset.
+@postset_operation
+def cS(posts):
+    """Capitalizes the subject of the posts in *pps*.
     
-    Arguments:
-    pps --
-        Type: PrePostSet
+    **Arguments:**
+
+    - *pps* (``PrePostSet``)
     """
 
-    perform_operation(
-        pps, 'cS', lambda posts: posts.forall(capitalize_subject))
+    posts.forall(capitalize_subject)
 
-def cSr(pps):
-    """Capitalizes the posts of the given postset and all their consequences.
+@postset_operation
+def cSr(posts):
+    """Capitalizes the subject of the posts in *pps* and all their children.
 
-    Arguments:
-    pps --
-        Type: PrePostSet
+    **Argument:**
+
+    - *pps* (``PrePostSet``)
     """
 
-    perform_operation(
-        pps, 'cSr', lambda posts: posts.expf().forall(capitalize_subject))
+    posts.expf().forall(capitalize_subject)
 
 
 ##### Main #####
