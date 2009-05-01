@@ -218,6 +218,12 @@ class Event(object):
         super(Event, self).__init__()
         hkutils.set_dict_items(self, locals())
 
+    def __str__(self):
+        s = '<Event with the following attributes:'
+        for attr in ['type', 'command', 'postset']:
+            s += '\n%s = %s' % (attr, getattr(self, attr))
+        s += '>'
+        return s
 
 listeners = []
 
@@ -239,6 +245,34 @@ def event(*args, **kw):
     e = Event(*args, **kw)
     for fun in listeners:
         fun(e)
+
+def hkshell_events(command=None):
+    """This function is a decorator that raises events before and after the
+    execution of the decorated function.
+
+    **Arguments:**
+
+    - *command* (``str``) -- The ``command`` attribute of the event that should
+      be raised. If ``None``, the name of the function will be used as the
+      command name. The default value is ``None``.
+
+    Example::
+
+        @hkshell_events()
+        def s():
+            postdb().save()
+    """
+
+    def inner(f):
+        command2 = f.__name__ if command == None else command
+        @wraps(f)
+        def inner2(*args, **kw):
+            event('before', command=command2)
+            result = f(*args, **kw)
+            event('after', command=command2)
+            return result
+        return inner2
+    return inner
 
 
 ##### Listeners #####
@@ -286,6 +320,10 @@ def timer_listener(e, start=[None]):
         start[0] = time.time()
     elif e.type == 'after':
         write('%f seconds.\n' % (time.time() - start[0],))
+
+def event_printer_listener(e):
+    """Prints the event."""
+    write('%s\n' % (e,))
 
 
 class TouchedPostPrinterListener(object):
@@ -352,6 +390,8 @@ def set_feature(state, feature):
         set_listener_feature(timer_listener, state)
     elif feature in ['tpp', 'touched_post_printer']:
         set_listener_feature(touched_post_printer_listener, state)
+    elif feature in ['ep', 'event_printer']:
+        set_listener_feature(event_printer_listener, state)
     else:
         write('Unknown feature.\n')
 
@@ -428,21 +468,13 @@ def tagset(tags):
 
 ##### Commands #####
 
-def events(f):
-    @wraps(f)
-    def events2(*args, **kw):
-        event('before', 's')
-        f(*args, **kw)
-        event('after', 's')
-    return events2
-
 def h():
     write(__doc__)
 
 def hh():
     sys.stdout.write(cmd_help())
 
-@events
+@hkshell_events()
 def s():
     """Saves the post database."""
     postdb().save()
@@ -458,34 +490,30 @@ def x():
     event('after', 'x')
     sys.exit()
 
+@hkshell_events()
 def rl():
     """Reloads the post from the disk.
 
     Changes that have not been saved (e.g. with the x() command) will be lost.
     """
 
-    event('before', 'rl')
     postdb().reload()
-    event('after', 'rl')
 
+@hkshell_events()
 def g():
-    event('before', 'g')
     gen_indices()
-    event('after', 'g')
 
+@hkshell_events()
 def ga():
-    event('before', 'ga')
     gen_indices()
     gen_posts()
-    event('after', 'ga')
 
+@hkshell_events()
 def ls(ps):
-    event('before', 'ls')
     for p in ps:
         sum = p.subject() if len(p.subject()) < 40 \
             else p.subject()[:37] + '...'
         write('%s %s %s\n' % (p.author(), p.date(), sum))
-    event('after', 'ls')
 
 def perform_operation(pps, command, operation):
     event('before', command)
@@ -500,7 +528,7 @@ def d(pps):
     
     **Argument:**
 
-    * *pps* (PrePostSet)
+    - *pps* (PrePostSet)
     """
 
     perform_operation(pps, 'd', lambda posts: posts.forall.delete())
@@ -510,12 +538,13 @@ def dr(pps):
 
     **Argument:**
 
-    * *pps* (PrePostSet)
+    - *pps* (PrePostSet)
     """
 
     perform_operation(pps, 'dr',
                       lambda posts: posts.expf().forall.delete())
 
+@hkshell_events()
 def j(pp1, pp2):
     """Joins two posts.
 
@@ -526,14 +555,13 @@ def j(pp1, pp2):
         Type: PrePost
     """
 
-    event('before', 'j')
     p1 = postdb().post(pp1)
     p2 = postdb().post(pp2)
     event('postset_calculated', 'j')
     if p1 != None and p2 != None:
         p2.set_parent(p1.heapid())
-    event('after', 'j')
 
+@hkshell_events()
 def e(pp):
     """Edits a mail.
 
@@ -541,7 +569,6 @@ def e(pp):
     pp --
         Type: PrePost"""
 
-    event('before', 'j')
     p = postdb().post(pp)
     if p != None:
         postdb().save()
@@ -550,15 +577,13 @@ def e(pp):
             p.load()
     else:
         log('Post not found.')
-    event('after', 'j')
 
+@hkshell_events()
 def dl(from_=0):
-    event('before', 'dl')
     email_downloader = hklib.EmailDownloader(postdb(), options.config)
     email_downloader.connect()
     email_downloader.download_new(int(from_))
     email_downloader.close()
-    event('after', 'dl')
 
 
 ##### Commands / tags #####

@@ -12,6 +12,11 @@ Options
 
 .. autoclass:: Options()
 
+Event handling
+--------------
+
+.. autofunction:: hkshell_events
+
 General functions
 -----------------
 

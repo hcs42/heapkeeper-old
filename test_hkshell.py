@@ -98,6 +98,48 @@ class Test__1(unittest.TestCase):
         self.assertEquals(event_list[1].type, 'mytype')
         self.assertEquals(event_list[1].command, 'mycommand')
 
+    def test_hkshell_events(self):
+
+        hkshell.append_listener(lambda e: event_list.append(e))
+        
+        ## Testing the hkshell_events decorator
+
+        # Default name for the `command` attribute
+
+        @hkshell.hkshell_events()
+        def f():
+            hkshell.event(type='f_body', command='f')
+            return 1
+
+        event_list = []
+        result = f()
+
+        self.assertEquals(result, 1)
+        self.assertEquals(event_list[0].type, 'before')
+        self.assertEquals(event_list[0].command, 'f')
+        self.assertEquals(event_list[1].type, 'f_body')
+        self.assertEquals(event_list[1].command, 'f')
+        self.assertEquals(event_list[2].type, 'after')
+        self.assertEquals(event_list[2].command, 'f')
+
+        # Specified name for the `command` attribute
+        
+        @hkshell.hkshell_events('f_cmd1')
+        def f():
+            hkshell.event(type='f_body', command='f_cmd2')
+            return 1
+
+        event_list = []
+        result = f()
+
+        self.assertEquals(result, 1)
+        self.assertEquals(event_list[0].type, 'before')
+        self.assertEquals(event_list[0].command, 'f_cmd1')
+        self.assertEquals(event_list[1].type, 'f_body')
+        self.assertEquals(event_list[1].command, 'f_cmd2')
+        self.assertEquals(event_list[2].type, 'after')
+        self.assertEquals(event_list[2].command, 'f_cmd1')
+
 
 class Test__2(unittest.TestCase, test_hklib.PostDBHandler):
 
