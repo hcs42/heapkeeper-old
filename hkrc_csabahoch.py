@@ -20,11 +20,12 @@
 
 """My (Csaba Hoch) hkrc."""
 
-import hklib
-import hkcustomlib
 import subprocess
 import time
 import datetime
+import hklib
+import hkcustomlib
+import hkshell
 
 def has_tag(tags):
     def has_tag_fun(post):
@@ -104,6 +105,10 @@ def gen_posts(postdb):
     genopts.print_thread_of_post = True
     hklib.Generator(postdb).gen_posts(genopts)
 
-def main(handlers):
-    pass
-    
+hkshell.options.callbacks.gen_indices = gen_indices
+hkshell.options.callbacks.gen_posts = gen_posts
+hkshell.on('tpp')
+
+@hkshell.shell_cmd
+def mycmd():
+    print 'Hi, this is my command.'

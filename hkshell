@@ -1,23 +1,21 @@
 #!/bin/sh
 
-if [ "$#" = 0 ]
-then
-    python -i -c 'from hkshell import *; main([])'
-elif [ "$#" = 2 -a "$1" = '--custom' ]
-then
-    python -i -c "from hkshell import *; from $2 import *; main([])"
-elif [ "$1" = '-h' -o "$1" = '--help' ]
-then
-    cat <<END
-This script starts the Heapmanipulator's interactive interface.
+# This file is part of Heapkeeper.
+#
+# Heapkeeper is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# Heapkeeper is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
-The interface can be started by typing "./hkshell". This should give a
-Python shell. Type "h()" into this shell to get help.
+# Copyright (C) 2009 Csaba Hoch
+# Copyright (C) 2009 Attila Nagy
 
-The interface can be also used in a batch mode: give the commands to run
-(Python expressions) as arguments of this script, e.g.:
-    ./hkshell 'dl()' 'g()'
-END
-else
-    python hkshell.py "$@"
-fi
+python -i hkshell.py "$@"

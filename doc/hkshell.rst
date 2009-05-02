@@ -1,7 +1,16 @@
 :mod:`hkshell` user documentation
 =================================
 
-See the :doc:`developer documentation of hkshell <hkshell_dev>` for more details.
+.. |Post| replace:: :class:`Post <hklib.Post>`
+.. |PostDB| replace:: :class:`PostDB <hklib.PostDB>`
+.. |PostSet| replace:: :class:`PostSet <hklib.PostSet>`
+.. |PrePost| replace:: :ref:`PrePost <hkshell_PrePost>`
+.. |PrePostSet| replace:: :ref:`PrePostSet <hkshell_PrePostSet>`
+.. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
+.. |PreTagSet| replace:: :ref:`PreTagSet <hkshell_PreTagSet>`
+
+See the :doc:`developer documentation of hkshell <hkshell_dev>` for private
+class and functions.
 
 .. automodule:: hkshell
 
@@ -17,10 +26,7 @@ Event handling
 
 .. autofunction:: hkshell_events
 
-Helper functions for commands *(to be moved to the developer documentation)*
-----------------------------------------------------------------------------
-
-.. autofunction:: postset_operation
+.. _hkshell_commands:
 
 Commands
 --------
@@ -36,8 +42,8 @@ General commands
 .. autofunction:: ga()
 .. autofunction:: dl(from_=0)
 
-Tag manipulating commands
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Tag manipulator commands
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: pt(pps)
 .. autofunction:: at(pps, tags)
@@ -65,3 +71,15 @@ Miscellaneous commands
 .. autofunction:: dr(pps)
 .. autofunction:: j(pp1, pp2)
 .. autofunction:: e(pp)
+
+Features
+--------
+
+.. autofunction:: on()
+.. autofunction:: off()
+
+Utilities
+---------
+
+.. autofunction:: shell_cmd
+.. autofunction:: define_cmd

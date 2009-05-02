@@ -250,3 +250,6 @@ def gen_posts(postdb):
     # Generating the posts
     hklib.Generator(postdb).gen_posts(genopts)
 
+hkshell.options.callbacks.gen_indices = gen_indices
+hkshell.options.callbacks.gen_posts = gen_posts
+hkshell.on('save')
