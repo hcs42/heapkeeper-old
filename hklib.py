@@ -522,7 +522,7 @@ class Post(object):
             return False
 
     def __repr__(self):
-        return '<post \'' + self._heapid + '\'>'
+        return "<post '" + self._heapid + "'>"
 
     # Misc
 
