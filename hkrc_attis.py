@@ -21,6 +21,7 @@
 """My (Attis) hkrc."""
 
 import hklib
+import hkshell
 import hkcustomlib
 import hkutils
 import subprocess
