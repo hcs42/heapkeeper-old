@@ -542,7 +542,7 @@ class Post(object):
             return False
 
     def __repr__(self):
-        return '<post \'' + self._heapid + '\'>'
+        return "<post '" + self._heapid + "'>"
 
     # Misc
 
@@ -680,7 +680,11 @@ class PostDB(object):
         """
         
         postfile_dir = config.get('paths', 'mail')
+        if not os.path.exists(postfile_dir):
+            log('Warning: posts directory does not exist!')
         html_dir = config.get('paths', 'html')
+        if not os.path.exists(html_dir):
+            log('Warning: HTML directory does not exist!')
         return PostDB(postfile_dir, html_dir)
 
     def _load_from_disk(self):
@@ -2086,20 +2090,24 @@ class Generator(object):
             options.index = index
             filename = os.path.join(self._postdb.html_dir(),
                                     index.filename)
-            with open(filename, 'w') as f:
-                doc_header = Html.doc_header(options.html_title,
-                                             options.html_h1,
-                                             options.cssfile)
-                f.write(doc_header)
-                if options.write_toc:
-                    f.write(self.index_toc(index.sections, options))
-                for i, section in enumerate(index.sections):
-                    options.section = section
-                    f.write(self.section(i, options))
-                    del options.section
-                f.write(Html.doc_footer())
+            try:
+                with open(filename, 'w') as f:
+                    doc_header = Html.doc_header(options.html_title,
+                                                 options.html_h1,
+                                                 options.cssfile)
+                    f.write(doc_header)
+                    if options.write_toc:
+                        f.write(self.index_toc(index.sections, options))
+                    for i, section in enumerate(index.sections):
+                        options.section = section
+                        f.write(self.section(i, options))
+                        del options.section
+                    f.write(Html.doc_footer())
+            except IOError:
+                log('IOError during index generation.')
+                return
             del options.index
-
+        
         log('Indices generated.')
 
     def gen_posts(self, options):
@@ -2116,7 +2124,12 @@ class Generator(object):
              'print_thread_of_post'])
 
         for post in self._postdb.posts():
-            with open(post.htmlfilename(), 'w') as f:
-                f.write(self.post(post, options))
+            try:
+                with open(post.htmlfilename(), 'w') as f:
+                    f.write(self.post(post, options))
+            except IOError:
+                log('IOError during post HTML generation.')
+                return
+        
         log('Post HTMLs generated.')
 
