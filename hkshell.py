@@ -63,6 +63,8 @@ following:
   nothing is specified, the ``hkrc`` module is imported. If ``NONE`` is
   specified, nothing is imported. If a module is not found, the program gives
   only a warning.
+- ``--configfile <configfile>`` --
+  The name of the Heapkeeper config file to use.
 
 The ``--hkrc`` option deals with the modules that should be imported when
 hkshell is started. The convention (and the default behaviour) is that there is
@@ -999,17 +1001,21 @@ def exec_commands(commands):
     for command in commands:
         exec command in (globals2)
 
-def read_postdb():
+def read_postdb(configfile):
     """Reads the config file and the post database from the disk.
     
+    **Argument:**
+
+    - *configfile* (str) -- The name of the config file to use as ``hk.cfg``.
+
     **Returns:** (ConfigParser, |PostDB|)
     """
 
     config = ConfigParser.ConfigParser()
     try:
-        config.readfp(open('hk.cfg'))
+        config.readfp(open(configfile))
     except IOError:
-        hklib.log('Heapkeeper config file "hk.cfg" does not exist!')
+        hklib.log('Config file not found: "%s"' % (configfile,))
         sys.exit(1)
     return config, hklib.PostDB.from_config(config)
 
@@ -1067,7 +1073,7 @@ def main(cmdl_options, args):
     exec_commands(cmdl_options.before_command)
 
     # Reading the configuration file and the post database.
-    options.config, options.postdb = read_postdb()
+    options.config, options.postdb = read_postdb(cmdl_options.configfile)
 
     # Init
     init()
@@ -1101,6 +1107,9 @@ if __name__ == '__main__':
     parser.add_option('-r', '--hkrc', dest='hkrc',
                       help='Modules to import',
                       action='append', default=[])
+    parser.add_option('--configfile', dest='configfile',
+                      help='Configfile to use',
+                      action='store', default='hk.cfg')
     (cmdl_options, args) = parser.parse_args()
 
     from hkshell import *
