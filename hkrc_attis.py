@@ -20,6 +20,7 @@
 
 """My (Attis) hkrc."""
 
+import hkshell
 import hklib
 import hkcustomlib
 import hkutils

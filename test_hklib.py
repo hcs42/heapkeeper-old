@@ -381,12 +381,12 @@ class Test_PostDB__1(unittest.TestCase, PostDBHandler):
         self.assertEquals(postdb.heapids(), [])
 
     def testOnlyMail(self):
-        """Tests that only the files with ".mail" postfix are read."""
+        """Tests that only the files with ".post" postfix are read."""
         self.createDirs()
-        hkutils.string_to_file('Subject: s1', self.postFileName('1.mail'))
-        hkutils.string_to_file('Subject: sx', self.postFileName('xy.mail'))
+        hkutils.string_to_file('Subject: s1', self.postFileName('1.post'))
+        hkutils.string_to_file('Subject: sx', self.postFileName('xy.post'))
         hkutils.string_to_file('Subject: s2', self.postFileName('2.other'))
-        hkutils.string_to_file('Subject: s3', self.postFileName('3mail'))
+        hkutils.string_to_file('Subject: s3', self.postFileName('3post'))
         postdb = self.createPostDB()
         self.assertEquals(set(postdb.heapids()), set(['1', 'xy']))
         self.assertEquals(postdb.next_heapid(), '2')
@@ -394,7 +394,7 @@ class Test_PostDB__1(unittest.TestCase, PostDBHandler):
     def testConfig(self):
         """Tests the PostDB.__init__ which has a ConfigParser argument."""
         self.createDirs()
-        hkutils.string_to_file('Subject: s1', self.postFileName('1.mail'))
+        hkutils.string_to_file('Subject: s1', self.postFileName('1.post'))
         configFileText = '''\
 [paths]
 mail=%s
@@ -411,9 +411,9 @@ html=%s
         """Tests the 'get' methods of PostDB."""
         self.createDirs()
         hkutils.string_to_file('Message-Id: mess1',
-                               self.postFileName('1.mail'))
+                               self.postFileName('1.post'))
         hkutils.string_to_file('Message-Id: mess2',
-                               self.postFileName('2.mail'))
+                               self.postFileName('2.post'))
         postdb = self.createPostDB()
         self.assertEquals(set(postdb.heapids()), set(['1', '2']))
         self.assertEquals(postdb.next_heapid(), '3')
@@ -429,8 +429,8 @@ html=%s
 
         # Initialisation
         self.createDirs()
-        postfile1 = self.postFileName('1.mail')
-        postfile2 = self.postFileName('2.mail')
+        postfile1 = self.postFileName('1.post')
+        postfile2 = self.postFileName('2.post')
         hkutils.string_to_file('Message-Id: mess1', postfile1)
         hkutils.string_to_file('Message-Id: mess2', postfile2)
         postdb = self.createPostDB()
@@ -451,7 +451,7 @@ html=%s
                           hkutils.file_to_string(postfile2))
         
         # Adding a new post
-        postfile3 = self.postFileName('3.mail')
+        postfile3 = self.postFileName('3.post')
         p3 = Post.from_str('Subject: subject3')
         postdb.add_new_post(p3)
         self.assertEquals(set(postdb.heapids()), set(['1', '2', '3']))
@@ -482,7 +482,7 @@ html=%s
         p1.set_subject('sub2')
 
         # A change on the disk that will be loaded.
-        hkutils.string_to_file('Subject: sub_new', self.postFileName('x.mail'))
+        hkutils.string_to_file('Subject: sub_new', self.postFileName('x.post'))
 
         postdb.reload()
         postdb.save()
@@ -690,9 +690,9 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
 
         # 1 <- 2
         #      3
-        postfile1 = self.postFileName('1.mail')
-        postfile2 = self.postFileName('2.mail')
-        postfile3 = self.postFileName('3.mail')
+        postfile1 = self.postFileName('1.post')
+        postfile2 = self.postFileName('2.post')
+        postfile3 = self.postFileName('3.post')
         hkutils.string_to_file('Message-Id: 1@', postfile1)
         hkutils.string_to_file('Message-Id: 2@\nIn-Reply-To: 1@', postfile2)
         hkutils.string_to_file('Message-Id: 3@\nIn-Reply-To: 1@', postfile3)
