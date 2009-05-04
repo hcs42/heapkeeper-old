@@ -514,7 +514,7 @@ class Post(object):
         """The name of the postfile in which the post is (or can be) stored."""
         assert(self._postdb != None)
         return os.path.join(self._postdb.postfile_dir(), \
-                            self._heapid + '.mail')
+                            self._heapid + '.post')
 
     def htmlfilebasename(self):
         """The base name of the HTML file that can be generated from the
@@ -701,7 +701,7 @@ class PostDB(object):
             os.mkdir(self._postfile_dir)
 
         for file in os.listdir(self._postfile_dir):
-            if file.endswith('.mail'):
+            if file.endswith('.post'):
                 heapid = file[:-5]
                 absname = os.path.join(self._postfile_dir, file)
 
