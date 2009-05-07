@@ -1421,20 +1421,13 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         genopts.section = genopts.sections[0]
 
         self.assertEquals(
-            g.thread(p(2), genopts),
-            g.post_summary(p(2), genopts) +
-            g.post_summary_end())
-
-        self.assertEquals(
-            g.thread(p(1), genopts),
-            g.post_summary(p(1), genopts) +
-            g.post_summary(p(2), genopts) +
-            g.post_summary_end() +
+            g.thread(p(4), genopts),
+            g.post_summary(p(4), genopts, thread_link='thread_4.html') +
             g.post_summary_end())
 
         self.assertEquals(
             g.thread(p(0), genopts),
-            g.post_summary(p(0), genopts) +
+            g.post_summary(p(0), genopts, thread_link='thread_0.html') +
             g.post_summary(p(1), genopts) +
             g.post_summary(p(2), genopts) +
             g.post_summary_end() + # end of 2
@@ -1513,7 +1506,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         # One thread.
         self.assertEquals(
             g.thread(p(0), genopts),
-            g.post_summary(p(0), genopts) +
+            g.post_summary(p(0), genopts, thread_link='thread_0.html') +
             g.post_summary(p(3), genopts) +
             g.post_summary_end() + # end of 3
             g.post_summary_end()) # end of 0

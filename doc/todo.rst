@@ -103,6 +103,8 @@ Todo items
   * hklib.Post.{before, after, between}
   * doc&test: PostDB.{children, roots, threads}
   * Html.table
+  * Generator.full_thread
+  * Html.thread_post_header
 
 * **Renamings**
 

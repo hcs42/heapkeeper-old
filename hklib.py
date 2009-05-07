@@ -1778,7 +1778,6 @@ class GeneratorOptions(object):
     This class follows the Options pattern.
 
     TODO: standardize underscore usage.
-    TODO: update docstring!
 
     Data attributes:
     indices --- The indices to print.
@@ -1792,6 +1791,16 @@ class GeneratorOptions(object):
         Default: False
     shorttags --- If True, the posts that have the same tags as
         their parent will show a dash instead of their tags.
+        Type: bool
+        Default: False
+    locallinks --- If True, the thread representation will contain
+        local links that point to sections within the current page.
+        This is useful for thread pages.
+        Type: bool
+        Default: False
+    always_active --- If True, the thread representation will mark all
+        posts as active (ie. not grayed). Also useful for thread
+        pages.
         Type: bool
         Default: False
     date_fun --- Function that specifies how to print the dates of the
