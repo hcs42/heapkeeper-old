@@ -526,6 +526,12 @@ class Post(object):
         assert(self._postdb != None)
         return os.path.join(self._postdb.html_dir(), self._heapid + '.html')
 
+    def htmlthreadfilename(self):
+        """The name of the HTML file that can be generated from the thread."""
+        assert(self._postdb.parent(self) == None)
+        return os.path.join(self._postdb.html_dir(),
+                            'thread_' + self._heapid + '.html')
+
     def postfile_exists(self):
         if self._postdb == None:
             return False
@@ -1658,8 +1664,21 @@ class Html():
             class_ += ' post_inactive'
         return \
             '<tr class="%s">' % (class_,) + \
-            Html.post_summary(link, author, subject, tags, index, date, 'td')+\
+            Html.post_summary(link, author, subject, tags, index, date, 'td') + \
             '</tr>\n'
+
+    @staticmethod
+    def thread_post_header(link, author, subject, tags, index, date):
+        """Creates a summary for a post as a div, and closes it
+        immediately."""
+        class_ = 'postsummary'
+        return \
+            '<div class="postbox" id="%s">\n' % (index, ) + \
+            Html.enclose(
+                class_,
+                Html.post_summary(
+                    link, author, subject, tags, index, date, 'span')) + \
+            '</div>\n'
 
     @staticmethod
     def list(items, class_=None):
@@ -1786,6 +1805,7 @@ class GeneratorOptions(object):
                  write_toc=False,
                  shortsubject=False,
                  shorttags=False,
+                 locallinks=False,
                  date_fun=lambda post, options: None,
                  html_title='Heap index',
                  html_h1='Heap index',
@@ -1882,11 +1902,148 @@ class Generator(object):
             section = Section(title='Thread', posts=[post])
             options.section = section
             thread = \
-                self.thread(self._postdb.root(post), options)
+                self.summarize_thread(self._postdb.root(post), options)
             del options.section
             l.append(thread)
 
         l.append(Html.enclose('postbody', Html.escape(post.body()), tag='pre'))
+
+        l.append(Html.doc_footer())
+        return ''.join(l)
+ 
+ 
+    def summarize_thread(self, post, options):
+        """Converts the summaries of posts in a thread into HTML.
+        
+        Warning: if the given post is in a cycle, this function will go into
+        an endless loop.
+
+        **Arguments:**
+
+        - *post* (``None |`` :class:`Post`) -- The root of the thread to be
+          printed.
+        - *options* (:class:`GeneratorOptions`)
+
+        **Returns:** ``HtmlStr``
+        """
+
+        # stack will contain heapids and strings.
+        # A heapid may be a string or None.
+        # If stack contains several items during the execution of the loop, the
+        # loop will do the following.
+        # It goes through all items in reversed order and does the following
+        # to all items:
+        #  - if the item is a string, puts it into 'strings'
+        #  - if item is a heapid, then:
+        #      - if heapid is not None, puts the summary of the post that has
+        #        the heapid into 'strings'
+        #      - puts the summary of the the post's all children into 'strings'
+        stack = [post]
+        threadstruct = self._postdb.threadstruct()
+        strings = []
+        
+        while len(stack) > 0:
+            item = stack.pop()
+
+            if isinstance(item, str):
+                strings.append(item)
+
+            else:
+                if item != None:
+                    post = item
+                    parent = self._postdb.parent(post)
+                    subject = post.subject()
+                    if (options.shortsubject and parent != None and
+                        subject == parent.subject()):
+                        subject_to_print = STAR
+                    else:
+                        subject_to_print = Html.escape(subject)
+
+                    tags = post.tags()
+                    if (options.shorttags and parent != None and
+                        tags == parent.tags()):
+                        tags_to_print = STAR
+                    else:
+                        tags_to_print = tags
+
+                    strings.append(
+                        self.post_summary(post, options, subject_to_print,
+                                          tags_to_print))
+
+                    stack.append(self.post_summary_end())
+                stack += reversed(self._postdb.children(item))
+        return ''.join(strings)
+
+
+    def full_thread(self, thread, options):
+        """Converts the whole thread into HTML.
+
+        **Arguments:**
+
+        - *thread* (:class:`Post`)
+        - *options* (:class:`GeneratorOptions`)
+        
+        **Returns:** ``HtmlStr``
+
+        **Notes:**
+        Don't forget that a thread is identified by its root post.
+        """
+        assert(thread._postdb.root(thread) == thread)
+
+        l = []
+        h1 = Html.escape(thread.author()) + ': ' + \
+             Html.escape(thread.subject())
+        l.append(Html.doc_header(h1, h1, 'heapindex.css'))
+
+        l2 = []
+        try:
+            first = True
+            for index in options.indices:
+                if not first:
+                    l2.append('<br/>\n')
+                first = False
+                l2.append(Html.link(index.filename,
+                                   'Back to ' + index.filename))
+        except AttributeError:
+            l2.append(Html.link('index.html', 'Back to the index'))
+
+        l2.append('\n')
+        l2.append(Html.enclose('index', Html.escape('<%s>' % (thread.heapid(),))))
+        l2.append('\n')
+
+        l.append(
+            Html.enclose(
+                tag='div',
+                class_=None,
+                id='subheader',
+                content=''.join(l2),
+                newlines=True))
+
+        # date
+        date_str = options.date_fun(thread, options)
+        if date_str != None:
+            l.append(Html.enclose('date', date_str))
+            l.append('\n')
+
+        # thread
+        if options.print_thread_of_post:
+            section = Section(title='Thread', posts=[thread])
+            options.section = section
+            options.locallinks = True
+            thread_summary = \
+                self.summarize_thread(thread, options)
+            del options.section
+            l.append(thread_summary)
+
+        for curr_post in thread._postdb.iter_thread(thread):
+            l.append(Html.thread_post_header(curr_post.htmlfilebasename(),
+                                           Html.escape(curr_post.author()), 
+                                           Html.escape(curr_post.subject()),
+                                           curr_post.tags(),
+                                           curr_post.heapid(),
+                                           options.date_fun(curr_post, options)))
+            l.append(Html.enclose('postbody',
+                                  Html.escape(curr_post.body()), tag='pre'))
 
         l.append(Html.doc_footer())
         return ''.join(l)
@@ -1940,7 +2097,12 @@ class Generator(object):
         else:
             active = post in section.posts
 
-        args = (post.htmlfilebasename(), author, subject, tags, post.heapid(),
+        if options.locallinks:
+            link = '#' + post.heapid()
+        else:
+            link = post.htmlfilebasename()
+
+        args = (link, author, subject, tags, post.heapid(),
                 date_str, active)
 
         if section.is_flat: 
@@ -2018,7 +2180,6 @@ class Generator(object):
                     stack.append(self.post_summary_end())
                 stack += reversed(self._postdb.children(item))
         return ''.join(strings)
-
     def section(self, sectionid, options):
         """Converts a section into HTML.
 
@@ -2067,6 +2228,7 @@ class Generator(object):
             for root in roots:
                 thread = threads[root]
                 if not (thread & posts).is_set([]):
+                    # if section contains at least part of the thread
                     l.append(self.thread(root, options))
         l.append(Html.section_end())
 
@@ -2100,7 +2262,8 @@ class Generator(object):
                         f.write(self.index_toc(index.sections, options))
                     for i, section in enumerate(index.sections):
                         options.section = section
-                        f.write(self.section(i, options))
+                        sect = self.section(i, options)
+                        f.write(sect)
                         del options.section
                     f.write(Html.doc_footer())
             except IOError:
@@ -2132,4 +2295,28 @@ class Generator(object):
                 return
         
         log('Post HTMLs generated.')
+
+    def gen_threads(self, options):
+        """Creates a thread page for each thread.
+        
+        **Arguments:**
+
+        - *options* (:class:`GeneratorOptions`)
+        """
+
+        hkutils.check(
+            options,
+            ['date_fun', 'html_title', 'html_h1', 'cssfile',
+             'print_thread_of_post'])
+
+        for thread in self._postdb.threads():
+            try:
+                with open(thread.htmlthreadfilename(), 'w') as f:
+                    f.write(self.full_thread(thread, options))
+            except IOError:
+                log('IOError during thread HTML generation.')
+                return
+        
+        log('Thread HTMLs generated.')
+
 

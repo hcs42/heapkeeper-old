@@ -254,6 +254,7 @@ class Callbacks(object):
     def __init__(self,
                  gen_indices=hkcustomlib.gen_indices,
                  gen_posts=hkcustomlib.gen_posts,
+                 gen_threads=hkcustomlib.gen_threads,
                  edit_file=hkcustomlib.edit_file):
 
         super(Callbacks, self).__init__()
@@ -597,6 +598,9 @@ def gen_posts(posts=None):
     # options.callbacks.gen_posts(postdb(), posts)
     options.callbacks.gen_posts(postdb())
 
+def gen_threads(posts=None):
+    options.callbacks.gen_threads(postdb())
+
 def ps(pps):
     res = postdb().postset(pps)
     return res
@@ -662,10 +666,21 @@ def g():
     gen_indices()
 
 @hkshell_events()
+def gt():
+    """Generates the thread pages."""
+    gen_threads()
+
+@hkshell_events()
+def gp():
+    """Generates the post pages."""
+    gen_posts()
+
+@hkshell_events()
 def ga():
     """Generates the index and post pages."""
     gen_indices()
     gen_posts()
+    gen_threads()
 
 @hkshell_events()
 def ls(pps):

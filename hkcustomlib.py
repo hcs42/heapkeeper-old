@@ -163,6 +163,14 @@ def gen_posts(postdb):
     genopts.postdb = postdb
     hklib.Generator(postdb).gen_posts(genopts)
 
+def gen_threads(postdb):
+    date_options = date_defopts({'postdb': postdb})
+    date_fun = create_date_fun(date_options)
+    genopts = hklib.GeneratorOptions()
+    genopts.postdb = postdb
+    genopts.print_thread_of_post = True
+    hklib.Generator(postdb).gen_threads(genopts)
+
 ##### Misc #####
 
 def edit_file(file):
