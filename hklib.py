@@ -526,6 +526,11 @@ class Post(object):
         assert(self._postdb != None)
         return os.path.join(self._postdb.html_dir(), self._heapid + '.html')
 
+    def htmlthreadbasename(self):
+        """The name of the HTML file that can be generated from the thread."""
+        assert(self._postdb.parent(self) == None)
+        return os.path.join('thread_' + self._heapid + '.html')
+
     def htmlthreadfilename(self):
         """The name of the HTML file that can be generated from the thread."""
         assert(self._postdb.parent(self) == None)
@@ -1610,7 +1615,8 @@ class Html():
                (tag, classstr, idstr, newline, content, tag, newline)
 
     @staticmethod
-    def post_summary(postlink, author, subject, tags, index, date, tag):
+    def post_summary(postlink, author, subject, tags, index, date, tag,
+                     thread_link=None):
         """Creates a summary for a post."""
 
         enc = Html.enclose
@@ -1629,6 +1635,11 @@ class Html():
         l.append(enc('subject', subject, tag))
         newline()
 
+        if thread_link is not None:
+            l.append(enc('button',
+                         link(thread_link, '<img src="thread.png" />')))
+            newline()
+
         if tags != STAR:
             tags = ', '.join(tags)
             tags = link(postlink, '[%s]' % tags)
@@ -1639,12 +1650,14 @@ class Html():
 
         l.append(enc('index', '&lt;%s&gt;' % link(postlink, index), tag))
         newline()
+
         if date != None:
             l.append(enc('date', link(postlink, date), tag) + '\n')
         return ''.join(l)
 
     @staticmethod
-    def post_summary_div(link, author, subject, tags, index, date, active):
+    def post_summary_div(link, author, subject, tags, index, date, active,
+                         thread_link):
         """Creates a summary for a post as a div."""
         class_ = 'postsummary'
         if not active:
@@ -1654,10 +1667,12 @@ class Html():
             Html.enclose(
                 class_,
                 Html.post_summary(
-                    link, author, subject, tags, index, date, 'span'))
+                    link, author, subject, tags, index, date, 'span',
+                    thread_link))
 
     @staticmethod
-    def post_summary_table(link, author, subject, tags, index, date, active):
+    def post_summary_table(link, author, subject, tags, index, date, active,
+                           thread_link):
         """Creates a summary for a post as a row of a table."""
         class_ = 'postsummary'
         if not active:
@@ -1762,6 +1777,9 @@ class GeneratorOptions(object):
 
     This class follows the Options pattern.
 
+    TODO: standardize underscore usage.
+    TODO: update docstring!
+
     Data attributes:
     indices --- The indices to print.
         Type: [Index]
@@ -1806,6 +1824,7 @@ class GeneratorOptions(object):
                  shortsubject=False,
                  shorttags=False,
                  locallinks=False,
+                 always_active=False,
                  date_fun=lambda post, options: None,
                  html_title='Heap index',
                  html_h1='Heap index',
@@ -1938,6 +1957,7 @@ class Generator(object):
         #      - if heapid is not None, puts the summary of the post that has
         #        the heapid into 'strings'
         #      - puts the summary of the the post's all children into 'strings'
+        root = post
         stack = [post]
         threadstruct = self._postdb.threadstruct()
         strings = []
@@ -1966,9 +1986,14 @@ class Generator(object):
                     else:
                         tags_to_print = tags
 
+                    if post == root:
+                        thread_link = root.htmlthreadbasename()
+                    else:
+                        thread_link = None
+
                     strings.append(
                         self.post_summary(post, options, subject_to_print,
-                                          tags_to_print))
+                                          tags_to_print, thread_link))
 
                     stack.append(self.post_summary_end())
                 stack += reversed(self._postdb.children(item))
@@ -2030,6 +2055,7 @@ class Generator(object):
             section = Section(title='Thread', posts=[thread])
             options.section = section
             options.locallinks = True
+            options.always_active = True
             thread_summary = \
                 self.summarize_thread(thread, options)
             del options.section
@@ -2037,11 +2063,12 @@ class Generator(object):
 
         for curr_post in thread._postdb.iter_thread(thread):
             l.append(Html.thread_post_header(curr_post.htmlfilebasename(),
-                                           Html.escape(curr_post.author()), 
-                                           Html.escape(curr_post.subject()),
-                                           curr_post.tags(),
-                                           curr_post.heapid(),
-                                           options.date_fun(curr_post, options)))
+                                             Html.escape(curr_post.author()), 
+                                             Html.escape(curr_post.subject()),
+                                             curr_post.tags(),
+                                             curr_post.heapid(),
+                                             options.date_fun(curr_post,
+                                                              options)))
             l.append(Html.enclose('postbody',
                                   Html.escape(curr_post.body()), tag='pre'))
 
@@ -2066,7 +2093,8 @@ class Generator(object):
             items.append(Html.link("#section_%s" % (i,), section.title))
         return Html.list(items, 'tableofcontents')
         
-    def post_summary(self, post, options, subject=NORMAL, tags=NORMAL):
+    def post_summary(self, post, options, subject=NORMAL, tags=NORMAL,
+                     thread_link=None):
         """Creates a summary for the post.
         
         **Arguments:**
@@ -2092,10 +2120,13 @@ class Generator(object):
         date_str = options.date_fun(post, options)
 
         section = options.section
-        if section.posts == CYCLES:
+        if options.always_active:
             active = True
         else:
-            active = post in section.posts
+            if section.posts == CYCLES:
+                active = True
+            else:
+                active = post in section.posts
 
         if options.locallinks:
             link = '#' + post.heapid()
@@ -2103,7 +2134,7 @@ class Generator(object):
             link = post.htmlfilebasename()
 
         args = (link, author, subject, tags, post.heapid(),
-                date_str, active)
+                date_str, active, thread_link)
 
         if section.is_flat: 
             return Html.post_summary_table(*args)
@@ -2145,6 +2176,7 @@ class Generator(object):
         #      - if heapid is not None, puts the summary of the post that has
         #        the heapid into 'strings'
         #      - puts the summary of the the post's all children into 'strings'
+        root = post
         stack = [post]
         threadstruct = self._postdb.threadstruct()
         strings = []
@@ -2173,13 +2205,19 @@ class Generator(object):
                     else:
                         tags_to_print = tags
 
+                    if post == root:
+                        thread_link = root.htmlthreadbasename()
+                    else:
+                        thread_link = None
+
                     strings.append(
                         self.post_summary(post, options, subject_to_print,
-                                          tags_to_print))
+                                          tags_to_print, thread_link))
 
                     stack.append(self.post_summary_end())
                 stack += reversed(self._postdb.children(item))
         return ''.join(strings)
+
     def section(self, sectionid, options):
         """Converts a section into HTML.
 
