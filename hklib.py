@@ -1657,7 +1657,7 @@ class Html():
 
     @staticmethod
     def post_summary_div(link, author, subject, tags, index, date, active,
-                         thread_link):
+                         thread_link=None):
         """Creates a summary for a post as a div."""
         class_ = 'postsummary'
         if not active:
@@ -1672,7 +1672,7 @@ class Html():
 
     @staticmethod
     def post_summary_table(link, author, subject, tags, index, date, active,
-                           thread_link):
+                           thread_link=None):
         """Creates a summary for a post as a row of a table."""
         class_ = 'postsummary'
         if not active:
@@ -2061,6 +2061,7 @@ class Generator(object):
             del options.section
             l.append(thread_summary)
 
+        # bodies
         for curr_post in thread._postdb.iter_thread(thread):
             l.append(Html.thread_post_header(curr_post.htmlfilebasename(),
                                              Html.escape(curr_post.author()), 
