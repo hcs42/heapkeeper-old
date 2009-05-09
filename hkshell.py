@@ -496,7 +496,7 @@ def timer_listener(e, start=[None]):
     if e.type == 'before':
         start[0] = time.time()
     elif e.type == 'after':
-        write('%f seconds.\n' % (time.time() - start[0],))
+        write('%s: %f seconds.\n' % (e.command, time.time() - start[0]))
 
 def event_printer_listener(e):
     """Prints the event."""
