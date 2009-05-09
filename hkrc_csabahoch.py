@@ -102,6 +102,7 @@ def gen_posts(postdb, posts):
     date_fun = hkcustomlib.create_date_fun(date_options)
     genopts = hklib.GeneratorOptions()
     genopts.postdb = postdb
+    genopts.date_fun = date_fun
     genopts.print_thread_of_post = True
     hklib.Generator(postdb).gen_posts(genopts, posts)
 
