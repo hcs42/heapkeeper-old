@@ -320,6 +320,12 @@ class Post(object):
     def has_tag(self, tag):
         assert(isinstance(tag, str))
         return tag in self._header['Tag']
+
+    def has_tag_from(self, taglist):
+        for tag in taglist:
+            if self.has_tag(tag):
+                return True
+        return False
         
     # flag fields
 

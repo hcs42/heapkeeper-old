@@ -80,7 +80,6 @@ def sections(postdb):
     ps_tidy = ps_all.collect.body_contains('\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>')
     ps_tidy |= ps_all.collect.body_contains('wrote:')
     ps_tidy |= [post for post in postdb.all() if overquoted(post)]
-    ps_tidy |= [post for post in postdb.all() if overquoted(post)]
     ps_tidy -= ps_all.collect.has_tag('reviewed')
 
     # todo
@@ -95,34 +94,28 @@ def sections(postdb):
         ps_all -= ps_heap
 
     # programozás
-    ps_prog = ps_all.collect.has_tag('programozás')
-    ps_prog |= ps_all.collect.has_tag('Programozás')
+    ps_prog = ps_all.collect.has_tag_from(('Programozás', 'programozás'))
     if exp:
         ps_prog = ps_prog.exp()
     if eliminate:
         ps_all -= ps_prog
 
     # C és C++ programozás
-    ps_ccpp = ps_all.collect.has_tag('c')
-    ps_ccpp |= ps_all.collect.has_tag('C')
-    ps_ccpp |= ps_all.collect.has_tag('c++')
-    ps_ccpp |= ps_all.collect.has_tag('C++')
+    ps_ccpp = ps_all.collect.has_tag_from(('c', 'C', 'c++', 'C++'))
     if exp:
         ps_ccpp = ps_ccpp.exp()
     if eliminate:
         ps_all -= ps_ccpp
 
     # Python programozás
-    ps_py = ps_all.collect.has_tag('python')
-    ps_py |= ps_all.collect.has_tag('Python')
+    ps_py = ps_all.collect.has_tag_from(('python', 'Python'))
     if exp:
         ps_py = ps_py.exp()
     if eliminate:
         ps_all -= ps_py
 
     # politika
-    ps_pol = ps_all.collect.has_tag('politika')
-    ps_pol |= ps_all.collect.has_tag('Politika')
+    ps_pol = ps_all.collect.has_tag_from(('politika', 'Politika'))
     if exp:
         ps_pol = ps_pol.exp()
     if eliminate:
@@ -221,10 +214,10 @@ def gen_indices(postdb):
     # - iterate on months, add one new index per month, one section per index
 
     genopts.indices = [hklib.Index(sections(postdb))]
-    months = do_monthly(postdb)
-    for n in range(0, len(months)):
-        genopts.indices.append(hklib.Index([months[n]],
-                               "month_" + str(n + 1) + ".html"))
+    #months = do_monthly(postdb)
+    #for n in range(0, len(months)):
+    #    genopts.indices.append(hklib.Index([months[n]],
+    #                           "month_" + str(n + 1) + ".html"))
 
     genopts.write_toc = True
     genopts.shortsubject = True
@@ -246,7 +239,6 @@ def gen_posts(postdb, posts):
     genopts.write_toc = True
     genopts.print_thread_of_post = True
     genopts.date_fun = date_fun
-    genopts.indices = [hklib.Index(sections(postdb))]
 
     # Generating the posts
     hklib.Generator(postdb).gen_posts(genopts, posts)
