@@ -234,7 +234,7 @@ def gen_indices(postdb):
     # Generating the index
     hklib.Generator(postdb).gen_indices(genopts)
 
-def gen_posts(postdb):
+def gen_posts(postdb, posts):
     # Generator options
     date_options = hkcustomlib.date_defopts()
     date_options.update({'postdb': postdb,
@@ -249,7 +249,7 @@ def gen_posts(postdb):
     genopts.indices = [hklib.Index(sections(postdb))]
 
     # Generating the posts
-    hklib.Generator(postdb).gen_posts(genopts)
+    hklib.Generator(postdb).gen_posts(genopts, posts)
 
 hkshell.options.callbacks.gen_indices = gen_indices
 hkshell.options.callbacks.gen_posts = gen_posts

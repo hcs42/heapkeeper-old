@@ -2110,12 +2110,15 @@ class Generator(object):
         
         log('Indices generated.')
 
-    def gen_posts(self, options):
+    def gen_posts(self, options, posts=None):
         """Creates a post page for each post that is not deleted.
         
         **Arguments:**
 
         - *options* (:class:`GeneratorOptions`)
+        - *posts* (:class:`Post` | ``None``) -- the posts whose post page
+          should be generated. If ``None``, the post page of all posts will be
+          generated.
         """
 
         hkutils.check(
@@ -2123,7 +2126,9 @@ class Generator(object):
             ['date_fun', 'html_title', 'html_h1', 'cssfile',
              'print_thread_of_post'])
 
-        for post in self._postdb.posts():
+        if posts == None:
+            posts = self._postdb.all()
+        for post in posts:
             try:
                 with open(post.htmlfilename(), 'w') as f:
                     f.write(self.post(post, options))
