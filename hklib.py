@@ -1693,18 +1693,17 @@ class Html():
             class_ += ' post_inactive'
         return \
             '<tr class="%s">' % (class_,) + \
-            Html.post_summary(link, author, subject, tags, index, date, 'td') + \
+            Html.post_summary(link, author, subject, tags, index, date, 'td')+\
             '</tr>\n'
 
     @staticmethod
     def thread_post_header(link, author, subject, tags, index, date):
         """Creates a summary for a post as a div, and closes it
         immediately."""
-        class_ = 'postsummary'
         return \
             '<div class="postbox" id="%s">\n' % (index, ) + \
             Html.enclose(
-                class_,
+                'postsummary',
                 Html.post_summary(
                     link, author, subject, tags, index, date, 'span')) + \
             '</div>\n'
@@ -1953,7 +1952,6 @@ class Generator(object):
         l.append(Html.doc_footer())
         return ''.join(l)
  
- 
     def summarize_thread(self, post, options):
         """Converts the summaries of posts in a thread into HTML.
         
@@ -1962,8 +1960,7 @@ class Generator(object):
 
         **Arguments:**
 
-        - *post* (``None |`` :class:`Post`) -- The root of the thread to be
-          printed.
+        - *post* (:class:`Post`)
         - *options* (:class:`GeneratorOptions`)
 
         **Returns:** ``HtmlStr``
@@ -2021,7 +2018,6 @@ class Generator(object):
                     stack.append(self.post_summary_end())
                 stack += reversed(self._postdb.children(item))
         return ''.join(strings)
-
 
     def full_thread(self, thread, options):
         """Converts the whole thread into HTML.
