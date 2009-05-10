@@ -2320,8 +2320,7 @@ class Generator(object):
                         f.write(self.index_toc(index.sections, options))
                     for i, section in enumerate(index.sections):
                         options.section = section
-                        sect = self.section(i, options)
-                        f.write(sect)
+                        f.write(self.section(i, options))
                         del options.section
                     f.write(Html.doc_footer())
             except IOError:
@@ -2372,7 +2371,7 @@ class Generator(object):
             ['date_fun', 'html_title', 'html_h1', 'cssfile',
              'print_thread_of_post'])
 
-        for thread in self._postdb.threads():
+        for thread in self._postdb.roots():
             try:
                 with open(thread.htmlthreadfilename(), 'w') as f:
                     f.write(self.full_thread(thread, options))
@@ -2381,5 +2380,3 @@ class Generator(object):
                 return
         
         log('Thread HTMLs generated.')
-
-
