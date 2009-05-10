@@ -97,13 +97,14 @@ def gen_indices(postdb):
     # Generating the index
     hklib.Generator(postdb).gen_indices(genopts)
 
-def gen_posts(postdb):
+def gen_posts(postdb, posts):
     date_options = hkcustomlib.date_defopts({'postdb': postdb})
     date_fun = hkcustomlib.create_date_fun(date_options)
     genopts = hklib.GeneratorOptions()
     genopts.postdb = postdb
+    genopts.date_fun = date_fun
     genopts.print_thread_of_post = True
-    hklib.Generator(postdb).gen_posts(genopts)
+    hklib.Generator(postdb).gen_posts(genopts, posts)
 
 @hkshell.shell_cmd
 def a():

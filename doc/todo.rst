@@ -19,6 +19,11 @@ Notation
 Todo items
 ----------
 
+* :func:`hkshell.ga` and :func:`hkshell.gp` should generate only the pages of
+  the modified posts. (It can be solved by an event handler that stores the
+  posts that were touched since their page was generated. We also have to have
+  a look at the timestamp of the post files and post pages.)
+
 * **Documentation**
 
   * writing :doc:`architecture`

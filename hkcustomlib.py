@@ -156,12 +156,12 @@ def gen_indices(postdb):
     genopts.indices = [hklib.Index([section])]
     hklib.Generator(postdb).gen_indices(genopts)
 
-def gen_posts(postdb):
+def gen_posts(postdb, posts):
     date_options = date_defopts({'postdb': postdb})
     date_fun = create_date_fun(date_options)
     genopts = hklib.GeneratorOptions()
     genopts.postdb = postdb
-    hklib.Generator(postdb).gen_posts(genopts)
+    hklib.Generator(postdb).gen_posts(genopts, posts)
 
 def gen_threads(postdb):
     date_options = date_defopts({'postdb': postdb})

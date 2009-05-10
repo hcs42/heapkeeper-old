@@ -133,6 +133,7 @@ class Post(object):
             self._header, self._body = Post.parse(f)
             self._heapid = heapid
             self._postdb = postdb
+            self._datetime = hkutils.NOT_SET
             self._modified = not self.postfile_exists()
         except:
             raise hkutils.HkException, \
@@ -165,6 +166,7 @@ class Post(object):
     def touch(self):
         """Should be called each time after the post is modified."""
         self._modified = True
+        self._datetime = hkutils.NOT_SET
         if self._postdb != None:
             self._postdb.touch(self)
 
@@ -254,11 +256,17 @@ class Post(object):
         Returns: datetime.datetime | None
         """
 
-        timestamp = self.timestamp()
-        if timestamp == 0:
-            return None
-        else:
-            return datetime.datetime.fromtimestamp(timestamp)
+        self._recalc_datetime()
+        return self._datetime
+
+    def _recalc_datetime(self):
+
+        if self._datetime == hkutils.NOT_SET:
+            timestamp = self.timestamp()
+            if timestamp == 0:
+                self._datetime = None
+            else:
+                self._datetime = datetime.datetime.fromtimestamp(timestamp)
 
     def date_str(self):
         """The date converted to a string in local time.
@@ -320,6 +328,12 @@ class Post(object):
     def has_tag(self, tag):
         assert(isinstance(tag, str))
         return tag in self._header['Tag']
+
+    def has_tag_from(self, taglist):
+        for tag in taglist:
+            if self.has_tag(tag):
+                return True
+        return False
         
     # flag fields
 
@@ -2321,12 +2335,15 @@ class Generator(object):
         
         log('Indices generated.')
 
-    def gen_posts(self, options):
+    def gen_posts(self, options, posts=None):
         """Creates a post page for each post that is not deleted.
         
         **Arguments:**
 
         - *options* (:class:`GeneratorOptions`)
+        - *posts* (:class:`Post` | ``None``) -- the posts whose post page
+          should be generated. If ``None``, the post page of all posts will be
+          generated.
         """
 
         hkutils.check(
@@ -2334,7 +2351,9 @@ class Generator(object):
             ['date_fun', 'html_title', 'html_h1', 'cssfile',
              'print_thread_of_post'])
 
-        for post in self._postdb.posts():
+        if posts == None:
+            posts = self._postdb.all()
+        for post in posts:
             try:
                 with open(post.htmlfilename(), 'w') as f:
                     f.write(self.post(post, options))

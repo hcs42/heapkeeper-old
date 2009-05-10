@@ -184,7 +184,6 @@ x()                - save and exit
 rl()               - reload the database (changes will be lost!)
 g()                - generate index.html
 ga()               - generate all html
-gs()               - generate index.html and save
 ps(pps)            - create a postset
 ls(ps)             - get a summary of a postset
 
@@ -218,6 +217,7 @@ documentation.
 """
 
 
+import os
 import sys
 import time
 import subprocess
@@ -299,6 +299,7 @@ class Event(object):
     def __init__(self,
                  type,
                  command=None,
+                 post=None,
                  postset=None):
 
         super(Event, self).__init__()
@@ -419,7 +420,7 @@ def postset_operation(operation):
 
 class ModificationListener(object):
     
-    """TODO"""
+    """Listens to the modifications made in the last commands."""
     
     def __init__(self, postdb_arg=None):
         super(ModificationListener, self).__init__()
@@ -437,6 +438,49 @@ class ModificationListener(object):
             self._posts.add(e.post)
 
     def touched_posts(self):
+        return self._posts
+
+
+class PostPageListener(object):
+    
+    """Stores the post whose post page is not up-to-date."""
+    
+    def __init__(self, postdb_arg=None):
+        super(PostPageListener, self).__init__()
+        self._postdb = postdb_arg if postdb_arg != None else postdb()
+        self._postdb.listeners.append(self)
+        self._posts = self.outdated_posts_from_disk()
+
+    def outdated_posts_from_disk(self):
+        """Returns the posts that are outdated, based on the timestamp of the
+        post files and the post pages."""
+
+        def outdated(post):
+            try:
+                time_html = os.stat(post.htmlfilename()).st_mtime
+                time_post = os.stat(post.postfilename()).st_mtime
+                return time_html < time_post
+            except OSError:
+                # a file is missing; hopefully the HTML
+                return True
+
+        return self._postdb.all().collect(outdated)
+
+    def close(self):
+        self._postdb.listeners.remove(self)
+
+    def __call__(self, e):
+        if e.type == 'post_page_created':
+            self._posts.remove(e.post)
+        elif isinstance(e, hklib.PostDBEvent) and e.type == 'touch':
+            self._posts.add(e.post)
+
+    def outdated_post_pages(self):
+        """Returns the posts whose post pages are outdated.
+
+        Returns: |PostSet|
+        """
+
         return self._posts
 
 
@@ -459,7 +503,7 @@ def timer_listener(e, start=[None]):
     if e.type == 'before':
         start[0] = time.time()
     elif e.type == 'after':
-        write('%f seconds.\n' % (time.time() - start[0],))
+        write('%s: %f seconds.\n' % (e.command, time.time() - start[0]))
 
 def event_printer_listener(e):
     """Prints the event."""
@@ -591,12 +635,14 @@ def c():
 def gen_indices():
     options.callbacks.gen_indices(postdb())
 
-def gen_posts(posts=None):
-    # TODO: add arguments about the posts to gen_posts()
-    #
-    # The following line will be replaced with this line:
-    # options.callbacks.gen_posts(postdb(), posts)
-    options.callbacks.gen_posts(postdb())
+def gen_posts():
+    posts = postpage_listener.outdated_post_pages()
+    options.callbacks.gen_posts(postdb(), posts)
+
+    # It is necessary to iterate over `posts.copy()` instead of just `posts`,
+    # because `posts` will change as a result of the events.
+    for post in posts.copy():
+        event('post_page_created', post=post)
 
 def gen_threads(posts=None):
     options.callbacks.gen_threads(postdb())
@@ -681,6 +727,17 @@ def ga():
     gen_indices()
     gen_posts()
     gen_threads()
+
+@hkshell_events()
+def opp():
+    """Returns the posts whose post pages are outdated.
+
+    When hkshell starts, this includes all posts.
+    
+    Note: *opp* stands for *outdated post page*.
+    """
+
+    return postpage_listener.outdated_post_pages()
 
 @hkshell_events()
 def ls(pps):
@@ -1036,9 +1093,14 @@ def read_postdb(configfile):
 
 def init():
     """Sets the default event handlers."""
+
     global modification_listener
     modification_listener = ModificationListener(postdb())
     listeners.append(modification_listener)
+
+    global postpage_listener
+    postpage_listener = PostPageListener(postdb())
+    listeners.append(postpage_listener)
 
 def import_module(modname):
     """Imports the *modname* module.
