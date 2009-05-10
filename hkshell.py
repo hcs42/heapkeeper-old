@@ -63,6 +63,8 @@ following:
   nothing is specified, the ``hkrc`` module is imported. If ``NONE`` is
   specified, nothing is imported. If a module is not found, the program gives
   only a warning.
+- ``--configfile <configfile>`` --
+  The name of the Heapkeeper config file to use.
 
 The ``--hkrc`` option deals with the modules that should be imported when
 hkshell is started. The convention (and the default behaviour) is that there is
@@ -182,7 +184,6 @@ x()                - save and exit
 rl()               - reload the database (changes will be lost!)
 g()                - generate index.html
 ga()               - generate all html
-gs()               - generate index.html and save
 ps(pps)            - create a postset
 ls(ps)             - get a summary of a postset
 
@@ -296,6 +297,7 @@ class Event(object):
     def __init__(self,
                  type,
                  command=None,
+                 post=None,
                  postset=None):
 
         super(Event, self).__init__()
@@ -416,7 +418,7 @@ def postset_operation(operation):
 
 class ModificationListener(object):
     
-    """TODO"""
+    """Listens to the modifications made in the last commands."""
     
     def __init__(self, postdb_arg=None):
         super(ModificationListener, self).__init__()
@@ -434,6 +436,44 @@ class ModificationListener(object):
             self._posts.add(e.post)
 
     def touched_posts(self):
+        return self._posts
+
+
+class PostPageListener(object):
+    
+    """Stores the post whose post page is not up-to-date."""
+    
+    def __init__(self, postdb_arg=None):
+        super(PostPageListener, self).__init__()
+        self._postdb = postdb_arg if postdb_arg != None else postdb()
+        self._postdb.listeners.append(self)
+        self._posts = self.outdated_posts_from_disk()
+
+    def outdated_posts_from_disk(self):
+        """Returns the posts that are outdated, based on the timestamp of the
+        post files and the post pages.
+        
+        This function is not yet implemented, it returns all posts; this way
+        the system will think at startup that all post pages are outdated.
+        """
+
+        return self._postdb.all()
+
+    def close(self):
+        self._postdb.listeners.remove(self)
+
+    def __call__(self, e):
+        if e.type == 'post_page_created':
+            self._posts.remove(e.post)
+        elif isinstance(e, hklib.PostDBEvent) and e.type == 'touch':
+            self._posts.add(e.post)
+
+    def outdated_post_pages(self):
+        """Returns the posts whose post pages are outdated.
+
+        Returns: |PostSet|
+        """
+
         return self._posts
 
 
@@ -456,7 +496,7 @@ def timer_listener(e, start=[None]):
     if e.type == 'before':
         start[0] = time.time()
     elif e.type == 'after':
-        write('%f seconds.\n' % (time.time() - start[0],))
+        write('%s: %f seconds.\n' % (e.command, time.time() - start[0]))
 
 def event_printer_listener(e):
     """Prints the event."""
@@ -588,12 +628,14 @@ def c():
 def gen_indices():
     options.callbacks.gen_indices(postdb())
 
-def gen_posts(posts=None):
-    # TODO: add arguments about the posts to gen_posts()
-    #
-    # The following line will be replaced with this line:
-    # options.callbacks.gen_posts(postdb(), posts)
-    options.callbacks.gen_posts(postdb())
+def gen_posts():
+    posts = postpage_listener.outdated_post_pages()
+    options.callbacks.gen_posts(postdb(), posts)
+
+    # It is necessary to iterate over `posts.copy()` instead of just `posts`,
+    # because `posts` will change as a result of the events.
+    for post in posts.copy():
+        event('post_page_created', post=post)
 
 def ps(pps):
     res = postdb().postset(pps)
@@ -660,10 +702,26 @@ def g():
     gen_indices()
 
 @hkshell_events()
+def gp():
+    """Generates the post pages."""
+    gen_posts()
+
+@hkshell_events()
 def ga():
     """Generates the index and post pages."""
     gen_indices()
     gen_posts()
+
+@hkshell_events()
+def opp():
+    """Returns the posts whose post pages are outdated.
+
+    When hkshell starts, this includes all posts.
+    
+    Note: *opp* stands for *outdated post page*.
+    """
+
+    return postpage_listener.outdated_post_pages()
 
 @hkshell_events()
 def ls(pps):
@@ -999,25 +1057,34 @@ def exec_commands(commands):
     for command in commands:
         exec command in (globals2)
 
-def read_postdb():
+def read_postdb(configfile):
     """Reads the config file and the post database from the disk.
     
+    **Argument:**
+
+    - *configfile* (str) -- The name of the config file to use as ``hk.cfg``.
+
     **Returns:** (ConfigParser, |PostDB|)
     """
 
     config = ConfigParser.ConfigParser()
     try:
-        config.readfp(open('hk.cfg'))
+        config.readfp(open(configfile))
     except IOError:
-        hklib.log('Heapkeeper config file "hk.cfg" does not exist!')
+        hklib.log('Config file not found: "%s"' % (configfile,))
         sys.exit(1)
     return config, hklib.PostDB.from_config(config)
 
 def init():
     """Sets the default event handlers."""
+
     global modification_listener
     modification_listener = ModificationListener(postdb())
     listeners.append(modification_listener)
+
+    global postpage_listener
+    postpage_listener = PostPageListener(postdb())
+    listeners.append(postpage_listener)
 
 def import_module(modname):
     """Imports the *modname* module.
@@ -1067,7 +1134,7 @@ def main(cmdl_options, args):
     exec_commands(cmdl_options.before_command)
 
     # Reading the configuration file and the post database.
-    options.config, options.postdb = read_postdb()
+    options.config, options.postdb = read_postdb(cmdl_options.configfile)
 
     # Init
     init()
@@ -1101,6 +1168,9 @@ if __name__ == '__main__':
     parser.add_option('-r', '--hkrc', dest='hkrc',
                       help='Modules to import',
                       action='append', default=[])
+    parser.add_option('--configfile', dest='configfile',
+                      help='Configfile to use',
+                      action='store', default='hk.cfg')
     (cmdl_options, args) = parser.parse_args()
 
     from hkshell import *

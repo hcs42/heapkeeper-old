@@ -19,6 +19,11 @@ Notation
 Todo items
 ----------
 
+* :func:`hkshell.ga` and :func:`hkshell.gp` should generate only the pages of
+  the modified posts. (It can be solved by an event handler that stores the
+  posts that were touched since their page was generated. We also have to have
+  a look at the timestamp of the post files and post pages.)
+
 * **Documentation**
 
   * writing :doc:`architecture`
@@ -74,48 +79,6 @@ Todo items
 
   * When ls command is invoked with no parameter, it should list the posts
     that changed last time
-  * Modify hkshell commands to use decorators instead of ``event`` functions.
-    So e.g. the ``s`` command should look like this::
-
-       @WithHeapiaEvent
-       def s():
-           """Saves the mail database."""
-           maildb().save()
-
-    instead of the current implementation (in my local branch... -- Csabi)::
-
-       def s():
-           """Saves the mail database."""
-           event('before', 's')
-           maildb().save()
-           event('after', 's')
-
-  * Modify how hkshell runs user-created code. Currently the user can define a
-    special ``hkrc`` module that is read by :mod:`hkshell`, and other
-    commands can be executed before loading it. It is messy.
-    
-    The new design is much cleaner: :mod:`hkshell` will have two command line
-    options to specify code to run before (``-b`` or ``--command-before``)
-    and after (``-c`` or ``--command-after``) loading hkshell. E.g.::
-
-       $ ./hkshell -b 'options.someoption1 = somevalue' \
-                  -b 'options.someoption2 = somevalue2' \
-                  -c 'import myheapcustom' \
-                  -c 'from myheapcommands import *' \
-                  -c 'myhkshell.myinit()'
-    
-    ``myheapcustom`` has to be written like this: ::
-
-       import hkshell
-       
-       def gen_indices():
-           ...
-       
-       hkshell.options.callbacks.gen_indices = gen_indices
-
-   It is a bit more verbose than the current solution, but as one of Python's
-   mantra says, "Explicit is better than implicit".
-
   * ``catch_exceptions`` option.
 
     Usage::
@@ -133,14 +96,6 @@ Todo items
                raise HkException, error_message
            else:
                options.output(error_message)
-
-  * ``atr``, ``rt``, ``rtr``, ``sr``, ``str_`` are almost the same, they
-    could use the same function and contain only the differences. ::
-
-       def rtr(pps, tags):
-           """..."""
-           tag_operation(lambda post,
-                         tags: post.set_tags(set(post.tags()) - tags))
 
 * **Tests**
 
