@@ -1,3 +1,30 @@
 #!/bin/bash
 
-./hkshell 'on("t")' "for i in range($2): $1()" 'q()' | grep "^$1" | cut -d " " -f 2 | scripts/stat.py
+if [ "$1" = "-h" -o "$1" = "--help" ];
+then
+    cat <<END
+stat
+
+Description:
+    Calculates some simple statistics on running time of individual hkshell
+    commands.
+
+Usage:
+    scripts/stat <command> <nr. of runs>
+
+    E.g.
+
+    scripts/stat gp 10
+
+Output:
+    Pretty much self explanatory. E.g.:
+    average: 0.70 s, SD: 0.34 s.
+
+Note:
+    SD is standard deviation. Denominator is n-1, without any particular
+    reason.
+END
+exit
+fi
+
+./hkshell 'on("t")' "for i in range($2): $1()" 'q()' | grep "^$1:" | cut -d " " -f 2 | scripts/stat.py
