@@ -19,6 +19,7 @@ Note:
     You can run the script from any directory, it will work. (Unless you copy
     the script itself to somewhere else, in which case it will not.)
 END
+exit
 fi
 
 dir=`dirname "$0"`
