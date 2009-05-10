@@ -217,6 +217,7 @@ documentation.
 """
 
 
+import os
 import sys
 import time
 import subprocess
@@ -451,13 +452,18 @@ class PostPageListener(object):
 
     def outdated_posts_from_disk(self):
         """Returns the posts that are outdated, based on the timestamp of the
-        post files and the post pages.
-        
-        This function is not yet implemented, it returns all posts; this way
-        the system will think at startup that all post pages are outdated.
-        """
+        post files and the post pages."""
 
-        return self._postdb.all()
+        def outdated(post):
+            try:
+                time_html = os.stat(post.htmlfilename()).st_mtime
+                time_post = os.stat(post.postfilename()).st_mtime
+                return time_html < time_post
+            except OSError:
+                # a file is missing; hopefully the HTML
+                return True
+
+        return self._postdb.all().collect(outdated)
 
     def close(self):
         self._postdb.listeners.remove(self)
