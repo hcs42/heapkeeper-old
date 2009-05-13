@@ -42,31 +42,6 @@ explicitly noted to be primitive. Actually, there are only two primitives:
     
     * :func:`hklib.PostDB.root`
 
-**Thread:**
-    A thread is a set of mails that have the same root. A thread
-    contains exactly one post that has no parent, which is the root of
-    the thread. (The third meaning of 'root' :) ) Obviously, the root
-    of the thread is a root; and it is the root of all posts in the
-    thread. (And it is not a root of any other post.)
-
-    See also:
-    
-    * :func:`hklib.PostDB.threadstruct`
-
-.. _cycle:
-
-**Cycle:**
-    Each post is in exactly one thread; except for the posts that are
-    in a cycle. Those posts are not present in any thread. A post is
-    in a cycle if you can go up via the 'parent' relation infinitely
-    long and you will never reach a root. The cycles are handled by
-    Hm, but the maintainer of the heap should remove the cycles.
-
-    See also:
-    
-    * :func:`hklib.PostDB.has_cycle`
-    * :func:`hklib.PostDB.cycles`
-
 **Reference (primitive):**
     A post may refer to any number of other posts. Sometimes if Y is
     a reply to X, the maintainer of the heap decides that X should be
@@ -98,13 +73,42 @@ explicitly noted to be primitive. Actually, there are only two primitives:
     
     * :func:`hklib.PostSet.expf`
 
-**Thread mate:**
-    (Is this phrase OK, or maybe you can suggest a better one?)
+**Thread:**
+     A thread is the set of a root and all its descendants. A thread
+     contains exactly one post that has no parent, which is the root of
+     the thread. (The third meaning of 'root' :) ) Obviously, the root
+     of the thread is a root; and it is the root of all posts in the
+     thread. (And it is not a root of any other post.)
 
+ **Subthread:**
+     A subthread is the set of a post and its descendants. That post
+     is called the root of the subthread (although it does not have
+     to be root in the sense that it may have a parent). A subthread
+     may or may not be a thread. A subthread is a thread if and only
+     if its root (i.e. the post which together with its descendants
+     makes up the subset) is a root (i.e. it has no parent). The root
+     of all posts in the subthread is the same. If the subthread is
+     not a thread, this root differs from the root of the subthread,
+     and it is also the root of other posts outside the subthread. 
+
+.. _cycle:
+
+**Cycle:**
+    Each post is in exactly one thread; except for the posts that are
+    in a cycle. Those posts are not present in any thread. A post is
+    in a cycle if you can go up via the *parent* relation infinitely
+    long and you will never reach a root. The cycles are handled by
+    Heapkeeper, but the maintainer of the heap should remove the cycles.
+
+    See also:
+    
+    * :func:`hklib.PostDB.has_cycle`
+    * :func:`hklib.PostDB.cycles`
+
+**Thread mate:**
     Two threads are thread mates if they have the same root, i.e. they
     are in the same thread. (Posts in cycles do not have thread
-    mates.) The thread mates of a post are the descendants of the root
-    of the post and the root itself.
+    mates.)
 
     See also:
     
