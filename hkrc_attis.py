@@ -131,9 +131,9 @@ def sections(postdb):
             hklib.Section("C és C++", ps_ccpp),
             hklib.Section("Python", ps_py),
             hklib.Section("Egyéb", ps_all)]
-#    monthly = do_monthly(postdb)
-#    if monthly != None:
-#        res.extend(monthly)
+    # monthly = do_monthly(postdb)
+    # if monthly != None:
+    #     res.extend(monthly)
     return res
 
 def get_date_limits(postdb):
@@ -208,7 +208,7 @@ def gen_indices(postdb):
     # Generator options
     genopts = hklib.GeneratorOptions()
     genopts.postdb = postdb
-#    genopts.indices = [hklib.Index(sections(postdb)), hklib.Index(do_monthly(postdb),"monthly.html")]
+    #    genopts.indices = [hklib.Index(sections(postdb)), hklib.Index(do_monthly(postdb),"monthly.html")]
     # new idea is:
     # - add static main index,
     # - do_montly() and store its results,
