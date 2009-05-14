@@ -244,6 +244,18 @@ def gen_posts(postdb, posts):
     # Generating the posts
     hklib.Generator(postdb).gen_posts(genopts, posts)
 
+@hkshell.shell_cmd
+def et(pps):
+    """Tidy up a whole thread."""
+    roots = []
+    for post in hklib.PostSet(hkshell.postdb(), pps):
+        roots.append(hkshell.postdb().root(post))
+    for root in roots:
+        for post in hkshell.postdb().iter_thread(root):
+            print post
+    #    hkshell.e(root.heapid())
+    hkshell.ga()
+
 hkshell.options.callbacks.gen_indices = gen_indices
 hkshell.options.callbacks.gen_posts = gen_posts
 hkshell.on('save')
