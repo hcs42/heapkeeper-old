@@ -1,6 +1,18 @@
 :mod:`hklib` user documentation
 ===============================
 
+.. |Post| replace:: :class:`Post`
+.. |PostDB| replace:: :class:`PostDB`
+.. |PostSet| replace:: :class:`PostSet`
+.. |Section| replace:: :class:`Section`
+.. |Index| replace:: :class:`GeneratorOptions`
+.. |GeneratorOptions| replace:: :class:`GeneratorOptions`
+.. |Generator| replace:: :class:`Generator`
+.. |PrePost| replace:: :ref:`PrePost <hklib_PrePost>`
+.. |PrePostSet| replace:: :ref:`PrePostSet <hklib_PrePostSet>`
+.. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
+.. |PreTagSet| replace:: :ref:`PreTagSet <hkshell_PreTagSet>`
+
 See the :doc:`developer documentation of hklib <hklib_dev>` for more
 details.
 

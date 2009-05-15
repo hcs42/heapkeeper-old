@@ -18,21 +18,31 @@
 
 """Implements the heap data structure.
 
-**Type definitions:**
+**Definiton of pseudo-types:**
 
-- ``PrePost`` (``heapid | int |`` :class:`Post`) -- An object that can be
-  converted into a :class:`Post`. When it is an ``int``, it will be converted
-  to a string that should represent a heapid. The ``heapid`` is converted to a
-  :class:`Post` based on the post database.
-- ``PrePostSet`` (``set(PrePost) | [PrePost] | PrePost |`` :class:`PostSet`)
-  -- An object that can be converted into a :class:`PostSet`. Actually,
-  ``PrePostSet`` can be any iterable object that iterates over
-  ``PrePost`` objects.
-- ``HtmlStr`` (``str``) -- String that contains HTML.
-- ``DateFun`` (``fun(``:class:`Post`, :class:`GeneratorOptions` ``) ->
-  (str | None)``) -- Function that specifies how to print the dates of the
-  posts. It will be called for each post summary that is written into an index
-  page. When it returns ``None``, no date will be printed.
+.. _hklib_PrePost:
+
+- *PrePost* (heapid | int | |Post|) -- An object that can be converted into
+  a |Post|. When it is an *int*, it will be converted to a string that should
+  represent a heapid. The *heapid* is converted to a |Post| based on the post
+  database.
+
+.. _hklib_PrePostSet:
+
+- *PrePostSet* (set(|PrePost|)) | [|PrePost|] | |PrePost| | |PostSet|) -- An
+  object that can be converted into a |PostSet|. Actually, |PrePostSet| can be
+  any iterable object that iterates over |PrePost| objects.
+
+.. _hklib_HtmlStr:
+
+- *HtmlStr* (str) -- String that contains HTML.
+
+.. _hklib_DateFun:
+
+- *DateFun* (fun(|Post|, |GeneratorOptions|) -> (str | ``None``)) --
+  A function that specifies how to print the dates of the posts. It will be
+  called for each post summary that is written into an index page. When it
+  returns ``None``, no date will be printed.
 """
 
 from __future__ import with_statement

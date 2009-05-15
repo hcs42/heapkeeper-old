@@ -1,16 +1,33 @@
 :mod:`hkshell` developer documentation
 ======================================
 
-.. |Post| replace:: :class:`Post <hklib.Post>`
-.. |PostDB| replace:: :class:`PostDB <hklib.PostDB>`
-.. |PostSet| replace:: :class:`PostSet <hklib.PostSet>`
-.. |PrePost| replace:: :ref:`PrePost <hkshell_PrePost>`
-.. |PrePostSet| replace:: :ref:`PrePostSet <hkshell_PrePostSet>`
-.. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
-.. |PreTagSet| replace:: :ref:`PreTagSet <hkshell_PreTagSet>`
-
 See the :doc:`user documentation of hkshell <hkshell>` for the public classes
 and functions.
+
+.. |Event| replace:: :class:`Event <hkshell.Event>`
+.. |hkshell| replace:: :mod:`hkshell`
+.. |Listener| replace:: :ref:`Listener <hkshell_Listener>`
+.. |PostDB| replace:: :class:`PostDB <hklib.PostDB>`
+.. |PostSet| replace:: :class:`PostSet <hklib.PostSet>`
+.. |Post| replace:: :class:`Post <hklib.Post>`
+.. |PrePostSet| replace:: :ref:`PrePostSet <hklib_PrePostSet>`
+.. |PrePost| replace:: :ref:`PrePost <hklib_PrePost>`
+.. |PreTagSet| replace:: :ref:`PreTagSet <hkshell_PreTagSet>`
+.. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
+.. |UserDoc| replace:: :doc:`user documentation of hkshell <hkshell>`
+
+Event handling
+--------------
+
+See also the :ref:`Event handling section<hkshell_Event_handling>` of the
+|UserDoc|.
+
+.. autofunction:: hkshell.postset_operation
+
+Concrete listeners
+^^^^^^^^^^^^^^^^^^
+
+TODO
 
 Starting :mod:`hkshell`
 -----------------------
@@ -56,7 +73,3 @@ Functions
 .. autofunction:: hkshell.import_module
 .. autofunction:: hkshell.main
 
-Helper functions for commands
------------------------------
-
-.. autofunction:: hkshell.postset_operation

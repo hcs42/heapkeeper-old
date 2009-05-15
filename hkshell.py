@@ -121,23 +121,14 @@ own commands, as well. For reading about the commands of :mod:`hkshell`, type
 ``h()`` if you are in the hkshell, or go to the :ref:`hkshell_commands` section
 if you are reading the documentation.
 
-**Type definitions:**
+**Definiton of pseudo-types:**
 
 :mod:`hkshell` has pseudo-types that are not real Python types, but we use them
 as types in the documentation so we can talk about them easily.
 
-.. _hkshell_PrePost:
+- :ref:`PrePost <hklib_PrePost>`
 
-- *PrePost* (heapid | int | |Post|) -- An object that can be converted into
-  a |Post|. When it is an *int*, it will be converted to a string that should
-  represent a heapid. The *heapid* is converted to a |Post| based on the post
-  database.
-
-.. _hkshell_PrePostSet:
-
-- *PrePostSet* (set(|PrePost|)) | [|PrePost|] | |PrePost| | |PostSet|) -- An
-  object that can be converted into a |PostSet|. Actually, |PrePostSet| can be
-  any iterable object that iterates over |PrePost| objects.
+- :ref:`PrePostSet <hklib_PrePostSet>`
 
 .. _hkshell_Tag:
 
@@ -147,6 +138,11 @@ as types in the documentation so we can talk about them easily.
 
 - *PreTagSet* (|Tag| | set(|Tag|) | [|Tag|]) -- An object that can be converted
   into a set of tags.
+
+.. _hkshell_Listener:
+
+- *Listener* (fun(|Event|)) -- A listener (also called event handler) that can
+  be called when an event is raised.
 
 **Features**
 
@@ -235,6 +231,7 @@ import hkcustomlib
 ##### Callbacks #####
 
 class Callbacks(object):
+
     """Stores callback functions or objects that are used by :mod:`hkshell`.
     
     The attributes are mentioned as functions, but they can be objects with
@@ -264,15 +261,17 @@ class Callbacks(object):
 ##### Options #####
 
 class Options(object):
-    """Represents a hkshell option object.
+
+    """Stores various options regarding how :mod:`hkshell` works.
 
     **Attributes:**
 
     - *config* (ConfigParser.ConfigParser) -- Configuration object.
     - *output* (object) -- When a hkshell function wants to print something, it
       calls *output*'s write method.
-      Default value: sys.stdout
-    - *callbacks* (:class:`Callbacks`)
+      Default value: ``sys.stdout``
+    - *callbacks* (:class:`Callbacks`) -- Callback functions to be called on
+      various occasions.
     """
 
     def __init__(self,
@@ -284,16 +283,32 @@ class Options(object):
         super(Options, self).__init__()
         hkutils.set_dict_items(self, locals())
 
+# The functions and methods of |hkshell| read the value of specific options
+# from this object. The users of |hkshell| are allowed to change this object in
+# order to achieve the behaviour they need.
 options = Options(callbacks=Callbacks())
 
 
 ##### Event handling #####
 
+# See the description of the event handling system of hkshell in the user
+# documentation of hkshell (hkshell.html or doc/hkshell.rst), in section "Event
+# handling".
+
 class Event(object):
+
     """Represents an event.
 
-    Data attributes:
-    TODO
+    Only the *type* attribute of Event is mandatory, the others are optional.
+
+    **Attributes:**
+
+    - *type* (str) -- The type of the event. Examples: ``'before'``,
+      ``'after'``, ``'touch'``.
+    - *command* (str) -- The command that was executed when the event was
+      raised.
+    - *post* (|Post|) -- The post associated with the event.
+    - *postset* (|PostSet|) -- The postset associated with the event.
     """
 
     def __init__(self,
@@ -301,6 +316,16 @@ class Event(object):
                  command=None,
                  post=None,
                  postset=None):
+
+        """Initializes an object.
+       
+        **Arguments:**
+
+        - *type* (str) -- See the attributes of |Event|.
+        - *command* (str) -- See the attributes of |Event|.
+        - *post* (|Post|) -- See the attributes of |Event|.
+        - *postset* (|PostSet|) -- See the attributes of |Event|.
+        """
 
         super(Event, self).__init__()
         hkutils.set_dict_items(self, locals())
@@ -312,9 +337,18 @@ class Event(object):
         s += '>'
         return s
 
+# This list contains the listeners (also called event handlers) that are
+# called each time an event is raised.
 listeners = []
 
 def append_listener(listener):
+    """Appends a new listener to the listeners' list.
+    
+    **Argument:**
+
+    - *listener* (|Listener|)
+    """
+
     if listener not in listeners:
         listeners.append(listener)
     else:
@@ -322,6 +356,13 @@ def append_listener(listener):
               'Listener already among listeners: %s' % (listener,)
 
 def remove_listener(listener):
+    """Removes a listener from the listeners' list.
+    
+    **Argument:**
+
+    - *listener* (|Listener|)
+    """
+
     if listener not in listeners:
         raise hkutils.HkException, \
               'Listener not among listeners: %s' % (listener,)
@@ -329,6 +370,23 @@ def remove_listener(listener):
         listeners.remove(listener)
 
 def event(*args, **kw):
+    """Raises an event.
+
+    First, an event (an |Event| object) is created. :func:`Event.__init__`
+    is called with the same arguments as this function. Then all the listeners
+    are invoked with the created event as their only argument.
+
+    **Arguments:** the same as the arguments of :func:`Event.__init__`, see the
+    details there.
+
+    Example::
+
+        def s():
+            event(type='before', command='s')
+            postdb().save()
+            event(type='after', command='s')
+    """
+
     e = Event(*args, **kw)
     for fun in listeners:
         fun(e)
@@ -416,7 +474,7 @@ def postset_operation(operation):
         event('after', command, postset=posts)
     return inner
 
-##### Listeners #####
+##### Concrete listeners #####
 
 class ModificationListener(object):
     
@@ -1163,8 +1221,9 @@ def main(cmdl_options, args):
     exec_commands(cmdl_options.after_command)
 
 
-# See more in hkshell's developer documentation (in the HTML documentation or
-# in doc/hkshell.rst) on what happens the hkshell is invoked.
+# See the description of what happens the hkshell is invoked in the developer
+# documentation of hkshell (hkshell_dev.html or doc/hkshell_dev.rst), in
+# section "Starting hkshell".
 
 if __name__ == '__main__':
 
@@ -1191,4 +1250,3 @@ if __name__ == '__main__':
 
     from hkshell import *
     main(cmdl_options, args)
-
