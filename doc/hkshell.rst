@@ -109,30 +109,35 @@ Miscellaneous commands
 Features
 --------
 
-..
-    This text is only a comment yet; is should be formatted, modified and
-    include in the normal text.
-    
-    Features can be turned on and off with heapia commands 'on' and 'off',
-    just like this:
-    
-        >>> on('gen_incices')
-        >>> off('gen_incices')
-    
-    The 'gen_indices' feature will regenerate the indices (HTML files that
-    contain an index of the posts) when a mail database changed after a
-    commands. Other features:
-    
-    * gen_indices - automatically regenerates the indices
-    * gen_posts - automatically regenerates the posts
-    * save - automatically saves the database
-    * timer - times the commands
-    * touched_post_printer - prints the list of posts that has been changed
-      by the last command
-    
-    Every feature has a shortcut, so for example it is enough to type
-    "on('gi')" instead of "on('gen_incices')".
-    
+*Features* are constructs that make high-level customization of Heapkeeper
+easy. Every feature has a unique name. During the execution of Heapkeeper,
+every feature has a value. (E.g. the feature called ``gen_indices`` can have
+two values: ``on`` and ``off``.) The value of a feature describes how
+Heapkeeper should behave in certain situations. (E.g. if the value of the
+``gen_indices`` feature is ``on``, index pages will be automatically generated
+after a command changed some posts.) Currently we have only boolean
+(``on``/``off``) features. They can be turned on and off with |hkshell|
+commands :func:`on` and :func:`off`. For example, this is how the
+``gen_indices`` feature is turned on and off::
+
+    >>> on('gen_indices')
+    >>> off('gen_indices')
+
+All features have a long and a short name. The current features are the
+following:
+
+- *gi*, *gen_indices* -- If ``on``: after executing a command that changed at
+  least one post, Heapkeeper automatically regenerates the index pages.
+- *gp*, *gen_posts* -- If ``on``: after executing a command, Heapkeeper
+  automatically regenerates the post pages of the modified posts.
+- *s*, *save* -- If ``on``: automatically saves the post database after the execution of
+  commands.
+- *t*, *timer* -- If ``on``: times the commands: the execution time of each
+  command is printed when the command has been finished.
+- *tpp*, *touched_post_printer* -- If ``on``: prints touched posts after
+  commands that touched at least one post.
+- *ep*, *event_printer* -- If ``on``: prints all events.
+
 .. autofunction:: on()
 .. autofunction:: off()
 

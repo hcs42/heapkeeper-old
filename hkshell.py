@@ -147,7 +147,8 @@ as types in the documentation so we can talk about them easily.
 **Features**
 
 :mod:`hkshell` has a concept of features. A feature can be turned on and off.
-For the list of features, see :func:`on`.
+See the list of features and the detailed description in the :ref:`Features
+<hkshell_features>` section.
 
 .. highlight:: python
 """
@@ -650,18 +651,7 @@ def on(feature):
 
     **Argument:**
 
-    - feature (str)
-
-    **Features:**
-    
-    All features have a long and a short name.
-
-    - *gi*, *gen_indices* -- Automatically regenerates the index pages.
-    - *gp*, *gen_posts* -- Automatically regenerates the post pages after .
-    - *s*, *save* -- Automatically saves the post database after commands.
-    - *t*, *timer* -- Times the commands.
-    - *tpp*, *touched_post_printer* -- Prints touched posts.
-    - *ep*, *event_printer* -- Prints all events.
+    - *feature* (str)
     """
 
     set_feature('on', feature)
@@ -673,7 +663,7 @@ def off(feature):
 
     **Argument:**
 
-    - feature (str)
+    - *feature* (str)
     """
 
     set_feature('off', feature)
