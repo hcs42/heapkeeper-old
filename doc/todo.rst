@@ -19,18 +19,13 @@ Notation
 Todo items
 ----------
 
-* :func:`hkshell.ga` and :func:`hkshell.gp` should generate only the pages of
-  the modified posts. (It can be solved by an event handler that stores the
-  posts that were touched since their page was generated. We also have to have
-  a look at the timestamp of the post files and post pages.)
-
 * **Documentation**
 
-  * writing :doc:`architecture`
+  * continuing :doc:`architecture`
   * The :doc:`tutorial` should be rewritten (probably a separate
     *customization* page should be created). A new document called Heapkeeper
     Basics should be created.
-  * words to include in the :doc:`glossary`: Heap, heapid, messid , post,
+  * words to include in the :doc:`glossary`: Heap, heapid, message id, post,
     postset, prepostset, tag
   * Explain these concepts somewhere: delegate, hkrc
   * Coding Conventions:
@@ -51,10 +46,16 @@ Todo items
   * Screenshots
   * ``[disc]`` Talk about some kind of roadmap. How do we envision the
     progress of Hk?
-  * ``[disc]`` Elevator speech, slogan, motto, logo.
+  * ``[disc]`` motto. We had two ideas, but they don't go well with the
+    new name (Heapkeeper):
 
     * "The past is just our perception of the past."
     * "Edit the past!"
+
+  * logo
+  * getting a domain for our homepage (http://www.heapkeeper.org) and a better
+    host
+  * setting up the public heap/public mailing list
 
 * **Generator**
 
@@ -231,15 +232,6 @@ Todo items
 * Post, PostDB: a better system for 'touch': it should know what should be
   recalculated and what should not be. It would improve only efficiently, not
   usability.
-
-* ``+`` hkshell could print affected emails after executing a command. The
-  touch-system could be used to make an approximation, but probably the hkshell
-  improved to reach a 100% correct solution. E.g. condiser setting subject X
-  for a post which already has that subject. The touch-system will say it
-  changed; I think the Post should not care about whether it really changed or
-  nor that, for efficiency reasons. On the other hand, the implementation of
-  hkshell would be much less elegant if it monitored actual changes in posts.
-  -- Csabi
 
 * ``+`` Downloading emails since given date.
   Workaround: if we go to the heap account regularly and archive the emails in
