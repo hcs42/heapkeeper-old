@@ -252,8 +252,7 @@ def et(pps):
         roots.append(hkshell.postdb().root(post))
     for root in roots:
         for post in hkshell.postdb().iter_thread(root):
-            print post
-    #    hkshell.e(root.heapid())
+            hkshell.e(post.heapid())
     hkshell.ga()
 
 hkshell.options.callbacks.gen_indices = gen_indices
