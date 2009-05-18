@@ -59,9 +59,10 @@ Todo items
 * **Generator**
 
   * Generator.gen_threads
-  * Problem: some data attributes of the GeneratorOptions could be moved to
-    Section or Index. (A function as a generator option that can take the
-    section into account is as good as a section option or an index option.)
+  * Problem: some data attributes of the GeneratorOptions (e.g. ``write_toc``)
+    could be moved to Section or Index. (A function as a generator option that
+    can take the section into account is as good as a section option or an
+    index option.)
   * ``-`` "Back to index" is buggy now, because it always goes back to the
     'index.html'
   * ``+`` Index generator: now the user defines how to show the date in
@@ -113,17 +114,11 @@ Todo items
 
 * **Renamings**
 
-  *  ``[prop]`` ``*.mail`` files to ``*.post``
   * CamelCase function names to lower_case in test modules
 
 * hkcustomlib: refactoring DateOptions to use the Options pattern
 
 * STAR should be renamed
-
-* ``+`` It would be nice if we could regenerate the post HTMLs only for the
-  posts that has been modified.
-
-* ``+`` Being able to reload hkrc without restarting the Manipulator
 
 * ``+`` ``<#2>`` Post generator:
 
@@ -133,9 +128,6 @@ Todo items
   * ``+`` "back to thread" link.
     HTML-id-s should be put to each thread in the index to implement this.
     Idea: would it make sense to put id-s to each post in the index? -- Csabi
-
-* ``+`` Thread HTML-s (precondition: ``#1``): every thread could have an HTML.
-  Threads could be identified by the id of their root post.
 
 * ``[prop]`` ``+`` **Post body parsing**. This should be discussed, a proposal
   should be written.
@@ -163,9 +155,6 @@ Todo items
     Original post1: <<<post:id=boring_stuff>>>
     Original post2: As I said in [this|post:id=boring_stuff] mail...
     Post2 in HTML:  what about <a href="http://...">this</a> thing?
-
-* ``+`` Generator: different colours for the posts that are not in a section
-  but their thread is
 
 * ``+`` ``<#3>`` PostSetMapDelegate::
 
