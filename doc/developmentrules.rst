@@ -56,6 +56,8 @@ A commit message has two parts: a mandatory title and an optional description.
 * If the changes introduce incompatibilities that the users can notice (e.g.
   the format of the config file changes), it is generally worth describing
   them.
+* If it increases readability, it is a good idea to put code objects between
+  ````` signs.
 
 Example:
 
@@ -63,6 +65,7 @@ Example:
 
    Doc: improved docstrings
 
-   Two classes have been documented with docstrings and the docstring of
-   two functions have been modified. The current format shall be used in
-   all docstrings.
+   A class and a method have been documented with docstrings. The current
+   format shall be used in all docstrings.
+
+   The modified class is MyClass, the modified function is `is`.
