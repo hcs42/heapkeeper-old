@@ -1,0 +1,11 @@
+# directories
+
+doc/_build
+doc/_static
+doc/_templates
+
+# files
+
+hkrc.py
+hk.cfg
+*.pyc
