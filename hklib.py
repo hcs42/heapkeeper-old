@@ -1838,6 +1838,11 @@ class GeneratorOptions(object):
         Default: 'Heap'
     cssfile --- The name of the CSS file that should be referenced.
         Type: str
+    trycopycssfile --- Copy the CSS file into the HTML directory if it does not
+        exist. If cssfile is given with an absolute path, trycopycssfile should
+        be False.
+        Type: bool
+        Default: True
     print_thread_of_post --- The thread of the post will be printed into the
         post HTML.
         Type: bool
@@ -1861,6 +1866,7 @@ class GeneratorOptions(object):
                  html_title='Heap index',
                  html_h1='Heap index',
                  cssfile='heapindex.css',
+                 trycopycssfile=True,
                  print_thread_of_post=False,
                  section=hkutils.NOT_SET,
                  index=hkutils.NOT_SET):
@@ -1902,6 +1908,14 @@ class Generator(object):
         super(Generator, self).__init__()
         self._postdb = postdb
     
+    def settle_css_file(self, options):
+        """Copies the CSS file to the HTML directory if needed."""
+
+        if options.trycopycssfile:
+            newcssfile = os.path.join(self._postdb.html_dir(), options.cssfile)
+            if not os.path.exists(newcssfile):
+                shutil.copyfile(options.cssfile, newcssfile)
+
     def post(self, post, options):
         """Converts the post into HTML.
 
@@ -1916,7 +1930,7 @@ class Generator(object):
         l = []
         h1 = Html.escape(post.author()) + ': ' + \
              Html.escape(post.subject())
-        l.append(Html.doc_header(h1, h1, 'heapindex.css'))
+        l.append(Html.doc_header(h1, h1, options.cssfile))
 
         l2 = []
         try:
@@ -2301,7 +2315,7 @@ class Generator(object):
         l.append(Html.section_end())
 
         return ''.join(l)
-
+    
     def gen_indices(self, options):
         """Creates the index pages.
         
@@ -2312,9 +2326,10 @@ class Generator(object):
 
         hkutils.check(
             options,
-            ['indices', 'write_toc', 'shortsubject', 'shorttags',
-             'date_fun', 'html_title', 'html_h1', 'cssfile'])
+            ['indices', 'write_toc', 'shortsubject', 'shorttags', 'date_fun',
+             'html_title', 'html_h1', 'cssfile', 'trycopycssfile'])
 
+        self.settle_css_file(options)
         threadst = self._postdb.threadstruct()
         for index in options.indices:
             options.index = index
@@ -2353,9 +2368,10 @@ class Generator(object):
 
         hkutils.check(
             options,
-            ['date_fun', 'html_title', 'html_h1', 'cssfile',
+            ['date_fun', 'html_title', 'html_h1', 'cssfile', 'trycopycssfile',
              'print_thread_of_post'])
 
+        self.settle_css_file(options)
         if posts == None:
             posts = self._postdb.all()
         for post in posts:
@@ -2378,9 +2394,10 @@ class Generator(object):
 
         hkutils.check(
             options,
-            ['date_fun', 'html_title', 'html_h1', 'cssfile',
+            ['date_fun', 'html_title', 'html_h1', 'cssfile', 'trycopycssfile',
              'print_thread_of_post'])
 
+        self.settle_css_file(options)
         for thread in self._postdb.roots():
             try:
                 with open(thread.htmlthreadfilename(), 'w') as f:

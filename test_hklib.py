@@ -1253,8 +1253,10 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
 
     def setUp(self):
         self.setUpDirs()
+        self._orig_workingdir = os.getcwd()
 
     def tearDown(self):
+        os.chdir(self._orig_workingdir)
         self.tearDownDirs()
 
     def p(self, postindex):
@@ -1270,6 +1272,21 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
     def index_html(self):
         index_html_name = os.path.join(self._html_dir, 'index.html')
         return hkutils.file_to_string(index_html_name)
+
+    def test_settle_css_file(self):
+        
+        postdb, g, p = self.init()
+
+        orig_cssfile = os.path.join(self._dir, 'my.css')
+        new_cssfile = os.path.join(postdb.html_dir(), 'my.css')
+        hkutils.string_to_file('css content', orig_cssfile)
+        self.assertFalse(os.path.exists(new_cssfile))
+
+        genopts = GeneratorOptions()
+        genopts.cssfile = 'my.css'
+        os.chdir(self._dir)
+        g.settle_css_file(genopts)
+        self.assert_(os.path.exists(new_cssfile))
 
     def test_post(self):
 
@@ -1632,6 +1649,9 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         genopts.html_h1 = 'myhtmlh1'
         genopts.cssfile = 'mycssfile'
 
+        os.chdir(self._dir)
+        hkutils.string_to_file('css content', 'mycssfile')
+
         genopts.section = index.sections[0]
         section0_html = g.section(0, genopts)
         genopts.section = index.sections[1]
@@ -1674,6 +1694,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         genopts.html_title = 'myhtmltitle'
         genopts.html_h1 = 'myhtmlh1'
         genopts.cssfile = 'mycssfile'
+        genopts.trycopycssfile = False
 
         # normal
 
