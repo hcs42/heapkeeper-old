@@ -19,6 +19,15 @@ Notation
 Todo items
 ----------
 
+* **Heapkeeper 0.3**
+
+  - automatic copying of heapindex.css next to the HTML files
+  - enew(heapid) command to create and edit a new post: this way the
+    tutorial can be performed without having real emails as posts
+  - renaming In-Reply-To field to Parent and From to Author in post files
+  - tutorial
+  - screenshots
+  
 * **Documentation**
 
   * continuing :doc:`architecture`
@@ -43,9 +52,6 @@ Todo items
 
 * **Management, propaganda**
 
-  * Screenshots
-  * ``[disc]`` Talk about some kind of roadmap. How do we envision the
-    progress of Hk?
   * ``[disc]`` motto. We had two ideas, but they don't go well with the
     new name (Heapkeeper):
 
@@ -56,6 +62,8 @@ Todo items
   * getting a domain for our homepage (http://www.heapkeeper.org) and a better
     host
   * setting up the public heap/public mailing list
+  * setting up a bug tracker (current candidates: Git-Issues, Ditz or
+    Heapkeeper itself)
 
 * **Generator**
 
