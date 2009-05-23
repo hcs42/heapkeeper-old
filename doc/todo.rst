@@ -21,12 +21,29 @@ Todo items
 
 * **Heapkeeper 0.3**
 
-  - enew(heapid) command to create and edit a new post: this way the
-    tutorial can be performed without having real emails as posts
-  - renaming In-Reply-To field to Parent and From to Author in post files
-  - tutorial
-  - screenshots
+  * code
+
+    * ``enew(heapid)`` command to create and edit a new post: this way the
+      tutorial can be performed without having real emails as posts
+    * renaming In-Reply-To field to Parent and From to Author in post files
   
+  * documentation
+
+    * tutorial
+    * screenshots
+
+  * administrative
+
+    * getting the domain
+    * modifying the documentation uploader script (``scripts/pushdoc``) to
+      upload the documentation there
+    * register to freshmeat
+    * write to Sphinx that we use Sphinx
+  
+* **Priority**
+ 
+  * supporting multiple heaps (afterwards we should clean up and upload hh)
+
 * **Documentation**
 
   * continuing :doc:`architecture`
@@ -58,9 +75,8 @@ Todo items
     * "Edit the past!"
 
   * logo
-  * getting a domain for our homepage (http://www.heapkeeper.org) and a better
-    host
   * setting up the public heap/public mailing list
+  * own CSS theme on the homepage
   * setting up a bug tracker (current candidates: Git-Issues, Ditz or
     Heapkeeper itself)
 
@@ -123,10 +139,9 @@ Todo items
 * **Renamings**
 
   * CamelCase function names to lower_case in test modules
+  * hklib.STAR to something
 
 * hkcustomlib: refactoring DateOptions to use the Options pattern
-
-* STAR should be renamed
 
 * ``+`` ``<#2>`` Post generator:
 
