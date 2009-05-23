@@ -31,6 +31,7 @@ Todo items
 
     * tutorial
     * screenshots
+    * download page, maybe with "changes"
 
   * administrative
 
