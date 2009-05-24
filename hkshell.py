@@ -551,7 +551,7 @@ def gen_posts_listener(e):
     if e.type == 'after':
         touched_posts = modification_listener.touched_posts()
         if len(touched_posts) > 0:
-            gen_posts(touched_posts)
+            gen_posts()
 
 def save_listener(e):
     if (e.type == 'after' and len(modification_listener.touched_posts()) > 0):
