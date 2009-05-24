@@ -20,6 +20,7 @@
 
 """My (Csaba Hoch) hkrc."""
 
+import os
 import subprocess
 import time
 import datetime
@@ -40,8 +41,8 @@ def indices0(postdb):
 
     # heap
     heap_tags = ['heap', 'Heap']
-    ps_heap = ps_all.collect(has_tag(heap_tags))
-    ps_all -= ps_heap
+    ps_hk = ps_all.collect(has_tag(heap_tags))
+    ps_all -= ps_hk
 
     # hh
     heap_tags = ['hh', 'Hh', 'HH']
@@ -53,19 +54,17 @@ def indices0(postdb):
     ps_cp = ps_all.collect(has_tag(cp_tags))
     ps_all -= ps_cp
 
-    # sections
-    index_hm = hklib.Index(filename='hm.html')
-    index_hm.sections = [hklib.Section("Heap", ps_heap)]
-
+    # indices
     index_hh = hklib.Index(filename='hh.html')
     index_hh.sections = [hklib.Section("hh", ps_hh)]
 
     index_ums = hklib.Index(filename='ums.html')
     index_ums.sections = [hklib.Section("Cycles", hklib.CYCLES),
                           hklib.Section("Programozás", ps_cp),
+                          hklib.Section("Heapkeeper", ps_hk),
                           hklib.Section("Egyéb", ps_all)]
 
-    return [index_hm, index_hh, index_ums]
+    return [index_hh, index_ums]
             
 
 def sections1(postdb):
@@ -137,3 +136,10 @@ def gvim():
 def R(pps):
     """Mark thread as reviewed."""
     hkshell.atr(pps, 'r')
+
+if os.path.exists('hcs/pure'):
+    hklib.log('Pure mode.')
+else:
+    hklib.log('Normal mode.')
+    a()
+
