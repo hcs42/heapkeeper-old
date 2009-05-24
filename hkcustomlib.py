@@ -161,7 +161,7 @@ def gen_posts(postdb, posts):
     date_fun = create_date_fun(date_options)
     genopts = hklib.GeneratorOptions()
     genopts.postdb = postdb
-    hklib.Generator(postdb).gen_posts(genopts, posts)
+    hklib.Generator(postdb).gen_posts(genopts, posts.exp())
 
 def gen_threads(postdb):
     date_options = date_defopts({'postdb': postdb})
