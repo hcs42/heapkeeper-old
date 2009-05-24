@@ -85,7 +85,9 @@ Todo items
 
 * **Generator**
 
-  * Generator.gen_threads
+  * refactor Generator.gen_threads; now there is a lot of code duplication in
+    the Generator's code
+  * Generator.gen_threads should regenerate only the threads that has changed
   * Problem: some data attributes of the GeneratorOptions (e.g. ``write_toc``)
     could be moved to Section or Index. (A function as a generator option that
     can take the section into account is as good as a section option or an
