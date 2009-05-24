@@ -20,6 +20,8 @@ from __future__ import with_statement
 import datetime
 import inspect
 import email.utils
+import os.path
+import shutil
 
 
 ##### Performance measurement #####
@@ -170,6 +172,15 @@ def calc_timestamp(date):
     The timestamp will be an UTC timestamp.
     """
     return email.utils.mktime_tz(email.utils.parsedate_tz(date))
+
+def copy_wo(src, dst):
+    """Copy without overwriting.
+    
+    If *dst* does not exist, the function copies *src* to *dst*."""
+
+    if not os.path.exists(dst):
+        shutil.copyfile(src, dst)
+
 
 ##### Constants #####
 

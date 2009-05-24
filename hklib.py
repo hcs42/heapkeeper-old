@@ -1838,9 +1838,9 @@ class GeneratorOptions(object):
         Default: 'Heap'
     cssfile --- The name of the CSS file that should be referenced.
         Type: str
-    trycopycssfile --- Copy the CSS file into the HTML directory if it does not
-        exist. If cssfile is given with an absolute path, trycopycssfile should
-        be False.
+    trycopyfiles --- Copy the CSS file, images and other files into the
+        HTML directory if it does not exist. If cssfile is given with an absolute
+        path, trycopyfiles should be False.
         Type: bool
         Default: True
     print_thread_of_post --- The thread of the post will be printed into the
@@ -1866,7 +1866,7 @@ class GeneratorOptions(object):
                  html_title='Heap index',
                  html_h1='Heap index',
                  cssfile='heapindex.css',
-                 trycopycssfile=True,
+                 trycopyfiles=True,
                  print_thread_of_post=False,
                  section=hkutils.NOT_SET,
                  index=hkutils.NOT_SET):
@@ -1908,13 +1908,15 @@ class Generator(object):
         super(Generator, self).__init__()
         self._postdb = postdb
     
-    def settle_css_file(self, options):
-        """Copies the CSS file to the HTML directory if needed."""
+    def settle_files_to_copy(self, options):
+        """Copies the CSS file and other files to the HTML directory if needed."""
 
-        if options.trycopycssfile:
+        if options.trycopyfiles:
             newcssfile = os.path.join(self._postdb.html_dir(), options.cssfile)
-            if not os.path.exists(newcssfile):
-                shutil.copyfile(options.cssfile, newcssfile)
+            hkutils.copy_wo(options.cssfile, newcssfile)
+            if os.path.exists('thread.png'):
+                threadpng = os.path.join(self._postdb.html_dir(), 'thread.png')
+                hkutils.copy_wo('thread.png', threadpng)
 
     def post(self, post, options):
         """Converts the post into HTML.
@@ -2327,9 +2329,9 @@ class Generator(object):
         hkutils.check(
             options,
             ['indices', 'write_toc', 'shortsubject', 'shorttags', 'date_fun',
-             'html_title', 'html_h1', 'cssfile', 'trycopycssfile'])
+             'html_title', 'html_h1', 'cssfile', 'trycopyfiles'])
 
-        self.settle_css_file(options)
+        self.settle_files_to_copy(options)
         threadst = self._postdb.threadstruct()
         for index in options.indices:
             options.index = index
@@ -2368,10 +2370,10 @@ class Generator(object):
 
         hkutils.check(
             options,
-            ['date_fun', 'html_title', 'html_h1', 'cssfile', 'trycopycssfile',
+            ['date_fun', 'html_title', 'html_h1', 'cssfile', 'trycopyfiles',
              'print_thread_of_post'])
 
-        self.settle_css_file(options)
+        self.settle_files_to_copy(options)
         if posts == None:
             posts = self._postdb.all()
         for post in posts:
@@ -2394,10 +2396,10 @@ class Generator(object):
 
         hkutils.check(
             options,
-            ['date_fun', 'html_title', 'html_h1', 'cssfile', 'trycopycssfile',
+            ['date_fun', 'html_title', 'html_h1', 'cssfile', 'trycopyfiles',
              'print_thread_of_post'])
 
-        self.settle_css_file(options)
+        self.settle_files_to_copy(options)
         for thread in self._postdb.roots():
             try:
                 with open(thread.htmlthreadfilename(), 'w') as f:

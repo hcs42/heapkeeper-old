@@ -1273,7 +1273,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         index_html_name = os.path.join(self._html_dir, 'index.html')
         return hkutils.file_to_string(index_html_name)
 
-    def test_settle_css_file(self):
+    def test_settle_files_to_copy(self):
         
         postdb, g, p = self.init()
 
@@ -1285,7 +1285,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         genopts = GeneratorOptions()
         genopts.cssfile = 'my.css'
         os.chdir(self._dir)
-        g.settle_css_file(genopts)
+        g.settle_files_to_copy(genopts)
         self.assert_(os.path.exists(new_cssfile))
 
     def test_post(self):
@@ -1694,7 +1694,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         genopts.html_title = 'myhtmltitle'
         genopts.html_h1 = 'myhtmlh1'
         genopts.cssfile = 'mycssfile'
-        genopts.trycopycssfile = False
+        genopts.trycopyfiles = False
 
         # normal
 
