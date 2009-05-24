@@ -66,6 +66,8 @@ Todo items
     * performance improvement possibilities (iterators for some PrePost and
       PostDB functions)
     * using wrappers to protect e.g. PostDB.posts()
+ 
+  * move the github wiki page "email_file_format" to the rst documentation
 
 * **Management, propaganda**
 
