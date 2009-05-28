@@ -61,6 +61,13 @@ Todo items
       ``test_<method>__<other stuff>``)
     * markup language for commit messages
 
+  * Documentation of modules. Documentation and revision needed:
+
+    * hkshell: lines 529-730
+    * hklib: all
+    * hkcustomlib: all
+    * hkutils: all
+
   * not important things
 
     * performance improvement possibilities (iterators for some PrePost and
