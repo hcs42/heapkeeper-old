@@ -27,10 +27,10 @@ Post
 
     **Methods:**
 
-    .. method:: subject
-    .. method:: set_subject
-    .. method:: real_subject
-    .. method:: set_body
+    .. automethod:: subject
+    .. automethod:: set_subject
+    .. automethod:: real_subject
+    .. automethod:: set_body
 
 PostDB
 ------

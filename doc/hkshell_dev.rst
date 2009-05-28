@@ -4,6 +4,8 @@
 See the :doc:`user documentation of hkshell <hkshell>` for the public classes
 and functions.
 
+.. currentmodule:: hkshell
+
 .. |Event| replace:: :class:`Event <hkshell.Event>`
 .. |hkshell| replace:: :mod:`hkshell`
 .. |Listener| replace:: :ref:`Listener <hkshell_Listener>`
@@ -22,12 +24,19 @@ Event handling
 See also the :ref:`Event handling section<hkshell_Event_handling>` of the
 |UserDoc|.
 
-.. autofunction:: hkshell.postset_operation
+.. autofunction:: postset_operation
 
 Concrete listeners
 ^^^^^^^^^^^^^^^^^^
 
-TODO
+.. autoclass:: ModificationListener
+
+    **Methods:**
+    
+    .. automethod:: __init__
+    .. automethod:: close
+    .. automethod:: __call__
+    .. automethod:: touched_posts
 
 Starting :mod:`hkshell`
 -----------------------
@@ -67,9 +76,9 @@ The advangates of this solution:
 Functions
 ^^^^^^^^^
 
-.. autofunction:: hkshell.exec_commands
-.. autofunction:: hkshell.read_postdb
-.. autofunction:: hkshell.init
-.. autofunction:: hkshell.import_module
-.. autofunction:: hkshell.main
+.. autofunction:: exec_commands
+.. autofunction:: read_postdb
+.. autofunction:: init
+.. autofunction:: import_module
+.. autofunction:: main
 

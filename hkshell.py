@@ -479,24 +479,50 @@ def postset_operation(operation):
 
 class ModificationListener(object):
     
-    """Listens to the modifications made in the last commands."""
+    """Listens to and stores the modifications made in the latest commands.
+    
+    A :class:`ModificationListener` object subscribes to the modifications of
+    both the given post database and |hkshell|. The posts modified since the
+    latest command can be obtained by calling the :func:`touched_posts`.
+    :class:`ModificationListener` objects should be closed (using the
+    :func:`close` method).
+    """
     
     def __init__(self, postdb_arg=None):
+        """Initializes an object.
+
+        **Argument:**
+        
+        - *postdb_arg* (|PostDB|) -- The post database whose modifications
+          should be listened to.
+        """
+
         super(ModificationListener, self).__init__()
         self._postdb = postdb_arg if postdb_arg != None else postdb()
         self._postdb.listeners.append(self)
         self._posts = self._postdb.postset([])
 
     def close(self):
+        """Closes the ModificationListener.
+        
+        The object will unsubscribe from the notifications it subscribed to."""
         self._postdb.listeners.remove(self)
 
     def __call__(self, e):
+        """The event handler method.
+        
+        **Argument:**
+
+        - *e* (|Event|)
+        """
+
         if e.type == 'before':
             self._posts = self._postdb.postset([])
         elif isinstance(e, hklib.PostDBEvent) and e.type == 'touch':
             self._posts.add(e.post)
 
     def touched_posts(self):
+        """Returns the posts modified since the beginning of the latest command."""
         return self._posts
 
 
@@ -703,6 +729,7 @@ def tagset(tags):
     """Converts the argument to ``set(tag)``.
     
     **Arguments:**
+
     - tags (|PreTagSet|)
 
     **Returns:** set(|Tag|)
