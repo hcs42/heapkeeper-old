@@ -103,6 +103,7 @@ Miscellaneous commands
 .. autofunction:: dr(pps)
 .. autofunction:: j(pp1, pp2)
 .. autofunction:: e(pp)
+.. autofunction:: enew()
 
 .. _hkshell_features:
 

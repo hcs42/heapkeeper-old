@@ -202,6 +202,7 @@ d(pps)             - delete
 dr(pps)            - delete recursively
 j(pp, pp)          - join two threads
 e(pp)              - edit the post as a file
+enew()             - creates and edits a new post as a file
 dl()               - download new mail
 
 postdb()           - the post database object
@@ -222,6 +223,7 @@ import ConfigParser
 import re
 import optparse
 import inspect
+import tempfile
 from functools import wraps
 
 import hkutils
@@ -620,8 +622,8 @@ class TouchedPostPrinterListener(object):
 
 # Commands after which the touched_post_printer should print the touched posts
 touching_commands = \
-    ['d', 'dr', 'j', 'pt', 'at', 'atr', 'rt', 'rtr', 'st', 'str_', 'pS', 'sS',
-     'sSr', 'capitalize_subject', 'cS', 'cSr']
+    ['d', 'dr', 'j', 'enew' 'pt', 'at', 'atr', 'rt', 'rtr', 'st', 'str_', 'pS',
+     'sS', 'sSr', 'capitalize_subject', 'cS', 'cSr']
 
 touched_post_printer_listener = TouchedPostPrinterListener(touching_commands)
 
@@ -882,6 +884,35 @@ def e(pp):
             p.load()
     else:
         hklib.log('Post not found.')
+
+@hkshell_events()
+def enew():
+    """Creates and edits a post.
+    
+    A temporary file with a post stub will be created and an editor will be
+    opened so that the user can edit it. After saving the file, it will be read
+    as a post file and the post created from it will be added to the post
+    database. If the post stub was not edited, nothing will happen.
+    """
+
+    tmp_file_fd, tmp_file_name = tempfile.mkstemp()
+    try:
+        os.write(
+            tmp_file_fd,
+            'From: \n'
+            'Subject: \n'
+            '\n'
+            '\n')
+        os.close(tmp_file_fd)
+        successful_edit = options.callbacks.edit_file(tmp_file_name)
+        if successful_edit == True:
+            post = postdb().add_new_post(hklib.Post.from_file(tmp_file_name))
+            hklib.log('Post created.')
+            return post
+        else:
+            hklib.log('No change in the data base.')
+    finally:
+        os.remove(tmp_file_name)
 
 @hkshell_events()
 def dl(from_=0):

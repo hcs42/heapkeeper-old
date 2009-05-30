@@ -415,6 +415,22 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEquals(self.subjects(), ['','','','',''])
         self.assertEquals(self.tags(), [[],[],[],[],[]])
 
+    def test_enew(self):
+        self.init_hkshell()
+
+        # creating a new post
+
+        hkshell.options.callbacks.edit_file = lambda file: True
+        post = hkshell.enew()
+        self.assert_(
+            hkshell.modification_listener.touched_posts().is_set([post]))
+
+        # not creating a new post
+        hkshell.options.callbacks.edit_file = lambda file: False
+        post = hkshell.enew()
+        self.assertEquals(post, None)
+        self.assert_(hkshell.modification_listener.touched_posts().is_set([]))
+
     def test_pt__1(self):
         self.init_hkshell()
         hkshell.at(1, 't')
