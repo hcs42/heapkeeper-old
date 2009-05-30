@@ -88,7 +88,7 @@ def gen_indices(postdb):
     genopts = hklib.GeneratorOptions()
     genopts.postdb = postdb
     genopts.indices = indices0(postdb)
-    genopts.write_toc = True
+    genopts.write_toc = False
     genopts.shortsubject = True
     genopts.shorttags = True
     genopts.date_fun = date_fun
