@@ -76,10 +76,10 @@ class PostDBHandler(object):
         """
 
         parent = str(parent) + '@' if parent != None else ''
-        s = ('From: author%s\n' % (index,) +
+        s = ('Author: author%s\n' % (index,) +
              'Subject: subject%s\n' % (index,) +
              'Message-Id: %s@\n' % (index,) +
-             'In-Reply-To: %s\n' % (parent,))
+             'Parent: %s\n' % (parent,))
         if not self._skipdates:
             s += PostDBHandler.dates[index] + '\n'
         s += ('\n' +
@@ -106,7 +106,7 @@ class PostDBHandler(object):
 # global strings for tests
 
 post1_text = '''\
-From: author
+Author: author
 Subject: subject
 Flag: flag1
 Message-Id: <0@gmail.com>
@@ -119,22 +119,22 @@ post4_text = post1_text + '\n\nHi'
 post5_text = post1_text + '\n\nHi\n'
 post6_text = post1_text + '\n\nHi\n\n\n'
 
-post1_dict1 = {'From': ['author'],
+post1_dict1 = {'Author': ['author'],
                'Subject': ['subject'],
                'Message-Id': ['<0@gmail.com>'],
                'Date': ['Wed, 20 Aug 2008 17:41:30 +0200'],
                'Flag': ['flag1', 'flag2']}
 
-post1_dict2 = {'From': 'author',
+post1_dict2 = {'Author': 'author',
                'Subject': 'subject',
                'Message-Id': '<0@gmail.com>',
-               'In-Reply-To': '',
+               'Parent': '',
                'Date': 'Wed, 20 Aug 2008 17:41:30 +0200',
                'Flag': ['flag1', 'flag2'],
                'Tag': []}
 
 post_output = '''\
-From: author
+Author: author
 Subject: subject
 Message-Id: <0@gmail.com>
 Date: Wed, 20 Aug 2008 17:41:30 +0200
@@ -496,7 +496,7 @@ html=%s
         self.assertEquals(postdb.post('x').subject(), 'sub_new')
 
     def testThreadstructHeapid(self):
-        """Testing that the thread structure also works when the In-Reply-To
+        """Testing that the thread structure also works when the Parent
         is defined by a heapid.
         
         If the same messid and heapid exist, the former has priority."""
@@ -507,10 +507,10 @@ html=%s
         self.createDirs()
         postdb = self.createPostDB()
         postdb.add_new_post(Post.from_str(''))               # #0
-        postdb.add_new_post(Post.from_str('In-Reply-To: 0')) # #1
+        postdb.add_new_post(Post.from_str('Parent: 0')) # #1
         postdb.add_new_post(Post.from_str(''))               # #2
         postdb.add_new_post(Post.from_str('Message-Id: 2'))  # #3
-        postdb.add_new_post(Post.from_str('In-Reply-To: 2')) # #4
+        postdb.add_new_post(Post.from_str('Parent: 2')) # #4
 
         ts = {None: ['0', '2', '3'],
               '0': ['1'],
@@ -694,8 +694,8 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         postfile2 = self.postFileName('2.post')
         postfile3 = self.postFileName('3.post')
         hkutils.string_to_file('Message-Id: 1@', postfile1)
-        hkutils.string_to_file('Message-Id: 2@\nIn-Reply-To: 1@', postfile2)
-        hkutils.string_to_file('Message-Id: 3@\nIn-Reply-To: 1@', postfile3)
+        hkutils.string_to_file('Message-Id: 2@\nParent: 1@', postfile2)
+        hkutils.string_to_file('Message-Id: 3@\nParent: 1@', postfile3)
         self._postdb = self.createPostDB()
 
     def tearDown(self):

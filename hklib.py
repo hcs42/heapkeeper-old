@@ -114,11 +114,11 @@ class Post(object):
     The *_header* attribute is a dictonary that contains attributes of the post
     such as the subject. The *_header* always contains all the following items:
 
-    - ``'From'`` (``str``) -- The author of the post.
+    - ``'Author'`` (``str``) -- The author of the post.
     - ``'Subject'`` (``str``) -- The subject of the post.
     - ``'Tag'`` (``[str]``) -- The tags of the post.
     - ``'Message-Id'`` (``str``) -- The message id of the post.
-    - ``'In-Reply-To'`` (``str``) -- The heapid or message id of the parent of
+    - ``'Parent'`` (``str``) -- The heapid or message id of the parent of
       the post. It should be en empty string when the post has no parent.
     - ``'Date'`` (``str``) -- The date of the post.
     - ``'Flag'`` (``[str]``) -- The flags of the post. Currently there is only
@@ -199,10 +199,10 @@ class Post(object):
     # author field
 
     def author(self):
-        return self._header['From']
+        return self._header['Author']
 
     def set_author(self, author):
-        self._header['From'] = author
+        self._header['Author'] = author
         self.touch()
 
     # subject field
@@ -233,10 +233,10 @@ class Post(object):
     # parent field
 
     def parent(self):
-        return self._header['In-Reply-To']
+        return self._header['Parent']
 
     def set_parent(self, parent):
-        self._header['In-Reply-To'] = parent
+        self._header['Parent'] = parent
         self.touch()
 
     # date field
@@ -440,15 +440,17 @@ class Post(object):
         """Transforms the dict(str, [str]) returned by the parse_header
         function to a str->(str | [str]) dictionary.
 
-        Strings will be assigned to the 'From', 'Subject', etc. attributes,
+        Strings will be assigned to the 'Author', 'Subject', etc. attributes,
         while dictionaries to the 'Tag' and 'Flag' strings. If an attribute is
         not present in the input, an empty string or an empty list will be
         assigned to it. The list that is assigned to 'Flag' is sorted.
         """
 
-        def copy_one(key):
+        def copy_one(key, alt_key=None):
             try:
                 [value] = d.pop(key, [''])
+                if alt_key != None and value == '':
+                    [value] = d.pop(alt_key, [''])
             except ValueError:
                 raise hkutils.HkException, \
                       ('Multiple "%s" keys.' % key)
@@ -459,11 +461,12 @@ class Post(object):
             
         d = d.copy()
         h = {}
-        copy_one('From')
+        # TODO the alternate keys can be deleted soon
+        copy_one('Author', 'From')
         copy_one('Subject')
         copy_list('Tag')
         copy_one('Message-Id')
-        copy_one('In-Reply-To')
+        copy_one('Parent', 'In-Reply-To')
         copy_one('Date')
         copy_list('Flag')
         h['Tag'].sort()
@@ -503,11 +506,11 @@ class Post(object):
             for line in self._header.get(attr, []):
                 write_attr(attr, line)
 
-        write_str('From')
+        write_str('Author')
         write_str('Subject')
         write_list('Tag')
         write_str('Message-Id')
-        write_str('In-Reply-To')
+        write_str('Parent')
         write_str('Date')
         write_list('Flag')
         f.write('\n')

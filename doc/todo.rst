@@ -21,12 +21,6 @@ Todo items
 
 * **Heapkeeper 0.3**
 
-  * code
-
-    * ``enew(heapid)`` command to create and edit a new post: this way the
-      tutorial can be performed without having real emails as posts
-    * renaming In-Reply-To field to Parent and From to Author in post files
-  
   * documentation
 
     * tutorial

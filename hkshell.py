@@ -899,7 +899,7 @@ def enew():
     try:
         os.write(
             tmp_file_fd,
-            'From: \n'
+            'Author: \n'
             'Subject: \n'
             '\n'
             '\n')
