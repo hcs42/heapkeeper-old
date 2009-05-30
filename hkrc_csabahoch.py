@@ -24,6 +24,7 @@ import os
 import subprocess
 import time
 import datetime
+import hkutils
 import hklib
 import hkcustomlib
 import hkshell
@@ -109,27 +110,34 @@ def gen_posts(postdb, posts):
 def a():
     hkshell.options.callbacks.gen_indices = gen_indices
     hkshell.options.callbacks.gen_posts = gen_posts
+    hkshell.options.callbacks.edit_file = edit_file
     hkshell.on('tpp')
     hkshell.on('s')
     hkshell.on('gi')
     hkshell.on('gp')
 
+def get_content(file):
+    return hkutils.file_to_string(file, return_none=True)
+
 def edit_file(file):
-    subprocess.call(['gvim', '-f', file])
-    return True
+    old_content = get_content(file, return_none=True)
+    subprocess.call(['vim', '-f', file])
+    return get_content(file, return_none=True) != old_content
 
 @hkshell.shell_cmd
 def vim():
     def edit_file(file):
+        old_content = get_content(file, return_none=True)
         subprocess.call(['vim', '-f', file])
-        return True
+        return get_content(file, return_none=True) != old_content
     hkshell.options.callbacks.edit_file = edit_file
 
 @hkshell.shell_cmd
 def gvim():
     def edit_file(file):
+        old_content = get_content(file, return_none=True)
         subprocess.call(['gvim', '-f', file])
-        return True
+        return get_content(file, return_none=True) != old_content
     hkshell.options.callbacks.edit_file = edit_file
 
 @hkshell.shell_cmd

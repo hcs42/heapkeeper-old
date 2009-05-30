@@ -44,6 +44,7 @@ localtime_fun --- A function that calculates the tm structure based on a
 
 import time
 import datetime
+import hkutils
 import hklib
 import subprocess
 
@@ -174,6 +175,18 @@ def gen_threads(postdb):
 ##### Misc #####
 
 def edit_file(file):
+    """Opens an editor in which the user edits the given file.
+    
+    Returns whether the file was changed.
+
+    **Argument:**
+
+    - *file* (str)
+
+    **Returns:** bool
+    """
+
+    old_content = hkutils.file_to_string(file, return_none=True)
     subprocess.call(['gvim', '-f', file])
-    return True
+    return hkutils.file_to_string(file, return_none=True) != old_content
 

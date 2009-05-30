@@ -143,9 +143,19 @@ def check(object, attributes):
 
 ##### Misc #####
 
-def file_to_string(file_name):
-    """Reads a file's content into a string."""
+def file_to_string(file_name, return_none=False):
+    """Reads a file's content into a string.
+    
+    **Arguments:**
 
+    - *file_name* (str) -- Path to the file.
+    - *return_none* (bool) -- Specifies what to do if the file does not exist.
+      If *return_none* is ``True``, ``None`` will be returned. Otherwise an
+      exception will be raised.
+    """
+
+    if return_none and not os.path.exists(file_name):
+        return None
     with open(file_name, 'r') as f:
         s = f.read()
     return s
@@ -176,7 +186,8 @@ def calc_timestamp(date):
 def copy_wo(src, dst):
     """Copy without overwriting.
     
-    If *dst* does not exist, the function copies *src* to *dst*."""
+    If *dst* does not exist, the function copies *src* to *dst*.
+    """
 
     if not os.path.exists(dst):
         shutil.copyfile(src, dst)
