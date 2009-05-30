@@ -159,6 +159,9 @@ Todo items
   tries to read the file name from that. See commit 059829d for more
   information.
 
+* hkshell: better method instead of ``touching_commands``. Maybe we should use
+  decorators. (The current decorators could include this functionality.)
+
 * hkcustomlib: refactoring DateOptions to use the Options pattern
 
 * ``+`` ``<#2>`` Post generator:
