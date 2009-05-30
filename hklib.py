@@ -145,9 +145,10 @@ class Post(object):
             self._postdb = postdb
             self._datetime = hkutils.NOT_SET
             self._modified = not self.postfile_exists()
-        except:
+        except Exception, e:
             raise hkutils.HkException, \
-                  'Error parsing post "%s"' % getattr(f, 'name', '')
+                  ('Error parsing post "%s"\n%s' % 
+                   (getattr(f, 'name', ''), e))
 
     @staticmethod
     def from_str(s, heapid=None, postdb=None):
