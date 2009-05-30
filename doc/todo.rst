@@ -153,6 +153,12 @@ Todo items
   * CamelCase function names to lower_case in test modules
   * hklib.STAR to something
 
+* :func:`hklib.Post.parse`: Better exception handling during parsing. I think
+  we need a HkParseException type which can be raised more conveniently during
+  parsing. This type could have a constructor that gets a file desciptor and
+  tries to read the file name from that. See commit 059829d for more
+  information.
+
 * hkcustomlib: refactoring DateOptions to use the Options pattern
 
 * ``+`` ``<#2>`` Post generator:
