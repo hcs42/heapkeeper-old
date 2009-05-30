@@ -472,17 +472,6 @@ class Post(object):
         h['Tag'].sort()
         h['Flag'].sort()
 
-        # compatibility code for the "Flags" attribute {
-        flags = d.pop('Flags', None)
-        if flags == ['deleted']:
-            h['Flag'].append('deleted')
-        elif flags == None:
-            pass
-        else:
-            raise hkutils.HkException, \
-                  ('Unknown "Flags" tag: "%s"' % (flags,))
-        # }
-
         if d != {}:
             raise hkutils.HkException, \
                   ('Additional keys: "%s".' % d)
