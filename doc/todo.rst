@@ -34,6 +34,10 @@ Todo items
       upload the documentation there
     * register to freshmeat
     * write to Sphinx that we use Sphinx
+
+  * misc
+
+    * try it out on Windows
   
 * **Priority**
  
