@@ -277,7 +277,7 @@ Testing
 
 We use unit tests to test Heapkeeper's code, using the standard ``unittest``
 module. Each module has a corresponding module that tests it. Our aim is to
-reach almost 100% line coverage.
+reach almost 100% line coverage. (Currently we are far from that.)
 
 All tests can be executed using the :mod:`test` module:
 
