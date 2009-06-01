@@ -65,6 +65,8 @@ following:
   only a warning.
 - ``--configfile <configfile>`` --
   The name of the Heapkeeper config file to use.
+- ``--version`` --
+  Prints Heapkeeper version and exits.
 
 The ``--hkrc`` option deals with the modules that should be imported when
 hkshell is started. The convention (and the default behaviour) is that there is
@@ -1294,7 +1296,14 @@ if __name__ == '__main__':
     parser.add_option('--configfile', dest='configfile',
                       help='Configfile to use',
                       action='store', default='hk.cfg')
+    parser.add_option('--version', dest='version',
+                      help='Prints heapkeeper version and exits',
+                      action='store_true', default=False)
     (cmdl_options, args) = parser.parse_args()
+
+    if cmdl_options.version:
+        print 'Heapkeeper version %s' % (hklib.heapkeeper_version,)
+        exit(0)
 
     from hkshell import *
     main(cmdl_options, args)

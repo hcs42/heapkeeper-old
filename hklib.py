@@ -60,9 +60,9 @@ import sys
 import time
 import StringIO
 import datetime
-
 import hkutils
 
+heapkeeper_version = '0.3uc'
 
 ##### logging #####
 
