@@ -3,13 +3,15 @@
 if [ "$1" = "-h" -o "$1" = "--help" ];
 then
     cat <<END
-pushdoc
+pushrelease
 
 Description:
-    Copies the documentation of Heapkeeper to hste.uw.hu/heapkeeper.
+    Copies the packaged releases of Heapkeeper to
+    hste.uw.hu/heapkeeper/releases.
 
 Usage:
-    Run pushdoc without arguments and type the hste.uw.hu password.
+    First run scripts/make_package to create the release packages. Then run
+    scripts/pushrelease without arguments and type the hste.uw.hu password.
 
 Prerequitites:
     This script needs the ncftp program (which contains the ncftpput command).
@@ -23,4 +25,4 @@ exit
 fi
 
 dir=`dirname "$0"`
-ncftpput -R -u hste ftp.uw.hu heapkeeper "$dir"/../doc/_build/html/*
+ncftpput -R -u hste ftp.uw.hu heapkeeper "$dir"/../releases
