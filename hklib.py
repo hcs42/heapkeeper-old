@@ -2158,13 +2158,10 @@ class Generator(object):
         date_str = options.date_fun(post, options)
 
         section = options.section
-        if options.always_active:
+        if options.always_active or section.posts == CYCLES:
             active = True
         else:
-            if section.posts == CYCLES:
-                active = True
-            else:
-                active = post in section.posts
+            active = post in section.posts
 
         if options.locallinks:
             link = '#' + post.heapid()
