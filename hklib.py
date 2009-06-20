@@ -544,15 +544,14 @@ class Post(object):
         return os.path.join(self._postdb.html_dir(), self._heapid + '.html')
 
     def htmlthreadbasename(self):
-        """The name of the HTML file that can be generated from the thread."""
+        """The base name of the HTML file that can be generated from the
+        thread."""
         assert(self._postdb.parent(self) == None)
         return os.path.join('thread_' + self._heapid + '.html')
 
     def htmlthreadfilename(self):
         """The name of the HTML file that can be generated from the thread."""
-        assert(self._postdb.parent(self) == None)
-        return os.path.join(self._postdb.html_dir(),
-                            'thread_' + self._heapid + '.html')
+        return os.path.join(self._postdb.html_dir(), self.htmlthreadbasename())
 
     def postfile_exists(self):
         if self._postdb == None:

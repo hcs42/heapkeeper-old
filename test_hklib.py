@@ -353,6 +353,59 @@ class Test_Post__2(unittest.TestCase):
         self.assertEquals(p.body(), '\n')
 
 
+class Test_Post__3(unittest.TestCase, PostDBHandler):
+
+    """Tests the Post class."""
+
+    def setUp(self):
+        self.setUpDirs()
+
+        # 1 <- 2
+        #      3
+        postfile1 = self.postFileName('1.post')
+        postfile2 = self.postFileName('2.post')
+        postfile3 = self.postFileName('3.post')
+        hkutils.string_to_file('Message-Id: 1@', postfile1)
+        hkutils.string_to_file('Message-Id: 2@\nParent: 1@', postfile2)
+        hkutils.string_to_file('Message-Id: 3@\nParent: 1@', postfile3)
+        self._postdb = self.createPostDB()
+
+    def tearDown(self):
+        self.tearDownDirs()
+
+    def test__filenames(self):
+        p1 = self._postdb.post('1')
+        p2 = self._postdb.post('2')
+
+        self.assertEquals(
+            p1.postfilename(),
+            os.path.join(self._postfile_dir, '1.post'))
+
+        self.assertEquals(
+            p1.htmlfilebasename(),
+            '1.html')
+
+        self.assertEquals(
+            p1.htmlfilename(),
+            os.path.join(self._html_dir, '1.html'))
+
+        self.assertEquals(
+            p1.htmlthreadbasename(),
+            'thread_1.html')
+
+        self.assertEquals(
+            p1.htmlthreadfilename(),
+            os.path.join(self._html_dir, 'thread_1.html'))
+
+        self.assertRaises(
+            AssertionError,
+            lambda: p2.htmlthreadbasename())
+
+        self.assertRaises(
+            AssertionError,
+            lambda: p2.htmlthreadfilename())
+
+
 class Test_PostDB__1(unittest.TestCase, PostDBHandler):
 
     """Tests the PostDB class (and its cooperation with the Post class)."""
@@ -380,7 +433,7 @@ class Test_PostDB__1(unittest.TestCase, PostDBHandler):
         self.assertEquals(postdb.html_dir(), self._html_dir)
         self.assertEquals(postdb.heapids(), [])
 
-    def testOnlyMail(self):
+    def testOnlyPost(self):
         """Tests that only the files with ".post" postfix are read."""
         self.createDirs()
         hkutils.string_to_file('Subject: s1', self.postFileName('1.post'))
