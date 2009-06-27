@@ -181,8 +181,10 @@ hh()               - print help about the commands
 s()                - save
 x()                - save and exit
 rl()               - reload the database (changes will be lost!)
-g()                - generate index.html
-ga()               - generate all html
+gi()               - generate index pages
+gt()               - generate thread pages
+gp()               - generate post pages
+ga()               - generate all pages
 ps(pps)            - create a postset
 ls(ps)             - get a summary of a postset
 
@@ -577,6 +579,10 @@ def gen_indices_listener(e):
     if (e.type == 'after' and len(modification_listener.touched_posts()) > 0):
         gen_indices()
 
+def gen_threads_listener(e):
+    if (e.type == 'after' and len(modification_listener.touched_posts()) > 0):
+        gen_threads()
+
 def gen_posts_listener(e):
     if e.type == 'after':
         touched_posts = modification_listener.touched_posts()
@@ -655,6 +661,8 @@ def get_listener_feature(listener):
 def set_feature(state, feature):
     if feature in ['gi', 'gen_indices']:
         set_listener_feature(gen_indices_listener, state)
+    elif feature in ['gt', 'gen_threads']:
+        set_listener_feature(gen_threads_listener, state)
     elif feature in ['gp', 'gen_posts']:
         set_listener_feature(gen_posts_listener, state)
     elif feature in ['s', 'save']:
@@ -713,6 +721,9 @@ def c():
 def gen_indices():
     options.callbacks.gen_indices(postdb())
 
+def gen_threads():
+    options.callbacks.gen_threads(postdb())
+
 def gen_posts():
     posts = postpage_listener.outdated_post_pages()
     options.callbacks.gen_posts(postdb(), posts)
@@ -721,9 +732,6 @@ def gen_posts():
     # because `posts` will change as a result of the events.
     for post in posts.copy():
         event('post_page_created', post=post)
-
-def gen_threads(posts=None):
-    options.callbacks.gen_threads(postdb())
 
 def ps(pps):
     res = postdb().postset(pps)
@@ -786,7 +794,7 @@ def rl():
     postdb().reload()
 
 @hkshell_events()
-def g():
+def gi():
     """Generates the index pages."""
     gen_indices()
 
@@ -801,11 +809,17 @@ def gp():
     gen_posts()
 
 @hkshell_events()
-def ga():
+def g():
     """Generates the index and post pages."""
+    hklib.log('WARNING: using hkshell.g() is deprecated.')
+    ga()
+
+@hkshell_events()
+def ga():
+    """Generates the index, the thread and the post pages."""
     gen_indices()
-    gen_posts()
     gen_threads()
+    gen_posts()
 
 @hkshell_events()
 def opp():
