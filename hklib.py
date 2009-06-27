@@ -642,6 +642,13 @@ class PostDBEvent(object):
         super(PostDBEvent, self).__init__()
         hkutils.set_dict_items(self, locals())
 
+    def __str__(self):
+        s = '<PostDBEvent with the following attributes:'
+        for attr in ['type', 'post']:
+            s += '\n%s = %s' % (attr, getattr(self, attr))
+        s += '>'
+        return s
+
 
 ##### PostDB #####
 
@@ -774,7 +781,8 @@ class PostDB(object):
         self._cycles = None
         self._roots = None
         self._threads = None
-        self.notify_listeners(PostDBEvent(type='touch', post=post))
+        if post != None:
+            self.notify_listeners(PostDBEvent(type='touch', post=post))
 
     # Get-set functions
 

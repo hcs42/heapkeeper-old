@@ -726,6 +726,7 @@ def gen_threads():
 
 def gen_posts():
     posts = postpage_listener.outdated_post_pages()
+    posts = posts.collect(lambda p: not p.is_deleted())
     options.callbacks.gen_posts(postdb(), posts)
 
     # It is necessary to iterate over `posts.copy()` instead of just `posts`,
