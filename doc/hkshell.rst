@@ -70,7 +70,9 @@ General commands
 .. autofunction:: s()
 .. autofunction:: x()
 .. autofunction:: rl()
-.. autofunction:: g()
+.. autofunction:: gi()
+.. autofunction:: gt()
+.. autofunction:: gp()
 .. autofunction:: ga()
 .. autofunction:: dl(from_=0)
 
