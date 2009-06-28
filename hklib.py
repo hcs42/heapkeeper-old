@@ -420,12 +420,12 @@ class Post(object):
 
         headers = {}
         line = f.readline()
-        while line not in ['', '\n']:
+        while line.strip() != '':
             m = re.match('([^:]+): (.*)', line)
             key = m.group(1)
             value = m.group(2)
             line = f.readline()
-            while line not in ['', '\n'] and line[0] == ' ':
+            while line.strip() != '' and line[0] == ' ':
                 line.rstrip('\n')
                 value += '\n' + line[1:]
                 line = f.readline()
