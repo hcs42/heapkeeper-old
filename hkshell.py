@@ -842,9 +842,20 @@ def ls(pps):
     - *ps* (|PrePostSet|)
     """
     for p in ps(pps):
-        sum = p.subject() if len(p.subject()) < 40 \
-            else p.subject()[:37] + '...'
-        write('%s %s %s\n' % (p.author(), p.date(), sum))
+
+        # subject
+        if len(p.subject()) < 40:
+            subject = p.subject() 
+        else:
+            subject = p.subject()[:37] + '...'
+        
+        # date
+        if p.date_str() != '':
+            date = ' (' + p.date_str() + ')'
+        else:
+            date = ''
+
+        write('<%s> %s  %s%s\n' % (p.heapid(), subject, p.author(), date))
 
 @postset_operation
 def d(posts):
@@ -1318,7 +1329,7 @@ if __name__ == '__main__':
 
     if cmdl_options.version:
         print 'Heapkeeper version %s' % (hklib.heapkeeper_version,)
-        exit(0)
+        sys.exit(0)
 
     from hkshell import *
     main(cmdl_options, args)
