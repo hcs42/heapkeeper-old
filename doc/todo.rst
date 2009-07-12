@@ -38,6 +38,13 @@ Todo items
   * misc
 
     * try it out on Windows
+    * changing post field representation to deal with new lines differently and
+      allowing white spaces in the line that separates the header and the body?
+    * nicer output for ``ls``
+
+  * ``-``: on Python 2.6, the ``sys.exit(0)`` call prints a stack trace when
+    the interpreter is started with a ``-i`` option. We start the interpreter
+    this way, so we should find out how to suppress printing the stack trace.
   
 * **Priority**
  
@@ -131,6 +138,7 @@ Todo items
                raise HkException, error_message
            else:
                options.output(error_message)
+  * Using the ``$EDITOR`` environment variable instead of just using ``gvim``.
 
 * **Tests**
 
