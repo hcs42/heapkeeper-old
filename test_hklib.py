@@ -427,6 +427,7 @@ class Test_PostDB__1(unittest.TestCase, PostDBHandler):
 
     def testEmpty(self):
         """Tests the empty PostDB."""
+        self.createDirs()
         postdb = self.createPostDB()
         self.assert_(os.path.exists(self._postfile_dir))
         self.assertEquals(postdb.postfile_dir(), self._postfile_dir)

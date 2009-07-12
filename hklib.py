@@ -707,6 +707,9 @@ class PostDB(object):
     def from_config(config):
         """Creates a PostDB with the given configuration.
 
+        If either of post and HTML directories do not exist, it will be
+        created, but a warning will be logged.
+
         Arguments:
         config -- Configuration object. The paths/mail and paths/html options
             will be read.
@@ -715,10 +718,18 @@ class PostDB(object):
         
         postfile_dir = config.get('paths', 'mail')
         if not os.path.exists(postfile_dir):
-            log('Warning: posts directory does not exist!')
+            log('Warning: post directory does not exists: "%s"' %
+                (postfile_dir,))
+            os.mkdir(postfile_dir)
+            log('Post directory has been created.')
+
         html_dir = config.get('paths', 'html')
         if not os.path.exists(html_dir):
-            log('Warning: HTML directory does not exist!')
+            log('Warning: HTML directory does not exists: "%s"' %
+                (html_dir,))
+            os.mkdir(html_dir)
+            log('HTML directory has been created.')
+
         return PostDB(postfile_dir, html_dir)
 
     def _load_from_disk(self):
@@ -730,9 +741,6 @@ class PostDB(object):
         self.heapid_to_post = {}
         self.messid_to_heapid = {}
         heapids = []
-
-        if not os.path.exists(self._postfile_dir):
-            os.mkdir(self._postfile_dir)
 
         for file in os.listdir(self._postfile_dir):
             if file.endswith('.post'):
