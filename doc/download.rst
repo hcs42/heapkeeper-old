@@ -36,7 +36,11 @@ Version 0.3
 ^^^^^^^^^^^
 
 - **date:** not yet released
-- **download:** not yet
+- **download of preliminary version:** tgz__, zip__
+
+__ http://heapkeeper.org/releases/heapkeeper-0.3uc.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.3uc.zip
+
 - **download HTML documentation:** not yet
 
 This release is not primarily about new features. It improved mainly
