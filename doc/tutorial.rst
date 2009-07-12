@@ -1,139 +1,408 @@
 Tutorial
 ========
 
-This page needs a major rewrite. It will contain a step-by-step example of the
-followings:
+.. |hkshell| replace:: :mod:`hkshell`
+.. |expf| replace:: :func:`expf <hklib.PostSet.expf>`
+.. |forall| replace:: :func:`forall <hklib.PostSet.forall>`
+.. |s| replace:: :func:`s <hkshell.s>`
+.. |ls| replace:: :func:`ls <hkshell.ls>`
+.. |ps| replace:: :func:`ps <hkshell.ps>`
+.. |ga| replace:: :func:`ga <hkshell.ga>`
+.. |q| replace:: :func:`q <hkshell.q>`
+.. |enew| replace:: :func:`enew <hkshell.enew>`
 
-* Creating a heap (with a Google Groups account and GMail account).
-* Downloading and configuring Heapkeeper.
-* Posting a few emails in order to create a non-trivial thread structure.
-* Generating HTML from the heap.
-* Modifying posts, thread structure and other things from the hkshell.
+Downloading Heapkeeper
+----------------------
 
-It should also have screenshots. (Most users will be lazy to do the tutorial
-anyway, they just want to read it through in a few minutes in order to
-understand how Heapkeeper works.)
+Download the latest version of Heapkeeper (either in `tar.gz`__ or in `zip`__).
+For Unix users:
 
-Until then, here is the old content of the page:
+.. code-block:: sh
+
+    $ wget http://heapkeeper.org/releases/heapkeeper-0.3uc.tar.gz
+
+__ http://heapkeeper.org/releases/heapkeeper-0.3uc.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.3uc.zip
+
+Unzip the tar.gz or zip file. For Unix users:
+
+.. code-block:: sh
+
+    $ tar xzf heapkeeper-0.3uc.tar.gz
+
+Make Heapkeeper's directory the current one. Heapkeeper's shell (|hkshell|) can
+be started from here without any installation procedure. You can ask for
+version information for example:
+
+.. code-block:: sh
+
+    $ cd heapkeeper-0.3uc
+    $ ./hkshell --version
+    Heapkeeper version 0.3uc
 
 Configuration
 -------------
 
-A config file has to be created in the current directory with the name
-``heap.cfg``. An example config file::
+First, we create two directories: ``posts`` and ``html``. ``posts`` will store
+the post database, which contains the posts themselves in text files. The
+``html`` directory will contain the HTML pages that will be generated from the
+posts.
 
-    [server]
-    host=imap.gmail.com
-    port=993
-    username=our.heap@gmail.com
-    password=examplepassword
+.. code-block:: sh
+
+    $ mkdir posts
+    $ mkdir html
+
+Heapkeeper needs a file called ``hk.cfg`` in which its settings are stored.
+We set the directories that we just created to be used as post database and
+HTML generation target.
+
+.. code-block:: ini
 
     [paths]
-    mail=mail   # directory of the mail database
-    html=html   # directory where the HTML should be generated
+    mail=posts
+    html=html
 
-    [nicknames]
-    1=Somebody somebody@gmail.com
-    2=Somebody_else somebody.else@else.com
+Adding a new post to the heap
+-----------------------------
 
-If the directory of the mail database does not exists, it will be created.
-The html directory should contain heapindex.css; you can make for example a
-symbolic link to the heapindex.css in the heap directory.
+Normally, the posts on the heap are emails that were downloaded from IMAP
+servers and converted into a post. To make it easier to understand this
+tutorial, first we will create and manipulate posts locally by |hkshell|
+commands. (Afterwards we will go through on how to download emails from a
+mailing list, which makes Heapkeeper actually usable.)
 
-Using the interactive interface
--------------------------------
+Start |hkshell|:
 
-After creating the configuration file, the interactive interface can be started
-by typing the following::
+.. code-block:: sh
 
     $ ./hkshell
+    Importing hkrc...
+    Module not found: "hkrc"
+    >>>
 
-This will start a Python shell and define the interactive commands as global
-functions. You can type the h command (i.e. call the h function) to see the
-available commands::
+The output informs us that |hkshell| did not find the customization module
+(``hkrc``), but that is all right. The last line indicates that we got a Python
+prompt where we can type any Python statement. Actually, |hkshell| commands are
+Python functions imported into the global namespace.
 
-    >>> h()
+Let's list all the posts we have (of course we don't have any posts yet)::
 
-If you type a command, the index.html will be automatically regenerated.
-Most of the commands take a postset as their arguments. A postset can be
-given in many ways:
-* the heapid as a string (e.g. '42')
-* the heapid as an integer (e.g. 42)
-* the post as a Post object (e.g. maildb().post(42))
-* a list or set of objects of any previous type (e.g. [42, '43'])
-* a PostSet object (e.g. maildb().all())
+    >>> postdb().all()
+    PostSet([])
+    >>>
 
-E.g. the j command joins two posts (so the first given post will be the parent
-of the second given post). To join posts with heapid 10 and 11::
+Let's create now a new post with the |enew| command::
 
-    >>> j(10, 11)
+    >>> enew()
 
-Further examples::
+An editor will pop up (``gvim`` by default) and the following template:
 
-    >>> e(12)           # Editing post 12. A GVim will open by default with the
-                        # mail file that represents post 12. The following
-                        # happens in the background: post 12 will be written to
-                        # the disk, the editor will open; after the user closes
-                        # the editor, the mail file will be read from the disk to
-                        # the memory. So don't edit the mail file while the
-                        # Heapkeeper is running, only with the e() command.
+.. code-block:: none
 
-    >>> atr(20, 'git')  # Adding tag [git] to post 20 and all its descendants.
+    Author:
+    Subject:
 
-    >>> sS(ps([10,11,12]), 'something')  # Changing the subject of the given
-                                         # posts to 'something'.
+Paste this in place of the template:
 
-The hklib module can be used for more complicated tasks which does not have
-an interface command. The following example collects the posts with [heap] tag
-in the same threads as 11 and 14, and adds a 'Hey!\n' prefix to their bodies.
-Then the mail HTML is regenerated. ::
+.. code-block:: none
 
-    >>> heapmail = ps([11,14]).exp().collect.has_tag('heap')
-    >>> heapmail.forall(lambda post: post.set_body('Hey!\n' + post.body()))
-    >>> ga() # regenerate all HTML
+    Author: ashe@usrobots.com
+    Subject: RB-34
+    Tag: interesting
+    Tag: robot
 
-Customizing the interface
--------------------------
+    RB-34 is behaving wierdly. You should have a look at it.
+    I have never seen anything like that. It seems as if it
+    could read my mind.
 
-hkshell can be customized by creating a Python module called heapcustom. If the
-appropriate callback functions are defined here, they will be used by hkshell
-instead of the default behaviour.
+    Ashe
 
-E.g. the following ``heapcustom.py`` changes the arguments of the
-HTML-generator so that it includes the table of contents in the generated HTML
-and omits the dates. ::
+The post specifies the author and the subject, which are the same concepts as
+in emails. Posts may also have any number of tags; this post has two tags. The
+header is closed with an empty line, which is followed by the body of the post.
+This structure is similar to the standard email file format (:rfc:`2822`).
 
-    import hklib
+After saving and quitting from the text editor, we should see confirmation
+about the post's successful creation::
 
-    def gen_index_html(maildb):
-        g = hklib.Generator(maildb)
-        g.index_html(write_toc=True, write_date=False)
+    >>> enew()
+    Post created.
+    <post '0'>
+    >>>
 
-The same can be done by hand from the Heapkeeper's interactive shell,
-without creating ``heapcustom`` module::
+At this point, the post exists only in the memory. We use the :func:`s
+<hkshell.s>` command to save everything to the disk::
 
-    >>> def my_gen_index_html(maildb):
-    ...     g = hklib.Generator(maildb)
-    ...     g.index_html(write_toc=True, write_date=False)
+    >>> s()
+    >>>
+
+A file called ``0.post`` has been created in the ``posts`` directory. It
+contains exactly what we pasted into the text editor. Let's quit from
+Heapkeeper and examine ``posts/0.post``:
+
+.. code-block:: none
+
+    >>> q()
+    $ ls posts/
+    0.post
+    $ cat posts/0.post
+    Author: ashe@usrobots.com
+    Subject: RB-34
+    Tag: interesting
+    Tag: robot
+
+    RB-34 is behaving wierdly. You should have a look at it.
+    I have never seen anything like that. It seems as if it
+    could read my mind.
+
+    Ashe
+
+Adding new posts to the heap from outside hkshell
+-------------------------------------------------
+
+The post database on the disk (i.e. the post directory) can be manipulated by
+hand. (Heapkeeper is not running now, so we will not interfere with it.) Let's
+create a few more posts to make the thread structure more interesting. The
+``Parent`` attribute is used to specify the parent of a post -- to which the
+current post is a reply.
+
+The following Unix shell commands can be copy-pasted into the terminal or a
+shell script file. They will create the posts we will work with.
+
+.. code-block:: sh
+
+    cat >posts/1.post <<EOF
+    Author: alfred.lanning@usrobots.com
+    Parent: 0
+    Subject: Re: RB-34
+    Tag: robot
+    Tag: interesting
+
+    The robot is strange, indeed, probably some error
+    happened during the manufacturing process. Susan should
+    have it tested psychologically. Peter, could you express
+    the problem mathematically?
+
+    Alfred
+    EOF
+
+    cat >posts/2.post <<EOF
+    Author: peter.bogert@usrobots.com
+    Parent: 1
+    Subject: Re: RB-34
+    Tag: robot
+    Tag: interesting
+
+    Yes, sure.
+
+    Peter
+    EOF
+
+    cat >posts/3.post <<EOF
+    Author: susan@usrobots.com
+    Parent: 1
+    Subject: Re: RB-34
+    Tag: robot
+    Tag: interesting
+    Tag: psychology
+
+    I have talked to the robot. It likes reading only novels
+    and other liteture, it is not interested in natural
+    sciences. It is very bright, though.
+
+    Susan
+    EOF
+
+    cat >posts/4.post <<EOF
+    Author: alfred.lanning@usrobots.com
+    Parent: 2
+    Subject: Re: RB-34
+    Tag: robot
+    Tag: interesting
+
+    Peter, have you made any progress?
+
+    Alfred
+    EOF
+
+    cat >posts/5.post <<EOF
+    Author: alfred.lanning@usrobots.com
+    Parent: 3
+    Subject: Re: RB-34
+    Tag: robot
+    Tag: interesting
+    Tag: psychology
+
+    Susan, what do you mean by bright?
+
+    Alfred
+    EOF
+
+    cat >posts/6.post <<EOF
+    Author: susan@usrobots.com
+    Parent: 5
+    Subject: Re: RB-34
+    Tag: robot
+    Tag: interesting
+    Tag: psychology
+
+    I mean it is understands natural sciences very well, it
+    just does not care.
+
+    Susan
+    EOF
+
+    cat >posts/7.post <<EOF
+    Author: susan@usrobots.com
+    Subject: Cinema
+    Tag: free time
+
+    Other subject. Does anyone feel like going to the cinema?
+
+    Susan
+    EOF
+
+Generating HTML pages
+---------------------
+
+The posts and the threads can be visualized in HTML using the |ga| command (it
+stands for "generate all")::
+
+    $ ./hkshell
+    Importing hkrc...
+    Module not found: "hkrc"
+    >>> ga()
+    Indices generated.
+    Thread HTMLs generated.
+    Post HTMLs generated.
+    >>>
+
+Open ``html/index.html`` in a browser. You will see something like this:
+
+.. image:: images/1.png
+
+This is called an *index page*, because it contains an index of the posts. Every
+post has a one line summary. These post summaries are sorted into boxes: every
+box is a thread. Now there are only two threads, the second of which contains
+only one post. In the first box, the posts are ordered in a threaded structure:
+for example both post 2 and 3 are replies to post 1.
+
+A post summary shows the author, the subject, the tags and the id (so-called
+*heapid*) of the post. The subjects are links, so we can click on them to read
+the post pages. If we click on the subject of the first post, the following page
+will be shown to us:
+
+.. image:: images/2.png
+
+In the index page, every thread has a little tree image next to the subject and
+tags of the post summary of the root of that thread. If we click on it, we will
+see all the posts of that thread expanded in an HTML page. We will see the
+following page if we click on the tree image of the first thread:
+
+.. image:: images/3.png
+
+This page displays one thread. The top of the page contains the post summaries
+of the posts in the thread. The rest shows all the posts together with their
+body.
+
+Modifying the heap with |hkshell|
+---------------------------------
+
+**FROM HERE THE DOCUMENT IS UNDER CONSTRUCTION**
+
+The collection of the posts is called the *heap*. One of Heapkeeper's aims is to
+make it easy to perform operations of large amount of posts. Theoretically, you
+can do anything you want with the post database that is stored in the post
+files: you can use text editors, Unix text processing tools to modify the heap,
+or even write own scripts and programs.
+
+A more convenient way to do this is to use Heapkeeper's shell and API. We
+already used the former one to create a new post and to generate the HTML pages.
+Now we will use it to perform more complicated operations.
+
+|hkshell| commands
+""""""""""""""""""
+
+The most common operations can be performed quite easily using the appropriate
+|hkshell| command. (We already used the |enew|, |s|, |q| and |ga| commands.)
+These commands are very high-level. Not everything can be done with them, they
+are only handy shortcuts. They are to be used often, so they all have fairly
+short names that are essentially mnemonics. See the list of |hkshell| commands
+:ref:`here <hkshell_commands>`.
+
+Todo:
+
+- giving a few examples
+
+.. x Most of the commands take a postset as their arguments. A postset can be
+.. x given in many ways:
+.. x * the heapid as a string (e.g. '42')
+.. x * the heapid as an integer (e.g. 42)
+.. x * the post as a Post object (e.g. maildb().post(42))
+.. x * a list or set of objects of any previous type (e.g. [42, '43'])
+.. x * a PostSet object (e.g. maildb().all())
+
+Post sets
+"""""""""
+
+We can create post sets (:class:`hklib.PostSet` objects) using the |ps|
+command::
+
+    >>> p = ps([1,2])
+    >>> p
+    PostSet([<post '1'>, <post '2'>])
+    >>>
+
+We can print the most important information about them using the |ls| command::
+
+    >>> ls(p)
+    <1> alfred.lanning@usrobots.com  RB-34
+    <2> peter.bogert@usrobots.com  RB-34
+
+There are many things we can do with a post set. It has standard set operations
+like union, intersection, etc; but it also has operations that are specific to
+Heapkeeper. For example :func:`p.expf() <hklib.PostSet.expf>` returns a post set
+that contains all posts of `p` and all their descendants::
+
+    >>> p.expf()
+    PostSet([<post '4'>, <post '1'>, <post '2'>, <post '6'>, <post '3'>,
+    <post '5'>])
+
+Post sets also have a |forall| attribute that behaves in a tricky way.
+Whatever operation is performed on them, it will be performed on all posts
+belonging to the post set. In the following example, we use |expf| and |forall|
+to rename the subject in a whole thread; i.e. renaming the subject of all posts
+belonging to that thread.::
+
+    >>> for p in range(0,8): ls(p)
     ...
-    >>> set_callback('gen_index_html', my_gen_index_html)
+    <0> RB-34  ashe@usrobots.com
+    <1> RB-34  alfred.lanning@usrobots.com
+    <2> RB-34  peter.bogert@usrobots.com
+    <3> RB-34  susan@usrobots.com
+    <4> RB-34  alfred.lanning@usrobots.com
+    <5> RB-34  alfred.lanning@usrobots.com
+    <6> RB-34  susan@usrobots.com
+    <7> Cinema  susan@usrobots.com
+    >>> ps(0).expf().forall.set_subject("Mind-reader robot")
+    >>> for p in range(0,8): ls(p)
+    ...
+    <0> Mind-reader robot  ashe@usrobots.com
+    <1> Mind-reader robot  alfred.lanning@usrobots.com
+    <2> Mind-reader robot  peter.bogert@usrobots.com
+    <3> Mind-reader robot  susan@usrobots.com
+    <4> Mind-reader robot  alfred.lanning@usrobots.com
+    <5> Mind-reader robot  alfred.lanning@usrobots.com
+    <6> Mind-reader robot  susan@usrobots.com
+    <7> Cinema  susan@usrobots.com
+    >>>
 
-If you want to use another editor (e.g. console Vim instead of GVim), put these
-into the ``heapcustom.py``::
+Todo:
 
-    import subprocess
+* another idea: adding a signature to all my emails
 
-    def edit_default(file):
-        subprocess.call(['vim', file])
-        return True
+Todo for new sections:
 
-See module :mod:`heapcustom-csabahoch` as an example.
-
-Using the interface without Python shell
-----------------------------------------
-
-The interface can be also used without interaction. Just call the hkshell module
-and give the commands as arguments. E.g. the following line typed into a Unix
-shell will download the new mail and regenerate the HTML files::
-
-    $ python hkshell.py 'dl()' 'ga()'  # dl = download, ga = generate all HTML
+* Creating a heap (with a Google Groups account and GMail account).
+* Maybe: posting a few emails in order to create a non-trivial thread structure.
