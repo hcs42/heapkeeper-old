@@ -37,11 +37,12 @@ Version 0.3
 
 - **date:** not yet released
 - **download of preliminary version:** tgz__, zip__
+- **download HTML documentation:** tgz__, zip__
 
 __ http://heapkeeper.org/releases/heapkeeper-0.3uc.tar.gz
 __ http://heapkeeper.org/releases/heapkeeper-0.3uc.zip
-
-- **download HTML documentation:** not yet
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.3uc.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.3uc.zip
 
 This release is not primarily about new features. It improved mainly
 customizability, testability, usability, documentation, and we sorted out
