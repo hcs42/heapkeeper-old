@@ -3,11 +3,11 @@
 if [ "$1" = "-h" -o "$1" = "--help" ];
 then
     cat <<END
-pushrelease
+pushrelease <username>
 
 Description:
     Copies the packaged releases of Heapkeeper to
-    hste.uw.hu/heapkeeper/releases.
+    heapkeeper.org/releases.
 
 Usage:
     First run scripts/make_package to create the release packages. Then run
@@ -25,4 +25,5 @@ exit
 fi
 
 dir=`dirname "$0"`
-ncftpput -R -u hste ftp.uw.hu heapkeeper "$dir"/../releases
+echo "heapkeeper.org password:"
+ncftpput -R -u "$1" ftp.heapkeeper.org htdocs/releases "$dir"/../releases/*

@@ -1,15 +1,15 @@
 #!/bin/sh
 
-if [ "$1" = "-h" -o "$1" = "--help" ];
+if [ "$#" = 0 -o "$1" = "-h" -o "$1" = "--help" ];
 then
     cat <<END
-pushdoc
+pushdoc <username>
 
 Description:
-    Copies the documentation of Heapkeeper to hste.uw.hu/heapkeeper.
+    Copies the documentation of Heapkeeper to heapkeeper.org.
 
 Usage:
-    Run pushdoc without arguments and type the hste.uw.hu password.
+    Run pushdoc without arguments and type the heapkeeper.org password.
 
 Prerequitites:
     This script needs the ncftp program (which contains the ncftpput command).
@@ -23,4 +23,5 @@ exit
 fi
 
 dir=`dirname "$0"`
-ncftpput -R -u hste ftp.uw.hu heapkeeper "$dir"/../doc/_build/html/*
+echo "heapkeeper.org password:"
+ncftpput -R -u "$1" ftp.heapkeeper.org htdocs "$dir"/../doc/_build/html/*

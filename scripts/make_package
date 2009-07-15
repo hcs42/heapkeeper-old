@@ -30,6 +30,7 @@ import signal
 
 if len(sys.argv) > 1 and (sys.argv[1] in ['-h', '--help']):
     sys.stdout.write(__doc__)
+    sys.exit(0)
 
 def call(command):
 
@@ -107,9 +108,9 @@ def main():
         tgz2 = tgz(hkdir2doc_name)
         zip2 = zip(hkdir2doc_name)
 
-        print 'Copying the archive files to "%s"...' % (hkdir2,)
-        
         releases_dir = os.path.join(hkdir, 'releases')
+        print 'Copying the archive files to "%s"...' % (releases_dir,)
+        
         if not os.path.exists(releases_dir):
             os.mkdir(releases_dir)
 
