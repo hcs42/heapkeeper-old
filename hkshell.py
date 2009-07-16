@@ -863,6 +863,37 @@ def ls(pps):
 
         write('<%s> %s  %s%s\n' % (post.heapid(), subject, post.author(), date))
 
+@hkshell_events()
+def cat(pps):
+    """Prints the content of the given posts.
+
+    The printout contains the contatenation of the posts exactly as they are
+    in the post files, with two differences:
+
+    - There is an additional attribute called ``Heapid``, which shows the
+      heapid of the post.
+    - There are separators between posts. Separators are lines that consist of
+      hyphens.
+    
+    **Arguments:**
+
+    - *ps* (|PrePostSet|)
+    """
+
+    # We want to iterate on the posts in the order of their heapids, so we
+    # collect the heapids and iterate over their sorted list.
+    heapids = sorted([post.heapid() for post in ps(pps)])
+
+    first = True
+    for heapid in heapids:
+        if first:
+            first = False
+        else:
+            write('\n' + ('-' * 60) + '\n\n')
+        post = postdb().post(heapid)
+        write('Heapid: %s\n' % (heapid,))
+        post.write(options.output)
+
 @postset_operation
 def d(posts):
     """Deletes the posts in *pps*.
