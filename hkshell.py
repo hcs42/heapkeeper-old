@@ -841,21 +841,27 @@ def ls(pps):
 
     - *ps* (|PrePostSet|)
     """
-    for p in ps(pps):
+
+    # We want to iterate on the posts in the order of their heapids, so we
+    # collect the heapids and iterate over their sorted list.
+    heapids = sorted([post.heapid() for post in ps(pps)])
+
+    for heapid in heapids:
+        post = postdb().post(heapid)
 
         # subject
-        if len(p.subject()) < 40:
-            subject = p.subject() 
+        if len(post.subject()) < 40:
+            subject = post.subject() 
         else:
-            subject = p.subject()[:37] + '...'
+            subject = post.subject()[:37] + '...'
         
         # date
-        if p.date_str() != '':
-            date = ' (' + p.date_str() + ')'
+        if post.date_str() != '':
+            date = ' (' + post.date_str() + ')'
         else:
             date = ''
 
-        write('<%s> %s  %s%s\n' % (p.heapid(), subject, p.author(), date))
+        write('<%s> %s  %s%s\n' % (post.heapid(), subject, post.author(), date))
 
 @postset_operation
 def d(posts):
