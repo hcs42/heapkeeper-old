@@ -1601,11 +1601,17 @@ class Html():
     
     @staticmethod
     def section_begin(sectionid, sectiontitle):
-        """The beginning of a "section" div."""
-        return \
-            '<div class="section">\n' \
-            '<span class="sectiontitle" id="%s">%s</span>\n' % \
-            (sectionid, sectiontitle)
+        """The beginning of a "section" div.
+        
+        If `sectiontitle` is an empty string, no title is displayed.
+        """
+
+        if sectiontitle == '':
+            return '<div class="sectionid" id="%s">\n' % (sectionid,)
+        else:
+            return ('<div class="section">\n'
+                    '<span class="sectiontitle" id="%s">%s</span>\n' %
+                    (sectionid, sectiontitle))
 
     @staticmethod
     def section_end():
@@ -2144,7 +2150,8 @@ class Generator(object):
 
         items = []
         for i, section in enumerate(sections):
-            items.append(Html.link("#section_%s" % (i,), section.title))
+            if section.title != '':
+                items.append(Html.link("#section_%s" % (i,), section.title))
         return Html.list(items, 'tableofcontents')
         
     def post_summary(self, post, options, subject=NORMAL, tags=NORMAL,
@@ -2293,6 +2300,7 @@ class Generator(object):
         roots = self._postdb.roots()
         threads = self._postdb.threads()
         section = options.section
+
 
         l.append(Html.section_begin('section_%s' % (sectionid,),section.title))
 

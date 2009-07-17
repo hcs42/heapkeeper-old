@@ -153,7 +153,7 @@ def gen_indices(postdb):
     date_fun = create_date_fun(date_options)
     genopts = hklib.GeneratorOptions()
     genopts.postdb = postdb
-    section = hklib.Section('All', postdb.all())
+    section = hklib.Section('', postdb.all())
     genopts.indices = [hklib.Index([section])]
     hklib.Generator(postdb).gen_indices(genopts)
 
