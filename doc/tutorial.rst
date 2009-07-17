@@ -5,11 +5,21 @@ Tutorial
 .. |expf| replace:: :func:`expf <hklib.PostSet.expf>`
 .. |forall| replace:: :func:`forall <hklib.PostSet.forall>`
 .. |s| replace:: :func:`s <hkshell.s>`
-.. |ls| replace:: :func:`ls <hkshell.ls>`
 .. |ps| replace:: :func:`ps <hkshell.ps>`
 .. |ga| replace:: :func:`ga <hkshell.ga>`
 .. |q| replace:: :func:`q <hkshell.q>`
 .. |enew| replace:: :func:`enew <hkshell.enew>`
+.. |ls| replace:: :func:`ls <hkshell.ls>`
+.. |cat| replace:: :func:`cat <hkshell.cat>`
+.. |sS| replace:: :func:`sS <hkshell.sS>`
+.. |sSr| replace:: :func:`sSr <hkshell.sSr>`
+.. |at| replace:: :func:`at <hkshell.at>`
+.. |atr| replace:: :func:`atr <hkshell.atr>`
+.. |rt| replace:: :func:`rt <hkshell.rt>`
+.. |rtr| replace:: :func:`rtr <hkshell.rtr>`
+.. |j| replace:: :func:`j <hkshell.j>`
+.. |enew_str| replace:: :func:`enew_str <hkshell.enew_str>`
+.. .. |XX| replace:: :func:`XX <hkshell.XX>`
 
 Downloading Heapkeeper
 ----------------------
@@ -208,7 +218,7 @@ shell script file. They will create the posts we will work with.
     Tag: psychology
 
     I have talked to the robot. It likes reading only novels
-    and other liteture, it is not interested in natural
+    and other literature, it is not interested in natural
     sciences. It is very bright, though.
 
     Susan
@@ -309,8 +319,6 @@ body.
 Modifying the heap with |hkshell|
 ---------------------------------
 
-**FROM HERE THE DOCUMENT IS UNDER CONSTRUCTION**
-
 The collection of the posts is called the *heap*. One of Heapkeeper's aims is to
 make it easy to perform operations of large amount of posts. Theoretically, you
 can do anything you want with the post database that is stored in the post
@@ -331,63 +339,52 @@ are only handy shortcuts. They are to be used often, so they all have fairly
 short names that are essentially mnemonics. See the list of |hkshell| commands
 :ref:`here <hkshell_commands>`.
 
-Todo:
+First let's have a look at the |ls| command. It prints out the header of given
+post or posts, which can be specified for example by their heapid::
 
-- giving a few examples
-
-.. x Most of the commands take a postset as their arguments. A postset can be
-.. x given in many ways:
-.. x * the heapid as a string (e.g. '42')
-.. x * the heapid as an integer (e.g. 42)
-.. x * the post as a Post object (e.g. maildb().post(42))
-.. x * a list or set of objects of any previous type (e.g. [42, '43'])
-.. x * a PostSet object (e.g. maildb().all())
-
-Post sets
-"""""""""
-
-We can create post sets (:class:`hklib.PostSet` objects) using the |ps|
-command::
-
-    >>> p = ps([1,2])
-    >>> p
-    PostSet([<post '1'>, <post '2'>])
-    >>>
-
-We can print the most important information about them using the |ls| command::
-
-    >>> ls(p)
-    <1> alfred.lanning@usrobots.com  RB-34
-    <2> peter.bogert@usrobots.com  RB-34
-
-There are many things we can do with a post set. It has standard set operations
-like union, intersection, etc; but it also has operations that are specific to
-Heapkeeper. For example :func:`p.expf() <hklib.PostSet.expf>` returns a post set
-that contains all posts of `p` and all their descendants::
-
-    >>> p.expf()
-    PostSet([<post '4'>, <post '1'>, <post '2'>, <post '6'>, <post '3'>,
-    <post '5'>])
-
-Post sets also have a |forall| attribute that behaves in a tricky way.
-Whatever operation is performed on them, it will be performed on all posts
-belonging to the post set. In the following example, we use |expf| and |forall|
-to rename the subject in a whole thread; i.e. renaming the subject of all posts
-belonging to that thread.::
-
-    >>> for p in range(0,8): ls(p)
-    ...
+    >>> ls(0)
+    <0> RB-34  ashe@usrobots.com
+    >>> ls([0,1])
     <0> RB-34  ashe@usrobots.com
     <1> RB-34  alfred.lanning@usrobots.com
+
+The |cat| command prints the post itself::
+
+    >>> cat(0)
+    Heapid: 0
+    Author: ashe@usrobots.com
+    Subject: RB-34
+    Tag: interesting
+    Tag: robot
+
+    RB-34 is behaving wierdly. You should have a look at it.
+    I have never seen anything like that. It seems as if it
+    could read my mind.
+
+    Ashe
+
+Now let's have a look at the commands that actually modify the posts. For
+example the |sS| command ("set subject") sets the subject of the given posts. An example::
+
+    >>> sS([0,1], 'Robot Problem: RB-34')
+    >>> ls(range(8))
+    <0> Robot Problem: RB-34  ashe@usrobots.com
+    <1> Robot Problem: RB-34  alfred.lanning@usrobots.com
     <2> RB-34  peter.bogert@usrobots.com
     <3> RB-34  susan@usrobots.com
     <4> RB-34  alfred.lanning@usrobots.com
     <5> RB-34  alfred.lanning@usrobots.com
     <6> RB-34  susan@usrobots.com
     <7> Cinema  susan@usrobots.com
-    >>> ps(0).expf().forall.set_subject("Mind-reader robot")
-    >>> for p in range(0,8): ls(p)
-    ...
+
+There is a recursive version of |sS| that is called |sSr| ("set subject
+recursively"). It changes not only the subject of the given post, but the
+subject of all its descendants. For example, to change the subject of all
+emails in the "Robot" thread, we can set the subject of the root post
+recursively, and all posts' subject will be set::
+
+    >>> sSr(0, 'Mind-reader robot')
+    >>> ls(range(8))
     <0> Mind-reader robot  ashe@usrobots.com
     <1> Mind-reader robot  alfred.lanning@usrobots.com
     <2> Mind-reader robot  peter.bogert@usrobots.com
@@ -396,13 +393,123 @@ belonging to that thread.::
     <5> Mind-reader robot  alfred.lanning@usrobots.com
     <6> Mind-reader robot  susan@usrobots.com
     <7> Cinema  susan@usrobots.com
+
+There are similar functions to control tags, for example |at| ("add tag"),
+|atr| ("add tag recursively"), |rt| ("remove tag") and |rtr| ("remove tag
+recursively").
+
+The thread structure can also be changed: the |j| command joins two posts. It
+means that the second post will be a child of the first post. It does not
+matter whether it had another parent before or it had no parent.
+
+Let's write an answer to the "Cinema" post, but let's forget to mention that it
+should be the child of that post! (This happens often in real life when email
+clients, especially when people modify the subject of the email they are
+answering to.) Let's use the |enew_str| function to create the new post. It
+works like |enew|, but receives the content of the post as an argument::
+
+    >>> enew_str("Author: ashe@usrobots.com\n"
+    ...          "Subject: Cinema\n"
+    ...          "\n"
+    ...          "Yes, I'd like to go!\n"
+    ...          "\n"
+    ...          "Ashe\n")
+    >>> ga()
+    Indices generated.
+    Thread HTMLs generated.
+    Post HTMLs generated.
+
+The generated page will look like this:
+
+.. image:: images/4.png
+
+Let's join post 7 and 8 and regenerate the index page::
+
+    >>> j(7,8)
+    >>> ga()
+    Indices generated.
+    Thread HTMLs generated.
+    Post HTMLs generated.
     >>>
 
-Todo:
+On the new index page, we will see that the two "Cinema" posts are in one
+thread now, and post 7 is the parent of post 8:
 
-* another idea: adding a signature to all my emails
+.. image:: images/5.png
 
-Todo for new sections:
-
-* Creating a heap (with a Google Groups account and GMail account).
-* Maybe: posting a few emails in order to create a non-trivial thread structure.
+.. .. 
+.. .. Todo:
+.. .. 
+.. .. - giving a few examples
+.. .. 
+.. .. .. x Most of the commands take a postset as their arguments. A postset can be
+.. .. .. x given in many ways:
+.. .. .. x * the heapid as a string (e.g. '42')
+.. .. .. x * the heapid as an integer (e.g. 42)
+.. .. .. x * the post as a Post object (e.g. maildb().post(42))
+.. .. .. x * a list or set of objects of any previous type (e.g. [42, '43'])
+.. .. .. x * a PostSet object (e.g. maildb().all())
+.. .. 
+.. .. Post sets
+.. .. """""""""
+.. .. 
+.. .. We can create post sets (:class:`hklib.PostSet` objects) using the |ps|
+.. .. command::
+.. .. 
+.. ..     >>> p = ps([1,2])
+.. ..     >>> p
+.. ..     PostSet([<post '1'>, <post '2'>])
+.. ..     >>>
+.. .. 
+.. .. We can print the most important information about them using the |ls| command::
+.. .. 
+.. ..     >>> ls(p)
+.. ..     <1> alfred.lanning@usrobots.com  RB-34
+.. ..     <2> peter.bogert@usrobots.com  RB-34
+.. .. 
+.. .. There are many things we can do with a post set. It has standard set operations
+.. .. like union, intersection, etc; but it also has operations that are specific to
+.. .. Heapkeeper. For example :func:`p.expf() <hklib.PostSet.expf>` returns a post set
+.. .. that contains all posts of `p` and all their descendants::
+.. .. 
+.. ..     >>> p.expf()
+.. ..     PostSet([<post '4'>, <post '1'>, <post '2'>, <post '6'>, <post '3'>,
+.. ..     <post '5'>])
+.. .. 
+.. .. Post sets also have a |forall| attribute that behaves in a tricky way.
+.. .. Whatever operation is performed on them, it will be performed on all posts
+.. .. belonging to the post set. In the following example, we use |expf| and |forall|
+.. .. to rename the subject in a whole thread; i.e. renaming the subject of all posts
+.. .. belonging to that thread.::
+.. .. 
+.. ..     >>> for p in range(0,8): ls(p)
+.. ..     ...
+.. ..     <0> RB-34  ashe@usrobots.com
+.. ..     <1> RB-34  alfred.lanning@usrobots.com
+.. ..     <2> RB-34  peter.bogert@usrobots.com
+.. ..     <3> RB-34  susan@usrobots.com
+.. ..     <4> RB-34  alfred.lanning@usrobots.com
+.. ..     <5> RB-34  alfred.lanning@usrobots.com
+.. ..     <6> RB-34  susan@usrobots.com
+.. ..     <7> Cinema  susan@usrobots.com
+.. ..     >>> ps(0).expf().forall.set_subject("Mind-reader robot")
+.. ..     >>> for p in range(0,8): ls(p)
+.. ..     ...
+.. ..     <0> Mind-reader robot  ashe@usrobots.com
+.. ..     <1> Mind-reader robot  alfred.lanning@usrobots.com
+.. ..     <2> Mind-reader robot  peter.bogert@usrobots.com
+.. ..     <3> Mind-reader robot  susan@usrobots.com
+.. ..     <4> Mind-reader robot  alfred.lanning@usrobots.com
+.. ..     <5> Mind-reader robot  alfred.lanning@usrobots.com
+.. ..     <6> Mind-reader robot  susan@usrobots.com
+.. ..     <7> Cinema  susan@usrobots.com
+.. ..     >>>
+.. .. 
+.. .. Todo:
+.. .. 
+.. .. * another idea: adding a signature to all my emails
+.. .. 
+.. .. Todo for new sections:
+.. .. 
+.. .. * Creating a heap (with a Google Groups account and GMail account).
+.. .. * Maybe: posting a few emails in order to create a non-trivial thread structure.
