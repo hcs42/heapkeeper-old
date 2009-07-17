@@ -207,6 +207,7 @@ dr(pps)            - delete recursively
 j(pp, pp)          - join two threads
 e(pp)              - edit the post as a file
 enew()             - creates and edits a new post as a file
+enew_str()         - creates a new post from a string
 dl()               - download new mail
 
 postdb()           - the post database object
@@ -983,6 +984,15 @@ def enew():
             hklib.log('No change in the data base.')
     finally:
         os.remove(tmp_file_name)
+
+@hkshell_events()
+def enew_str(post_string):
+    """Creates a post from the given string."""
+
+    post = hklib.Post.from_str(post_string)
+    post = postdb().add_new_post(post)
+    hklib.log('Post created.')
+    return post
 
 @hkshell_events()
 def dl(from_=0):
