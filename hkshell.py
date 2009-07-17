@@ -421,8 +421,10 @@ def hkshell_events(command=None):
         @wraps(f)
         def inner2(*args, **kw):
             event('before', command=command2)
-            result = f(*args, **kw)
-            event('after', command=command2)
+            try:
+                result = f(*args, **kw)
+            finally:
+                event('after', command=command2)
             return result
         return inner2
     return inner
