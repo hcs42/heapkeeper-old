@@ -50,8 +50,18 @@ def indices0(postdb):
     ps_hh = ps_all.collect(has_tag(heap_tags))
     ps_all -= ps_hh
 
+    # python
+    python_tags = ['python', 'Python']
+    ps_python = ps_all.collect(has_tag(python_tags))
+    ps_all -= ps_python
+
+    # git
+    git_tags = ['git', 'Git']
+    ps_git = ps_all.collect(has_tag(git_tags))
+    ps_all -= ps_git
+
     # cp
-    cp_tags = ['programozás', 'c++', 'C++', 'python', 'Python']
+    cp_tags = ['programozás', 'c++', 'C++']
     ps_cp = ps_all.collect(has_tag(cp_tags))
     ps_all -= ps_cp
 
@@ -61,8 +71,10 @@ def indices0(postdb):
 
     index_ums = hklib.Index(filename='ums.html')
     index_ums.sections = [hklib.Section("Cycles", hklib.CYCLES),
-                          hklib.Section("Programozás", ps_cp),
                           hklib.Section("Heapkeeper", ps_hk),
+                          hklib.Section("Python", ps_python),
+                          hklib.Section("Git", ps_git),
+                          hklib.Section("Programozás", ps_cp),
                           hklib.Section("Egyéb", ps_all)]
 
     return [index_hh, index_ums]
