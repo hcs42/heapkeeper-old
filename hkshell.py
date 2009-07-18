@@ -784,13 +784,8 @@ def q():
     """Exits without saving the post database."""
 
     event('before', 'q')
-    write('Are you sure you want to quit?\n'
-          'The changes since the last s() command will not be saved.\n'
-          '[y/n] > ')
-    line = sys.stdin.readline().strip()
     event('after', 'q')
-    if len(line) > 0 and line[0] in ['y', 'Y']:
-        sys.exit()
+    sys.exit()
 
 @hkshell_events()
 def rl():
