@@ -56,7 +56,7 @@ Thus this event printer is present in the ``heapia.listeners`` list by default.
 .. autofunction:: event
 .. autofunction:: append_listener
 .. autofunction:: remove_listener
-.. autofunction:: hkshell_events
+.. autofunction:: add_events
 
 .. _hkshell_commands:
 
@@ -93,7 +93,6 @@ Subject manipulator commands
 .. autofunction:: pS(pps)
 .. autofunction:: sS(pps, subject)
 .. autofunction:: sSr(pps, subject)
-.. autofunction:: capitalize_subject(post)
 .. autofunction:: cS(pps)
 .. autofunction:: cSr(pps)
 
@@ -106,6 +105,7 @@ Miscellaneous commands
 .. autofunction:: j(pp1, pp2)
 .. autofunction:: e(pp)
 .. autofunction:: enew()
+.. autofunction:: enew_str(post_string)
 
 .. _hkshell_features:
 
@@ -141,11 +141,11 @@ following:
   commands that touched at least one post.
 - *ep*, *event_printer* -- If ``on``: prints all events.
 
-.. autofunction:: on()
-.. autofunction:: off()
+.. autofunction:: on(feature)
+.. autofunction:: off(feature)
 
 Utilities
 ---------
 
-.. autofunction:: shell_cmd
-.. autofunction:: define_cmd
+.. autofunction:: hkshell_cmd
+.. autofunction:: register_cmd

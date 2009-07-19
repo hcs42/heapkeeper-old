@@ -118,11 +118,12 @@ def gen_posts(postdb, posts):
     genopts.print_thread_of_post = True
     hklib.Generator(postdb).gen_posts(genopts, posts)
 
-@hkshell.shell_cmd
+@hkshell.hkshell_cmd()
 def a():
     hkshell.options.callbacks.gen_indices = gen_indices
     hkshell.options.callbacks.gen_posts = gen_posts
     hkshell.options.callbacks.edit_file = edit_file
+    hkshell.options.save_on_ctrl_d = False
     hkshell.on('tpp')
     hkshell.on('s')
     hkshell.on('gi')
@@ -136,7 +137,7 @@ def edit_file(file):
     subprocess.call(['vim', '-f', file])
     return get_content(file, return_none=True) != old_content
 
-@hkshell.shell_cmd
+@hkshell.hkshell_cmd()
 def vim():
     def edit_file(file):
         old_content = get_content(file, return_none=True)
@@ -144,7 +145,7 @@ def vim():
         return get_content(file, return_none=True) != old_content
     hkshell.options.callbacks.edit_file = edit_file
 
-@hkshell.shell_cmd
+@hkshell.hkshell_cmd()
 def gvim():
     def edit_file(file):
         old_content = get_content(file, return_none=True)
@@ -152,7 +153,7 @@ def gvim():
         return get_content(file, return_none=True) != old_content
     hkshell.options.callbacks.edit_file = edit_file
 
-@hkshell.shell_cmd
+@hkshell.hkshell_cmd()
 def R(pps):
     """Mark thread as reviewed."""
     hkshell.atr(pps, 'r')

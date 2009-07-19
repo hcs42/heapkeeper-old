@@ -18,4 +18,9 @@
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
-python -i hkshell.py "$@"
+cat <<EOF
+Invoking ./hkshell is deprecated. Please use "python hk.py" instead.
+
+EOF
+
+python hk.py "$@"

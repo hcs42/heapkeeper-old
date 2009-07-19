@@ -11,3 +11,4 @@ Module documentation for developers
    hklib_dev
    hkshell
    hkshell_dev
+   hk

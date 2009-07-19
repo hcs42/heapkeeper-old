@@ -30,24 +30,12 @@ features and commands with a short description.
 Invocation
 ''''''''''
 
-Using the ``hkshell`` sh script (not ``hkshell.py``) to start the ``hkshell``
-is more convenient than using ``hkshell directly.``
-
-The reason is the following. When :mod:`hkshell` is invoked, the user usually
-wants to have a Python shell which has the hkshell commands defined. If
-:mod:`hkshell` is invoked by simply typing ``python hkshell.py``, the Python
-interpreter will exit after sourcing :mod:`hkshell`. In order to stop the
-Python interpreter from exitig, the ``python`` command has to be augmented with
-a ``-i`` option. That is exactly what the ``hkshell`` script does: it forwards
-all its arguments to :mod:`hkshell` and calls it with ``python -i``. If there
-is no sh shell on the system or a Python version different from the one that is
-executed when calling ``python`` is wanted to be used, the :mod:`hkshell`
-module can be called directly in the same way as the ``hkshell`` script does.
+|hkshell| can be started using ``hk.py``. It gives a Heapkeeper shell (which is
+a Python shell with some pre-defined functions) to the user.
 
 **Command line arguments:**
 
-The ``hkshell`` script and the :mod:`hkshell` module have the same command line
-arguments. There is no mandatory argument, only options. The options are the
+``hk.py`` does not have any mandatory arguments, only options. They are the
 following:
 
 - ``-h``, ``--help`` --
@@ -77,18 +65,14 @@ tool to the user's needs.
 
 .. highlight:: sh
 
-Starting hkshell from the script::
+Starting hkshell::
 
-    $ ./hkshell
-
-The same, using custom Python version::
-
-    $ /home/my/bin/python -i hkshell.py
+    $ python hk.py
 
 This example downloads new emails, generates the index pages and exits after
 saving the post database::
 
-    $ ./hkshell -c 'dl()' -c 'g()' -c 'x()'
+    $ python hk.py -c 'dl()' -c 'g()' -c 'x()'
 
 Positional arguments
 ::::::::::::::::::::
@@ -96,10 +80,10 @@ Positional arguments
 Currently the ``-c`` markers may be omitted and the positional arguments (the
 ones without ``-<character>`` and ``--<word>``) will be executed as commands::
 
-    $ ./hkshell 'dl()' 'g()' 'x()'
+    $ python hk.py 'dl()' 'g()' 'x()'
 
-Do not write this in scripts that you want to keep, because this behaviour may
-be changed in the future if we want to use positional arguments for something
+Do use this in scripts that you want to keep, because this behaviour may be
+changed in the future if we want to use positional arguments for something
 else.
 
 Initialization
@@ -116,12 +100,13 @@ The following actions are performed when hkshell starts:
 Usage
 '''''
 
-After performing the initial tasks, the Python interpreter is left open. The
-functions of :mod:`hkshell` are imported, so they can be used without having to
-write ``hkshell.``. These functions are called commands. The user can define
-own commands, as well. For reading about the commands of :mod:`hkshell`, type
-``h()`` if you are in the hkshell, or go to the :ref:`hkshell_commands` section
-if you are reading the documentation.
+After performing the initial tasks, the Python interpreter is provided to the
+user. There are some functions of |hkshell| that has been added to the local
+namespace of the interpreter, so they can be used without having to write
+``hkshell.``. These functions are called commands. The user can define own
+commands, as well. For reading about the commands of |hkshell|, type ``h()`` if
+you are in |hkshell|, or go to the :ref:`hkshell_commands` section if you are
+reading the documentation.
 
 **Definiton of pseudo-types:**
 
@@ -223,12 +208,10 @@ documentation.
 import os
 import sys
 import time
-import subprocess
 import ConfigParser
-import re
-import optparse
-import inspect
 import tempfile
+import optparse
+import code
 from functools import wraps
 
 import hkutils
@@ -280,13 +263,22 @@ class Options(object):
       Default value: ``sys.stdout``
     - *callbacks* (:class:`Callbacks`) -- Callback functions to be called on
       various occasions.
+    - *shell_banner* (str) -- A banner that is printed when the Python shell
+      starts. If ``None``, the default text is printed with the interpreter
+      information.
+      Default value: ``''``
+    - `save_on_ctrl_d` (bool | None) -- If boolean, it specifies whether to
+      save when the user hits CTRL-D or to abandon the changes silently. If
+      ``None``, the user will be asked what to do.
     """
 
     def __init__(self,
                  postdb=hkutils.NOT_SET,
                  config=hkutils.NOT_SET,
                  output=sys.stdout,
-                 callbacks=hkutils.NOT_SET):
+                 callbacks=hkutils.NOT_SET,
+                 shell_banner='',
+                 save_on_ctrl_d=None):
 
         super(Options, self).__init__()
         hkutils.set_dict_items(self, locals())
@@ -295,6 +287,100 @@ class Options(object):
 # from this object. The users of |hkshell| are allowed to change this object in
 # order to achieve the behaviour they need.
 options = Options(callbacks=Callbacks())
+
+
+##### Commands #####
+
+def hkshell_cmd(add_events=False, postset_operation=False,
+                touching_command=False):
+    """This function is a decorator that defines the decorated function as a
+    hkshell command.
+
+    **Arguments:**
+
+    - `add_events` (bool): If ``True``, the decorator :func:`add_events`
+      will also be applied to the function, with default arguments.
+    - `postset_operation` (bool): If ``True``, the decorator
+      :func:`postset_operation` will also be applied to the function.
+    - `touching_command` (bool): If ``True``, the
+      :class:`TouchedPostPrinterListener` objects will print the touched posts
+      after the command has been finished.
+    
+    Defining a hkshell command means that *f* can be used from |hkshell| without
+    specifying in which module it is. It also can be used after the
+    ``--before`` and ``--command`` arguments of |hkshell|.
+
+    **Examples:**
+
+    One of the important uses of this decorator is to decorate functions in the
+    ``hkrc`` module that the user wants to use conveniently. As an example,
+    let's suppose ``hkrc.py`` contains this code::
+
+        @hkshell.hkshell_cmd()
+        def mycmd():
+            print 'Hi, this is my command.'
+
+    The *mycmd* function can be used from the hkshell as a normal hkshell command::
+
+        >>> mycmd()
+        Hi, this is my command.
+        >>> 
+    
+    **Using it with other decorators:**
+
+    If you use it with another decorator, :func:`hkshell_cmd` should be the
+    last one to be applied, i.e. it should be first one in the source text.
+    For example you may write the following::
+
+        @hkshell_cmd()
+        @mydecorator
+        def f():
+            ...
+
+    But do *not* write this::
+
+        @mydecorator
+        @hkshell_cmd()
+        def f():
+            ...
+
+    The reason is the in the second case, the original version of `f` will be
+    registered as a command, which was not decorated with `mydecorator`.
+    """
+    
+    def inner(f):
+        if add_events:
+            f = globals()['add_events']()(f)
+        if postset_operation:
+            f = globals()['postset_operation'](f)
+        if touching_command:
+            add_touching_command(f.__name__)
+        register_cmd(f.__name__, f)
+        return f
+    return inner
+
+# Stores the commands defined by the user.
+# If you want to add a command to this, the preferred way is to use the
+# hkshell_cmd decorator.
+hkshell_commands = {}
+
+def register_cmd(name, fun):
+    """Registers a hkshell command.
+    
+    Registering a hkshell command means that :func:`register_cmd` adds the
+    function to the `hkshell.hkshell_commands` dictionary.
+
+    **Arguments:**
+
+    - *name* (str): The name by which the command can be invoked, i.e. the
+      name to which the function should be bound.
+    - *fun* (fun(\*args, \*\*kw)): An arbitrary function. This will be called
+      when the command is invoked.
+    """
+
+    # It defines the command in the hkshell_commands dictionary, which is used by
+    # the exec_commands function to specify the global variables.
+    hkshell_commands[name] = fun
 
 
 ##### Event handling #####
@@ -399,7 +485,7 @@ def event(*args, **kw):
     for fun in listeners:
         fun(e)
 
-def hkshell_events(command=None):
+def add_events(command=None):
     """This function is a decorator that raises events before and after the
     execution of the decorated function.
 
@@ -411,7 +497,7 @@ def hkshell_events(command=None):
 
     Example::
 
-        @hkshell_events()
+        @add_events()
         def s():
             postdb().save()
     """
@@ -475,13 +561,16 @@ def postset_operation(operation):
 
     @wraps(operation)
     def inner(pps, *args, **kw):
-        command = operation.__name__
-        event('before', command)
-        posts = ps(pps)
-        event('postset_calculated', command, postset=posts)
-        if len(posts) != 0:
-            operation(posts, *args, **kw)
-        event('after', command, postset=posts)
+        try:
+            command = operation.__name__
+            event('before', command)
+            posts = ps(pps)
+            event('postset_calculated', command, postset=posts)
+            if len(posts) != 0:
+                result = operation(posts, *args, **kw)
+        finally:
+            event('after', command, postset=posts)
+        return result            
     return inner
 
 ##### Concrete listeners #####
@@ -629,13 +718,18 @@ class TouchedPostPrinterListener(object):
                     write('%s posts have been touched:\n' % 
                           (len(touched_posts),))
                 write('%s\n' %
-                      [ post.heapid() for post in touched_posts.sorted_list()])
+                      sorted([ post.heapid() for post in touched_posts]))
 
-# Commands after which the touched_post_printer should print the touched posts
-touching_commands = \
-    ['d', 'dr', 'j', 'enew' 'pt', 'at', 'atr', 'rt', 'rtr', 'st', 'str_', 'pS',
-     'sS', 'sSr', 'capitalize_subject', 'cS', 'cSr']
+# Commands after which the touched_post_printer should print the touched posts.
+# The preferred way to add a command to the list is use the add_touching_command
+# function.
+touching_commands = []
 
+def add_touching_command(command):
+    """Add a command to the list of "touching" commands."""
+    touching_commands.append(command)
+
+# The global TouchedPostPrinterListener object of hkshell.
 touched_post_printer_listener = TouchedPostPrinterListener(touching_commands)
 
 
@@ -687,6 +781,7 @@ def features():
             'timer': g(timer_listener),
             'touched_post_printer': g(touched_post_printer_listener)}
 
+@hkshell_cmd()
 def on(feature):
     """Sets a feature to on.
 
@@ -697,6 +792,7 @@ def on(feature):
 
     set_feature('on', feature)
 
+@hkshell_cmd()
 def off(feature):
     """Sets a feature to off.
 
@@ -715,12 +811,6 @@ def off(feature):
 def write(str):
     options.output.write(str)
 
-def postdb():
-    return options.postdb
-
-def c():
-    return postdb().all().collect
-
 def gen_indices():
     options.callbacks.gen_indices(postdb())
 
@@ -736,10 +826,6 @@ def gen_posts():
     # because `posts` will change as a result of the events.
     for post in posts.copy():
         event('post_page_created', post=post)
-
-def ps(pps):
-    res = postdb().postset(pps)
-    return res
 
 def tagset(tags):
     """Converts the argument to ``set(tag)``.
@@ -763,15 +849,30 @@ def tagset(tags):
 
 ##### Commands #####
 
+@hkshell_cmd()
+def postdb():
+    return options.postdb
+
+@hkshell_cmd()
+def c():
+    return postdb().all().collect
+
+@hkshell_cmd()
+def ps(pps):
+    res = postdb().postset(pps)
+    return res
+
+@hkshell_cmd()
 def h():
     """Prints the console help."""
     write(console_help)
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def s():
     """Saves the post database."""
     postdb().save()
 
+@hkshell_cmd()
 def x():
     """Saves the post database and exits."""
 
@@ -780,6 +881,7 @@ def x():
     event('after', 'x')
     sys.exit()
 
+@hkshell_cmd()
 def q():
     """Exits without saving the post database."""
 
@@ -787,7 +889,7 @@ def q():
     event('after', 'q')
     sys.exit()
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def rl():
     """Reloads the post from the disk.
 
@@ -797,35 +899,35 @@ def rl():
 
     postdb().reload()
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def gi():
     """Generates the index pages."""
     gen_indices()
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def gt():
     """Generates the thread pages."""
     gen_threads()
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def gp():
     """Generates the post pages."""
     gen_posts()
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def g():
     """Generates the index and post pages."""
     hklib.log('WARNING: using hkshell.g() is deprecated.')
     ga()
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def ga():
     """Generates the index, the thread and the post pages."""
     gen_indices()
     gen_threads()
     gen_posts()
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def opp():
     """Returns the posts whose post pages are outdated.
 
@@ -836,14 +938,18 @@ def opp():
 
     return postpage_listener.outdated_post_pages()
 
-@hkshell_events()
-def ls(pps):
-    """Lists the content of the given postset.
+@hkshell_cmd(add_events=True)
+def ls(pps=None):
+    """Lists the summary of the posts in `pps`.
     
-    **Arguments:**
+    **Argument:**
 
-    - *ps* (|PrePostSet|)
+    - `pps` (|PrePostSet| | None) -- The set of posts to print. If ``None``,
+      the summary of all posts in the post database will be printed.
     """
+
+    if pps == None:
+        pps = postdb().all()
 
     # We want to iterate on the posts in the order of their heapids, so we
     # collect the heapids and iterate over their sorted list.
@@ -866,7 +972,7 @@ def ls(pps):
 
         write('<%s> %s  %s%s\n' % (post.heapid(), subject, post.author(), date))
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def cat(pps):
     """Prints the content of the given posts.
 
@@ -880,7 +986,7 @@ def cat(pps):
     
     **Arguments:**
 
-    - *ps* (|PrePostSet|)
+    - `pps` (|PrePostSet|)
     """
 
     # We want to iterate on the posts in the order of their heapids, so we
@@ -897,7 +1003,7 @@ def cat(pps):
         write('Heapid: %s\n' % (heapid,))
         post.write(options.output)
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def d(posts):
     """Deletes the posts in *pps*.
     
@@ -908,7 +1014,7 @@ def d(posts):
 
     posts.forall.delete()
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def dr(posts):
     """Deletes the posts in *pps* and all their children.
 
@@ -919,7 +1025,7 @@ def dr(posts):
 
     posts.expf().forall.delete()
 
-@hkshell_events()
+@hkshell_cmd(add_events=True, touching_command=True)
 def j(pp1, pp2):
     """Joins two posts.
 
@@ -935,7 +1041,7 @@ def j(pp1, pp2):
     if p1 != None and p2 != None:
         p2.set_parent(p1.heapid())
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def e(pp):
     """Edits a post.
 
@@ -953,7 +1059,7 @@ def e(pp):
     else:
         hklib.log('Post not found.')
 
-@hkshell_events()
+@hkshell_cmd(add_events=True, touching_command=True)
 def enew():
     """Creates and edits a post.
     
@@ -982,16 +1088,21 @@ def enew():
     finally:
         os.remove(tmp_file_name)
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def enew_str(post_string):
-    """Creates a post from the given string."""
+    """Creates a post from `post_string` and adds it to the post database.
+    
+    **Argument:**
+
+    - `post_string` (str)
+    """
 
     post = hklib.Post.from_str(post_string)
     post = postdb().add_new_post(post)
     hklib.log('Post created.')
     return post
 
-@hkshell_events()
+@hkshell_cmd(add_events=True)
 def dl(from_=0):
     """Downloads new posts from an IMAP server.
     
@@ -1009,7 +1120,7 @@ def dl(from_=0):
 
 ##### Commands / tags #####
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def pt(posts):
     """Propagates the tags of the posts in *pps* to all their children.
     
@@ -1024,7 +1135,7 @@ def pt(posts):
                 p.add_tag(tag)
         postdb().postset(post).expf().forall(add_tags)
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def at(posts, tags):
     """Adds the given tags to the posts in *pps*.
     
@@ -1038,7 +1149,7 @@ def at(posts, tags):
     for p in posts:
         p.set_tags(tags.union(p.tags()))
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def atr(posts, tags):
     """Adds the given tags to the posts of the given postset and all their
     children.
@@ -1053,7 +1164,7 @@ def atr(posts, tags):
     for p in posts.expf():
         p.set_tags(tags.union(p.tags()))
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def rt(posts, tags):
     """Removes the given tags from the posts in *pps*.
     
@@ -1067,7 +1178,7 @@ def rt(posts, tags):
     for p in posts:
         p.set_tags(set(p.tags()) - tags)
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def rtr(posts, tags):
     """Removes the given tags from the posts in *pps* and from all their
     children.
@@ -1082,7 +1193,7 @@ def rtr(posts, tags):
     for p in posts.expf():
         p.set_tags(set(p.tags()) - tags)
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def st(posts, tags):
     """Sets the given tags on the posts in *pps*.
     
@@ -1096,7 +1207,7 @@ def st(posts, tags):
     for p in posts:
         p.set_tags(tags)
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def str_(posts, tags):
     """Sets the given tags on the posts in *pps* and on all their children.
 
@@ -1113,7 +1224,7 @@ def str_(posts, tags):
 
 ##### Commands / subject #####
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def pS(posts):
     """Propagates the subject of the posts in *pps* and all their children.
     
@@ -1125,7 +1236,7 @@ def pS(posts):
     for post in posts:
         postdb().postset(post).expf().forall.set_subject(post.subject())
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def sS(posts, subject):
     """Sets the given subject for the posts in *pps*.
     
@@ -1137,7 +1248,7 @@ def sS(posts, subject):
 
     posts.forall.set_subject(subject)
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def sSr(posts, subject):
     """Sets the given subject for the posts in *pps* and for all their
     children.
@@ -1160,7 +1271,7 @@ def capitalize_subject(post):
 
     post.set_subject(post.subject().capitalize())
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def cS(posts):
     """Capitalizes the subject of the posts in *pps*.
     
@@ -1171,7 +1282,7 @@ def cS(posts):
 
     posts.forall(capitalize_subject)
 
-@postset_operation
+@hkshell_cmd(postset_operation=True, touching_command=True)
 def cSr(posts):
     """Capitalizes the subject of the posts in *pps* and all their children.
 
@@ -1181,64 +1292,6 @@ def cSr(posts):
     """
 
     posts.expf().forall(capitalize_subject)
-
-
-## Utility functions for user-defined commands
-
-def shell_cmd(f):
-    """This function is a decorator that defines the decorated function as a
-    hkshell command.
-    
-    Defining a hkshell commands means that *f* can be used from hkshell without
-    specifying in which module it is. It also can be used after the
-    ``--commands`` argument of hkshell.
-
-    One of the important uses of this decorator is to decorate functions in the
-    ``hkrc`` module that the user wants to use conveniently. As an example,
-    let's suppose ``hkrc.py`` contains this code::
-
-        @hkshell.shell_cmd
-        def mycmd():
-            print 'Hi, this is my command.'
-
-    The *mycmd* function can be used from the hkshell as a normal hkshell command::
-
-        >>> mycmd()
-        Hi, this is my command.
-        >>> 
-    """
-
-    define_cmd(f.__name__, f)
-    return f
-
-# Stores the commands defined by the user.
-user_commands = {}
-
-def define_cmd(name, fun):
-    """Defines a hkshell command.
-    
-    Defining a hkshell commands means that :func:`define_cmd` manipulates its
-    environment in such a way that *fun* can be used from hkshell without
-    specifying in which module it is, and just invoking it by its *name*.
-
-    **Arguments:**
-
-    - *name* (str): The name by which the command can be invoked, i.e. the
-      name to which the function should be bound.
-    - *fun* (fun(\*args, \*\*kw)): An arbitrary function. This will be called
-      when the command is invoked.
-    """
-
-    # This command is a hack.
-
-    # It find the outmost frame, which belongs to the interpreter itself and
-    # defines the command there.
-    frame = inspect.getouterframes(inspect.currentframe())[-1][0]
-    frame.f_globals[name] = fun
-
-    # It defines the command in the user_commands dictionary, which is used by
-    # the exec_commands function to specify the global variables.
-    user_commands[name] = fun
 
 
 ##### Main #####
@@ -1251,10 +1304,10 @@ def exec_commands(commands):
     - *commands* ([str])
     """
 
-    globals2 = globals().copy()
-    globals2.update(user_commands)
     for command in commands:
-        exec command in (globals2)
+        # # comment out to access hkshell.* more easily
+        # exec command in globals(), hkshell_commands
+        exec command in hkshell_commands
 
 def read_postdb(configfile):
     """Reads the config file and the post database from the disk.
@@ -1302,6 +1355,32 @@ def import_module(modname):
     except ImportError:
         hklib.log('Module not found: "%s"' % (modname,))
 
+def parse_args():
+    # Parsing the command line options
+
+    parser = optparse.OptionParser()
+
+    # Note: dest='before_commands' would be more logical than
+    # dest='before_command' since it is a list; but the help text is more
+    # sensible this way.
+    parser.add_option('-b', '--before', dest='before_command',
+                      help='Python code to execute before importing hkrc',
+                      action='append', default=[])
+    parser.add_option('-c', '--command', dest='after_command',
+                      help='Python code to execute after importing hkrc',
+                      action='append', default=[])
+    parser.add_option('-r', '--hkrc', dest='hkrc',
+                      help='Modules to import',
+                      action='append', default=[])
+    parser.add_option('--configfile', dest='configfile',
+                      help='Configfile to use',
+                      action='store', default='hk.cfg')
+    parser.add_option('--version', dest='version',
+                      help='Prints heapkeeper version and exits',
+                      action='store_true', default=False)
+    (cmdl_options, args) = parser.parse_args()
+    return cmdl_options, args
+
 def main(cmdl_options, args):
     """Initializes the hkshell.
     
@@ -1345,40 +1424,35 @@ def main(cmdl_options, args):
     # Executing "after" commands
     exec_commands(cmdl_options.after_command)
 
+    while True:
 
-# See the description of what happens the hkshell is invoked in the developer
-# documentation of hkshell (hkshell_dev.html or doc/hkshell_dev.rst), in
-# section "Starting hkshell".
+        # Creating a shell to the user
 
-if __name__ == '__main__':
+        # # use this to access hkshell.* more easily
+        # locals = globals().copy()
+        # locals.update(hkshell_commands)
+        # code.interact(banner=options.shell_banner, local=locals)
 
-    # Parsing the command line options
+        code.interact(banner=options.shell_banner, local=hkshell_commands)
+        
+        # User typed CTRL-D
+        if options.save_on_ctrl_d is None:
+            write('Do you want to save the post database? [yes/no/cancel] ')
+            line = sys.stdin.readline().strip()
 
-    parser = optparse.OptionParser()
-
-    # Note: dest='before_commands' would be more logical than
-    # dest='before_command' since it is a list; but the help text is more
-    # sensible this way.
-    parser.add_option('-b', '--before', dest='before_command',
-                      help='Python code to execute before importing hkrc',
-                      action='append', default=[])
-    parser.add_option('-c', '--command', dest='after_command',
-                      help='Python code to execute after importing hkrc',
-                      action='append', default=[])
-    parser.add_option('-r', '--hkrc', dest='hkrc',
-                      help='Modules to import',
-                      action='append', default=[])
-    parser.add_option('--configfile', dest='configfile',
-                      help='Configfile to use',
-                      action='store', default='hk.cfg')
-    parser.add_option('--version', dest='version',
-                      help='Prints heapkeeper version and exits',
-                      action='store_true', default=False)
-    (cmdl_options, args) = parser.parse_args()
-
-    if cmdl_options.version:
-        print 'Heapkeeper version %s' % (hklib.heapkeeper_version,)
-        sys.exit(0)
-
-    from hkshell import *
-    main(cmdl_options, args)
+            # If the user typed "yes", save & quit
+            if len(line) > 0 and line[0] in ['y', 'Y']:
+                postdb().save()
+                break
+            # If the user typed "no", just quit
+            elif len(line) > 0 and line[0] in ['n', 'N']:
+                break
+            # Otherwise go back to the interpreter
+            else:
+                pass
+        elif options.save_on_ctrl_d:
+            postdb().save()
+            break
+        else:
+            break
+        

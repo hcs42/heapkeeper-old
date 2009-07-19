@@ -20,7 +20,6 @@
 
 """My (Attis) hkrc."""
 
-import hkshell
 import hklib
 import hkshell
 import hkcustomlib
@@ -244,7 +243,7 @@ def gen_posts(postdb, posts):
     # Generating the posts
     hklib.Generator(postdb).gen_posts(genopts, posts)
 
-@hkshell.shell_cmd
+@hkshell.hkshell_cmd()
 def et(pps):
     """Tidy up a whole thread."""
     roots = []

@@ -1,8 +1,9 @@
 digraph {
-    heapmanip -> heaplib;
-    heapcustomlib -> heapmanip;
-    heapcustomlib -> heaplib;
-    heapia -> heaplib;
-    heapia -> heapmanip;
-    heapia -> heapcustomlib;
+    hklib -> hkutils;
+    hkcustomlib -> hklib;
+    hkcustomlib -> hkutils;
+    hkshell -> hkutils;
+    hkshell -> hklib;
+    hkshell -> hkcustomlib;
+    hk -> hkshell;
 }

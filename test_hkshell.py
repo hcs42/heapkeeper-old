@@ -102,11 +102,11 @@ class Test__1(unittest.TestCase):
 
         hkshell.append_listener(lambda e: event_list.append(e))
         
-        ## Testing the hkshell_events decorator
+        ## Testing the add_events decorator
 
         # Default name for the `command` attribute
 
-        @hkshell.hkshell_events()
+        @hkshell.add_events()
         def f():
             hkshell.event(type='f_body', command='f')
             return 1
@@ -124,7 +124,7 @@ class Test__1(unittest.TestCase):
 
         # Specified name for the `command` attribute
         
-        @hkshell.hkshell_events('f_cmd1')
+        @hkshell.add_events('f_cmd1')
         def f():
             hkshell.event(type='f_body', command='f_cmd2')
             return 1
