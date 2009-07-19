@@ -1,24 +1,25 @@
 Tutorial
 ========
 
-.. |hkshell| replace:: :mod:`hkshell`
+.. |atr| replace:: :func:`atr <hkshell.atr>`
+.. |at| replace:: :func:`at <hkshell.at>`
+.. |cat| replace:: :func:`cat <hkshell.cat>`
+.. |enew_str| replace:: :func:`enew_str <hkshell.enew_str>`
+.. |enew| replace:: :func:`enew <hkshell.enew>`
 .. |expf| replace:: :func:`expf <hklib.PostSet.expf>`
 .. |forall| replace:: :func:`forall <hklib.PostSet.forall>`
-.. |s| replace:: :func:`s <hkshell.s>`
-.. |ps| replace:: :func:`ps <hkshell.ps>`
 .. |ga| replace:: :func:`ga <hkshell.ga>`
-.. |q| replace:: :func:`q <hkshell.q>`
-.. |enew| replace:: :func:`enew <hkshell.enew>`
-.. |ls| replace:: :func:`ls <hkshell.ls>`
-.. |cat| replace:: :func:`cat <hkshell.cat>`
-.. |sS| replace:: :func:`sS <hkshell.sS>`
-.. |sSr| replace:: :func:`sSr <hkshell.sSr>`
-.. |at| replace:: :func:`at <hkshell.at>`
-.. |atr| replace:: :func:`atr <hkshell.atr>`
-.. |rt| replace:: :func:`rt <hkshell.rt>`
-.. |rtr| replace:: :func:`rtr <hkshell.rtr>`
+.. |hkshell| replace:: :mod:`hkshell`
 .. |j| replace:: :func:`j <hkshell.j>`
-.. |enew_str| replace:: :func:`enew_str <hkshell.enew_str>`
+.. |ls| replace:: :func:`ls <hkshell.ls>`
+.. |ps| replace:: :func:`ps <hkshell.ps>`
+.. |q| replace:: :func:`q <hkshell.q>`
+.. |rtr| replace:: :func:`rtr <hkshell.rtr>`
+.. |rt| replace:: :func:`rt <hkshell.rt>`
+.. |sSr| replace:: :func:`sSr <hkshell.sSr>`
+.. |sS| replace:: :func:`sS <hkshell.sS>`
+.. |s| replace:: :func:`s <hkshell.s>`
+.. |x| replace:: :func:`x <hkshell.x>`
 .. .. |XX| replace:: :func:`XX <hkshell.XX>`
 
 Downloading Heapkeeper
@@ -47,7 +48,7 @@ version information for example:
 .. code-block:: sh
 
     $ cd heapkeeper-0.3uc
-    $ ./hkshell --version
+    $ python hk.py --version
     Heapkeeper version 0.3uc
 
 Configuration
@@ -86,9 +87,10 @@ Start |hkshell|:
 
 .. code-block:: sh
 
-    $ ./hkshell
+    $ python hk.py
     Importing hkrc...
     Module not found: "hkrc"
+
     >>>
 
 The output informs us that |hkshell| did not find the customization module
@@ -149,11 +151,11 @@ At this point, the post exists only in the memory. We use the :func:`s
 
 A file called ``0.post`` has been created in the ``posts`` directory. It
 contains exactly what we pasted into the text editor. Let's quit from
-Heapkeeper and examine ``posts/0.post``:
+Heapkeeper with the |x| command and examine ``posts/0.post``:
 
 .. code-block:: none
 
-    >>> q()
+    >>> x()
     $ ls posts/
     0.post
     $ cat posts/0.post
@@ -279,9 +281,10 @@ Generating HTML pages
 The posts and the threads can be visualized in HTML using the |ga| command (it
 stands for "generate all")::
 
-    $ ./hkshell
+    $ python hk.py
     Importing hkrc...
     Module not found: "hkrc"
+
     >>> ga()
     Indices generated.
     Thread HTMLs generated.
@@ -333,14 +336,15 @@ Now we will use it to perform more complicated operations.
 """"""""""""""""""
 
 The most common operations can be performed quite easily using the appropriate
-|hkshell| command. (We already used the |enew|, |s|, |q| and |ga| commands.)
+|hkshell| command. (We already used the |enew|, |s|, |x| and |ga| commands.)
 These commands are very high-level. Not everything can be done with them, they
 are only handy shortcuts. They are to be used often, so they all have fairly
 short names that are essentially mnemonics. See the list of |hkshell| commands
 :ref:`here <hkshell_commands>`.
 
 First let's have a look at the |ls| command. It prints out the header of given
-post or posts, which can be specified for example by their heapid::
+post or posts, which can be specified for example by their heapid (or are all
+posts by default)::
 
     >>> ls(0)
     <0> RB-34  ashe@usrobots.com
@@ -367,7 +371,7 @@ Now let's have a look at the commands that actually modify the posts. For
 example the |sS| command ("set subject") sets the subject of the given posts. An example::
 
     >>> sS([0,1], 'Robot Problem: RB-34')
-    >>> ls(range(8))
+    >>> ls()
     <0> Robot Problem: RB-34  ashe@usrobots.com
     <1> Robot Problem: RB-34  alfred.lanning@usrobots.com
     <2> RB-34  peter.bogert@usrobots.com
@@ -384,7 +388,7 @@ emails in the "Robot" thread, we can set the subject of the root post
 recursively, and all posts' subject will be set::
 
     >>> sSr(0, 'Mind-reader robot')
-    >>> ls(range(8))
+    >>> ls()
     <0> Mind-reader robot  ashe@usrobots.com
     <1> Mind-reader robot  alfred.lanning@usrobots.com
     <2> Mind-reader robot  peter.bogert@usrobots.com
