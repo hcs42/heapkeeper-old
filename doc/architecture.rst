@@ -261,7 +261,7 @@ uses functions or classes defined in the other module.
 
 The module dependencies are shown in the following picture:
 
-.. image:: module_deps.png
+.. image:: images/module_deps.png
 
 Since :mod:`hkutils` contains general library functions, it does not use any
 other modules of Heapkeeper, but all the other modules may use it. Both
