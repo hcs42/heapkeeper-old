@@ -342,6 +342,9 @@ are only handy shortcuts. They are to be used often, so they all have fairly
 short names that are essentially mnemonics. See the list of |hkshell| commands
 :ref:`here <hkshell_commands>`.
 
+|ls| and |cat|
+::::::::::::::
+
 First let's have a look at the |ls| command. It prints out the header of given
 post or posts, which can be specified for example by their heapid (or are all
 posts by default)::
@@ -366,6 +369,9 @@ The |cat| command prints the post itself::
     could read my mind.
 
     Ashe
+
+Manipulating the subject and tags
+:::::::::::::::::::::::::::::::::
 
 Now let's have a look at the commands that actually modify the posts. For
 example the |sS| command ("set subject") sets the subject of the given posts. An example::
@@ -402,12 +408,15 @@ There are similar functions to control tags, for example |aT| ("add tag"),
 |aTr| ("add tag recursively"), |rT| ("remove tag") and |rTr| ("remove tag
 recursively").
 
+The |j| command: joining posts
+::::::::::::::::::::::::::::::
+
 The thread structure can also be changed: the |j| command joins two posts. It
 means that the second post will be a child of the first post. It does not
 matter whether it had another parent before or it had no parent.
 
 Let's write an answer to the "Cinema" post, but let's forget to mention that it
-should be the child of that post! (This happens often in real life when email
+should be the child of that post! (This happens often in real life with email
 clients, especially when people modify the subject of the email they are
 answering to.) Let's use the |enew_str| function to create the new post. It
 works like |enew|, but receives the content of the post as an argument::
@@ -441,22 +450,44 @@ thread now, and post 7 is the parent of post 8:
 
 .. image:: images/5.png
 
-.. .. 
-.. .. Todo:
-.. .. 
-.. .. - giving a few examples
-.. .. 
-.. .. .. x Most of the commands take a postset as their arguments. A postset can be
-.. .. .. x given in many ways:
-.. .. .. x * the heapid as a string (e.g. '42')
-.. .. .. x * the heapid as an integer (e.g. 42)
-.. .. .. x * the post as a Post object (e.g. maildb().post(42))
-.. .. .. x * a list or set of objects of any previous type (e.g. [42, '43'])
-.. .. .. x * a PostSet object (e.g. maildb().all())
-.. .. 
-.. .. Post sets
-.. .. """""""""
-.. .. 
+Post sets
+"""""""""
+
+Most |hkshell| commands take a postset as an argument. A postset can be
+given in several ways. We saw examples of the followings:
+
+* the heapid as an integer (e.g. ``sS(42, 'something')``)
+* the heapid as a string (e.g. ``sS('43', 'something')``)
+* a list or set of strings and integers (e.g. ``sS([42, '43'], 'something')``)
+
+In these cases, the set of posts is created from the given integers and
+strings. The postset can also be created explicitly, using the ``ps``
+function::
+
+    >>> posts = ps([7,8])
+    >>> print posts
+    PostSet([<post '7'>, <post '8'>])
+    >>> sS(posts,'Cinema???')
+    >>> ls(posts)
+    <7> Cinema???  susan@usrobots.com
+    <8> Cinema???  ashe@usrobots.com
+    >>>
+
+:func:`postdb().all() <hklib.PostSet.all>` returns a postset that contains all
+posts. In the following example, we use it to add the ``internal`` tag to all
+posts::
+
+    >>> ls(show_tags=True, show_author=False)
+    <0> Mind-reader robot  [interesting,internal,robot]
+    <1> Mind-reader robot  [interesting,internal,robot]
+    <2> Mind-reader robot  [interesting,internal,robot]
+    <3> Mind-reader robot  [interesting,internal,psychology,robot]
+    <4> Mind-reader robot  [interesting,internal,robot]
+    <5> Mind-reader robot  [interesting,internal,psychology,robot]
+    <6> Mind-reader robot  [interesting,internal,psychology,robot]
+    <7> Cinema???  [free time,internal]
+    <8> Cinema???  [internal]
+
 .. .. We can create post sets (:class:`hklib.PostSet` objects) using the |ps|
 .. .. command::
 .. .. 
