@@ -66,6 +66,35 @@ Todo items
       ``test_<method>__<other stuff>``)
     * markup language for commit messages
 
+  * Use Sphinx's ``glossary`` feature.
+    
+    From "Sphinx Markup Constructs -> Glossary":
+
+    This directive must contain a reST definition list with terms and
+    definitions. The definitions will then be referencable with the ``term``
+    role.
+    Example:
+    
+    .. code-block:: none
+
+        .. glossary::
+        
+           environment
+              A structure where information about all documents under the root is
+              saved, and used for cross-referencing.  The environment is pickled
+              after the parsing stage, so that successive runs only need to read
+              and parse new and changed documents.
+        
+           source directory
+              The directory which, including its subdirectories, contains all
+              source files for one Sphinx project.
+        
+        ...
+
+        See :term:`environment` for more information.
+
+        ...
+
   * Documentation of modules. Documentation and revision needed:
 
     * hkshell: lines 529-730
