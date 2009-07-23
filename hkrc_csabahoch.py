@@ -156,7 +156,7 @@ def gvim():
 @hkshell.hkshell_cmd()
 def R(pps):
     """Mark thread as reviewed."""
-    hkshell.atr(pps, 'r')
+    hkshell.aTr(pps, 'r')
 
 if os.path.exists('hcs/pure'):
     hklib.log('Pure mode.')

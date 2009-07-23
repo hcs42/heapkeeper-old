@@ -173,13 +173,13 @@ ga()               - generate all pages
 ps(pps)            - create a postset
 ls(ps)             - get a summary of a postset
 
-pt(pps)            - propagate tags
-at(pps, pts)       - add tag/tags
-atr(pps, pts)      - add tag/tags recursively
-rt(pps, pts)       - remove tag/tags
-rtr(pps, pts)      - remove tag/tags recursively
-st(pps, pts)       - set tag/tags
-str_(pps, pts)     - set tag/tags recursively
+pT(pps)            - propagate tags
+aT(pps, pts)       - add tag/tags
+aTr(pps, pts)      - add tag/tags recursively
+rT(pps, pts)       - remove tag/tags
+rTr(pps, pts)      - remove tag/tags recursively
+sT(pps, pts)       - set tag/tags
+sTr(pps, pts)      - set tag/tags recursively
 
 pS(pps)            - propagate subject
 sS(pps, subj)      - set subject
@@ -1121,7 +1121,7 @@ def dl(from_=0):
 ##### Commands / tags #####
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
-def pt(posts):
+def pT(posts):
     """Propagates the tags of the posts in *pps* to all their children.
     
     **Argument:**
@@ -1136,7 +1136,7 @@ def pt(posts):
         postdb().postset(post).expf().forall(add_tags)
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
-def at(posts, tags):
+def aT(posts, tags):
     """Adds the given tags to the posts in *pps*.
     
     **Arguments:**
@@ -1150,7 +1150,7 @@ def at(posts, tags):
         p.set_tags(tags.union(p.tags()))
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
-def atr(posts, tags):
+def aTr(posts, tags):
     """Adds the given tags to the posts of the given postset and all their
     children.
 
@@ -1165,7 +1165,7 @@ def atr(posts, tags):
         p.set_tags(tags.union(p.tags()))
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
-def rt(posts, tags):
+def rT(posts, tags):
     """Removes the given tags from the posts in *pps*.
     
     **Arguments:**
@@ -1179,7 +1179,7 @@ def rt(posts, tags):
         p.set_tags(set(p.tags()) - tags)
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
-def rtr(posts, tags):
+def rTr(posts, tags):
     """Removes the given tags from the posts in *pps* and from all their
     children.
 
@@ -1194,7 +1194,7 @@ def rtr(posts, tags):
         p.set_tags(set(p.tags()) - tags)
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
-def st(posts, tags):
+def sT(posts, tags):
     """Sets the given tags on the posts in *pps*.
     
     **Arguments:**
@@ -1208,7 +1208,7 @@ def st(posts, tags):
         p.set_tags(tags)
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
-def str_(posts, tags):
+def sTr(posts, tags):
     """Sets the given tags on the posts in *pps* and on all their children.
 
     **Arguments:**

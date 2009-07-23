@@ -1,8 +1,8 @@
 Tutorial
 ========
 
-.. |atr| replace:: :func:`atr <hkshell.atr>`
-.. |at| replace:: :func:`at <hkshell.at>`
+.. |aTr| replace:: :func:`aTr <hkshell.aTr>`
+.. |aT| replace:: :func:`aT <hkshell.aT>`
 .. |cat| replace:: :func:`cat <hkshell.cat>`
 .. |enew_str| replace:: :func:`enew_str <hkshell.enew_str>`
 .. |enew| replace:: :func:`enew <hkshell.enew>`
@@ -14,8 +14,8 @@ Tutorial
 .. |ls| replace:: :func:`ls <hkshell.ls>`
 .. |ps| replace:: :func:`ps <hkshell.ps>`
 .. |q| replace:: :func:`q <hkshell.q>`
-.. |rtr| replace:: :func:`rtr <hkshell.rtr>`
-.. |rt| replace:: :func:`rt <hkshell.rt>`
+.. |rTr| replace:: :func:`rTr <hkshell.rTr>`
+.. |rT| replace:: :func:`rT <hkshell.rT>`
 .. |sSr| replace:: :func:`sSr <hkshell.sSr>`
 .. |sS| replace:: :func:`sS <hkshell.sS>`
 .. |s| replace:: :func:`s <hkshell.s>`
@@ -398,8 +398,8 @@ recursively, and all posts' subject will be set::
     <6> Mind-reader robot  susan@usrobots.com
     <7> Cinema  susan@usrobots.com
 
-There are similar functions to control tags, for example |at| ("add tag"),
-|atr| ("add tag recursively"), |rt| ("remove tag") and |rtr| ("remove tag
+There are similar functions to control tags, for example |aT| ("add tag"),
+|aTr| ("add tag recursively"), |rT| ("remove tag") and |rTr| ("remove tag
 recursively").
 
 The thread structure can also be changed: the |j| command joins two posts. It

@@ -431,58 +431,58 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEquals(post, None)
         self.assert_(hkshell.modification_listener.touched_posts().is_set([]))
 
-    def test_pt__1(self):
+    def test_pT__1(self):
         self.init_hkshell()
-        hkshell.at(1, 't')
+        hkshell.aT(1, 't')
         self.assertEquals(self.tags(), [[],['t'],[],[],[]])
-        hkshell.pt(1)
+        hkshell.pT(1)
         self.assertEquals(self.tags(), [[],['t'],['t'],[],[]])
 
-    def test_pt__2(self):
+    def test_pT__2(self):
         self.init_hkshell()
-        hkshell.at(0, 't1')
-        hkshell.at(1, 't2')
-        hkshell.pt(0)
+        hkshell.aT(0, 't1')
+        hkshell.aT(1, 't2')
+        hkshell.pT(0)
         self.assertEquals(self.tags(), [['t1'],['t1','t2'],['t1'],['t1'],[]])
 
-    def test_pt__3(self):
+    def test_pT__3(self):
         self.init_hkshell()
-        hkshell.at(0, 't1')
-        hkshell.at(0, 't2')
-        hkshell.pt(0)
+        hkshell.aT(0, 't1')
+        hkshell.aT(0, 't2')
+        hkshell.pT(0)
         t = ['t1', 't2']
         self.assertEquals(self.tags(), [t, t, t, t, []])
 
-    def test_at(self):
+    def test_aT(self):
         self.init_hkshell()
-        hkshell.at(1, 't')
+        hkshell.aT(1, 't')
         self.assertEquals(self.tags(), [[],['t'],[],[],[]])
-        hkshell.at(1, ['t', 'u'])
+        hkshell.aT(1, ['t', 'u'])
         self.assertEquals(self.tags(), [[],['t','u'],[],[],[]])
 
-    def test_atr(self):
+    def test_aTr(self):
         self.init_hkshell()
-        hkshell.atr(1, 't')
+        hkshell.aTr(1, 't')
         self.assertEquals(self.tags(), [[],['t'],['t'],[],[]])
-        hkshell.atr(1, ['t', 'u'])
+        hkshell.aTr(1, ['t', 'u'])
         self.assertEquals(self.tags(), [[],['t','u'],['t','u'],[],[]])
 
-    def test_rt_AND_rtr(self):
+    def test_rT_AND_rTr(self):
         self.init_hkshell()
-        hkshell.atr(0, ['t', 'u'])
+        hkshell.aTr(0, ['t', 'u'])
         self.ae(self.tags(), [['t','u'],['t','u'],['t','u'],['t','u'],[]])
-        hkshell.rt(1, ['t'])
+        hkshell.rT(1, ['t'])
         self.ae(self.tags(), [['t','u'],['u'],['t','u'],['t','u'],[]])
-        hkshell.rtr(1, ['u'])
+        hkshell.rTr(1, ['u'])
         self.ae(self.tags(), [['t','u'],[],['t'],['t','u'],[]])
 
-    def test_st_AND_str_(self):
+    def test_sT_AND_sTr(self):
         self.init_hkshell()
-        hkshell.atr(0, ['t', 'u'])
+        hkshell.aTr(0, ['t', 'u'])
         self.ae(self.tags(), [['t','u'],['t','u'],['t','u'],['t','u'],[]])
-        hkshell.st(1, ['x', 'y'])
+        hkshell.sT(1, ['x', 'y'])
         self.ae(self.tags(), [['t','u'],['x','y'],['t','u'],['t','u'],[]])
-        hkshell.str_(1, 'z')
+        hkshell.sTr(1, 'z')
         self.ae(self.tags(), [['t','u'],['z'],['z'],['t','u'],[]])
 
     def test_sS_AND_pS(self):

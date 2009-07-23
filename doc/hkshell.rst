@@ -79,13 +79,13 @@ General commands
 Tag manipulator commands
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: pt(pps)
-.. autofunction:: at(pps, tags)
-.. autofunction:: atr(pps, tags)
-.. autofunction:: rt(pps, tags)
-.. autofunction:: rtr(pps, tags)
-.. autofunction:: st(pps, tags)
-.. autofunction:: str_(pps, tags)
+.. autofunction:: pT(pps)
+.. autofunction:: aT(pps, tags)
+.. autofunction:: aTr(pps, tags)
+.. autofunction:: rT(pps, tags)
+.. autofunction:: rTr(pps, tags)
+.. autofunction:: sT(pps, tags)
+.. autofunction:: sTr(pps, tags)
 
 Subject manipulator commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

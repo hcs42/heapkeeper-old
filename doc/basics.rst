@@ -30,13 +30,13 @@ The content of this page will be the following:
 
     * tag commands:
 
-      * pt(pps)            - propagate tags
-      * at(pps, pts)       - add tag/tags
-      * atr(pps, pts)      - add tag/tags recursively
-      * rt(pps, pts)       - remove tag/tags
-      * rtr(pps, pts)      - remove tag/tags recursively
-      * st(pps, pts)       - set tag/tags
-      * str_(pps, pts)     - set tag/tags recursively
+      * pT(pps)            - propagate tags
+      * aT(pps, pts)       - add tag/tags
+      * aTr(pps, pts)      - add tag/tags recursively
+      * rT(pps, pts)       - remove tag/tags
+      * rTr(pps, pts)      - remove tag/tags recursively
+      * sT(pps, pts)       - set tag/tags
+      * sTr(pps, pts)      - set tag/tags recursively
 
   * Features:
 
