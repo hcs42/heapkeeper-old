@@ -67,6 +67,8 @@ General commands
 ^^^^^^^^^^^^^^^^
 
 .. autofunction:: h()
+.. autofunction:: p()
+.. autofunction:: ps()
 .. autofunction:: s()
 .. autofunction:: x()
 .. autofunction:: rl()

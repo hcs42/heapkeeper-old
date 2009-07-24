@@ -815,7 +815,7 @@ class PostDB(object):
     def postset(self, posts):
         """Creates a PostSet that will contain the specified posts.
         
-        See the type of the posts argument at PostSet.__init__.
+        See the type of the posts argument at :func:`PostSet.__init__`.
         """
 
         return PostSet(self, posts)

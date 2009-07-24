@@ -866,7 +866,7 @@ def p(pp):
 def ps(pps):
     """Creates a PostSet that will contain the specified posts.
 
-    See the type of the posts argument at PostSet.__init__.
+    See the type of the posts argument at :func:`hklib.PostSet.__init__`.
     """
 
     return postdb().postset(pps)
