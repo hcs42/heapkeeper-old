@@ -858,9 +858,18 @@ def c():
     return postdb().all().collect
 
 @hkshell_cmd()
+def p(pp):
+    """Returns a post by its heapid."""
+    return postdb().post(pp)
+
+@hkshell_cmd()
 def ps(pps):
-    res = postdb().postset(pps)
-    return res
+    """Creates a PostSet that will contain the specified posts.
+
+    See the type of the posts argument at PostSet.__init__.
+    """
+
+    return postdb().postset(pps)
 
 @hkshell_cmd()
 def h():
