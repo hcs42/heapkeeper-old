@@ -415,6 +415,38 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEquals(self.subjects(), ['','','','',''])
         self.assertEquals(self.tags(), [[],[],[],[],[]])
 
+    def test_ls(self):
+        """Tests :func:`hkshell.ls`."""
+
+        class MyOutput():
+            @staticmethod
+            def write(str):
+                output_list.append(str)
+        self.init_hkshell()
+        output = MyOutput()
+        hkshell.options.output = output
+
+        # ls with default parameters
+        output_list = []
+        hkshell.ls()
+        self.assertEquals(
+            output_list,
+            ['<0>   author0 (2008.08.20. 17:41)\n',
+             '<1>   author1 (2008.08.20. 17:41)\n',
+             '<2>   author2 (2008.08.20. 17:41)\n',
+             '<3>   author3 (2008.08.20. 17:41)\n',
+             '<4>   author4 (2008.08.20. 17:41)\n'])
+
+        # ls with given parameters
+        hkshell.aTr(1,['mytag1','mytag2'])
+        output_list = []
+        hkshell.ls(hkshell.ps([1,2,4]), show_author=False, show_tags=True)
+        self.assertEquals(
+            output_list,
+            ['<1>   [mytag1,mytag2] (2008.08.20. 17:41)\n',
+             '<2>   [mytag1,mytag2] (2008.08.20. 17:41)\n',
+             '<4>   [] (2008.08.20. 17:41)\n'])
+
     def test_enew(self):
         self.init_hkshell()
 

@@ -939,13 +939,15 @@ def opp():
     return postpage_listener.outdated_post_pages()
 
 @hkshell_cmd(add_events=True)
-def ls(pps=None):
+def ls(pps=None, show_author=True, show_tags=False):
     """Lists the summary of the posts in `pps`.
     
-    **Argument:**
+    **Arguments:**
 
     - `pps` (|PrePostSet| | None) -- The set of posts to print. If ``None``,
       the summary of all posts in the post database will be printed.
+    - `show_author` (bool) -- Show the author of the posts.
+    - `show_tags` (bool) -- Show the tags of the posts.
     """
 
     if pps == None:
@@ -957,20 +959,27 @@ def ls(pps=None):
 
     for heapid in heapids:
         post = postdb().post(heapid)
+        line = '<%s>' % (post.heapid(),)
 
         # subject
         if len(post.subject()) < 40:
-            subject = post.subject() 
+            line += ' ' + post.subject() 
         else:
-            subject = post.subject()[:37] + '...'
+            line += ' ' + post.subject()[:37] + '...'
+
+        # tags
+        if show_tags:
+            line += '  [%s]' % (','.join(post.tags()),)
+
+        # author
+        if show_author:
+            line += '  ' + post.author()
         
         # date
         if post.date_str() != '':
-            date = ' (' + post.date_str() + ')'
-        else:
-            date = ''
+            line += ' (%s)' % (post.date_str(),)
 
-        write('<%s> %s  %s%s\n' % (post.heapid(), subject, post.author(), date))
+        write(line+'\n')
 
 @hkshell_cmd(add_events=True)
 def cat(pps):

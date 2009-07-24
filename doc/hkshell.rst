@@ -99,7 +99,8 @@ Subject manipulator commands
 Miscellaneous commands
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: ls(pps)
+.. autofunction:: ls(pps, show_author, show_tags)
+.. autofunction:: cat(pps)
 .. autofunction:: d(pps)
 .. autofunction:: dr(pps)
 .. autofunction:: j(pp1, pp2)
