@@ -4,15 +4,22 @@ Tutorial
 .. |aTr| replace:: :func:`aTr <hkshell.aTr>`
 .. |aT| replace:: :func:`aT <hkshell.aT>`
 .. |cat| replace:: :func:`cat <hkshell.cat>`
+.. |collect| replace:: :class:`collect <hklib.PostSetCollectDelegate>`
+.. |d| replace:: :func:`d <hkshell.d>`
 .. |enew_str| replace:: :func:`enew_str <hkshell.enew_str>`
 .. |enew| replace:: :func:`enew <hkshell.enew>`
 .. |expf| replace:: :func:`expf <hklib.PostSet.expf>`
-.. |forall| replace:: :func:`forall <hklib.PostSet.forall>`
+.. |forall| replace:: :class:`forall <hklib.PostSetForallDelegate>`
 .. |ga| replace:: :func:`ga <hkshell.ga>`
 .. |hkshell| replace:: :mod:`hkshell`
 .. |j| replace:: :func:`j <hkshell.j>`
 .. |ls| replace:: :func:`ls <hkshell.ls>`
+.. |PostDB| replace:: :func:`PostDB <hklib.PostDB>`
+.. |postdb| replace:: :func:`postdb <hkshell.postdb>`
+.. |PostSet| replace:: :func:`PostSet <hklib.PostSet>`
+.. |Post| replace:: :func:`Post <hklib.Post>`
 .. |ps| replace:: :func:`ps <hkshell.ps>`
+.. |p| replace:: :func:`p <hkshell.p>`
 .. |q| replace:: :func:`q <hkshell.q>`
 .. |rTr| replace:: :func:`rTr <hkshell.rTr>`
 .. |rT| replace:: :func:`rT <hkshell.rT>`
@@ -102,7 +109,6 @@ Let's list all the posts we have (of course we don't have any posts yet)::
 
     >>> postdb().all()
     PostSet([])
-    >>>
 
 Let's create now a new post with the |enew| command::
 
@@ -141,13 +147,11 @@ about the post's successful creation::
     >>> enew()
     Post created.
     <post '0'>
-    >>>
 
 At this point, the post exists only in the memory. We use the :func:`s
 <hkshell.s>` command to save everything to the disk::
 
     >>> s()
-    >>>
 
 A file called ``0.post`` has been created in the ``posts`` directory. It
 contains exactly what we pasted into the text editor. Let's quit from
@@ -289,7 +293,6 @@ stands for "generate all")::
     Indices generated.
     Thread HTMLs generated.
     Post HTMLs generated.
-    >>>
 
 Open ``html/index.html`` in a browser. You will see something like this:
 
@@ -443,40 +446,127 @@ Let's join post 7 and 8 and regenerate the index page::
     Indices generated.
     Thread HTMLs generated.
     Post HTMLs generated.
-    >>>
 
 On the new index page, we will see that the two "Cinema" posts are in one
 thread now, and post 7 is the parent of post 8:
 
 .. image:: images/5.png
 
+Posts
+"""""
+
+The most basic data structure of Heapkeeper is :class:`hklib.Post`. A |Post|
+stores the headers and the body of the post that it represents. The simplest
+way to obtain the |Post| object of a post in |hkshell| is using its heapid and
+the |p| function::
+
+    >>> post = p(0)
+    >>> print post
+    <post '0'>
+
+|Post| has functions for getting and setting the headers and the body. The
+getter functions work in a quite obvious way::
+
+    >>> post = p(0)
+    >>> print post
+    <post '0'>
+    >>> post.heapid()
+    '0'
+    >>> post.author()
+    'ashe@usrobots.com'
+    >>> post.subject()
+    'Mind-reader robot'
+    >>> post.tags()
+    ['interesting', 'robot']
+    >>> post.body()
+    'RB-34 is behaving wierdly. You should have a look at it
+    .\nI have never seen anything like that. It seems as if
+    it\ncould read my mind.\n\nAshe\n'
+
+Let's create a new post and change its content using |Post| methods! ::
+
+    >>> post = enew_str('Author: someone')
+    Post created.
+    >>> post.author()
+    'someone'
+    >>> post.subject()
+    ''
+    >>> post.body()
+    '\n'
+    >>> post.set_author('noname spammer')
+    >>> post.set_subject('Ugly spam')
+    >>> post.set_body('Buy r0b0t for $99!\n'
+    ...               '\n'
+    ...               'http://buyrobot99.com')
+    >>> cat(post)
+    Heapid: 9
+    Author: noname spammer
+    Subject: Ugly spam
+
+    Buy r0b0t for $99!
+
+    http://buyrobot99.com
+
+A post can be deleted either using the :class:`Post.delete <hklib.Post.delete>`
+method or the |d| command. After deletion, the heapid will remain occupied and
+the |Post| object will still exist, but the post will not show up in either the
+generated HTML pages, or in the result of :func:`postdb().all()
+<hklib.PostDB.all>` or :func:`ls() <hkshell.ls>`. Its content will be replaced
+by a placeholder content::
+
+    >>> ls()
+    <0> Mind-reader robot  ashe@usrobots.com
+    <1> Mind-reader robot  alfred.lanning@usrobots.com
+    <2> Mind-reader robot  peter.bogert@usrobots.com
+    <3> Mind-reader robot  susan@usrobots.com
+    <4> Mind-reader robot  alfred.lanning@usrobots.com
+    <5> Mind-reader robot  alfred.lanning@usrobots.com
+    <6> Mind-reader robot  susan@usrobots.com
+    <7> How about cinema?  susan@usrobots.com
+    <8> How about cinema?  ashe@usrobots.com
+    <9> Ugly spam  noname spammer
+    >>> d(9)
+    >>> ls()
+    <0> Mind-reader robot  ashe@usrobots.com
+    <1> Mind-reader robot  alfred.lanning@usrobots.com
+    <2> Mind-reader robot  peter.bogert@usrobots.com
+    <3> Mind-reader robot  susan@usrobots.com
+    <4> Mind-reader robot  alfred.lanning@usrobots.com
+    <5> Mind-reader robot  alfred.lanning@usrobots.com
+    <6> Mind-reader robot  susan@usrobots.com
+    <7> How about cinema?  susan@usrobots.com
+    <8> How about cinema?  ashe@usrobots.com
+    >>> cat(9)
+    Heapid: 9
+    Flag: deleted
+
 Post sets
 """""""""
 
-Most |hkshell| commands take a postset as an argument. A postset can be
-given in several ways. We saw examples of the followings:
+Most |hkshell| commands take a post set as an argument. They accept
+:class:`hklib.PostSet` objects, as well as a few other types that can be
+converted to |PostSet|. We saw examples of the followings, all of which can be
+converted to |PostSet| objects:
 
 * the heapid as an integer (e.g. ``sS(42, 'something')``)
 * the heapid as a string (e.g. ``sS('43', 'something')``)
 * a list or set of strings and integers (e.g. ``sS([42, '43'], 'something')``)
 
-In these cases, the set of posts is created from the given integers and
-strings. The postset can also be created explicitly, using the ``ps``
-function::
+The |PostSet| object can also be created explicitly, using the |ps| function::
 
     >>> posts = ps([7,8])
     >>> print posts
     PostSet([<post '7'>, <post '8'>])
-    >>> sS(posts,'Cinema???')
+    >>> sS(posts,'How about cinema?')
     >>> ls(posts)
-    <7> Cinema???  susan@usrobots.com
-    <8> Cinema???  ashe@usrobots.com
-    >>>
+    <7> How about cinema?  susan@usrobots.com
+    <8> How about cinema?  ashe@usrobots.com
 
-:func:`postdb().all() <hklib.PostSet.all>` returns a postset that contains all
+:func:`postdb().all() <hklib.PostSet.all>` returns a post set that contains all
 posts. In the following example, we use it to add the ``internal`` tag to all
 posts::
 
+    >>> aT(postdb().all(),'internal')
     >>> ls(show_tags=True, show_author=False)
     <0> Mind-reader robot  [interesting,internal,robot]
     <1> Mind-reader robot  [interesting,internal,robot]
@@ -485,66 +575,49 @@ posts::
     <4> Mind-reader robot  [interesting,internal,robot]
     <5> Mind-reader robot  [interesting,internal,psychology,robot]
     <6> Mind-reader robot  [interesting,internal,psychology,robot]
-    <7> Cinema???  [free time,internal]
-    <8> Cinema???  [internal]
+    <7> How about cinema?  [free time,internal]
+    <8> How about cinema?  [internal]
 
-.. .. We can create post sets (:class:`hklib.PostSet` objects) using the |ps|
-.. .. command::
-.. .. 
-.. ..     >>> p = ps([1,2])
-.. ..     >>> p
-.. ..     PostSet([<post '1'>, <post '2'>])
-.. ..     >>>
-.. .. 
-.. .. We can print the most important information about them using the |ls| command::
-.. .. 
-.. ..     >>> ls(p)
-.. ..     <1> alfred.lanning@usrobots.com  RB-34
-.. ..     <2> peter.bogert@usrobots.com  RB-34
-.. .. 
-.. .. There are many things we can do with a post set. It has standard set operations
-.. .. like union, intersection, etc; but it also has operations that are specific to
-.. .. Heapkeeper. For example :func:`p.expf() <hklib.PostSet.expf>` returns a post set
-.. .. that contains all posts of `p` and all their descendants::
-.. .. 
-.. ..     >>> p.expf()
-.. ..     PostSet([<post '4'>, <post '1'>, <post '2'>, <post '6'>, <post '3'>,
-.. ..     <post '5'>])
-.. .. 
-.. .. Post sets also have a |forall| attribute that behaves in a tricky way.
-.. .. Whatever operation is performed on them, it will be performed on all posts
-.. .. belonging to the post set. In the following example, we use |expf| and |forall|
-.. .. to rename the subject in a whole thread; i.e. renaming the subject of all posts
-.. .. belonging to that thread.::
-.. .. 
-.. ..     >>> for p in range(0,8): ls(p)
-.. ..     ...
-.. ..     <0> RB-34  ashe@usrobots.com
-.. ..     <1> RB-34  alfred.lanning@usrobots.com
-.. ..     <2> RB-34  peter.bogert@usrobots.com
-.. ..     <3> RB-34  susan@usrobots.com
-.. ..     <4> RB-34  alfred.lanning@usrobots.com
-.. ..     <5> RB-34  alfred.lanning@usrobots.com
-.. ..     <6> RB-34  susan@usrobots.com
-.. ..     <7> Cinema  susan@usrobots.com
-.. ..     >>> ps(0).expf().forall.set_subject("Mind-reader robot")
-.. ..     >>> for p in range(0,8): ls(p)
-.. ..     ...
-.. ..     <0> Mind-reader robot  ashe@usrobots.com
-.. ..     <1> Mind-reader robot  alfred.lanning@usrobots.com
-.. ..     <2> Mind-reader robot  peter.bogert@usrobots.com
-.. ..     <3> Mind-reader robot  susan@usrobots.com
-.. ..     <4> Mind-reader robot  alfred.lanning@usrobots.com
-.. ..     <5> Mind-reader robot  alfred.lanning@usrobots.com
-.. ..     <6> Mind-reader robot  susan@usrobots.com
-.. ..     <7> Cinema  susan@usrobots.com
-.. ..     >>>
-.. .. 
-.. .. Todo:
-.. .. 
-.. .. * another idea: adding a signature to all my emails
-.. .. 
+There are many things we can do with a post set. It has standard set operations
+like union, intersection, etc; but it also has operations that are specific to
+Heapkeeper. For example :func:`p.expf() <hklib.PostSet.expf>` ("expand
+forward") returns a post set that contains all posts of `p` and all their
+descendants. If we expand post 0, we will get all posts concerning the
+mind-reader robot::
+
+    >>> ls(ps([0]).expf())
+    <0> Mind-reader robot  ashe@usrobots.com
+    <1> Mind-reader robot  alfred.lanning@usrobots.com
+    <2> Mind-reader robot  peter.bogert@usrobots.com
+    <3> Mind-reader robot  susan@usrobots.com
+    <4> Mind-reader robot  alfred.lanning@usrobots.com
+    <5> Mind-reader robot  alfred.lanning@usrobots.com
+    <6> Mind-reader robot  susan@usrobots.com
+
+|PostSet| has two special attributes: |collect| and |forall|.
+|collect| collects posts from a post set which have certain property.
+|forall| applies a function to all posts in a post set. For example, let's say
+we want to rename the tag ``psychology`` to ``psycho``. First we collect the
+posts that have the ``psychology`` tag, then remove these tags (using |rT|) and
+add ``psycho`` instead (using |aT|)::
+
+    >>> posts = postdb().all().collect(lambda p: p.has_tag('psychology'))
+    >>> posts
+    PostSet([<post '5'>, <post '3'>, <post '6'>])
+    >>> posts.forall(lambda p: rT(p, 'psychology'))
+    >>> posts.forall(lambda p: aT(p, 'psycho'))
+    >>> ls(show_tags=True, show_author=False)
+    <0> Mind-reader robot  [interesting,internal,robot]
+    <1> Mind-reader robot  [interesting,internal,robot]
+    <2> Mind-reader robot  [interesting,internal,robot]
+    <3> Mind-reader robot  [interesting,internal,psycho,robot]
+    <4> Mind-reader robot  [interesting,internal,robot]
+    <5> Mind-reader robot  [interesting,internal,psycho,robot]
+    <6> Mind-reader robot  [interesting,internal,psycho,robot]
+    <7> How about cinema?  [free time,internal]
+    <8> How about cinema?  [internal]
+
 .. .. Todo for new sections:
-.. .. 
+.. ..
 .. .. * Creating a heap (with a Google Groups account and GMail account).
 .. .. * Maybe: posting a few emails in order to create a non-trivial thread structure.
