@@ -23,29 +23,18 @@ Todo items
 
   * documentation
 
-    * tutorial
-    * screenshots
-    * download page, maybe with "changes"
-
-  * administrative
-
-    * getting the domain
-    * modifying the documentation uploader script (``scripts/pushdoc``) to
-      upload the documentation there
-    * register to freshmeat
-    * write to Sphinx that we use Sphinx
+    * better screenshots
 
   * misc
 
     * try it out on Windows
-    * changing post field representation to deal with new lines differently and
-      allowing white spaces in the line that separates the header and the body?
-    * nicer output for ``ls``
-
-  * ``-``: on Python 2.6, the ``sys.exit(0)`` call prints a stack trace when
-    the interpreter is started with a ``-i`` option. We start the interpreter
-    this way, so we should find out how to suppress printing the stack trace.
+    * try it out with Python 2.5
   
+  * administrative: after releasing 0.3
+
+    * register to freshmeat
+    * write to Sphinx that we use Sphinx
+
 * **Priority**
  
   * supporting multiple heaps (afterwards we should clean up and upload hh)
