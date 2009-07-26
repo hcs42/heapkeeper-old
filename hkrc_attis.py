@@ -254,6 +254,11 @@ def et(pps):
             hkshell.e(post.heapid())
     hkshell.ga()
 
+@hkshell.hkshell_cmd()
+def lsr(heapid):
+    """Print a whole thread, ie. recursive ls."""
+    hkshell.ls(hkshell.ps(heapid).exp())
+
 hkshell.options.callbacks.gen_indices = gen_indices
 hkshell.options.callbacks.gen_posts = gen_posts
 hkshell.on('save')
