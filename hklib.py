@@ -1515,11 +1515,13 @@ class EmailDownloader(object):
         post.remove_google_stuff()
         post.normalize_subject()
 
-        for entry, author_regex in self._config.items('nicknames'):
-            [author, regex] = self._config.get('nicknames', entry).split(' ',1)
-            if re.search(regex, post.author()) != None:
-                post.set_author(author)
-                break
+        if self._config.has_section('nicknames'):
+            for entry, author_regex in self._config.items('nicknames'):
+                [author, regex] = \
+                    self._config.get('nicknames', entry).split(' ',1)
+                if re.search(regex, post.author()) != None:
+                    post.set_author(author)
+                    break
 
         return post
 
