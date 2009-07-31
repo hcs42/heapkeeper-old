@@ -26,6 +26,51 @@ files, since they are both reStructuredText texts.
 * Use lines no longer than 79 characters.
 * Use US spelling.
 
+Functions
+^^^^^^^^^
+
+::
+
+    def add(a, b):
+        """Adds `b` to `a`.
+
+        The more lengthy description can go here.
+
+        **Arguments:**
+
+        - `a` (int) -- The first number to add.
+        - `b` (int) -- The second number to add. This is added to `a`.
+
+        **Returns:** int
+
+        Note: this is a very complicated function. Use it with care.
+        """
+
+        return a + b
+
+Classes
+^^^^^^^
+
+::
+
+    class Complex(object):
+
+        """Represents a complex number.
+        
+        The more lengthy description can go here.
+
+        **Data attributes:**
+
+        - `re` (float) -- The real part.
+        - `im` (float) -- The imaginary part.
+        """
+
+        def __init__(self, re=0.0, im=0.0):
+            super(Complex, self).__init__()
+            self.re = re
+            self.im = im
+
+
 Python code
 -----------
 
