@@ -5,6 +5,7 @@ Tutorial
 .. |aT| replace:: :func:`aT <hkshell.aT>`
 .. |cat| replace:: :func:`cat <hkshell.cat>`
 .. |collect| replace:: :class:`collect <hklib.PostSetCollectDelegate>`
+.. |dl| replace:: :func:`dl <hkshell.dl>`
 .. |d| replace:: :func:`d <hkshell.d>`
 .. |enew_str| replace:: :func:`enew_str <hkshell.enew_str>`
 .. |enew| replace:: :func:`enew <hkshell.enew>`
@@ -29,11 +30,30 @@ Tutorial
 .. |x| replace:: :func:`x <hkshell.x>`
 .. .. |XX| replace:: :func:`XX <hkshell.XX>`
 
+This tutorial describes how to use Heapkeeper. It will show:
+
+- how to download__ and configure__ Heapkeeper
+- how to add__ posts to a local heap
+- how to generate__ HTML pages from them
+- how to manipulate__ the posts in the heap
+- how to create a heap for a `mailing list`__
+
+__ downloading_hk_
+__ configuring_hk_
+__ adding_posts_
+__ generating_html_
+__ manipulating_posts_
+__ mailing_list_
+
+.. _downloading_hk:
+
 Downloading Heapkeeper
 ----------------------
 
-Download the latest version of Heapkeeper (either in `tar.gz`__ or in `zip`__).
-For Unix users:
+First make sure you have Python 2.5 or 2.6.
+
+Then download the latest version of Heapkeeper (either in `tar.gz`__ or in
+`zip`__). For Unix users:
 
 .. code-block:: sh
 
@@ -58,6 +78,18 @@ version information for example:
     $ python hk.py --version
     Heapkeeper version 0.3uc
 
+Or you can execute the automatic test:
+
+.. code-block:: sh
+
+    $ python test.py
+    ----------------------------------------------------------------------
+    Ran 87 tests in 0.172s
+
+    OK
+
+.. _configuring_hk:
+
 Configuration
 -------------
 
@@ -80,6 +112,8 @@ HTML generation target.
     [paths]
     mail=posts
     html=html
+
+.. _adding_posts:
 
 Adding a new post to the heap
 -----------------------------
@@ -279,6 +313,8 @@ shell script file. They will create the posts we will work with.
     Susan
     EOF
 
+.. _generating_html:
+
 Generating HTML pages
 ---------------------
 
@@ -321,6 +357,8 @@ following page if we click on the tree image of the first thread:
 This page displays one thread. The top of the page contains the post summaries
 of the posts in the thread. The rest shows all the posts together with their
 body.
+
+.. _manipulating_posts:
 
 Modifying the heap with |hkshell|
 ---------------------------------
@@ -617,7 +655,149 @@ add ``psycho`` instead (using |aT|)::
     <7> How about cinema?  [free time,internal]
     <8> How about cinema?  [internal]
 
-.. .. Todo for new sections:
-.. ..
-.. .. * Creating a heap (with a Google Groups account and GMail account).
-.. .. * Maybe: posting a few emails in order to create a non-trivial thread structure.
+.. _mailing_list:
+
+Creating a heap for a mailing list
+----------------------------------
+
+As you probably understand now, Heapkeeper is for managing heaps, which are
+modifiable mailing list archives. So far we added new posts to the heap with
+|hkshell| commands.
+
+One of Heapkeeper's major features is to convert emails arriving to a real
+mailing list automatically to posts on a heap. Currently this can be done using
+an email account, which will serve as a channel between the mailing list and
+Heapkeeper. The reason for this is the following. Heapkeeper can download the
+emails of the mailing list via IMAP protocol with SSL. Since mailing lists do
+not support IMAP, but email accounts usually do, Heapkeeper will need an email
+account (with IMAP SSL) as a channel, through which it can download emails.
+
+In this section of the tutorial, we will create an email account and use
+Heapkeeper to download emails from there. The last step (which we will not
+perform here) would be to create a mailing list (e.g. GoogleGroups) and
+subscribe with the email account. The account will then be used as a channel,
+so that Heapkeeper would download emails arriving to the mailing list.
+
+Let's create a GMail account first. It can be done at
+http://mail.google.com/mail/signup. In the example, we used the
+``myheap.channel`` user name and the ``mystrongpassword`` password.
+
+Then modify the configuration file so that Heapkeeper will know where to
+download the emails from:
+
+.. code-block:: none
+
+    [server]
+    host=imap.gmail.com
+    port=993
+    username=myheap.channel@gmail.com
+    password=mystrongpassword
+
+    [paths]
+    mail=myheap_posts
+    html=myheap_html
+
+Create the post and HTML directories and start Heapkeeper:
+
+.. code-block:: sh
+
+    $ mkdir myheap_posts
+    $ mkdir myheap_html
+    $ ./hk.py
+    Importing hkrc...
+    Module not found: "hkrc"
+
+    >>>
+
+The |dl| command can be used to download new emails and convert them into
+posts::
+
+    >>> dl()
+    Reading settings...
+    Connecting...
+    Connected
+    Post #0 (#1 in INBOX) downloaded.
+    Post #1 (#2 in INBOX) downloaded.
+    Post #2 (#3 in INBOX) downloaded.
+    Downloading finished.
+    >>> ls()
+    <0> Get started with Google Mail  Google Mail Team <mail-noreply@google.com> (2009.07.25. 21:36)
+    <1> Access Google Mail on your mobile phone  Google Mail Team <mail-noreply@google.com> (2009.07.25. 21:36)
+    <2> Import your contacts and old email  Google Mail Team <mail-noreply@google.com> (2009.07.25. 21:36)
+
+As we can see, Heapkeeper downloaded the three "Get started" emails that were
+automatically sent by Google. Unfortunately these are HTML messages, which is
+not very well handled by Heapkeeper, so if we print them, we will see the HTML
+code.
+
+We can modify the posts as we like, we can even delete them::
+
+    >>> sS(0,'Get started')
+    >>> sS(1,'Mobile phone access')
+    >>> d(2)
+    >>> postdb().all().forall(lambda p: p.set_author('Google Mail Team'))
+    >>> ls()
+    <0> Get started  Google Mail Team (2009.07.25. 21:36)
+    <1> Mobile phone access  Google Mail Team (2009.07.25. 21:36)
+
+Date and message id
+"""""""""""""""""""
+
+These posts contain two additional fields that we have not met before: message
+id ("messid" for short) and date. They can be accessed and modified from within
+Heapkeeper similarly to other fields::
+
+    >>> p(0).messid()
+    '<b53945e0907251236l60da49b8t@mail.gmail.com>'
+    >>> p(0).date()
+    'Sat, 25 Jul 2009 12:36:27 -0700'
+
+They are stored similarly, as well:
+
+.. code-block:: sh
+
+    $ cat myheap_posts/0.post | head -n 5
+    Author: Google Mail Team
+    Subject: Get started
+    Message-Id: <b53945e0907251236l60da49b8t@mail.gmail.com>
+    Date: Sat, 25 Jul 2009 12:36:27 -0700
+
+The |ls| command already showed the date of the posts. The post contains the
+date in :rfc:`2822` format, but Heapkeeper usually displays the date in local
+time (e.g. the |ls| command does so). The :func:`date <Post.date>` and
+:func:`date_str <Post.date_str>` methods of |Post| can be used to access the
+two form of the post's date:
+
+    >>> p(0).date()
+    'Sat, 25 Jul 2009 12:36:27 -0700'
+    >>> p(0).date_str()
+    '2009.07.25. 21:36'
+
+Message id and post deletion
+""""""""""""""""""""""""""""
+
+The message id is not really important to the readers and maintainers of the
+heap, but it is very important to Heapkeeper itself. Just like a heapid
+identifies a *post*, a message id identifies an *email*. So if the |dl| command
+of |hkshell| is called again, Heapkeeper will not download the emails already
+downloaded, even if their posts were modified or deleted. The reason is that
+the message ids of all downloaded emails are stored in the post files, even if
+the post is deleted. Post 2 was deleted, but as discussed previously, the
+|Post| object and the post file were not, only their content:
+
+.. code-block:: sh
+
+    $ cat mail_test/2.post
+    Message-Id: <b53945e0907251236l2285b7faq@mail.gmail.com>
+    Flag: deleted
+
+If we invoke the |dl| command again, it will not download post 2 again:
+
+    >>> dl()
+    Reading settings...
+    Connecting...
+    Connected
+    Post #0 (#1 in INBOX) found.
+    Post #1 (#2 in INBOX) found.
+    Post #2 (#3 in INBOX) found.
+    Downloading finished.
