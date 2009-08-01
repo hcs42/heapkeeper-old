@@ -28,8 +28,11 @@ Todo items
   * misc
 
     * try it out on Windows
-    * try it out with Python 2.5
   
+  * during the release procedure
+
+    * 0.3uc -> 0.3 in "grep 0.3uc \* doc/\*"
+
   * administrative: after releasing 0.3
 
     * register to freshmeat
