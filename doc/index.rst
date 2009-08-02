@@ -1,3 +1,5 @@
+.. title:: Welcome to Heapkeeper!
+
 .. toctree::
    :hidden:
 
