@@ -1,6 +1,8 @@
 Basics
 ======
 
+This page is under construction.
+
 The content of this page will be the following:
 
 * Basic concepts: posts, post files.

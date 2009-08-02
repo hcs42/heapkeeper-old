@@ -1,6 +1,8 @@
 Customization
 =============
 
+This page is under construction.
+
 The content of this page will be the following:
 
 * ``hk.conf`` configuration file

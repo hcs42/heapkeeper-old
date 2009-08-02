@@ -4,6 +4,7 @@ Screenshots
 Using Heapkeeper's shell to download new posts and modify them:
 
 .. image:: images/shell.png
+      :align: center
 
 .. .. Text in the screenshot:
 
@@ -45,10 +46,12 @@ Using Heapkeeper's shell to download new posts and modify them:
 An index page of a heap:
 
 .. image:: images/1.png
+      :align: center
 
 HTML page of a post:
 
 .. image:: images/2.png
+      :align: center
 
 If you like the screenshots, it may be a good idea to continue with the
 :doc:`tutorial`, where you can find explanations and more screenshots.

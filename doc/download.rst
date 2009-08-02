@@ -1,5 +1,8 @@
-Download
-========
+Download page
+=============
+
+Heapkeeper repository
+---------------------
 
 .. highlight:: sh
 
