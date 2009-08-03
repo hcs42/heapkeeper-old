@@ -21,13 +21,11 @@ Todo items
 
 * **Heapkeeper 0.3**
 
-  * documentation
-
-    * better screenshots
-
   * misc
 
-    * try it out on Windows
+    * items in posts "Testing on Windows" and "CRLF issues" //Csabi
+    * rewriting git history //Attis
+    * recreating the heapkeeper repo and pushing the new history //Csabi
   
   * during the release procedure
 
@@ -179,6 +177,10 @@ Todo items
 
   * CamelCase function names to lower_case in test modules
   * hklib.STAR to something
+
+* write a ``set_version`` script that modifies the version number of
+  Heapkeeper at all appropriate places (currently in hklib.py and
+  conf.py)
 
 * :func:`hklib.Post.parse`: Better exception handling during parsing. I think
   we need a HkParseException type which can be raised more conveniently during
