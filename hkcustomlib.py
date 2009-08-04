@@ -42,6 +42,7 @@ localtime_fun --- A function that calculates the tm structure based on a
     Type: (timestamp:int) -> time.tm
 """
 
+import os
 import time
 import datetime
 import hkutils
@@ -174,6 +175,14 @@ def gen_threads(postdb):
 
 ##### Misc #####
 
+def default_editor():
+    if os.name == 'posix':
+        return 'vi'
+    elif os.name == 'nt':
+        return 'notepad'
+    else:
+        return None
+
 def edit_file(file):
     """Opens an editor in which the user edits the given file.
     
@@ -187,6 +196,22 @@ def edit_file(file):
     """
 
     old_content = hkutils.file_to_string(file, return_none=True)
-    subprocess.call(['gvim', '-f', file])
+
+    editor = os.getenv('EDITOR')
+
+    # if EDITOR is not set, get the default editor
+    if editor is None:
+        editor = default_editor()
+
+    # if not even the default is set, print an error message
+    if editor is None:
+        hklib.log(
+            'Cannot determine the default editor based on the operating\n'
+            'system. Please set the EDITOR environment variable to the editor\n'
+            'you want to use or set hkshell.options.callback.edit_file to\n'
+            'call your editor of choice.')
+        return False
+
+    subprocess.call(editor.split() + [file])
     return hkutils.file_to_string(file, return_none=True) != old_content
 
