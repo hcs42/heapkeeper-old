@@ -1091,10 +1091,10 @@ def enew():
     try:
         os.write(
             tmp_file_fd,
-            'Author: \n'
-            'Subject: \n'
-            '\n'
-            '\n')
+            'Author: ' + os.linesep +
+            'Subject: ' + os.linesep +
+            os.linesep +
+            os.linesep)
         os.close(tmp_file_fd)
         successful_edit = options.callbacks.edit_file(tmp_file_name)
         if successful_edit == True:
