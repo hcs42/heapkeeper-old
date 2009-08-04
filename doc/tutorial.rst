@@ -148,7 +148,9 @@ Let's create now a new post with the |enew| command::
 
     >>> enew()
 
-An editor will pop up (``gvim`` by default) and the following template:
+An editor will pop up (by default, the editor is ``notepad`` on Windows and
+``vi`` on Unix systems; this can be overridden by setting the ``EDITOR``
+environment variable). The editor will contain the following template:
 
 .. code-block:: none
 
@@ -218,7 +220,9 @@ create a few more posts to make the thread structure more interesting. The
 current post is a reply.
 
 The following Unix shell commands can be copy-pasted into the terminal or a
-shell script file. They will create the posts we will work with.
+shell script file. They will create the posts we will work with. (If you don't
+have a Unix shell, you can create the post files in the same way we created
+``0.post``).
 
 .. code-block:: sh
 
@@ -333,6 +337,7 @@ stands for "generate all")::
 Open ``html/index.html`` in a browser. You will see something like this:
 
 .. image:: images/1.png
+      :align: center
 
 This is called an *index page*, because it contains an index of the posts. Every
 post has a one line summary. These post summaries are sorted into boxes: every
@@ -346,6 +351,7 @@ the post pages. If we click on the subject of the first post, the following page
 will be shown to us:
 
 .. image:: images/2.png
+      :align: center
 
 In the index page, every thread has a little tree image next to the subject and
 tags of the post summary of the root of that thread. If we click on it, we will
@@ -353,6 +359,7 @@ see all the posts of that thread expanded in an HTML page. We will see the
 following page if we click on the tree image of the first thread:
 
 .. image:: images/3.png
+      :align: center
 
 This page displays one thread. The top of the page contains the post summaries
 of the posts in the thread. The rest shows all the posts together with their
@@ -476,6 +483,7 @@ works like |enew|, but receives the content of the post as an argument::
 The generated page will look like this:
 
 .. image:: images/4.png
+      :align: center
 
 Let's join post 7 and 8 and regenerate the index page::
 
@@ -489,6 +497,7 @@ On the new index page, we will see that the two "Cinema" posts are in one
 thread now, and post 7 is the parent of post 8:
 
 .. image:: images/5.png
+      :align: center
 
 Posts
 """""
