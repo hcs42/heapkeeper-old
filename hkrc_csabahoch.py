@@ -133,24 +133,24 @@ def get_content(file):
     return hkutils.file_to_string(file, return_none=True)
 
 def edit_file(file):
-    old_content = get_content(file, return_none=True)
+    old_content = get_content(file)
     subprocess.call(['vim', '-f', file])
-    return get_content(file, return_none=True) != old_content
+    return get_content(file) != old_content
 
 @hkshell.hkshell_cmd()
 def vim():
     def edit_file(file):
-        old_content = get_content(file, return_none=True)
+        old_content = get_content(file)
         subprocess.call(['vim', '-f', file])
-        return get_content(file, return_none=True) != old_content
+        return get_content(file) != old_content
     hkshell.options.callbacks.edit_file = edit_file
 
 @hkshell.hkshell_cmd()
 def gvim():
     def edit_file(file):
-        old_content = get_content(file, return_none=True)
+        old_content = get_content(file)
         subprocess.call(['gvim', '-f', file])
-        return get_content(file, return_none=True) != old_content
+        return get_content(file) != old_content
     hkshell.options.callbacks.edit_file = edit_file
 
 @hkshell.hkshell_cmd()
