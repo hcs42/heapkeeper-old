@@ -33,6 +33,8 @@ import hkutils
 import hklib
 import test_hklib
 import hkshell
+import time
+
 
 class Test__1(unittest.TestCase):
     
@@ -426,16 +428,18 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         output = MyOutput()
         hkshell.options.output = output
 
+        hklib.localtime_fun = time.gmtime
+
         # ls with default parameters
         output_list = []
         hkshell.ls()
         self.assertEquals(
             output_list,
-            ['<0>   author0 (2008.08.20. 17:41)\n',
-             '<1>   author1 (2008.08.20. 17:41)\n',
-             '<2>   author2 (2008.08.20. 17:41)\n',
-             '<3>   author3 (2008.08.20. 17:41)\n',
-             '<4>   author4 (2008.08.20. 17:41)\n'])
+            ['<0>   author0 (2008.08.20. 15:41)\n',
+             '<1>   author1 (2008.08.20. 15:41)\n',
+             '<2>   author2 (2008.08.20. 15:41)\n',
+             '<3>   author3 (2008.08.20. 15:41)\n',
+             '<4>   author4 (2008.08.20. 15:41)\n'])
 
         # ls with given parameters
         hkshell.aTr(1,['mytag1','mytag2'])
@@ -443,9 +447,9 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         hkshell.ls(hkshell.ps([1,2,4]), show_author=False, show_tags=True)
         self.assertEquals(
             output_list,
-            ['<1>   [mytag1,mytag2] (2008.08.20. 17:41)\n',
-             '<2>   [mytag1,mytag2] (2008.08.20. 17:41)\n',
-             '<4>   [] (2008.08.20. 17:41)\n'])
+            ['<1>   [mytag1,mytag2] (2008.08.20. 15:41)\n',
+             '<2>   [mytag1,mytag2] (2008.08.20. 15:41)\n',
+             '<4>   [] (2008.08.20. 15:41)\n'])
 
     def test_enew(self):
         self.init_hkshell()

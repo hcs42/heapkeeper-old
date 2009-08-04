@@ -86,6 +86,10 @@ CYCLES = 2
 
 ##### Post #####
 
+# This variable should be put into hklib.Options, but we don't have that yet.
+localtime_fun = time.localtime
+
+
 class Post(object):
 
     """Represents a posted message on the heap.
@@ -291,7 +295,7 @@ class Post(object):
         if timestamp == 0:
             return ''
         else:
-            return time.strftime('%Y.%m.%d. %H:%M', time.localtime(timestamp))
+            return time.strftime('%Y.%m.%d. %H:%M', localtime_fun(timestamp))
 
     def before(self, *dt):
         return datetime.datetime(*dt) > self.datetime()
