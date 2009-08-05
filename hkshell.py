@@ -170,6 +170,7 @@ gi()               - generate index pages
 gt()               - generate thread pages
 gp()               - generate post pages
 ga()               - generate all pages
+p(pp)              - get a post
 ps(pps)            - create a postset
 ls(ps)             - get a summary of a postset
 
@@ -192,7 +193,7 @@ dr(pps)            - delete recursively
 j(pp, pp)          - join two threads
 e(pp)              - edit the post as a file
 enew()             - creates and edits a new post as a file
-enew_str()         - creates a new post from a string
+enew_str(str)      - creates a new post from a string
 dl()               - download new mail
 
 postdb()           - the post database object
