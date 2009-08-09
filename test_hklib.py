@@ -21,7 +21,7 @@
 """Tests the hklib module.
 
 Usage:
-    
+
     $ python test_hklib.py
 """
 
@@ -41,7 +41,7 @@ class PostDBHandler(object):
 
     """A class that helps implementing the tester classes by containing
     functions commonly used by them."""
-    
+
     # Creating an ordered array of dates.
     dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200\n' % i \
               for i in range(6) ]
@@ -64,7 +64,7 @@ class PostDBHandler(object):
 
     def add_post(self, index, parent=None):
         """Adds a new post to postdb.
-        
+
         The attributes of the post will be created as follows:
         - The author will be 'author'+index.
         - The subject will be 'subject'+index.
@@ -503,7 +503,7 @@ html=%s
                           hkutils.file_to_string(postfile1))
         self.assertEquals('Message-Id: mess2',
                           hkutils.file_to_string(postfile2))
-        
+
         # Adding a new post
         postfile3 = self.postFileName('3.post')
         p3 = Post.from_str('Subject: subject3')
@@ -552,7 +552,7 @@ html=%s
     def testThreadstructHeapid(self):
         """Testing that the thread structure also works when the Parent
         is defined by a heapid.
-        
+
         If the same messid and heapid exist, the former has priority."""
 
         # 1 <- 2
@@ -636,7 +636,7 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
         def f():
             test(Post.from_str(''), [])
         self.assertRaises(AssertionError, f)
-    
+
     def test_parent(self):
         postdb = self._postdb
 
@@ -678,7 +678,7 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
         It modifies the post database according to the parents argument,
         then checks that the thread structture and the cycles of the modified
         database are as expected.
-        
+
         Arguments:
         parents: Contains child->parent pairs, which indicate that the child
             post should be modified as if it were a reply to parent.
@@ -927,7 +927,7 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         ps1c.symmetric_difference_update(ps2)
         test(ps1c, [p2, p3])
 
-        # PostSet.construct 
+        # PostSet.construct
         test(ps1 & set([p1, p3]), [p1])
         test(ps1 & [p1, p3], [p1])
         test(ps1 & p1, [p1])
@@ -1047,7 +1047,7 @@ class Test_PostSet__threads(unittest.TestCase, PostDBHandler):
 
     def _test_exp(self, methodname):
         """Tests the PostSet's method that has the given name.
-        
+
         This function returns a function that can test the given method of
         PostSet. The function requires addititonal test arguments that specify
         the concrete test.
@@ -1202,7 +1202,7 @@ class Test_PostSet__threads(unittest.TestCase, PostDBHandler):
         test('134', '01234')
         test('124', '01234')
         test('1234', '01234')
-    
+
     def test_sorted_list(self):
         ps = self._postdb.postset(self._posts)
         self.assertEquals(ps.sorted_list(), self._posts)
@@ -1328,7 +1328,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         return hkutils.file_to_string(index_html_name)
 
     def test_settle_files_to_copy(self):
-        
+
         postdb, g, p = self.init()
 
         orig_cssfile = os.path.join(self._dir, 'my.css')
@@ -1349,7 +1349,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
                                  content=content, newlines=True)
 
         postdb, g, p = self.init()
-        
+
         genopts = GeneratorOptions()
         genopts.sections = [Section('Sec1', [p(1)]),
                             Section('Sec2', [p(4)])]
@@ -1380,13 +1380,13 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
             Html.enclose('date', 'date0') + '\n' +
             Html.enclose('postbody', Html.escape('body0\n'), tag='pre') +
             Html.doc_footer())
-        
+
         # Printing thread
 
         genopts.date_fun = lambda post, genopts: None
         genopts.print_thread_of_post = True
         gen_post_html = g.post(p(2), genopts)
-        
+
         genopts.section = Section('Thread', [p(2)])
         h1 = Html.escape('author2') + ': ' + Html.escape('subject2')
         my_post_html = \
@@ -1406,7 +1406,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
     def test_index_toc(self):
         postdb, g, p = self.init(create_threadst=False)
         self.create_threadst(skipdates=True)
-        
+
         genopts = GeneratorOptions()
         sections = [Section('Sec1', [p(1)]),
                     Section('Sec2', [p(4)])]
@@ -1465,7 +1465,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
             table('0.html', 'author0', 'subject0', [], '0', None, False))
 
     def test_post_summary__date(self):
-        
+
         def date_fun(post, genopts2):
             self.assertEquals(post.heapid(), str((self._posts.index(post))))
             return 'date%s' % (self._posts.index(post),)

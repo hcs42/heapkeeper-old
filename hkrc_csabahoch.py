@@ -78,7 +78,7 @@ def indices0(postdb):
                           hklib.Section("Egyéb", ps_all)]
 
     return [index_hh, index_ums]
-            
+
 
 def sections1(postdb):
     ps = postdb.postset('1204').exp()

@@ -45,7 +45,7 @@ Git
 Git_ is version control system that we use to manage the source code and
 documentation of Heapkeeper. These are stored in the `Heapkeeper repository`_,
 which is hosted by GitHub_. We use Git 1.6, but probably previous versions are
-probably fine. 
+probably fine.
 
 .. _`Git`: http://git-scm.com/
 .. _`GitHub`: http://github.com/
@@ -81,7 +81,7 @@ that are worth to have a look at:
 * `Sphinx documentation`_
 * `reStructuredText Quick Reference`_
 
-.. _`reStructuredText`: http://docutils.sourceforge.net/rst.html  
+.. _`reStructuredText`: http://docutils.sourceforge.net/rst.html
 .. _`Sphinx`: http://sphinx.pocoo.org/
 .. _`Mercurial`: http://mercurial.selenic.com/
 .. _`Sphinx repository`: http://bitbucket.org/birkenfeld/sphinx/

@@ -151,7 +151,7 @@ class Post(object):
             self._modified = not self.postfile_exists()
         except Exception, e:
             raise hkutils.HkException, \
-                  ('Error parsing post "%s"\n%s' % 
+                  ('Error parsing post "%s"\n%s' %
                    (getattr(f, 'name', ''), e))
 
     @staticmethod
@@ -285,9 +285,9 @@ class Post(object):
 
     def date_str(self):
         """The date converted to a string in local time.
-        
+
         If the post does not have a date, an empty string is returned.
-        
+
         Returns: str
         """
 
@@ -316,7 +316,7 @@ class Post(object):
         """
 
         return self._header['Tag']
-    
+
     def set_tags(self, tags):
         """Sets the given tags as the tags of the post.
 
@@ -349,7 +349,7 @@ class Post(object):
             if self.has_tag(tag):
                 return True
         return False
-        
+
     # flag fields
 
     def flags(self):
@@ -364,7 +364,7 @@ class Post(object):
         assert(isinstance(flags, list))
         self._header['Flag'] = sorted(flags)
         self.touch()
-        
+
     def is_deleted(self):
         return 'deleted' in self._header['Flag']
 
@@ -403,7 +403,7 @@ class Post(object):
 
         Arguments:
         f -- A file descriptor. It will not be closed.
-        
+
         Returns a tuple of a header and a body read from f.
         """
 
@@ -462,7 +462,7 @@ class Post(object):
 
         def copy_list(key):
             h[key] = d.pop(key, [])
-            
+
         d = d.copy()
         h = {}
         # TODO the alternate keys can be deleted soon
@@ -518,7 +518,7 @@ class Post(object):
 
     def load(self, silent=False):
         """(Re)loads the Post from the disk.
-        
+
         Arguments:
         silent --- Do not call postdb.touch.
         """
@@ -614,11 +614,11 @@ class Post(object):
 
         tags = [ subject[first+1:last].strip() for first, last in brackets ]
         return real_subject, tags
-            
+
     def normalize_subject(self):
         """Removes the tags from the subject and adds them to the Post as real
         tags.
-        
+
         Also removes the "Re:" prefix and whitespaces."""
 
         real_subject, tags = Post.parse_subject(self.subject())
@@ -719,7 +719,7 @@ class PostDB(object):
             will be read.
             Type: ConfigParser
         """
-        
+
         postfile_dir = config.get('paths', 'mail')
         if not os.path.exists(postfile_dir):
             log('Warning: post directory does not exists: "%s"' %
@@ -782,7 +782,7 @@ class PostDB(object):
     def touch(self, post=None):
         """If something in the database changes, this function should be
         called.
-        
+
         If a post in the database is changed, this function will be invoked
         automatically, so there is no need to call it again.
         """
@@ -809,21 +809,21 @@ class PostDB(object):
 
     def posts(self):
         """Returns the list of all posts that are not deleted.
-        
+
         The object returned by this function should not be modified.
         """
 
         self._recalc_posts()
         return self._posts
-    
+
     def postset(self, posts):
         """Creates a PostSet that will contain the specified posts.
-        
+
         See the type of the posts argument at :func:`PostSet.__init__`.
         """
 
         return PostSet(self, posts)
-    
+
     def _recalc_posts(self):
         """Recalculates the _posts variable if needed."""
         if self._posts == None:
@@ -864,7 +864,7 @@ class PostDB(object):
 
     def reload(self):
         """Reloads the database from the disk.
-        
+
         The unsaved changes will be abandoned.
         """
 
@@ -874,7 +874,7 @@ class PostDB(object):
 
     def add_new_post(self, post):
         """Adds a new post to the postdb.
-        
+
         The heapid of the post will be changed to the next free heapid of the
         postdb."""
 
@@ -895,7 +895,7 @@ class PostDB(object):
 
     def all(self):
         """Returns the PostSet of all posts that are not deleted.
-        
+
         The object returned by this function should not be modified.
         On the other hand, the posts contained by it can be modified.
         """
@@ -911,7 +911,7 @@ class PostDB(object):
 
     def threadstruct(self):
         """Returns the calculated _threadstruct.
-        
+
         The object returned by this function should not be modified.
         """
 
@@ -920,7 +920,7 @@ class PostDB(object):
 
     def parent(self, post):
         """Returns the parent of the given post.
-        
+
         If there is no such post in the database, it returns None
         """
 
@@ -929,7 +929,7 @@ class PostDB(object):
 
         if postparent == '':
             return None
-        
+
         else:
 
             # try to get the parentpost by messid
@@ -947,7 +947,7 @@ class PostDB(object):
 
     def root(self, post):
         """Returns the root of the post.
-        
+
         Warning: if the thread structure contains cycles, calling this
         function may result in an endless loop. Before calling this function,
         the called should check that postdb.has_cycle() == False.
@@ -963,10 +963,10 @@ class PostDB(object):
 
     def children(self, post):
         """Returns the children of the given post.
-        
+
         If 'post' is None, returns the posts with no parents (i.e. whose
         parent is None).
-        
+
         Arguments:
         post ---
             Type: Post | None
@@ -975,7 +975,7 @@ class PostDB(object):
         """
 
         assert(post == None or post in self.all())
-        
+
         if post == None:
             children_heapids = self.threadstruct().get(None, [])
         else:
@@ -1020,7 +1020,7 @@ class PostDB(object):
 
         The posts can be modified during the iteration.
         """
-        
+
         assert(post in self.all() or post == None)
         if post != None:
             yield post
@@ -1033,7 +1033,7 @@ class PostDB(object):
 
     def cycles(self):
         """Returns the posts that are in a cycle of the thread structure.
-        
+
         Returns: PostSet
         """
 
@@ -1109,7 +1109,7 @@ class PostSet(set):
 
     def copy(self):
         """Copies the object.
-        
+
         The PostSet objects will be different, but the Posts will be the same
         objects.
         """
@@ -1119,7 +1119,7 @@ class PostSet(set):
     @staticmethod
     def _to_set(postdb, prepostset):
         """Converts a PrePostSet object to a set of Posts.
-        
+
         Arguments:
         prepostset -- The PrePostSet to be converted.
             Type: PrePostSet
@@ -1166,7 +1166,7 @@ class PostSet(set):
 
     def expb(self):
         """Expand backwards: returns all causes of the posts in PostSet.
-        
+
         Returns: PostSet
         """
 
@@ -1184,7 +1184,7 @@ class PostSet(set):
 
     def expf(self):
         """Expand forward: Returns all consequenses of the PostSet.
-        
+
         Returns: PostSet
         """
 
@@ -1229,7 +1229,7 @@ class PostSet(set):
             return set.__eq__(self, other)
         else:
             return False
-    
+
     def __ne__(self, other):
         return not self == other
 
@@ -1305,12 +1305,12 @@ class PostSet(set):
     # __lt__(...)
     # __reduce__(...)
     # __repr__(...)
-    
+
 
 class PostSetForallDelegate(object):
 
     """A delegate of posts.
-    
+
     If a method is called on a PostSetForallDelegate object, it will forward
     the call to the posts it represents.
     A PostSetForallDelegate object can be asked from a PostSet via its "forall"
@@ -1349,7 +1349,7 @@ class PostSetForallDelegate(object):
 class PostSetCollectDelegate(object):
 
     """A delegate of posts.
-    
+
     It can be used to collect posts with a specified property from a PostSet.
     A PostSetCollectDelegate object can be asked from a PostSet via its
     "collect" attribute.
@@ -1397,7 +1397,7 @@ class PostSetCollectDelegate(object):
 
         super(PostSetCollectDelegate, self).__init__()
         self._postset = postset
-    
+
     def __call__(self, filterfun):
         """Returns posts with which filterfun returns true."""
         result = self._postset.empty_clone()
@@ -1423,10 +1423,10 @@ class PostSetCollectDelegate(object):
 ##### EmailDownloader #####
 
 class EmailDownloader(object):
-    
+
     """A EmailDownloader object can be used to connect to the server and
     download new posts.
-    
+
     Data attributes:
     _postdb -- The post database..
         Type: PostDB
@@ -1470,7 +1470,7 @@ class EmailDownloader(object):
 
     def download_email(self, email_index):
         """Downloads an email and returns it as a Post.
-        
+
         Arguments:
         email_index -- The index of the email to download.
             Type: int
@@ -1604,11 +1604,11 @@ class Html():
             '\n' \
             '  </body>\n' \
             '</html>\n'
-    
+
     @staticmethod
     def section_begin(sectionid, sectiontitle):
         """The beginning of a "section" div.
-        
+
         If `sectiontitle` is an empty string, no title is displayed.
         """
 
@@ -1901,10 +1901,10 @@ class Generator(object):
 
     """A Generator object can generate various HTML strings and files from the
     post database.
-    
+
     Currently it can generate two kinds of HTML files: index pages and post
     pages.
-    
+
     The methods that start with ``gen_`` prefix write into files, the other
     methods mostly return HTML strings.
 
@@ -1927,7 +1927,7 @@ class Generator(object):
 
         super(Generator, self).__init__()
         self._postdb = postdb
-    
+
     def settle_files_to_copy(self, options):
         """Copies the CSS file and other files to the HTML directory if needed."""
 
@@ -1945,7 +1945,7 @@ class Generator(object):
 
         - *post* (:class:`Post`)
         - *options* (:class:`GeneratorOptions`)
-        
+
         **Returns:** ``HtmlStr``
         """
 
@@ -1997,10 +1997,10 @@ class Generator(object):
 
         l.append(Html.doc_footer())
         return ''.join(l)
- 
+
     def summarize_thread(self, post, options):
         """Converts the summaries of posts in a thread into HTML.
-        
+
         Warning: if the given post is in a cycle, this function will go into
         an endless loop.
 
@@ -2027,7 +2027,7 @@ class Generator(object):
         stack = [post]
         threadstruct = self._postdb.threadstruct()
         strings = []
-        
+
         while len(stack) > 0:
             item = stack.pop()
 
@@ -2072,7 +2072,7 @@ class Generator(object):
 
         - *thread* (:class:`Post`)
         - *options* (:class:`GeneratorOptions`)
-        
+
         **Returns:** ``HtmlStr``
 
         **Notes:**
@@ -2129,7 +2129,7 @@ class Generator(object):
         # bodies
         for curr_post in thread._postdb.iter_thread(thread):
             l.append(Html.thread_post_header(curr_post.htmlfilebasename(),
-                                             Html.escape(curr_post.author()), 
+                                             Html.escape(curr_post.author()),
                                              Html.escape(curr_post.subject()),
                                              curr_post.tags(),
                                              curr_post.heapid(),
@@ -2143,14 +2143,14 @@ class Generator(object):
 
     def index_toc(self, sections, options):
         """Creates a table of contents.
-        
+
         Each section will be one item in the table of contents.
 
         **Arguments:**
-        
+
         - *sections* (``[`` :class:`Section` ``]``)
         - *options* (:class:`GeneratorOptions`)
-        
+
         **Returns:** ``HtmlStr``
         """
 
@@ -2159,11 +2159,11 @@ class Generator(object):
             if section.title != '':
                 items.append(Html.link("#section_%s" % (i,), section.title))
         return Html.list(items, 'tableofcontents')
-        
+
     def post_summary(self, post, options, subject=NORMAL, tags=NORMAL,
                      thread_link=None):
         """Creates a summary for the post.
-        
+
         **Arguments:**
 
         - *post* (:class:`Post`)
@@ -2200,7 +2200,7 @@ class Generator(object):
         args = (link, author, subject, tags, post.heapid(),
                 date_str, active, thread_link)
 
-        if section.is_flat: 
+        if section.is_flat:
             return Html.post_summary_table(*args)
         else:
             return Html.post_summary_div(*args)
@@ -2208,7 +2208,7 @@ class Generator(object):
     def post_summary_end(self):
         """Returns an HTML string that closes the HTML returned by
         :func:`post_summary`.
-        
+
         **Returns:** ``HtmlStr``
         """
 
@@ -2216,7 +2216,7 @@ class Generator(object):
 
     def thread(self, post, options):
         """Converts the summaries of posts in a thread into HTML.
-        
+
         Warning: if the given post is in a cycle, this function will go into
         an endless loop.
 
@@ -2336,10 +2336,10 @@ class Generator(object):
         l.append(Html.section_end())
 
         return ''.join(l)
-    
+
     def gen_indices(self, options):
         """Creates the index pages.
-        
+
         **Arguments:**
 
         - *options* (:class:`GeneratorOptions`)
@@ -2373,12 +2373,12 @@ class Generator(object):
                 log('IOError during index generation.')
                 return
             del options.index
-        
+
         log('Indices generated.')
 
     def gen_posts(self, options, posts=None):
         """Creates a post page for each post that is not deleted.
-        
+
         **Arguments:**
 
         - *options* (:class:`GeneratorOptions`)
@@ -2402,12 +2402,12 @@ class Generator(object):
             except IOError:
                 log('IOError during post HTML generation.')
                 return
-        
+
         log('Post HTMLs generated.')
 
     def gen_threads(self, options):
         """Creates a thread page for each thread.
-        
+
         **Arguments:**
 
         - *options* (:class:`GeneratorOptions`)
@@ -2426,5 +2426,5 @@ class Generator(object):
             except IOError:
                 log('IOError during thread HTML generation.')
                 return
-        
+
         log('Thread HTMLs generated.')

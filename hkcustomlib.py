@@ -185,7 +185,7 @@ def default_editor():
 
 def edit_file(file):
     """Opens an editor in which the user edits the given file.
-    
+
     Returns whether the file was changed.
 
     **Argument:**

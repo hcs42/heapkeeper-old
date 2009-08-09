@@ -21,7 +21,7 @@
 """Tests the hklib module.
 
 Usage:
-    
+
     $ python test_hklib.py
 """
 

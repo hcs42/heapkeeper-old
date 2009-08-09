@@ -66,34 +66,34 @@ Concept
 Code example
 
    ::
-    
+
       class MyClass:
           def __init__(self):
               self._data1 = something
               self.touch()
-      
+
           def touch(self):
               self._data2 = None
               self._data3 = None
-      
+
           def data2(self):
               self._recalc_data2()
               return self._data2
-      
+
           def _recalc_data2(self):
               if self._data2 == None:
                   pass
                   # calculating _data2 from _data1
-      
+
           def data3(self):
               self._recalc_data2()
               return self._data2
-      
+
           def _recalc_data3(self):
               if self._data3 == None:
                   data2 = self.data2()
                   # calculating _data3 from _data1
-      
+
           def change_data1(self):
               # change data1
               self.touch()
@@ -153,9 +153,9 @@ Code example
    Code that implements an option set::
 
       class MyOptions(object):
-      
+
           """Description.
-      
+
           Data attributes:
           option1 --- Description.
               Type: int
@@ -163,13 +163,13 @@ Code example
               Type: str
               Default value: ''
           """
-      
+
           def __init__(self,
                        option1=hkutils.NOT_SET,
                        option2=''):
-      
+
               """Constructor."""
-      
+
               super(MyOptions, self).__init__()
               hkutils.set_dict_items(self, locals())
 
@@ -178,18 +178,18 @@ Code example
       def f(myoptions):
           if myoptions.option1:
               ...
-      
+
       def g1():
           myoptions = MyOptions()
           myoptions.option1 = 0
           myoptions.option2 = 'something'
           f(myoptions)
-      
+
       def g2():
           f(MyOptions(option1=0))
 
 Explanation
-    
+
    One instance of the ``MyOptions`` class represents a configuration of the
    options.
 

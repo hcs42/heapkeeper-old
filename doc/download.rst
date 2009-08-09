@@ -60,7 +60,7 @@ Major new features:
 - Optional feature: pages are re-generated only when needed.
 
 - :mod:`hkshell`:
-  
+
   - Setting system.
   - Generic event handling.
   - Better handling of arguments using the ``optparse`` module.
@@ -119,7 +119,7 @@ Major new features:
 Other major improvements:
 
 - Adding some unit tests.
-    
+
 .. _`0.1`:
 
 Version 0.1

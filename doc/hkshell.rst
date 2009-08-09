@@ -19,7 +19,7 @@ classes and functions.
 
 Options
 -------
-   
+
 .. autoclass:: Callbacks()
 
 .. autoclass:: Options()

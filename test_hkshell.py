@@ -21,7 +21,7 @@
 """Tests the hkshell module.
 
 Usage:
-    
+
     $ python test_hkshell.py
 """
 
@@ -37,14 +37,14 @@ import time
 
 
 class Test__1(unittest.TestCase):
-    
+
     """Tests that do not require a PostDB."""
 
     def test__listeners(self):
 
         def listener(e):
             event_list.append(e.type)
-        
+
         ## Testing the `listener` list and the `event` function
 
         event_list = []
@@ -61,7 +61,7 @@ class Test__1(unittest.TestCase):
         hkshell.listeners.remove(listener)
         hkshell.event(4)
         self.assertEquals(event_list, [1, 2, 2, 3])
-        
+
         ## Testing the `append_listener` and `remove_listener` functions
 
         event_list = []
@@ -103,7 +103,7 @@ class Test__1(unittest.TestCase):
     def test_hkshell_events(self):
 
         hkshell.append_listener(lambda e: event_list.append(e))
-        
+
         ## Testing the add_events decorator
 
         # Default name for the `command` attribute
@@ -125,7 +125,7 @@ class Test__1(unittest.TestCase):
         self.assertEquals(event_list[2].command, 'f')
 
         # Specified name for the `command` attribute
-        
+
         @hkshell.add_events('f_cmd1')
         def f():
             hkshell.event(type='f_body', command='f_cmd2')
@@ -168,7 +168,7 @@ class Test__2(unittest.TestCase, test_hklib.PostDBHandler):
             hkshell.event(type='before')
             fun()
             hkshell.event(type='after')
-        
+
         # Adding the listener
         mod_listener = hkshell.ModificationListener(postdb)
         self.assertEquals(postdb.listeners, [mod_listener])
@@ -191,7 +191,7 @@ class Test__2(unittest.TestCase, test_hklib.PostDBHandler):
         self.assert_(
             mod_listener.touched_posts().is_set(
                 [self._posts[0], self._posts[1]]))
-        
+
         # Removing the listener
         hkshell.remove_listener(mod_listener)
         mod_listener.close()
@@ -240,7 +240,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         hkshell.event(type='before', command='my_cmd')
         fun()
         hkshell.event(type='after')
-        
+
     def touch_posts_cmd(self, postindices):
         hkshell.event(type='before', command='touch_posts_cmd')
         for postindex in postindices:
@@ -261,7 +261,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         def gen_indices(postdb):
             call_count[0] += 1
             self.assertEquals(postdb, self._postdb)
-        
+
         # Initializing hkshell
         hkshell.options.callbacks.gen_indices = gen_indices
         self.init_hkshell()

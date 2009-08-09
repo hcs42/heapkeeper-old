@@ -21,7 +21,7 @@
 """Tests the hkutils module.
 
 Usage:
-    
+
     $ python test_hkutils.py
 """
 

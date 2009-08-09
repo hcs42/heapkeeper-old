@@ -50,7 +50,7 @@ The content of this page will be the following:
     * ``gen_indices``, ``gen_posts`` and ``save`` features
 
   * Intermediate hkshell:
-    
+
     * running hkshell with parameters
 
     * commands that use :class:`hklib.Post`, :class:`hklib.PostDB` and

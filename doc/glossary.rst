@@ -15,18 +15,18 @@ explicitly noted to be primitive. Actually, there are only two primitives:
     Post X and Y can be in a parent-child relation. A post may have
     only one or zero parents, but any number of children. Threads
     are based on parent-child relationships.
-  
+
     The in-reply-to header of the post object of Y refers to X
     (either by its heapid or messid) iff X is parent of Y. When a
     post is downloaded, it's in-reply-to header will be
     automatically converted to an in-reply-to header of the
     post object, i.e. a parent-reference.
-  
+
     The code uses 'inreplyto' in many places, but I suggest
     replacing those by 'parent'.
-  
+
     See also:
-    
+
     * :func:`hklib.Post.parent`
     * :func:`hklib.PostDB.parent`
     * :func:`hklib.PostDB.children`
@@ -39,7 +39,7 @@ explicitly noted to be primitive. Actually, there are only two primitives:
     root of Y) and a plain noun (X is a root).
 
     See also:
-    
+
     * :func:`hklib.PostDB.root`
 
 **Reference (primitive):**
@@ -58,7 +58,7 @@ explicitly noted to be primitive. Actually, there are only two primitives:
     parent's parent, etc.
 
     See also:
-    
+
     * :func:`hklib.PostSet.expb`
 
 **Descendant:**
@@ -70,7 +70,7 @@ explicitly noted to be primitive. Actually, there are only two primitives:
     children's children, etc.
 
     See also:
-    
+
     * :func:`hklib.PostSet.expf`
 
 **Thread:**
@@ -89,7 +89,7 @@ explicitly noted to be primitive. Actually, there are only two primitives:
      makes up the subset) is a root (i.e. it has no parent). The root
      of all posts in the subthread is the same. If the subthread is
      not a thread, this root differs from the root of the subthread,
-     and it is also the root of other posts outside the subthread. 
+     and it is also the root of other posts outside the subthread.
 
 .. _cycle:
 
@@ -101,7 +101,7 @@ explicitly noted to be primitive. Actually, there are only two primitives:
     Heapkeeper, but the maintainer of the heap should remove the cycles.
 
     See also:
-    
+
     * :func:`hklib.PostDB.has_cycle`
     * :func:`hklib.PostDB.cycles`
 
@@ -111,5 +111,5 @@ explicitly noted to be primitive. Actually, there are only two primitives:
     mates.)
 
     See also:
-    
+
     * :func:`hklib.PostSet.exp`

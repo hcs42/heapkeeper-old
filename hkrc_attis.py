@@ -152,7 +152,7 @@ def get_date_limits(postdb):
 
 def get_month(year, month):
     months = ['január', 'február', 'március', 'április', 'május', 'június', 'július', \
-        'augusztus', 'szeptember', 'október', 'november', 'december'] 
+        'augusztus', 'szeptember', 'október', 'november', 'december']
     return "%d %s" % (year, months[month - 1])
 
 def get_posts_in_month(postdb, year, month):

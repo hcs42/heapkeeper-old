@@ -66,11 +66,11 @@ class HkException(Exception):
 
 def arginfo(fun):
     """Returns a tuple based on the arguments of the given function.
-    
+
     The first element of the tuple is the list of arguments that do not have
     a default value. The second element is a dictionary that assigns the
     default values to the arguments that do have a default value.
-    
+
     Returns: ([str], dict(str, object))
     """
 
@@ -145,7 +145,7 @@ def check(object, attributes):
 
 def file_to_string(file_name, return_none=False):
     """Reads a file's content into a string.
-    
+
     **Arguments:**
 
     - *file_name* (str) -- Path to the file.
@@ -185,7 +185,7 @@ def calc_timestamp(date):
 
 def copy_wo(src, dst):
     """Copy without overwriting.
-    
+
     If *dst* does not exist, the function copies *src* to *dst*.
     """
 

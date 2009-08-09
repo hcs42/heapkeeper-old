@@ -152,7 +152,7 @@ Features
 --------
 
 gen_indices        - automatically regenerates the index pages
-gen_posts          - automatically regenerates the post pages after 
+gen_posts          - automatically regenerates the post pages after
 save               - automatically saves the post database after commands
 timer              - times the commands
 touched_post_printer - prints touched posts
@@ -225,7 +225,7 @@ import hkcustomlib
 class Callbacks(object):
 
     """Stores callback functions or objects that are used by :mod:`hkshell`.
-    
+
     The attributes are mentioned as functions, but they can be objects with
     *__call__* method, as well.
 
@@ -306,7 +306,7 @@ def hkshell_cmd(add_events=False, postset_operation=False,
     - `touching_command` (bool): If ``True``, the
       :class:`TouchedPostPrinterListener` objects will print the touched posts
       after the command has been finished.
-    
+
     Defining a hkshell command means that *f* can be used from |hkshell| without
     specifying in which module it is. It also can be used after the
     ``--before`` and ``--command`` arguments of |hkshell|.
@@ -325,8 +325,8 @@ def hkshell_cmd(add_events=False, postset_operation=False,
 
         >>> mycmd()
         Hi, this is my command.
-        >>> 
-    
+        >>>
+
     **Using it with other decorators:**
 
     If you use it with another decorator, :func:`hkshell_cmd` should be the
@@ -348,7 +348,7 @@ def hkshell_cmd(add_events=False, postset_operation=False,
     The reason is the in the second case, the original version of `f` will be
     registered as a command, which was not decorated with `mydecorator`.
     """
-    
+
     def inner(f):
         if add_events:
             f = globals()['add_events']()(f)
@@ -367,7 +367,7 @@ hkshell_commands = {}
 
 def register_cmd(name, fun):
     """Registers a hkshell command.
-    
+
     Registering a hkshell command means that :func:`register_cmd` adds the
     function to the `hkshell.hkshell_commands` dictionary.
 
@@ -413,7 +413,7 @@ class Event(object):
                  postset=None):
 
         """Initializes an object.
-       
+
         **Arguments:**
 
         - *type* (str) -- See the attributes of |Event|.
@@ -438,7 +438,7 @@ listeners = []
 
 def append_listener(listener):
     """Appends a new listener to the listeners' list.
-    
+
     **Argument:**
 
     - *listener* (|Listener|)
@@ -452,7 +452,7 @@ def append_listener(listener):
 
 def remove_listener(listener):
     """Removes a listener from the listeners' list.
-    
+
     **Argument:**
 
     - *listener* (|Listener|)
@@ -538,7 +538,7 @@ def postset_operation(operation):
         @postset_operation
         def d(posts):
             """Deletes the posts in *pps*.
-            
+
             **Arguments:**
 
             - *pps* (``PrePostSet``)
@@ -571,27 +571,27 @@ def postset_operation(operation):
                 result = operation(posts, *args, **kw)
         finally:
             event('after', command, postset=posts)
-        return result            
+        return result
     return inner
 
 ##### Concrete listeners #####
 
 class ModificationListener(object):
-    
+
     """Listens to and stores the modifications made in the latest commands.
-    
+
     A :class:`ModificationListener` object subscribes to the modifications of
     both the given post database and |hkshell|. The posts modified since the
     latest command can be obtained by calling the :func:`touched_posts`.
     :class:`ModificationListener` objects should be closed (using the
     :func:`close` method).
     """
-    
+
     def __init__(self, postdb_arg=None):
         """Initializes an object.
 
         **Argument:**
-        
+
         - *postdb_arg* (|PostDB|) -- The post database whose modifications
           should be listened to.
         """
@@ -603,13 +603,13 @@ class ModificationListener(object):
 
     def close(self):
         """Closes the ModificationListener.
-        
+
         The object will unsubscribe from the notifications it subscribed to."""
         self._postdb.listeners.remove(self)
 
     def __call__(self, e):
         """The event handler method.
-        
+
         **Argument:**
 
         - *e* (|Event|)
@@ -626,9 +626,9 @@ class ModificationListener(object):
 
 
 class PostPageListener(object):
-    
+
     """Stores the post whose post page is not up-to-date."""
-    
+
     def __init__(self, postdb_arg=None):
         super(PostPageListener, self).__init__()
         self._postdb = postdb_arg if postdb_arg != None else postdb()
@@ -704,7 +704,7 @@ class TouchedPostPrinterListener(object):
         super(TouchedPostPrinterListener, self).__init__()
         self.commands = commands
         self.command = None
-        
+
     def __call__(self, e):
         if e.type == 'before':
             self.command = e.command
@@ -716,7 +716,7 @@ class TouchedPostPrinterListener(object):
                 if len(touched_posts) == 1:
                     write('1 post has been touched:\n')
                 else:
-                    write('%s posts have been touched:\n' % 
+                    write('%s posts have been touched:\n' %
                           (len(touched_posts),))
                 write('%s\n' %
                       sorted([ post.heapid() for post in touched_posts]))
@@ -830,7 +830,7 @@ def gen_posts():
 
 def tagset(tags):
     """Converts the argument to ``set(tag)``.
-    
+
     **Arguments:**
 
     - tags (|PreTagSet|)
@@ -942,7 +942,7 @@ def opp():
     """Returns the posts whose post pages are outdated.
 
     When hkshell starts, this includes all posts.
-    
+
     Note: *opp* stands for *outdated post page*.
     """
 
@@ -951,7 +951,7 @@ def opp():
 @hkshell_cmd(add_events=True)
 def ls(pps=None, show_author=True, show_tags=False):
     """Lists the summary of the posts in `pps`.
-    
+
     **Arguments:**
 
     - `pps` (|PrePostSet| | None) -- The set of posts to print. If ``None``,
@@ -973,7 +973,7 @@ def ls(pps=None, show_author=True, show_tags=False):
 
         # subject
         if len(post.subject()) < 40:
-            line += ' ' + post.subject() 
+            line += ' ' + post.subject()
         else:
             line += ' ' + post.subject()[:37] + '...'
 
@@ -984,7 +984,7 @@ def ls(pps=None, show_author=True, show_tags=False):
         # author
         if show_author:
             line += '  ' + post.author()
-        
+
         # date
         if post.date_str() != '':
             line += ' (%s)' % (post.date_str(),)
@@ -1002,7 +1002,7 @@ def cat(pps):
       heapid of the post.
     - There are separators between posts. Separators are lines that consist of
       hyphens.
-    
+
     **Arguments:**
 
     - `pps` (|PrePostSet|)
@@ -1025,7 +1025,7 @@ def cat(pps):
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def d(posts):
     """Deletes the posts in *pps*.
-    
+
     **Argument:**
 
     - *pps* (|PrePostSet|)
@@ -1081,7 +1081,7 @@ def e(pp):
 @hkshell_cmd(add_events=True, touching_command=True)
 def enew():
     """Creates and edits a post.
-    
+
     A temporary file with a post stub will be created and an editor will be
     opened so that the user can edit it. After saving the file, it will be read
     as a post file and the post created from it will be added to the post
@@ -1110,7 +1110,7 @@ def enew():
 @hkshell_cmd(add_events=True)
 def enew_str(post_string):
     """Creates a post from `post_string` and adds it to the post database.
-    
+
     **Argument:**
 
     - `post_string` (str)
@@ -1124,7 +1124,7 @@ def enew_str(post_string):
 @hkshell_cmd(add_events=True)
 def dl(from_=0):
     """Downloads new posts from an IMAP server.
-    
+
     **Argument:**
 
     - *from_* (int): the messages whose index in the INBOX is lower than
@@ -1142,7 +1142,7 @@ def dl(from_=0):
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def pT(posts):
     """Propagates the tags of the posts in *pps* to all their children.
-    
+
     **Argument:**
 
     - *pps* (|PrePostSet|)
@@ -1157,7 +1157,7 @@ def pT(posts):
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def aT(posts, tags):
     """Adds the given tags to the posts in *pps*.
-    
+
     **Arguments:**
 
     - *pps* (|PrePostSet|)
@@ -1186,7 +1186,7 @@ def aTr(posts, tags):
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def rT(posts, tags):
     """Removes the given tags from the posts in *pps*.
-    
+
     **Arguments:**
 
     - *pps* (|PrePostSet|)
@@ -1215,7 +1215,7 @@ def rTr(posts, tags):
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def sT(posts, tags):
     """Sets the given tags on the posts in *pps*.
-    
+
     **Arguments:**
 
     - *pps* (|PrePostSet|)
@@ -1246,7 +1246,7 @@ def sTr(posts, tags):
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def pS(posts):
     """Propagates the subject of the posts in *pps* and all their children.
-    
+
     **Argument:**
 
     - *pps* (|PrePostSet|)
@@ -1258,7 +1258,7 @@ def pS(posts):
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def sS(posts, subject):
     """Sets the given subject for the posts in *pps*.
-    
+
     **Arguments:**
 
     - *pps* (|PrePostSet|)
@@ -1293,7 +1293,7 @@ def capitalize_subject(post):
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def cS(posts):
     """Capitalizes the subject of the posts in *pps*.
-    
+
     **Arguments:**
 
     - *pps* (|PrePostSet|)
@@ -1317,7 +1317,7 @@ def cSr(posts):
 
 def exec_commands(commands):
     """Executes the given commands.
-    
+
     **Argument:**
 
     - *commands* ([str])
@@ -1330,7 +1330,7 @@ def exec_commands(commands):
 
 def read_postdb(configfile):
     """Reads the config file and the post database from the disk.
-    
+
     **Argument:**
 
     - *configfile* (str) -- The name of the config file to use as ``hk.cfg``.
@@ -1402,7 +1402,7 @@ def parse_args():
 
 def main(cmdl_options, args):
     """Initializes the hkshell.
-    
+
     It performs the following steps:
 
     1. Executes the "before" commands.
@@ -1453,7 +1453,7 @@ def main(cmdl_options, args):
         # code.interact(banner=options.shell_banner, local=locals)
 
         code.interact(banner=options.shell_banner, local=hkshell_commands)
-        
+
         # User typed CTRL-D
         if options.save_on_ctrl_d is None:
             write('Do you want to save the post database? [yes/no/cancel] ')
@@ -1474,4 +1474,4 @@ def main(cmdl_options, args):
             break
         else:
             break
-        
+

@@ -26,7 +26,7 @@ Todo items
     * items in posts "Testing on Windows" and "CRLF issues" //Csabi
     * rewriting git history //Attis
     * recreating the heapkeeper repo and pushing the new history //Csabi
-  
+
   * during the release procedure
 
     * 0.3uc -> 0.3 in "grep 0.3uc \* doc/\*"
@@ -37,7 +37,7 @@ Todo items
     * write to Sphinx that we use Sphinx
 
 * **Priority**
- 
+
   * supporting multiple heaps (afterwards we should clean up and upload hh)
 
 * **Documentation**
@@ -57,28 +57,28 @@ Todo items
     * markup language for commit messages
 
   * Use Sphinx's ``glossary`` feature.
-    
+
     From "Sphinx Markup Constructs -> Glossary":
 
     This directive must contain a reST definition list with terms and
     definitions. The definitions will then be referencable with the ``term``
     role.
     Example:
-    
+
     .. code-block:: none
 
         .. glossary::
-        
+
            environment
               A structure where information about all documents under the root is
               saved, and used for cross-referencing.  The environment is pickled
               after the parsing stage, so that successive runs only need to read
               and parse new and changed documents.
-        
+
            source directory
               The directory which, including its subdirectories, contains all
               source files for one Sphinx project.
-        
+
         ...
 
         See :term:`environment` for more information.
@@ -97,7 +97,7 @@ Todo items
     * performance improvement possibilities (iterators for some PrePost and
       PostDB functions)
     * using wrappers to protect e.g. PostDB.posts()
- 
+
   * move the github wiki page "email_file_format" to the rst documentation
 
 * **Management, propaganda**

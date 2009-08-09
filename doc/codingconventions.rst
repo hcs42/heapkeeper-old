@@ -56,7 +56,7 @@ Classes
     class Complex(object):
 
         """Represents a complex number.
-        
+
         The more lengthy description can go here.
 
         **Data attributes:**
@@ -98,7 +98,7 @@ Classes
 * If there is a function that sets the value of the instance variable, it
   should be called 'set_stuff'.
 
-__ http://fuhm.net/super-harmful/  
+__ http://fuhm.net/super-harmful/
 
 Yes::
 
@@ -164,17 +164,17 @@ No::
   means something else. But you may put parens around ``y``, if it is long.
 
    Yes::
-   
+
       raise hkutils.HkException, \
              'We have a problem'
-   
+
    No::
-   
+
       raise (hkutils.HkException,
              'We have a problem')
-   
+
    Yes::
-   
+
       raise hkutils.HkException, \
             ('We have a problem with %s, which is very serious.' %
              problematic_thing)

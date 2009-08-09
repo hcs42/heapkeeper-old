@@ -56,7 +56,7 @@ Section, Index
 
 Html
 ----
-   
+
 .. autoclass:: Html
 
     **Methods:**
@@ -69,7 +69,7 @@ Generator
 .. class:: GeneratorOptions
 
 .. autoclass:: Generator
-    
+
     **Methods:**
 
     .. automethod:: __init__

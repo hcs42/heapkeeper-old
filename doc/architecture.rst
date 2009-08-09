@@ -89,7 +89,7 @@ in the heap.
     *attributes*, which are key-value pairs. Certain keys may have multiple
     values, but not all. The concepts of header, body and attribute and similar
     to these concepts wrt. emails.
-    
+
     Both the header and the body is stored in the post object as data members.
     They are stored in the post file similarly to the standard email file
     format (:rfc:`2822`), but a little modification. The format is described in
@@ -138,20 +138,20 @@ in the heap.
     means that the current post should be deleted).
 
 :class:`hklib.PostDB` (*PostDB*)
-    
+
     A :class:`PostDB <hklib.PostDB>` object (called a *post database*)
     represents the heap in the memory. It stores the post object of all
     posts. During initialization, it reads all the post files from the disk and
     creates the corresponding post objects. It can write the modified post
     files back at any time, or it can reload them from the disk.
-    
+
     The post database calculates and stores the *thread structure*. The thread
     structure is a forest where the nodes are posts and the connections are
     :ref:`parent-child relations <post_relations>` between them. (Forest is a
     tree-like structure where having a root node it not necessary). The roots
     of the forest are the posts without parents. There may be posts that are
     excluded from the thread structure because they are in :ref:`cycles <cycle>`.
-    
+
     The users of the post database can use the dictionary that describes the
     thread structure directly in order to get thread information. There are
     methods in :class:`PostDB <hklib.PostDB>`, however, that make obtaining
@@ -207,7 +207,7 @@ kinds of pages:
   be printed as one section of the page, and a few options on how they should
   be printed. An index page contains sections generated from the sections of
   the index.
-  
+
 :class:`hklib.Html`
 
     The :class:`Html <hklib.Html>` class is rather a namespace than a
@@ -233,7 +233,7 @@ kinds of pages:
 
     A :class:`Generator <hklib.Generator>` object generates HTML strings
     and HTML pages.
-    
+
     Most of its methods generate an HTML string that represents something,
     which is usually shown in the name of the method. E.g. the
     :func:`Generator.post <hklib.Generator.post>` method generates HTML
