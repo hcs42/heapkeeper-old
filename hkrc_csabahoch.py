@@ -118,17 +118,6 @@ def gen_posts(postdb, posts):
     genopts.print_thread_of_post = True
     hklib.Generator(postdb).gen_posts(genopts, posts)
 
-@hkshell.hkshell_cmd()
-def a():
-    hkshell.options.callbacks.gen_indices = gen_indices
-    hkshell.options.callbacks.gen_posts = gen_posts
-    hkshell.options.callbacks.edit_file = edit_file
-    hkshell.options.save_on_ctrl_d = False
-    hkshell.on('tpp')
-    hkshell.on('s')
-    hkshell.on('gi')
-    hkshell.on('gp')
-
 def get_content(file):
     return hkutils.file_to_string(file, return_none=True)
 
@@ -158,9 +147,14 @@ def R(pps):
     """Mark thread as reviewed."""
     hkshell.aTr(pps, 'r')
 
-if os.path.exists('hcs/pure'):
-    hklib.log('Pure mode.')
-else:
-    hklib.log('Normal mode.')
-    a()
+def main():
+    hkshell.options.callbacks.gen_indices = gen_indices
+    hkshell.options.callbacks.gen_posts = gen_posts
+    hkshell.options.callbacks.edit_file = edit_file
+    hkshell.options.save_on_ctrl_d = False
+    hkshell.on('tpp')
+    hkshell.on('s')
+    hkshell.on('gi')
+    hkshell.on('gp')
 
+main()
