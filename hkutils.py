@@ -16,6 +16,8 @@
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
+"""|hkutils| contains utility functions for Heapkeeper."""
+
 from __future__ import with_statement
 import datetime
 import inspect
@@ -28,8 +30,9 @@ import shutil
 
 pm_last_time = datetime.datetime.now()
 pm_action = ''
+
 def int_time(next_action = ''):
-    """Returns the time elapsed since the last call of int_time."""
+    """Returns the time elapsed since the last call of :func:`int_time`."""
     global pm_last_time
     global pm_action
     old_action = pm_action
@@ -41,7 +44,7 @@ def int_time(next_action = ''):
     return old_action, delta
 
 def print_time(next_action = ''):
-    """Calls int_time and prints the result."""
+    """Calls :func:`int_time` and prints the result."""
     pm_action, t = int_time(next_action)
     if pm_action != '':
         print '%.6f %s' % (t, pm_action)
@@ -53,12 +56,23 @@ def print_time(next_action = ''):
 
 class HkException(Exception):
 
-    """A very simple exception class used by this module."""
+    """A very simple exception class used."""
 
     def __init__(self, value):
+        """Constructor.
+
+        **Argument:**
+
+        - `value` (object) -- the reason of the error
+        """
         self.value = value
 
     def __str__(self):
+        """Returns the string representation of the error reason.
+
+        **Returns:** str
+        """
+
         return repr(self.value)
 
 
@@ -71,7 +85,7 @@ def arginfo(fun):
     a default value. The second element is a dictionary that assigns the
     default values to the arguments that do have a default value.
 
-    Returns: ([str], dict(str, object))
+    **Returns:** ([str], {str: object})
     """
 
     args, varargs, varkw, defaults = inspect.getargspec(fun)
@@ -86,15 +100,14 @@ def set_defaultoptions(options, fun, excluded):
     """Reads the options and their default values from the given function's
     argument list and updates the given dictionary accordingly.
 
-    Arguments:
-    options --- The dictionary that should be updated with the default options.
-        Type: dict(str, object)
-    fun --- The list of options and the default options will be read from
-        this function.
-        Type: function
-    excluded --- Arguments of 'fun' that are not options and should be
-        excluded from the result.
-        Type: set(str) | [str]
+    **Arguments:**
+
+    - `options` ({str: object}) -- The dictionary that should be updated with
+      the default options.
+    - `fun` (fun) -- The list of options and the default options will be read
+      from.
+    - `excluded` (set(str) | [str]) -- Arguments of 'fun' that are not options
+      and should be excluded from the result.
     """
 
     unused_options = set(options.keys())
@@ -120,15 +133,14 @@ def set_defaultoptions(options, fun, excluded):
 def set_dict_items(object, dict):
     """Sets the items in the dictionary as attributes of the given object.
 
-    If 'self' is included in the dictionary as a key, it will be ignored.
-    If hkutils.NOT_SET is assigned to the key in the dictionary, that item will
-    be ignored.
+    If ``'self'`` is included in the dictionary as a key, it will be ignored.
+    If `hkutils.NOT_SET` is assigned to the key in the dictionary, that item
+    will be ignored.
 
-    Arguments:
-    object --
-        Type: object
-    dict --
-        Type: dict
+    **Arguments:**
+
+    - `object` (object)
+    - `dict` (dict)
     """
 
     for var, value in dict.items():
@@ -136,6 +148,19 @@ def set_dict_items(object, dict):
             setattr(object, var, value)
 
 def check(object, attributes):
+    """Checks that the object does have all the given attributes.
+
+    It throws `AttributeError` if the object does not have one of the
+    attributes.
+
+    **Arguments:**
+
+    - `object` (object)
+    - `attributes` ([str])
+
+    **Returns:** ``True``
+    """
+
     for attr in attributes:
         getattr(object, attr)
     return True
@@ -148,10 +173,12 @@ def file_to_string(file_name, return_none=False):
 
     **Arguments:**
 
-    - *file_name* (str) -- Path to the file.
-    - *return_none* (bool) -- Specifies what to do if the file does not exist.
-      If *return_none* is ``True``, ``None`` will be returned. Otherwise an
-      exception will be raised.
+    - `file_name` (str) -- Path to the file.
+    - `return_none` (bool) -- Specifies what to do if the file does not exist.
+      If `return_none` is ``True``, ``None`` will be returned. Otherwise an
+      `IOError` exception will be raised.
+
+    **Returns:** str | None
     """
 
     if return_none and not os.path.exists(file_name):
@@ -161,15 +188,30 @@ def file_to_string(file_name, return_none=False):
     return s
 
 def string_to_file(s, file_name):
-    """Writes a string to a file."""
+    """Writes a string to a file.
+
+    The old content of the file will be overwritten.
+
+    **Arguments:**
+
+    - `s` (str)
+    - `file_name` (str)
+    """
+
     with open(file_name, 'w') as f:
         f.write(s)
 
 def utf8(s, charset):
     """Encodes the given string in the charset into utf-8.
 
-    If the charset is None, the original string will be returned.
+    If the charset is ``None``, the original string will be returned.
+
+    **Arguments:**
+
+    - `s` (str)
+    - `charset` (str)
     """
+
     if charset != None:
         return s.decode(charset).encode('utf-8')
     else:
@@ -178,15 +220,31 @@ def utf8(s, charset):
 def calc_timestamp(date):
     """Calculates a timestamp from a date.
 
-    The date argument should conform to RFC 2822.
-    The timestamp will be an UTC timestamp.
+    **Arguments:**
+
+    - `date` (str) -- The date to be converted. It should conform to
+      `ref`:`2822`.
+
+    **Returns**: float, which represents an UTC timestamp.
+
+    **Example**::
+
+        >>> hkutils.calc_timestamp("Wed, 20 Aug 2008 17:41:30 +0200")
+        1219246890.0
     """
+
     return email.utils.mktime_tz(email.utils.parsedate_tz(date))
 
 def copy_wo(src, dst):
     """Copy without overwriting.
 
     If *dst* does not exist, the function copies *src* to *dst*.
+
+    **Arguments:**
+
+    - `src` (str) -- The source file.
+    - `dst` (str) -- The destination file. It must be the complete target file
+      name.
     """
 
     if not os.path.exists(dst):
@@ -195,4 +253,11 @@ def copy_wo(src, dst):
 
 ##### Constants #####
 
-class NOT_SET: pass
+class NOT_SET:
+    """A totally empty class that is used only as a constant.
+
+    If the value of an option is ``NOT_SET``, is represents that the option is
+    not set.
+    """
+
+    pass

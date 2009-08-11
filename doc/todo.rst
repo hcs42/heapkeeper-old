@@ -23,7 +23,6 @@ Todo items
 
   * misc
 
-    * items in posts "Testing on Windows" and "CRLF issues" //Csabi
     * rewriting git history //Attis
     * recreating the heapkeeper repo and pushing the new history //Csabi
 

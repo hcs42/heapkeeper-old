@@ -18,14 +18,13 @@
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
-"""Heapkeeper's interactive shell.
+"""|hkshell| is Heapkeeper's interactive shell.
 
-The interactive shell defines commands that are actually Python functions in
-the :mod:`hkshell` module. These functions perform high-level manipulaton on
-the heap, and they tend to have very short names.
+It defines commands that are actually Python functions. These functions perform
+high-level manipulaton on the heap, and they tend to have very short names.
 
-To get help after from within hkshell, type ``h()``. It will print the list of
-features and commands with a short description.
+To get help after from within |hkshell|, type ``h()``. It will print the list
+of features and commands with a short description.
 
 Invocation
 ''''''''''
@@ -86,6 +85,8 @@ Do use this in scripts that you want to keep, because this behaviour may be
 changed in the future if we want to use positional arguments for something
 else.
 
+.. highlight:: python
+
 Initialization
 ''''''''''''''
 
@@ -108,10 +109,17 @@ commands, as well. For reading about the commands of |hkshell|, type ``h()`` if
 you are in |hkshell|, or go to the :ref:`hkshell_commands` section if you are
 reading the documentation.
 
-**Definiton of pseudo-types:**
+**Features**
 
-:mod:`hkshell` has pseudo-types that are not real Python types, but we use them
-as types in the documentation so we can talk about them easily.
+|hkshell| has a concept of features. A feature can be turned on and off.
+See the list of features and the detailed description in the :ref:`Features
+<hkshell_features>` section.
+
+Pseudo-types
+''''''''''''
+
+|hkshell| has pseudo-types that are not real Python types, but we use them as
+types in the documentation so we can talk about them easily.
 
 - :ref:`PrePost <hklib_PrePost>`
 
@@ -119,25 +127,63 @@ as types in the documentation so we can talk about them easily.
 
 .. _hkshell_Tag:
 
-- *Tag* (str) -- A tag.
+- **Tag** -- A tag.
+
+  Real type: str
 
 .. _hkshell_PreTagSet:
 
-- *PreTagSet* (|Tag| | set(|Tag|) | [|Tag|]) -- An object that can be converted
+- **PreTagSet** -- An object that can be converted
   into a set of tags.
+
+  Real type: |Tag| | set(|Tag|) | [|Tag|]
 
 .. _hkshell_Listener:
 
-- *Listener* (fun(|Event|)) -- A listener (also called event handler) that can
+- **Listener(event)**  -- A listener (also called event handler) that can
   be called when an event is raised.
 
-**Features**
+  Real type: fun(|Event|)
 
-:mod:`hkshell` has a concept of features. A feature can be turned on and off.
-See the list of features and the detailed description in the :ref:`Features
-<hkshell_features>` section.
+.. _hkshell_GenIndicesFun:
 
-.. highlight:: python
+- **GenIndicesFun(postdb)** -- Function that generates index pages.
+
+  Real type: fun(|PostDB|))
+
+.. _hkshell_GenThreadsFun:
+
+- **GenThreadsFun(postdb)** -- Function that generates thread pages.
+
+  Real type: fun(|PostDB|))
+
+.. _hkshell_GenPostsFun:
+
+- **GenPostsFun(postdb, postset)** -- Function that generates post pages.
+  `postset` is the set of posts for which pages should be generated.
+
+  Real type: fun(|PostDB|, |PostSet|))
+
+.. _hkshell_EditFileFun:
+
+- **EditFileFun(filename)** -- Function that opens an editor with the given file.
+  It should return ``True`` or ``False`` when the user finished editing the
+  file. If the file was changed, it should return ``True``, otherwise
+  ``False``.
+
+  Real type: fun(str), returns bool
+
+.. _hkshell_Writable:
+
+- **Writable(filename)** -- Object that has a `write(str)` method.
+
+  Real type: object
+
+.. _hkshell_FeatureState:
+
+- **FeatureState** -- ``'on'`` or ``'off'``.
+
+  Real type: str
 """
 
 console_help = """\
@@ -224,26 +270,27 @@ import hkcustomlib
 
 class Callbacks(object):
 
-    """Stores callback functions or objects that are used by :mod:`hkshell`.
+    """Stores callback functions or objects that are used by |hkshell|.
 
     The attributes are mentioned as functions, but they can be objects with
-    *__call__* method, as well.
+    `__call__` method, as well.
 
-    **Attributes:**
+    **Data attributes:**
 
-    - *gen_indices* (fun(|PostDB|)) -- Function that generates indices.
-    - *gen_posts* (fun(|PostDB|)) -- Function that generates the HTML files of
-      the posts.
-    - *edit_file* (fun(str) -> bool) -- Function that opens an editor with the
-      given file. It should return ``True`` or ``False`` when the user finished
-      editing the file. If the changed file should be taken into account, it
-      should return ``True``, otherwise ``False``.
+    - `gen_indices` (|GenIndicesFun|) -- Function to be used for generating index
+      pages. Default value: :func:`hkcustomlib.gen_indices`.
+    - `gen_threads` (|GenThreadsFun|) -- Function to be used for generating thead
+      pages. Default value: :func:`hkcustomlib.gen_threads`.
+    - `gen_posts` (|GenPostsFun|) -- Function to be used for generating post
+      pages. Default value: :func:`hkcustomlib.gen_posts`.
+    - `edit_file` (|EditFileFun|) -- Function to be used for editing posts.
+      Default value: :func:`hkcustomlib.edit_file`.
     """
 
     def __init__(self,
                  gen_indices=hkcustomlib.gen_indices,
-                 gen_posts=hkcustomlib.gen_posts,
                  gen_threads=hkcustomlib.gen_threads,
+                 gen_posts=hkcustomlib.gen_posts,
                  edit_file=hkcustomlib.edit_file):
 
         super(Callbacks, self).__init__()
@@ -254,23 +301,23 @@ class Callbacks(object):
 
 class Options(object):
 
-    """Stores various options regarding how :mod:`hkshell` works.
+    """Stores various options regarding how |hkshell| works.
 
-    **Attributes:**
+    **Data attributes:**
 
-    - *config* (ConfigParser.ConfigParser) -- Configuration object.
-    - *output* (object) -- When a hkshell function wants to print something, it
-      calls *output*'s write method.
+    - `config` (ConfigParser.ConfigParser) -- Configuration object.
+    - `output` (|Writable|) -- When |hkshell| wants to print something, it
+      calls `output`'s write method.
       Default value: ``sys.stdout``
-    - *callbacks* (:class:`Callbacks`) -- Callback functions to be called on
-      various occasions.
-    - *shell_banner* (str) -- A banner that is printed when the Python shell
+    - `callbacks` (|Callbacks|) -- Callback functions to be called on various
+      occasions. Default value: the default |Callbacks| object.
+    - `shell_banner` (str) -- A banner that is printed when the Python shell
       starts. If ``None``, the default text is printed with the interpreter
       information.
       Default value: ``''``
     - `save_on_ctrl_d` (bool | None) -- If boolean, it specifies whether to
       save when the user hits CTRL-D or to abandon the changes silently. If
-      ``None``, the user will be asked what to do.
+      ``None``, the user will be asked what to do. Default value: ``None``.
     """
 
     def __init__(self,
@@ -303,9 +350,8 @@ def hkshell_cmd(add_events=False, postset_operation=False,
       will also be applied to the function, with default arguments.
     - `postset_operation` (bool): If ``True``, the decorator
       :func:`postset_operation` will also be applied to the function.
-    - `touching_command` (bool): If ``True``, the
-      :class:`TouchedPostPrinterListener` objects will print the touched posts
-      after the command has been finished.
+    - `touching_command` (bool): If ``True``, the |TouchedPostPrinterListener|
+      objects will print the touched posts after the command has been finished.
 
     Defining a hkshell command means that *f* can be used from |hkshell| without
     specifying in which module it is. It also can be used after the
@@ -394,16 +440,16 @@ class Event(object):
 
     """Represents an event.
 
-    Only the *type* attribute of Event is mandatory, the others are optional.
+    Only the `type` attribute of Event is mandatory, the others are optional.
 
-    **Attributes:**
+    **Data attributes:**
 
-    - *type* (str) -- The type of the event. Examples: ``'before'``,
+    - `type` (str) -- The type of the event. Examples: ``'before'``,
       ``'after'``, ``'touch'``.
-    - *command* (str) -- The command that was executed when the event was
+    - `command` (str) -- The command that was executed when the event was
       raised.
-    - *post* (|Post|) -- The post associated with the event.
-    - *postset* (|PostSet|) -- The postset associated with the event.
+    - `post` (|Post|) -- The post associated with the event.
+    - `postset` (|PostSet|) -- The postset associated with the event.
     """
 
     def __init__(self,
@@ -416,10 +462,10 @@ class Event(object):
 
         **Arguments:**
 
-        - *type* (str) -- See the attributes of |Event|.
-        - *command* (str) -- See the attributes of |Event|.
-        - *post* (|Post|) -- See the attributes of |Event|.
-        - *postset* (|PostSet|) -- See the attributes of |Event|.
+        - `type` (str) -- See the data attributes of |Event|.
+        - `command` (str) -- See the data attributes of |Event|.
+        - `post` (|Post|) -- See the data attributes of |Event|.
+        - `postset` (|PostSet|) -- See the data attributes of |Event|.
         """
 
         super(Event, self).__init__()
@@ -441,7 +487,7 @@ def append_listener(listener):
 
     **Argument:**
 
-    - *listener* (|Listener|)
+    - `listener` (|Listener|)
     """
 
     if listener not in listeners:
@@ -455,7 +501,7 @@ def remove_listener(listener):
 
     **Argument:**
 
-    - *listener* (|Listener|)
+    - `listener` (|Listener|)
     """
 
     if listener not in listeners:
@@ -492,9 +538,9 @@ def add_events(command=None):
 
     **Arguments:**
 
-    - *command* (str) -- The ``command`` attribute of the event that should
-      be raised. If ``None``, the name of the function will be used as the
-      command name. The default value is ``None``.
+    - `command` (str) -- The ``command`` attribute of the event that should be
+      raised. If ``None``, the name of the function will be used as the command
+      name. The default value is ``None``.
 
     Example::
 
@@ -517,6 +563,8 @@ def add_events(command=None):
     return inner
 
 
+##### Event handling utilities #####
+
 def postset_operation(operation):
     '''This function is a decorator to be used for decorating commands that
     manipulate posts based on a given postset.
@@ -533,23 +581,23 @@ def postset_operation(operation):
     5. Raises ``event('after', command, postset=posts)``.
 
     Example on how to define a function that is decorated with
-    *postset_operation*::
+    `postset_operation`::
 
         @postset_operation
         def d(posts):
-            """Deletes the posts in *pps*.
+            """Deletes the posts in `pps`.
 
-            **Arguments:**
+            **Argument:**
 
-            - *pps* (``PrePostSet``)
+            - `pps` (|PrePostSet|)
             """
 
             posts.forall.delete()
 
     Note that the first (and only) parameter of the original function is
-    *posts*, but the the first parameter of the decorated function is *pps*!
+    `posts`, but the the first parameter of the decorated function is `pps`!
     That is why the documentation of :func:`d` states that the name of the
-    parameter is *pps*.
+    parameter is `pps`.
 
     A more complex example::
 
@@ -574,17 +622,20 @@ def postset_operation(operation):
         return result
     return inner
 
+
 ##### Concrete listeners #####
 
 class ModificationListener(object):
 
     """Listens to and stores the modifications made in the latest commands.
 
-    A :class:`ModificationListener` object subscribes to the modifications of
-    both the given post database and |hkshell|. The posts modified since the
-    latest command can be obtained by calling the :func:`touched_posts`.
-    :class:`ModificationListener` objects should be closed (using the
-    :func:`close` method).
+    A |ModificationListener| object subscribes to the modifications of both the
+    given post database and |hkshell|. The posts modified since the latest
+    command can be obtained by calling the :func:`touched_posts`.
+    |ModificationListener| objects should be closed (using the :func:`close`
+    method).
+
+    **Implements:** |Listener|
     """
 
     def __init__(self, postdb_arg=None):
@@ -592,7 +643,7 @@ class ModificationListener(object):
 
         **Argument:**
 
-        - *postdb_arg* (|PostDB|) -- The post database whose modifications
+        - `postdb_arg` (|PostDB|) -- The post database whose modifications
           should be listened to.
         """
 
@@ -602,9 +653,11 @@ class ModificationListener(object):
         self._posts = self._postdb.postset([])
 
     def close(self):
-        """Closes the ModificationListener.
+        """Closes the |ModificationListener|.
 
-        The object will unsubscribe from the notifications it subscribed to."""
+        The object will unsubscribe from the notifications it subscribed to.
+        """
+
         self._postdb.listeners.remove(self)
 
     def __call__(self, e):
@@ -612,7 +665,7 @@ class ModificationListener(object):
 
         **Argument:**
 
-        - *e* (|Event|)
+        - `e` (|Event|)
         """
 
         if e.type == 'before':
@@ -627,9 +680,20 @@ class ModificationListener(object):
 
 class PostPageListener(object):
 
-    """Stores the post whose post page is not up-to-date."""
+    """Stores the post whose post page is not up-to-date.
+
+    **Implements:** |Listener|
+    """
 
     def __init__(self, postdb_arg=None):
+        """Initializes an object.
+
+        **Argument:**
+
+        - `postdb_arg` (|PostDB|) -- The post database whose modifications
+          should be listened to.
+        """
+
         super(PostPageListener, self).__init__()
         self._postdb = postdb_arg if postdb_arg != None else postdb()
         self._postdb.listeners.append(self)
@@ -651,9 +715,21 @@ class PostPageListener(object):
         return self._postdb.all().collect(outdated)
 
     def close(self):
+        """Closes the |PostPageListener|.
+
+        The object will unsubscribe from the notifications it subscribed to.
+        """
+
         self._postdb.listeners.remove(self)
 
     def __call__(self, e):
+        """The event handler method.
+
+        **Argument:**
+
+        - `e` (|Event|)
+        """
+
         if e.type == 'post_page_created':
             self._posts.remove(e.post)
         elif isinstance(e, hklib.PostDBEvent) and e.type == 'touch':
@@ -669,43 +745,96 @@ class PostPageListener(object):
 
 
 def gen_indices_listener(e):
+    """Regenerates the index pages after commands that changed the posts.
+
+    **Type:** |Listener|
+    """
+
     if (e.type == 'after' and len(modification_listener.touched_posts()) > 0):
         gen_indices()
 
 def gen_threads_listener(e):
+    """Regenerates the thread pages after commands that changed the posts.
+
+    **Type:** |Listener|
+    """
+
     if (e.type == 'after' and len(modification_listener.touched_posts()) > 0):
         gen_threads()
 
 def gen_posts_listener(e):
+    """Regenerates the post pages for the changed posts after commands.
+
+    **Type:** |Listener|
+    """
+
     if e.type == 'after':
         touched_posts = modification_listener.touched_posts()
         if len(touched_posts) > 0:
             gen_posts()
 
 def save_listener(e):
+    """Saves the database after commands that changed it.
+
+    **Type:** |Listener|
+    """
+
     if (e.type == 'after' and len(modification_listener.touched_posts()) > 0):
         postdb().save()
         write('Mail database saved.\n')
 
 def timer_listener(e, start=[None]):
+    """Prints the execution time of commands.
+
+    **Type:** |Listener|
+    """
+
     if e.type == 'before':
         start[0] = time.time()
     elif e.type == 'after':
         write('%s: %f seconds.\n' % (e.command, time.time() - start[0]))
 
 def event_printer_listener(e):
-    """Prints the event."""
+    """Prints the event.
+
+    **Type:** |Listener|
+    """
+
     write('%s\n' % (e,))
 
 
 class TouchedPostPrinterListener(object):
 
+    """Prints the post that have been touched after executing commands.
+
+    More precisely, it happend only after commands that are "touching
+    commands", i.e. they are added to the ``hkshell.touching_commands``
+    list.
+
+    **Implements:** |Listener|
+    """
+
     def __init__(self, commands):
+        """Initializes an object.
+
+        **Argument:**
+
+        - `commands` ([str]) -- The names of the commands
+
+        """
+
         super(TouchedPostPrinterListener, self).__init__()
         self.commands = commands
         self.command = None
 
     def __call__(self, e):
+        """The event handler method.
+
+        **Argument:**
+
+        - `e` (|Event|)
+        """
+
         if e.type == 'before':
             self.command = e.command
         elif e.type == 'after' and self.command in self.commands:
@@ -737,26 +866,50 @@ touched_post_printer_listener = TouchedPostPrinterListener(touching_commands)
 ##### Features #####
 
 def set_listener_feature(listener, state):
-    """Sets the given listener feature to the given state."""
+    """Sets the given listener feature to the given state.
+
+    **Arguments:**
+
+    - `listener` (|Listener|)
+    - `state` (|FeatureState|)
+    """
+
     if state == 'on':
         try:
             append_listener(listener)
         except hkutils.HkException:
             write('Feature already set.\n')
-    else: # state == 'off'
+    else:
+        assert(state == 'off')
         try:
             remove_listener(listener)
         except hkutils.HkException:
             write('Feature not set.\n')
 
 def get_listener_feature(listener):
-    """Returns whether the given listener feature is turned on."""
+    """Returns whether the given listener feature is turned on.
+
+    **Argument:**
+
+    - `listener` (|Listener|)
+
+    **Returns:** |FeatureState|
+    """
+
     if listener in listeners:
         return 'on'
     else:
         return 'off'
 
 def set_feature(state, feature):
+    """Sets the given feature to the given state.
+
+    **Arguments:**
+
+    - `state` (|FeatureState|)
+    - `feature` (str)
+    """
+
     if feature in ['gi', 'gen_indices']:
         set_listener_feature(gen_indices_listener, state)
     elif feature in ['gt', 'gen_threads']:
@@ -775,6 +928,16 @@ def set_feature(state, feature):
         write('Unknown feature.\n')
 
 def features():
+    """Returns the states of all features.
+
+    **Arguments:**
+
+    - `state` (|FeatureState|)
+    - `feature` (str)
+
+    **Returns:** {str: |FeatureState|}
+    """
+
     g = get_listener_feature
     return {'gen_indices': g(gen_indices_listener),
             'gen_posts': g(gen_posts_listener),
@@ -788,7 +951,7 @@ def on(feature):
 
     **Argument:**
 
-    - *feature* (str)
+    - `feature` (str)
     """
 
     set_feature('on', feature)
@@ -797,11 +960,9 @@ def on(feature):
 def off(feature):
     """Sets a feature to off.
 
-    See the possible features in the documentation of the :func:`on` function.
-
     **Argument:**
 
-    - *feature* (str)
+    - `feature` (str)
     """
 
     set_feature('off', feature)
@@ -809,16 +970,26 @@ def off(feature):
 
 ##### Generic functionality #####
 
-def write(str):
-    options.output.write(str)
+def write(s):
+    """Writes the string to |hkshell|'s output.
+
+    **Argument:**
+
+    - `s` (str)
+    """
+
+    options.output.write(s)
 
 def gen_indices():
+    """Generates index pages."""
     options.callbacks.gen_indices(postdb())
 
 def gen_threads():
+    """Generates thread pages."""
     options.callbacks.gen_threads(postdb())
 
 def gen_posts():
+    """Generates post pages for the modified posts."""
     posts = postpage_listener.outdated_post_pages()
     posts = posts.collect(lambda p: not p.is_deleted())
     options.callbacks.gen_posts(postdb(), posts)
@@ -829,11 +1000,11 @@ def gen_posts():
         event('post_page_created', post=post)
 
 def tagset(tags):
-    """Converts the argument to ``set(tag)``.
+    """Converts the argument to a set that contains the given tags.
 
-    **Arguments:**
+    **Argument:**
 
-    - tags (|PreTagSet|)
+    - `tags` (|PreTagSet|)
 
     **Returns:** set(|Tag|)
     """
@@ -851,31 +1022,49 @@ def tagset(tags):
 ##### Commands #####
 
 @hkshell_cmd()
-def postdb():
-    return options.postdb
-
-@hkshell_cmd()
-def c():
-    return postdb().all().collect
+def h():
+    """Prints the console help."""
+    write(console_help)
 
 @hkshell_cmd()
 def p(pp):
-    """Returns a post by its heapid."""
+    """Returns a post by its heapid.
+
+    **Argument:**
+
+    - `pp` (|PrePost|)
+
+    **Returns:** |Post|
+    """
+
     return postdb().post(pp)
 
 @hkshell_cmd()
 def ps(pps):
     """Creates a PostSet that will contain the specified posts.
 
-    See the type of the posts argument at :func:`hklib.PostSet.__init__`.
+    **Argument:**
+
+    - `pp` (|PrePostSet|)
+
+    **Returns:** |PrePost|
     """
 
     return postdb().postset(pps)
 
 @hkshell_cmd()
-def h():
-    """Prints the console help."""
-    write(console_help)
+def postdb():
+    """Returns the post database.
+
+    **Returns:** |PostDB|
+    """
+
+    return options.postdb
+
+@hkshell_cmd()
+def c():
+    """Shorthand for ``postdb().all().collect``."""
+    return postdb().all().collect
 
 @hkshell_cmd(add_events=True)
 def s():
@@ -885,7 +1074,6 @@ def s():
 @hkshell_cmd()
 def x():
     """Saves the post database and exits."""
-
     event('before', 'x')
     postdb().save()
     event('after', 'x')
@@ -894,7 +1082,6 @@ def x():
 @hkshell_cmd()
 def q():
     """Exits without saving the post database."""
-
     event('before', 'q')
     event('after', 'q')
     sys.exit()
@@ -941,9 +1128,7 @@ def ga():
 def opp():
     """Returns the posts whose post pages are outdated.
 
-    When hkshell starts, this includes all posts.
-
-    Note: *opp* stands for *outdated post page*.
+    Note: `opp` stands for "outdated post pages".
     """
 
     return postpage_listener.outdated_post_pages()
@@ -989,7 +1174,7 @@ def ls(pps=None, show_author=True, show_tags=False):
         if post.date_str() != '':
             line += ' (%s)' % (post.date_str(),)
 
-        write(line+'\n')
+        write(line + '\n')
 
 @hkshell_cmd(add_events=True)
 def cat(pps):
@@ -1024,22 +1209,22 @@ def cat(pps):
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def d(posts):
-    """Deletes the posts in *pps*.
+    """Deletes the posts in `pps`.
 
     **Argument:**
 
-    - *pps* (|PrePostSet|)
+    - `pps` (|PrePostSet|)
     """
 
     posts.forall.delete()
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def dr(posts):
-    """Deletes the posts in *pps* and all their children.
+    """Deletes the posts in `pps` and all their children.
 
     **Argument:**
 
-    - *pps* (|PrePostSet|)
+    - `pps` (|PrePostSet|)
     """
 
     posts.expf().forall.delete()
@@ -1050,8 +1235,8 @@ def j(pp1, pp2):
 
     Arguments:
 
-    - *pp1* (|PrePost|) -- The post that will be the parent.
-    - *pp2* (|PrePost|) -- The post that will be the child.
+    - `pp1` (|PrePost|) -- The post that will be the parent.
+    - `pp2` (|PrePost|) -- The post that will be the child.
     """
 
     p1 = postdb().post(pp1)
@@ -1066,7 +1251,7 @@ def e(pp):
 
     **Argument:**
 
-    - *pp* (|PrePost|)
+    - `pp` (|PrePost|)
     """
 
     p = postdb().post(pp)
@@ -1127,7 +1312,7 @@ def dl(from_=0):
 
     **Argument:**
 
-    - *from_* (int): the messages whose index in the INBOX is lower than
+    - `from_` (int): the messages whose index in the INBOX is lower than
       this parameter will not be downloaded.
     """
 
@@ -1141,11 +1326,11 @@ def dl(from_=0):
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def pT(posts):
-    """Propagates the tags of the posts in *pps* to all their children.
+    """Propagates the tags of the posts in `pps` to all their children.
 
     **Argument:**
 
-    - *pps* (|PrePostSet|)
+    - `pps` (|PrePostSet|)
     """
 
     for post in posts:
@@ -1156,12 +1341,12 @@ def pT(posts):
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def aT(posts, tags):
-    """Adds the given tags to the posts in *pps*.
+    """Adds the given tags to the posts in `pps`.
 
     **Arguments:**
 
-    - *pps* (|PrePostSet|)
-    - *tags* (|PreTagSet|) -- Tags to be added.
+    - `pps` (|PrePostSet|)
+    - `tags` (|PreTagSet|) -- Tags to be added.
     """
 
     tags = tagset(tags)
@@ -1175,8 +1360,8 @@ def aTr(posts, tags):
 
     **Arguments:**
 
-    - *pps* (|PrePostSet|)
-    - *tags* (|PreTagSet|) -- Tags to be added.
+    - `pps` (|PrePostSet|)
+    - `tags` (|PreTagSet|) -- Tags to be added.
     """
 
     tags = tagset(tags)
@@ -1185,12 +1370,12 @@ def aTr(posts, tags):
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def rT(posts, tags):
-    """Removes the given tags from the posts in *pps*.
+    """Removes the given tags from the posts in `pps`.
 
     **Arguments:**
 
-    - *pps* (|PrePostSet|)
-    - *tags* (|PreTagSet|) -- Tags to be removed.
+    - `pps` (|PrePostSet|)
+    - `tags` (|PreTagSet|) -- Tags to be removed.
     """
 
     tags = tagset(tags)
@@ -1199,13 +1384,13 @@ def rT(posts, tags):
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def rTr(posts, tags):
-    """Removes the given tags from the posts in *pps* and from all their
+    """Removes the given tags from the posts in `pps` and from all their
     children.
 
     **Arguments:**
 
-    - *pps* (|PrePostSet|)
-    - *tags* (|PreTagSet|) -- Tags to be removed.
+    - `pps` (|PrePostSet|)
+    - `tags` (|PreTagSet|) -- Tags to be removed.
     """
 
     tags = tagset(tags)
@@ -1214,12 +1399,12 @@ def rTr(posts, tags):
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def sT(posts, tags):
-    """Sets the given tags on the posts in *pps*.
+    """Sets the given tags on the posts in `pps`.
 
     **Arguments:**
 
-    - *pps* (|PrePostSet|)
-    - *tags* (|PreTagSet|) -- Tags to be set.
+    - `pps` (|PrePostSet|)
+    - `tags` (|PreTagSet|) -- Tags to be set.
     """
 
     tags = tagset(tags)
@@ -1228,12 +1413,12 @@ def sT(posts, tags):
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def sTr(posts, tags):
-    """Sets the given tags on the posts in *pps* and on all their children.
+    """Sets the given tags on the posts in `pps` and on all their children.
 
     **Arguments:**
 
-    - *pps* (|PrePostSet|)
-    - *tags* (|PreTagSet|) -- Tags to be set.
+    - `pps` (|PrePostSet|)
+    - `tags` (|PreTagSet|) -- Tags to be set.
     """
 
     tags = tagset(tags)
@@ -1245,11 +1430,11 @@ def sTr(posts, tags):
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def pS(posts):
-    """Propagates the subject of the posts in *pps* and all their children.
+    """Propagates the subject of the posts in `pps` and all their children.
 
     **Argument:**
 
-    - *pps* (|PrePostSet|)
+    - `pps` (|PrePostSet|)
     """
 
     for post in posts:
@@ -1257,31 +1442,31 @@ def pS(posts):
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def sS(posts, subject):
-    """Sets the given subject for the posts in *pps*.
+    """Sets the given subject for the posts in `pps`.
 
     **Arguments:**
 
-    - *pps* (|PrePostSet|)
-    - *subject* (str) - Subject to be set.
+    - `pps` (|PrePostSet|)
+    - `subject` (str) - Subject to be set.
     """
 
     posts.forall.set_subject(subject)
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def sSr(posts, subject):
-    """Sets the given subject for the posts in *pps* and for all their
+    """Sets the given subject for the posts in `pps` and for all their
     children.
 
     **Arguments:**
 
-    - pps (|PrePostSet|)
-    - subject (str) - Subject to be set.
+    - `pps` (|PrePostSet|)
+    - `subject` (str) - Subject to be set.
     """
 
     posts.expf().forall.set_subject(subject)
 
 def capitalize_subject(post):
-    """Capitalizes the subject of *post*
+    """Capitalizes the subject of `post`
 
     **Arguments:**
 
@@ -1292,35 +1477,35 @@ def capitalize_subject(post):
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def cS(posts):
-    """Capitalizes the subject of the posts in *pps*.
+    """Capitalizes the subject of the posts in `pps`.
 
     **Arguments:**
 
-    - *pps* (|PrePostSet|)
+    - `pps` (|PrePostSet|)
     """
 
     posts.forall(capitalize_subject)
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
 def cSr(posts):
-    """Capitalizes the subject of the posts in *pps* and all their children.
+    """Capitalizes the subject of the posts in `pps` and all their children.
 
     **Argument:**
 
-    - *pps* (|PrePostSet|)
+    - `pps` (|PrePostSet|)
     """
 
     posts.expf().forall(capitalize_subject)
 
 
-##### Main #####
+##### Starting hkshell #####
 
 def exec_commands(commands):
     """Executes the given commands.
 
     **Argument:**
 
-    - *commands* ([str])
+    - `commands` ([str])
     """
 
     for command in commands:
@@ -1333,7 +1518,7 @@ def read_postdb(configfile):
 
     **Argument:**
 
-    - *configfile* (str) -- The name of the config file to use as ``hk.cfg``.
+    - `configfile` (str) -- The name of the config file to use as ``hk.cfg``.
 
     **Returns:** (ConfigParser, |PostDB|)
     """
@@ -1358,13 +1543,13 @@ def init():
     listeners.append(postpage_listener)
 
 def import_module(modname):
-    """Imports the *modname* module.
+    """Imports the `modname` module.
 
     It prints whether it succeeded or not using :func:`hklib.log`.
 
     **Argument:**
 
-    - *modname* (str)
+    - `modname` (str)
     """
 
     try:
@@ -1401,20 +1586,20 @@ def parse_args():
     return cmdl_options, args
 
 def main(cmdl_options, args):
-    """Initializes the hkshell.
+    """Initializes |hkshell|.
 
     It performs the following steps:
 
     1. Executes the "before" commands.
     2. Reads the configuration file and the post database.
     3. Sets the default event handlers.
-    4. Executes the hkrc file(s).
+    4. Executes the ``hkrc`` file(s).
     5. Executes the "after" commands.
 
     **Arguments:**
 
-    - *cmdl_options* (dict(str, [str])): Command line options.
-    - *args* ([str]): Command line arguments.
+    - `cmdl_options` ({str: [str]}): Command line options.
+    - `args` ([str]): Command line arguments.
     """
 
     # Processing the command line options

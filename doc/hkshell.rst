@@ -1,21 +1,9 @@
-:mod:`hkshell` user documentation
-=================================
+|hkshell|
+=========
 
-See the :doc:`developer documentation of hkshell <hkshell_dev>` for private
-classes and functions.
+.. include:: defs.hrst
 
 .. automodule:: hkshell
-
-.. |Event| replace:: :class:`Event`
-.. |hkshell| replace:: :mod:`hkshell`
-.. |Listener| replace:: :ref:`Listener <hkshell_Listener>`
-.. |PostDB| replace:: :class:`PostDB <hklib.PostDB>`
-.. |PostSet| replace:: :class:`PostSet <hklib.PostSet>`
-.. |Post| replace:: :class:`Post <hklib.Post>`
-.. |PrePostSet| replace:: :ref:`PrePostSet <hklib_PrePostSet>`
-.. |PrePost| replace:: :ref:`PrePost <hklib_PrePost>`
-.. |PreTagSet| replace:: :ref:`PreTagSet <hkshell_PreTagSet>`
-.. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
 
 Options
 -------
@@ -31,21 +19,27 @@ Options
 
 .. _hkshell_Event_handling:
 
+Command utilities
+-----------------
+
+.. autofunction:: hkshell_cmd
+.. autofunction:: register_cmd
+
 Event handling
 --------------
 
 |hkshell| uses an event handling model similar to that of many APIs.
 ``hkshell.listeners`` is a list that contains objects or functions, which are
-called listeners or event handlers. They are called each time an event happens
-in |hkshell|. An event is raised when a command is called, a command is
-finished, or anything really that we want to use as an event. An event is
-represented by an instance of the |Event| class, and is raised by calling the
-:func:`event` function.
+called listeners or event handlers. They should implement the |Listener| type.
+They are called each time an event happens in |hkshell|. An event is raised
+when a command is called, a command is finished, or anything really that we
+want to use as an event. An event is represented by an instance of the |Event|
+class, and is raised by calling the :func:`event` function.
 
 All :ref:`features <hkshell_features>` are implemented as event handlers. The
 event handlers can depend on each other: e.g. the event handler of most
-features depend on is the :class:`TouchedPostPrinterListener` event printer.
-Thus this event printer is present in the ``heapia.listeners`` list by default.
+features depend on is the |TouchedPostPrinterListener| event printer. Thus this
+event printer is present in the ``heapia.listeners`` list by default.
 
 .. autoclass:: Event()
 
@@ -58,57 +52,48 @@ Thus this event printer is present in the ``heapia.listeners`` list by default.
 .. autofunction:: remove_listener
 .. autofunction:: add_events
 
-.. _hkshell_commands:
-
-Commands
---------
-
-General commands
-^^^^^^^^^^^^^^^^
-
-.. autofunction:: h()
-.. autofunction:: p()
-.. autofunction:: ps()
-.. autofunction:: s()
-.. autofunction:: x()
-.. autofunction:: rl()
-.. autofunction:: gi()
-.. autofunction:: gt()
-.. autofunction:: gp()
-.. autofunction:: ga()
-.. autofunction:: dl(from_=0)
-
-Tag manipulator commands
+Event handling utilities
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: pT(pps)
-.. autofunction:: aT(pps, tags)
-.. autofunction:: aTr(pps, tags)
-.. autofunction:: rT(pps, tags)
-.. autofunction:: rTr(pps, tags)
-.. autofunction:: sT(pps, tags)
-.. autofunction:: sTr(pps, tags)
+.. autofunction:: postset_operation
 
-Subject manipulator commands
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Concrete listeners
+^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: pS(pps)
-.. autofunction:: sS(pps, subject)
-.. autofunction:: sSr(pps, subject)
-.. autofunction:: cS(pps)
-.. autofunction:: cSr(pps)
+.. autoclass:: ModificationListener
 
-Miscellaneous commands
-^^^^^^^^^^^^^^^^^^^^^^
+    **Methods:**
 
-.. autofunction:: ls(pps, show_author, show_tags)
-.. autofunction:: cat(pps)
-.. autofunction:: d(pps)
-.. autofunction:: dr(pps)
-.. autofunction:: j(pp1, pp2)
-.. autofunction:: e(pp)
-.. autofunction:: enew()
-.. autofunction:: enew_str(post_string)
+    .. automethod:: __init__
+    .. automethod:: close
+    .. automethod:: __call__
+    .. automethod:: touched_posts
+
+.. autoclass:: PostPageListener
+
+    **Methods:**
+
+    .. automethod:: __init__
+    .. automethod:: outdated_posts_from_disk
+    .. automethod:: close
+    .. automethod:: __call__
+    .. automethod:: outdated_post_pages
+
+.. autofunction:: gen_indices_listener
+.. autofunction:: gen_threads_listener
+.. autofunction:: gen_posts_listener
+.. autofunction:: save_listener
+.. autofunction:: timer_listener
+.. autofunction:: event_printer_listener
+
+.. autoclass:: TouchedPostPrinterListener
+
+    **Methods:**
+
+    .. automethod:: __init__
+    .. automethod:: __call__
+
+.. autofunction:: add_touching_command
 
 .. _hkshell_features:
 
@@ -144,11 +129,89 @@ following:
   commands that touched at least one post.
 - *ep*, *event_printer* -- If ``on``: prints all events.
 
+.. autofunction:: set_listener_feature
+.. autofunction:: get_listener_feature
+.. autofunction:: set_feature
+.. autofunction:: features
 .. autofunction:: on(feature)
 .. autofunction:: off(feature)
 
-Utilities
----------
+.. _hkshell_commands:
 
-.. autofunction:: hkshell_cmd
-.. autofunction:: register_cmd
+Generic functionality
+---------------------
+
+.. autofunction:: write
+.. autofunction:: gen_indices
+.. autofunction:: gen_threads
+.. autofunction:: gen_posts
+.. autofunction:: tagset
+
+Commands
+--------
+
+General commands
+^^^^^^^^^^^^^^^^
+
+.. autofunction:: h()
+.. autofunction:: p()
+.. autofunction:: ps()
+.. autofunction:: postdb()
+.. autofunction:: c()
+.. autofunction:: s()
+.. autofunction:: x()
+.. autofunction:: rl()
+.. autofunction:: gi()
+.. autofunction:: gt()
+.. autofunction:: gp()
+.. autofunction:: ga()
+.. autofunction:: opp()
+.. autofunction:: ls(pps=None, show_author=True, show_tags=False)
+.. autofunction:: cat(pps)
+.. autofunction:: d(pps)
+.. autofunction:: dr(pps)
+.. autofunction:: j(pp1, pp2)
+.. autofunction:: e(pp)
+.. autofunction:: enew()
+.. autofunction:: enew_str(post_string)
+.. autofunction:: dl(from_=0)
+
+Tag manipulator commands
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: pT(pps)
+.. autofunction:: aT(pps, tags)
+.. autofunction:: aTr(pps, tags)
+.. autofunction:: rT(pps, tags)
+.. autofunction:: rTr(pps, tags)
+.. autofunction:: sT(pps, tags)
+.. autofunction:: sTr(pps, tags)
+
+Subject manipulator commands
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: pS(pps)
+.. autofunction:: sS(pps, subject)
+.. autofunction:: sSr(pps, subject)
+.. autofunction:: capitalize_subject
+.. autofunction:: cS(pps)
+.. autofunction:: cSr(pps)
+
+.. _starting_hkshell:
+
+Starting |hkshell|
+------------------
+
+When the ``hk.py`` script is invoked (e.g. by typing ``python hk.py``), it just
+imports the :mod:`hkshell` module, and invokes the :func:`hkshell.parse_args`
+and :func:`hkshell.main` functions. :func:`hkshell.parse_args` parses the
+command line options. :func:`hkshell.main` executes the command arguments,
+imports the given customization modules (``hkrc`` by default), and
+gives the user an interpreter.
+
+.. autofunction:: exec_commands
+.. autofunction:: read_postdb
+.. autofunction:: init
+.. autofunction:: import_module
+.. autofunction:: parse_args
+.. autofunction:: main

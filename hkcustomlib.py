@@ -16,61 +16,74 @@
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
-"""Module that can be used to customize the Heap.
+"""|hkcustomlib| is a module that can be used to customize Heapkeeper.
 
-Type definitions:
-ShouldPrintDateFun -- A function that specifies when to print the date
-    of a post in the post summary.
-    Real type: fun(post, genopts) -> bool
-DateOptions --- Options on how to handle and show dates.
-    Real type: dict(str, object)
+Pseudo-types
+''''''''''''
 
-DateOptions keys:
-date_format --- The format of the date as given to time.strftime.
-    Type: str
-postdb --- The post database to work on.
-    Type: str
-should_print_date_fun -- The function that specifies when to print the date of
-    a post in the post summary.
-    Type: ShouldPrintDateFun
-timedelta --- A date for the post summary will be printed if the time between
-    the post and its parent is less then timedelta. (If the post has no parent
-    or the date is not specified in each posts, the date is printed.)
-    Type: datetime.timedelta
-localtime_fun --- A function that calculates the tm structure based on a
-    timestamp.
-    Type: (timestamp:int) -> time.tm
+|hkcustomlib| has pseudo-types that are not real Python types, but we use them
+as types in the documentation so we can talk about them easily.
+
+.. _hkcustomlib_ShouldPrintDateFun:
+
+- **ShouldPrintDateFun(post, genopts)** -- A function that specifies when to
+  print the date of a post in the post summary.
+
+  Real type: fun(|Post|, |GeneratorOptions|) -> bool
+
+.. _hkcustomlib_LocaltimeFun:
+
+- **LocaltimeFun(timestamp)** -- A function that calculates the `tm` structure
+  based on a timestamp. This means that it converts global time to local time.
+
+  Real type: fun(int), returns time.tm
+
+.. _hkcustomlib_DateOptions:
+
+- **DateOptions** -- Options on how to handle and show dates.
+
+  Real type: {str: object}
+
+  DateOptions keys:
+
+  - `date_format` (str) -- The format of the date as given to `time.strftime`.
+  - `postdb` (|PostDB|) -- The post database to work on.
+  - `should_print_date_fun` (|ShouldPrintDateFun|) -- The function that
+    specifies when to print-the date of a post in the post summary.
+  - `timedelta` (datetime.timedelta) -- A date for the post summary will be
+    printed if the time between the post and its parent is less then timedelta.
+    (If the post has no parent or the date is not specified in each posts, the
+    date is printed.)
+  - `localtime_fun` (|LocaltimeFun|) -- A function to be used for calculating
+    local time when displaying dates.
+
+  Note: this type should be made into a real class, according to the
+  :ref:`Options pattern <options_pattern>`.
 """
+
 
 import os
 import time
 import datetime
-import hkutils
-import hklib
 import subprocess
 
-##### Generator #####
+import hkutils
+import hklib
 
-def generatoroptions_setdef(options):
-    """Sets sensible default options for the given GeneratorOptions object."""
-    # Now all options are sensible...
-    pass
 
 ##### Date #####
 
 def format_date(post, options):
     """Formats the date of the given post.
 
-    If the post does not have a date, the None object is returned.
+    If the post does not have a date, the ``None`` object is returned.
 
-    Arguments:
-    post ---
-        Type: Post
-    options ---
-        Type: DateOptions
-        Required options: date_format, localtime_fun
+    **Arguments:**
 
-    Returns: str | None
+    - `post` (|Post|)
+    - `options` (|DateOptions|) -- Required options: date_format, localtime_fun
+
+    **Returns:** str | ``None``
     """
 
     format = options['date_format']
@@ -83,16 +96,14 @@ def format_date(post, options):
         return time.strftime(format, localtime_fun(timestamp))
 
 def create_should_print_date_fun(options):
-    """Returns a should_print_date_fun.
+    """Creates a |ShouldPrintDateFun| based on the given options.
 
-    Arguments:
-    post ---
-        Type: Post
-    options ---
-        Type: DateOptions
-        Required options: postdb, timedelta
+    **Arguments:**
 
-    Returns: ShouldPrintDateFun
+    - `post` (|Post|)
+    - `options` (DateOptions) -- Required options: postdb, timedelta
+
+    **Returns:** |ShouldPrintDateFun|
     """
 
     postdb = options['postdb']
@@ -114,15 +125,17 @@ def create_should_print_date_fun(options):
     return should_print_date_fun
 
 def create_date_fun(options):
-    """Returns a date_fun.
+    """Creates a |DateFun|.
 
-    Arguments:
-    options --- DateOptions
-        Required options:
-            date_format, postdb
-            Either postdb, timedelta or should_print_date_fun.
+    **Argument:**
 
-    Returns: hklib.DateFun
+    - `options` (|DateOptions|) -- Required options: date_format, postdb, and
+      either:
+
+      - postdb and timedelta, or
+      - should_print_date_fun.
+
+    Returns: |DateFun|
     """
 
     if options['should_print_date_fun'] == None:
@@ -138,6 +151,7 @@ def create_date_fun(options):
     return date_fun
 
 def date_defopts(options={}):
+    """Returns the default date options."""
     options0 = \
         {'postdb': None,
          'date_format' : '(%Y.%m.%d.)',
@@ -150,6 +164,11 @@ def date_defopts(options={}):
 ##### Generation #####
 
 def gen_indices(postdb):
+    """Generates index pages using the default options.
+
+    **Type:** |GenIndicesFun|
+    """
+
     date_options = date_defopts({'postdb': postdb})
     date_fun = create_date_fun(date_options)
     genopts = hklib.GeneratorOptions()
@@ -158,14 +177,12 @@ def gen_indices(postdb):
     genopts.indices = [hklib.Index([section])]
     hklib.Generator(postdb).gen_indices(genopts)
 
-def gen_posts(postdb, posts):
-    date_options = date_defopts({'postdb': postdb})
-    date_fun = create_date_fun(date_options)
-    genopts = hklib.GeneratorOptions()
-    genopts.postdb = postdb
-    hklib.Generator(postdb).gen_posts(genopts, posts.exp())
-
 def gen_threads(postdb):
+    """Generates thread pages using the default options.
+
+    **Type:** |GenThreadsFun|
+    """
+
     date_options = date_defopts({'postdb': postdb})
     date_fun = create_date_fun(date_options)
     genopts = hklib.GeneratorOptions()
@@ -173,9 +190,29 @@ def gen_threads(postdb):
     genopts.print_thread_of_post = True
     hklib.Generator(postdb).gen_threads(genopts)
 
+def gen_posts(postdb, posts):
+    """Generates post pages using the default options.
+
+    **Type:** |GenPostsFun|
+    """
+
+    date_options = date_defopts({'postdb': postdb})
+    date_fun = create_date_fun(date_options)
+    genopts = hklib.GeneratorOptions()
+    genopts.postdb = postdb
+    hklib.Generator(postdb).gen_posts(genopts, posts.exp())
+
 ##### Misc #####
 
 def default_editor():
+    """Returns the default editor of the operating system.
+
+    On Unix systems, the default is ``vi``. On Windows, it is ``notepad``.
+    On other operating systems, the function returns ``None.``
+
+    **Returns:** str
+    """
+
     if os.name == 'posix':
         return 'vi'
     elif os.name == 'nt':
@@ -186,13 +223,11 @@ def default_editor():
 def edit_file(file):
     """Opens an editor in which the user edits the given file.
 
-    Returns whether the file was changed.
+    It invokes the editor program stored in the ``EDITOR`` environment
+    variable. If ``EDITOR`` is undefined or empty, it invokes the default
+    editor on the system using the :func:`default_editor` function.
 
-    **Argument:**
-
-    - *file* (str)
-
-    **Returns:** bool
+    **Type:** |EditFileFun|
     """
 
     old_content = hkutils.file_to_string(file, return_none=True)
@@ -200,7 +235,7 @@ def edit_file(file):
     editor = os.getenv('EDITOR')
 
     # if EDITOR is not set, get the default editor
-    if editor is None:
+    if editor is None or editor == '':
         editor = default_editor()
 
     # if not even the default is set, print an error message

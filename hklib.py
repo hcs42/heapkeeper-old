@@ -16,34 +16,57 @@
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
-"""Implements the heap data structure.
+"""|hklib| implements the heap data structure.
 
-**Definiton of pseudo-types:**
+Pseudo-types
+''''''''''''
+
+|hklib| has pseudo-types that are not real Python types, but we use them as
+types in the documentation so we can talk about them easily.
+
+.. _hklib_Heapid:
+
+- **Heapid** -- The identifier of a |Post| in |PostDB|.
+
+  Real type: str
+
+.. _hklib_Messageid:
+
+- **Messageid** -- The message identifier of the email from which the |Post|
+  was created. Not all post have a message id.
+
+  Real type: str
 
 .. _hklib_PrePost:
 
-- *PrePost* (heapid | int | |Post|) -- An object that can be converted into
-  a |Post|. When it is an *int*, it will be converted to a string that should
-  represent a heapid. The *heapid* is converted to a |Post| based on the post
-  database.
+- **PrePost** -- An object that can be converted into a |Post|. When it is an
+  *int*, it will be converted to a string that should represent a |Heapid|.
+  |Heapid| is converted to a |Post| based on the post database.
+
+  Real type: |Heapid| | int | |Post|
 
 .. _hklib_PrePostSet:
 
-- *PrePostSet* (set(|PrePost|)) | [|PrePost|] | |PrePost| | |PostSet|) -- An
-  object that can be converted into a |PostSet|. Actually, |PrePostSet| can be
-  any iterable object that iterates over |PrePost| objects.
+- **PrePostSet** -- An object that can be converted into a |PostSet|. Actually,
+  |PrePostSet| can be any iterable object that iterates over |PrePost| objects.
+
+  Real type: set(|PrePost|)) | [|PrePost|] | |PrePost| | |PostSet|
 
 .. _hklib_HtmlStr:
 
-- *HtmlStr* (str) -- String that contains HTML.
+- **HtmlStr** -- String that contains HTML.
+
+  Real type: str
 
 .. _hklib_DateFun:
 
-- *DateFun* (fun(|Post|, |GeneratorOptions|) -> (str | ``None``)) --
-  A function that specifies how to print the dates of the posts. It will be
-  called for each post summary that is written into an index page. When it
-  returns ``None``, no date will be printed.
+- **DateFun(post, genopts)** -- A function that specifies how to print the
+  dates of the posts. It will be called for each post summary that is written
+  into an index page. When it returns ``None``, no date will be printed.
+
+  Real type: fun(|Post|, |GeneratorOptions|), returns (str | ``None``)
 """
+
 
 from __future__ import with_statement
 from imaplib import IMAP4_SSL
@@ -62,27 +85,44 @@ import StringIO
 import datetime
 import hkutils
 
+
 heapkeeper_version = '0.3uc'
 
 ##### logging #####
 
 log_on = [True]
 
-def set_log(log_):
-    log_on[0] = log_
+def set_log(log):
+    """Turns the logging on or off.
+
+    **Arguments:**
+
+    - `log` (bool) -- Whether the logging should be turned on.
+    """
+
+    log_on[0] = log
 
 def log(*args):
+    """Log the given strings.
+
+    **Arguments:**
+
+    - `*args` -- List of strings to be logged.
+    """
+
     if log_on[0]:
         for arg in args:
             sys.stdout.write(arg)
         sys.stdout.write('\n')
         sys.stdout.flush()
 
+
 ##### Constants #####
 
 STAR = 0
 NORMAL = 1
 CYCLES = 2
+
 
 ##### Post #####
 
@@ -99,34 +139,35 @@ class Post(object):
 
     **Data attributes:**
 
-    - *_header* (``dict(str, (str | [str]))``) -- The header of the post. See
+    - `_header` ({str: (str | [str])}) -- The header of the post. See
       the contents below.
-    - *_body* (``str``) -- The body of the post. The first character of the
+    - `_body` (str) -- The body of the post. The first character of the
       body is not a whitespace. The last character is a newline character, and
       the last but one character is not a whitespace. It does not contain any
       ``\\r`` characters, newlines are stored as ``\\n``. The form of the body
       expressed as a regular expression: ``(\\S|\\S[^\\r]*\\S)\\n``. The
       :func:`set_body` function converts any given string into this format.
-    - *_heapid* (``None | str``) -- The identifier of the post.
-    - *_postdb* (``None |`` :class:`PostDB` ``)`` -- The post database object
-      that contains the post. If *_postdb* is not ``None``, *_heapid* must
-      not be ``None`` either.
-    - *_modified* (``bool``) -- It is ``False`` if the post file that belongs
-      to the post object is up-to-date. It is ``True`` if there is no such file
-      or the post has been modified since the last synchronization.
+    - `_heapid` (|Heapid| | None) -- The identifier of the post.
+    - `_postdb` (|PostDB| | None) -- The post database object that contains the
+      post. If `_postdb` is not ``None``, `_heapid` must not be ``None``
+      either.
+    - `_modified` (bool) -- It is ``False`` if the post file that belongs to
+      the post object is up-to-date. It is ``True`` if there is no such file or
+      the post has been modified since the last synchronization.
 
-    The *_header* attribute is a dictonary that contains attributes of the post
-    such as the subject. The *_header* always contains all the following items:
+    The `_header` attribute is a dictonary that contains attributes of the post
+    such as the subject. The `_header` always contains all the following items:
 
-    - ``'Author'`` (``str``) -- The author of the post.
-    - ``'Subject'`` (``str``) -- The subject of the post.
-    - ``'Tag'`` (``[str]``) -- The tags of the post.
-    - ``'Message-Id'`` (``str``) -- The message id of the post.
-    - ``'Parent'`` (``str``) -- The heapid or message id of the parent of
-      the post. It should be en empty string when the post has no parent.
-    - ``'Date'`` (``str``) -- The date of the post.
-    - ``'Flag'`` (``[str]``) -- The flags of the post. Currently there is only
-      one flag, the ``delete`` flag.
+    - ``'Author'`` (str) -- The author of the post.
+    - ``'Subject'`` (str) -- The subject of the post.
+    - ``'Tag'`` ([str]) -- The tags of the post.
+    - ``'Message-Id'`` (str) -- The message id of the post.
+    - ``'Parent'`` (|Heapid| | |Messageid| | ``''``) -- The heapid or message
+      id of the parent of the post. It should be en empty string when the post
+      has no parent.
+    - ``'Date'`` (str) -- The date of the post.
+    - ``'Flag'`` ([str]) -- The flags of the post. Currently there is only one
+      flag, the ``delete`` flag.
     """
 
     # Constructors
@@ -134,11 +175,14 @@ class Post(object):
     def __init__(self, f, heapid=None, postdb=None):
         """Constructor.
 
-        Arguments:
-        f -- A file descriptor from which the header and the body of the post
-             will be read. It will not be closed.
-        heapid -- See _heapid.
-        postdb -- See _postdb.
+        **Arguments:**
+
+        - `f` (fileobject) -- A file object from which the header and the body
+          of the post will be read. It will not be closed.
+        - `heapid` (|Heapid| | None) -- Initial value of the `_heapid` data
+          attribute.
+        - `postdb` (|PostDB| None) -- Initial value of the `_postdb` data
+          attribute.
         """
 
         assert(not (postdb != None and heapid == None))
@@ -156,21 +200,58 @@ class Post(object):
 
     @staticmethod
     def from_str(s, heapid=None, postdb=None):
-        """Creates a Post object from the given string."""
+        """Creates a |Post| object from the given string.
+
+        **Arguments:**
+
+        - `s` (str) -- String from which the post should be created. It is
+          handled like the content of a post file.
+        - `heapid` (|Heapid| | None) -- Initial value of the `_heapid` data
+          attribute.
+        - `postdb` (|PostDB| None) -- Initial value of the `_postdb` data
+          attribute.
+
+        **Returns:** |Post|
+        """
+
         sio = StringIO.StringIO(s)
         p = Post(sio, heapid, postdb)
         sio.close()
         return p
 
     @staticmethod
-    def from_file(fname, heapid=None, postdb=None):
-        """Creates a Post object from a file."""
-        with open(fname, 'r') as f:
+    def from_file(filename, heapid=None, postdb=None):
+        """Creates a |Post| object from a file.
+
+        **Arguments:**
+
+        - `filename` (str) -- The post file from which the post should be
+          created.
+        - `heapid` (|Heapid| | None) -- Initial value of the `_heapid` data
+          attribute.
+        - `postdb` (|PostDB| None) -- Initial value of the `_postdb` data
+          attribute.
+
+        **Returns:** |Post|
+        """
+
+        with open(filename, 'r') as f:
             return Post(f, heapid, postdb)
 
     @staticmethod
     def create_empty(heapid=None, postdb=None):
-        """Creates an empty Post object."""
+        """Creates an empty Post object.
+
+        **Arguments:**
+
+        - `heapid` (|Heapid| | None) -- Initial value of the `_heapid` data
+          attribute.
+        - `postdb` (|PostDB| None) -- Initial value of the `_postdb` data
+          attribute.
+
+        **Returns:** |Post|
+        """
+
         sio = StringIO.StringIO('')
         p = Post(sio, heapid, postdb)
         sio.close()
@@ -179,17 +260,35 @@ class Post(object):
     # Modifications
 
     def touch(self):
-        """Should be called each time after the post is modified."""
+        """Should be called each time after the post is modified.
+
+        See also the :ref:`lazy_data_calculation_pattern` pattern.
+        """
+
         self._modified = True
         self._datetime = hkutils.NOT_SET
         if self._postdb != None:
             self._postdb.touch(self)
 
     def is_modified(self):
+        """Returns whether the post is modified.
+
+        See also the :ref:`lazy_data_calculation_pattern` pattern.
+        """
+
         return self._modified
 
     def add_to_postdb(self, heapid, postdb):
-        """Adds the post to the postdb."""
+        """Adds the post to the `postdb`.
+
+        **Arguments:**
+
+        - `heapid` (|Heapid| | None) -- The post will have this heapid in the
+          post database.
+        - `postdb` (|PostDB| None) -- The post database to which the post
+          should be added.
+        """
+
         assert(self._postdb == None)
         self._heapid = heapid
         self._postdb = postdb
@@ -198,57 +297,127 @@ class Post(object):
     # Get-set functions
 
     def heapid(self):
+        """Returns the heapid of the post.
+
+        **Returns:** |Heapid|
+        """
+
         return self._heapid
 
     # author field
 
     def author(self):
+        """Returns the author of the post.
+
+        **Returns:** str
+        """
+
         return self._header['Author']
 
     def set_author(self, author):
+        """Sets the author of the post.
+
+        **Argument:**
+
+        - `author` (str)
+        """
+
         self._header['Author'] = author
         self.touch()
 
     # subject field
 
     def real_subject(self):
+        """Returns the real subject of the post as it is stored in the post
+        file.
+
+        **Returns:** str
+        """
+
         return self._header['Subject']
 
     def subject(self):
-        """The subject with the 'Re:' prefix removed."""
+        """The subject with the "Re:" prefix removed.
+
+        **Returns:** str
+        """
+
         subject = self._header['Subject']
         if re.match('[Rr][Ee]:', subject):
             subject = subject[3:]
         return subject.strip()
 
     def set_subject(self, subject):
+        """Sets the ("real") subject of the post.
+
+        **Argument:**
+
+        - `subject` (str)
+        """
+
         self._header['Subject'] = subject
         self.touch()
 
     # message id field
 
     def messid(self):
+        """Returns the message id of the post.
+
+        **Returns:** str
+        """
+
         return self._header['Message-Id']
 
     def set_messid(self, messid):
+        """Sets the message id of the post.
+
+        **Argument:**
+
+        - `messid` (|Messageid| | ``None``)
+        """
+
         self._header['Message-Id'] = messid
         self.touch()
 
     # parent field
 
     def parent(self):
+        """Returns the ``Parent`` attribute of the post.
+
+        **Returns:** |Heapid| | |Messageid| | ``''``
+        """
+
         return self._header['Parent']
 
     def set_parent(self, parent):
+        """Sets the ``Parent`` attribute of the post.
+
+        **Argument:**
+
+        - `parent` (|Heapid| | |Messageid| | ``''``)
+        """
+
         self._header['Parent'] = parent
         self.touch()
 
     # date field
 
     def date(self):
+        """Returns the ``Date`` attribute of the post.
+
+        **Returns:** str
+        """
+
         return self._header['Date']
 
     def set_date(self, date):
+        """Sets the ``Date`` attribute of the post.
+
+        **Argument:**
+
+        - `date` (str)
+        """
+
         self._header['Date'] = date
         self.touch()
 
@@ -257,7 +426,7 @@ class Post(object):
 
         If the post does not have a date, 0 is returned.
 
-        Returns: int
+        **Returns:** int
         """
 
         date = self.date()
@@ -266,15 +435,19 @@ class Post(object):
     def datetime(self):
         """Returns the datetime object that describes the date of the post.
 
-        If the post does not have a date, the None object is returned.
+        If the post does not have a date, ``None`` is returned.
 
-        Returns: datetime.datetime | None
+        **Returns:** datetime.datetime | ``None``
         """
 
         self._recalc_datetime()
         return self._datetime
 
     def _recalc_datetime(self):
+        """Recalculates the `_datetime` attribute.
+
+        See also the :ref:`lazy_data_calculation_pattern` pattern.
+        """
 
         if self._datetime == hkutils.NOT_SET:
             timestamp = self.timestamp()
@@ -284,11 +457,12 @@ class Post(object):
                 self._datetime = datetime.datetime.fromtimestamp(timestamp)
 
     def date_str(self):
-        """The date converted to a string in local time.
+        """Returns the date converted to a string in local time.
 
+        ``hkshell.localtime_fun`` is used to calculate the local time.
         If the post does not have a date, an empty string is returned.
 
-        Returns: str
+        **Returns:** str
         """
 
         timestamp = self.timestamp()
@@ -298,14 +472,48 @@ class Post(object):
             return time.strftime('%Y.%m.%d. %H:%M', localtime_fun(timestamp))
 
     def before(self, *dt):
-        return datetime.datetime(*dt) > self.datetime()
+        """Returns ``True`` if the post predates `dt`.
+
+        Returns ``False`` if the post does not have date. Also returns
+        ``False`` if the date of the Post is the given date.
+
+        **Returns:** bool
+
+        **Example:** ::
+
+            >>> p(1).before(2010,1,1)
+            True
+        """
+
+        return (self.datetime() is not None and
+                self.datetime() < datetime.datetime(*dt))
 
     def after(self, *dt):
-        return datetime.datetime(*dt) <= self.datetime()
+        """Returns ``True`` if `dt` predates the post.
+
+        Returns ``True`` if the post does not have date. Also returns
+        ``True`` if the date of the Post is the given date.
+
+        This function is the exact opposite of :func:`before`: given `p` post
+        and a `dt` datetime, exactly one of `p.before(dt)` and `p.after(dt)` is
+        ``True``.
+
+        **Returns:** bool
+        """
+
+        return (self.datetime() is None or
+                datetime.datetime(*dt) <= self.datetime())
 
     def between(self, dts, dte):
-        date = self.datetime()
-        return datetime.datetime(*dts) <= date < datetime.datetime(*dte)
+        """Returns ``True`` if the post's date is between `dts` and `dte`.
+
+        ``post.between(dts, dte)`` is equivalent to
+        ``post.after(*dts) and post.before(*dte)``.
+
+        **Returns:** bool
+        """
+
+        return self.after(*dts) and self.before(*dte)
 
     # tag fields
 
@@ -313,16 +521,18 @@ class Post(object):
         """Returns the tags of the post.
 
         The returned object should not be modified.
+
+        **Returns:** [str]
         """
 
         return self._header['Tag']
 
     def set_tags(self, tags):
-        """Sets the given tags as the tags of the post.
+        """Sets the ``Tag`` attributes of the post.
 
-        Arguments:
-        tags --
-            Type: iterable
+        **Argument:**
+
+        - `tags` (iterable)
         """
 
         self._header['Tag'] = sorted(tags)

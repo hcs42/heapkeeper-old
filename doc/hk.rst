@@ -1,4 +1,6 @@
-:mod:`hk` user documentation
-============================
+:mod:`hk`
+=========
+
+.. include:: defs.hrst
 
 .. automodule:: hk

@@ -1,14 +1,10 @@
-Module documentation for developers
-===================================
+Module documentation
+====================
 
 .. toctree::
 
    hkutils
-   hkutils_dev
    hkcustomlib
-   hkcustomlib_dev
    hklib
-   hklib_dev
    hkshell
-   hkshell_dev
    hk

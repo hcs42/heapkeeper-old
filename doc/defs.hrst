@@ -1,0 +1,41 @@
+.. .. This file contains rst definitions, mainly for classes and references.
+.. ..
+.. .. Please, keep the entries in alphabetical order. If you use Vim, you may
+.. .. use the following command to do so:
+.. ..
+.. ..     :/^$/,$sort i
+
+.. |Callbacks| replace:: :class:`Callbacks <hkshell.Callbacks>`
+.. |DateFun| replace:: :ref:`DateFun <hklib_DateFun>`
+.. |DateOptions| replace:: :ref:`DateOptions <hkcustomlib_DateOptions>`
+.. |EditFileFun| replace:: :ref:`EditFileFun <hkshell_EditFileFun>`
+.. |Event| replace:: :class:`Event <hkshell.Event>`
+.. |FeatureState| replace:: :ref:`FeatureState <hkshell_FeatureState>`
+.. |GeneratorOptions| replace:: :class:`GeneratorOptions <hklib.GeneratorOptions>`
+.. |Generator| replace:: :class:`Generator <hklib.Generator>`
+.. |GenIndicesFun| replace:: :ref:`GenIndicesFun <hkshell_GenIndicesFun>`
+.. |GenPostsFun| replace:: :ref:`GenPostsFun <hkshell_GenPostsFun>`
+.. |GenThreadsFun| replace:: :ref:`GenThreadsFun <hkshell_GenThreadsFun>`
+.. |Heapid| replace:: :ref:`Heapid <hklib_Heapid>`
+.. |hkcustomlib| replace:: :mod:`hkcustomlib`
+.. |hklib| replace:: :mod:`hklib`
+.. |hkshell| replace:: :mod:`hkshell`
+.. |hkutils| replace:: :mod:`hkutils`
+.. |Index| replace:: :class:`Index <hklib.Index>`
+.. |Listener| replace:: :ref:`Listener <hkshell_Listener>`
+.. |LocaltimeFun| replace:: :ref:`LocaltimeFun <hkcustomlib_LocaltimeFun>`
+.. |Messageid| replace:: :ref:`Messageid <hklib_Messageid>`
+.. |ModificationListener| replace:: :class:`ModificationListener <hkshell.ModificationListener>`
+.. |PostDB| replace:: :class:`PostDB <hklib.PostDB>`
+.. |PostPageListener| replace:: :class:`PostPageListener <hkshell.PostPageListener>`
+.. |PostSet| replace:: :class:`PostSet <hklib.PostSet>`
+.. |Post| replace:: :class:`Post <hklib.Post>`
+.. |PrePostSet| replace:: :ref:`PrePostSet <hklib_PrePostSet>`
+.. |PrePost| replace:: :ref:`PrePost <hklib_PrePost>`
+.. |PreTagSet| replace:: :ref:`PreTagSet <hkshell_PreTagSet>`
+.. |Section| replace:: :class:`Section <hklib.Section>`
+.. |ShouldPrintDateFun| replace:: :ref:`ShouldPrintDateFun <hkcustomlib_ShouldPrintDateFun>`
+.. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
+.. |TouchedPostPrinterListener| replace:: :class:`TouchedPostPrinterListener <hkshell.TouchedPostPrinterListener>`
+.. |UserDoc| replace:: :doc:`user documentation of hkshell <hkshell>`
+.. |Writable| replace:: :ref:`Writable <hkshell_Writable>`

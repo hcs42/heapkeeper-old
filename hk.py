@@ -21,13 +21,7 @@
 """This module starts :mod:`hkshell`, which is Heapkeeper's interactive
 shell.
 
-When the ``hkshell`` script is invoked (e.g. by typing ``./hkshell``), it just
-executes the :mod:`hk` module, which imports the :mod:`hkshell` module and
-invokes the :func:`hkshell.parse_args` and :func:`hkshell.main` functions.
-:func:`hkshell.parse_args` parses the command line options.
-:func:`hkshell.main` which executes command arguments of ``hkshell``, import
-the given customization modules (``hkrc`` by default), and gives the user an
-interpreter.
+See more in section :ref:`starting_hkshell` in the documentation of |hkshell|.
 """
 
 import sys

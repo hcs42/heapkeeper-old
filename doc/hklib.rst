@@ -1,24 +1,16 @@
-:mod:`hklib` user documentation
-===============================
+|hklib|
+=======
 
-.. |Post| replace:: :class:`Post`
-.. |PostDB| replace:: :class:`PostDB`
-.. |PostSet| replace:: :class:`PostSet`
-.. |Section| replace:: :class:`Section`
-.. |Index| replace:: :class:`GeneratorOptions`
-.. |GeneratorOptions| replace:: :class:`GeneratorOptions`
-.. |Generator| replace:: :class:`Generator`
-.. |PrePost| replace:: :ref:`PrePost <hklib_PrePost>`
-.. |PrePostSet| replace:: :ref:`PrePostSet <hklib_PrePostSet>`
-.. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
-.. |PreTagSet| replace:: :ref:`PreTagSet <hkshell_PreTagSet>`
-
-See the :doc:`developer documentation of hklib <hklib_dev>` for more
-details.
-
--------------------------------------------------------------------------------
+.. include:: defs.hrst
 
 .. automodule:: hklib
+
+Logging
+-------
+
+.. autofunction:: set_log
+.. autofunction:: log
+
 
 Post
 ----
@@ -27,10 +19,62 @@ Post
 
     **Methods:**
 
+    .. automethod:: __init__
+    .. automethod:: from_str
+    .. automethod:: from_file
+    .. automethod:: create_empty
+    .. automethod:: touch
+    .. automethod:: is_modified
+    .. automethod:: add_to_postdb
+    .. automethod:: heapid
+    .. automethod:: author
+    .. automethod:: set_author
+    .. automethod:: real_subject
     .. automethod:: subject
     .. automethod:: set_subject
-    .. automethod:: real_subject
-    .. automethod:: set_body
+    .. automethod:: messid
+    .. automethod:: set_messid
+    .. automethod:: parent
+    .. automethod:: set_parent
+    .. automethod:: date
+    .. automethod:: set_date
+    .. automethod:: timestamp
+    .. automethod:: datetime
+    .. automethod:: _recalc_datetime
+    .. automethod:: date_str
+    .. automethod:: before
+    .. automethod:: after
+    .. automethod:: between
+    .. automethod:: tags
+    .. automethod:: set_tags
+..    .. automethod:: add_tag
+..    .. automethod:: remove_tag
+..    .. automethod:: has_tag
+..    .. automethod:: has_tag_from
+..    .. automethod:: flags
+..    .. automethod:: set_flags
+..    .. automethod:: is_deleted
+..    .. automethod:: delete
+..    .. automethod:: body
+..    .. automethod:: set_body
+..    .. automethod:: body_contains
+..    .. automethod:: parse
+..    .. automethod:: parse_header
+..    .. automethod:: create_header
+..    .. automethod:: write
+..    .. automethod:: save
+..    .. automethod:: load
+..    .. automethod:: postfilename
+..    .. automethod:: htmlfilebasename
+..    .. automethod:: htmlfilename
+..    .. automethod:: htmlthreadbasename
+..    .. automethod:: htmlthreadfilename
+..    .. automethod:: postfile_exists
+..    .. automethod:: __eq__
+..    .. automethod:: __repr__
+..    .. automethod:: remove_google_stuff
+..    .. automethod:: parse_subject
+..    .. automethod:: normalize_subject
 
 PostDB
 ------
