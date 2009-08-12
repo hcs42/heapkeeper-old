@@ -35,7 +35,7 @@ a
 
 #subheader + .date
 {
-    margin-left: 1em; 
+    margin-left: 1em;
     color: #006;
 }
 
@@ -163,7 +163,7 @@ td
 
 .post_inactive span, .post_inactive span a
 {
-    color: gray !important; 
+    color: gray !important;
 }
 
 .post_inactive .subject a

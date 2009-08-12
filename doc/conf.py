@@ -267,7 +267,7 @@ def email_role(typ, rawtext, text, lineno, inliner, options={}, content=[]):
     node = docutils.nodes.raw('', obfuscated, format='html')
     return [node], []
 
-# -- end 
+# -- end
 
 def setup(app):
     app.add_role('email', email_role)
