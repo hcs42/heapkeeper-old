@@ -8,5 +8,5 @@ releases
 # files
 
 hkrc.py
-hk.cfg
+*.cfg
 *.pyc
