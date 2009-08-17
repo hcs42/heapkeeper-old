@@ -1678,16 +1678,19 @@ class EmailDownloader(object):
         self._server.close()
         self._server = None
 
-    def download_email(self, email_index):
-        """Downloads an email and returns it as a Post.
+    def parse_email(self, header, text):
+        """Create a Post from an already downloaded email header and
+        body part.
+
+        Known issue: some (all?) multipart messages are parsed incorrectly.
 
         Arguments:
-        email_index -- The index of the email to download.
-            Type: int
+        header -- The header of the email.
+            Type: string
+        text -- The body of the email.
+            Type: string
         """
 
-        header = self._server.fetch(email_index, '(BODY[HEADER])')[1][0][1]
-        text = self._server.fetch(email_index, '(BODY[TEXT])')[1][0][1]
         message = email.message_from_string(header + text)
 
         # processing the header
@@ -1708,7 +1711,7 @@ class EmailDownloader(object):
                 value = re.sub(r'\r\n',r'\n',value)
                 headers[attr] = value
 
-        # encodig
+        # encoding
         encoding = message['Content-Transfer-Encoding']
         if encoding != None:
             if encoding.lower() == 'base64':
@@ -1744,31 +1747,62 @@ class EmailDownloader(object):
         them to the post database.
 
         Arguments:
-        lower_value -- Only the email indices that are greater or equal to the
+        lower_value -- Only the email indices that are greater or equal to
             lower_value are examined.
             Type: int.
         """
 
-        self._server.select("INBOX")[1]
-        emails = self._server.search(None, '(ALL)')[1][0].strip()
-        if emails != '':
-            for email_index in emails.split(' '):
-                if int(email_index) >= lower_value:
-                    header = self._server.fetch(email_index, \
-                             '(BODY[HEADER.FIELDS (MESSAGE-ID)])')[1][0][1]
-                    messid = email.message_from_string(header)['Message-Id']
-                    # post: the post in the database if already exists
-                    post = self._postdb.post_by_messid(messid)
-                    if post == None:
-                        post = self.download_email(email_index)
-                        self._postdb.add_new_post(post)
-                        log('Post #%s (#%s in INBOX) downloaded.' % \
-                            (post.heapid(), email_index))
-                    else:
-                        log('Post #%s (#%s in INBOX) found.' % \
-                            (post.heapid(), email_index))
-        log('Downloading finished.')
+        self._server.select("INBOX")
+        result = self._server.search(None, '(ALL)')[1][0].strip()
+        if result == '':
+            log('Message box is empty.')
+            return
+        all_emails = result.split(' ')
 
+        emails = [ em for em in all_emails if int(em) >= lower_value ]
+        emails_imap = ','.join(emails)
+
+        log('Checking...')
+
+        result = self._server.fetch(emails_imap,
+                                    '(BODY[HEADER.FIELDS (MESSAGE-ID)])')[1]
+        raw_messids = [ result[2 * i][1] for i in range(len(emails)) ]
+        messids = [ email.message_from_string(s)['Message-Id']
+                    for s in raw_messids ]
+
+        # assembling a list of new messages
+        download_list = []
+        for index, messid in zip(emails, messids):
+            post = self._postdb.post_by_messid(messid)
+            if post == None:
+                download_list.append(index)
+#            else:
+#                log('Post #%s (#%s in INBOX) found.' %
+#                    (post.heapid(), int(index) + lower_value))
+        download_imap = ','.join(download_list)
+        num_new = len(download_list)
+
+        if num_new == 0:
+            log('No new messages.')
+            return
+        else:
+            log('%d new message%s found.' %
+                (num_new, 's' if num_new > 1 else ''))
+
+        log('Downloading...')
+
+        result = self._server.fetch(download_imap,
+                                    '(BODY[TEXT] BODY[HEADER])')[1]
+        for i in range(num_new):
+            text = result[i * 3][1]
+            header = result[i * 3 + 1][1]
+            post = self.parse_email(header, text)
+            self._postdb.add_new_post(post)
+#            log('Post #%s (#%s in INBOX) downloaded.' %
+#                (post.heapid(), download_list[i]))
+
+        log('%d new message%s downloaded.' %
+            (num_new, 's' if num_new > 1 else ''))
 
 ##### Html #####
 
