@@ -1742,14 +1742,15 @@ class EmailDownloader(object):
 
         return post
 
-    def download_new(self, lower_value=0):
+    def download_new(self, lower_value=0, detailed=False):
         """Downloads the new emails from the INBOX of the IMAP server and adds
         them to the post database.
 
-        Arguments:
-        lower_value -- Only the email indices that are greater or equal to
-            lower_value are examined.
-            Type: int.
+        **Arguments:**
+
+        - `lower_value` (int): only the email indices that are greater or equal
+          to lower_value are examined.
+        - `detailed` (bool): if True, every mail found or download is reported.
         """
 
         self._server.select("INBOX")
@@ -1776,9 +1777,9 @@ class EmailDownloader(object):
             post = self._postdb.post_by_messid(messid)
             if post == None:
                 download_list.append(index)
-#            else:
-#                log('Post #%s (#%s in INBOX) found.' %
-#                    (post.heapid(), int(index) + lower_value))
+            elif detailed:
+                log('Post #%s (#%s in INBOX) found.' %
+                    (post.heapid(), int(index) + lower_value))
         download_imap = ','.join(download_list)
         num_new = len(download_list)
 
@@ -1798,8 +1799,9 @@ class EmailDownloader(object):
             header = result[i * 3 + 1][1]
             post = self.parse_email(header, text)
             self._postdb.add_new_post(post)
-#            log('Post #%s (#%s in INBOX) downloaded.' %
-#                (post.heapid(), download_list[i]))
+            if detailed:
+                log('Post #%s (#%s in INBOX) downloaded.' %
+                    (post.heapid(), download_list[i]))
 
         log('%d new message%s downloaded.' %
             (num_new, hkutils.plural(num_new)))
