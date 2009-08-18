@@ -1787,7 +1787,7 @@ class EmailDownloader(object):
             return
         else:
             log('%d new message%s found.' %
-                (num_new, 's' if num_new > 1 else ''))
+                (num_new, hkutils.plural(num_new)))
 
         log('Downloading...')
 
@@ -1802,7 +1802,7 @@ class EmailDownloader(object):
 #                (post.heapid(), download_list[i]))
 
         log('%d new message%s downloaded.' %
-            (num_new, 's' if num_new > 1 else ''))
+            (num_new, hkutils.plural(num_new)))
 
 ##### Html #####
 
