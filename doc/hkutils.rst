@@ -40,5 +40,6 @@ Miscellaneous
 .. autofunction:: utf8
 .. autofunction:: calc_timestamp
 .. autofunction:: copy_wo
+.. autofunction:: plural
 .. autoclass:: NOT_SET
 

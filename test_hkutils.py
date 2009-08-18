@@ -123,6 +123,16 @@ class TestOptionHandling(unittest.TestCase):
         self.assertTrue(hkutils.check(a, ['x']))
         self.assertRaises(AttributeError, lambda: hkutils.check(a, ['y']))
 
+    def test_plural(self):
+
+        for i in (-1, 1):
+            self.assertEquals(hkutils.plural(i), '')
+            self.assertEquals(hkutils.plural(i, 'ox', 'oxen'), 'ox')
+
+        for i in (-2, 0, 2):
+            self.assertEquals(hkutils.plural(i), 's')
+            self.assertEquals(hkutils.plural(i, 'ox', 'oxen'), 'oxen')
+
 
 if __name__ == '__main__':
     unittest.main()

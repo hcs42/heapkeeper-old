@@ -250,6 +250,35 @@ def copy_wo(src, dst):
     if not os.path.exists(dst):
         shutil.copyfile(src, dst)
 
+def plural(n, singular='', plural='s'):
+    """Give the appropriate (singular or plural) noun ending for a number.
+
+    Minus one is singular. This decision is based on 
+    http://en.wiktionary.org/wiki/cardinal_number#Usage_notes
+
+    Can also be used with irregular plurals, just use whole word instead of
+    just the ending.
+
+    **Example**::
+
+        >>> print ('%d message%s found.' %
+                   (3, hkutils.plural(3)))
+        3 messages found.
+
+    **Arguments:**
+
+    - `n` (int) -- The number for which we find the matching ending.
+    - `singular` (str) -- The singular ending.
+    - `plural` (str) -- The plural ending.
+
+    **Returns**: str
+    """
+
+    if n == 1 or n == -1:
+        return singular
+    else:
+        return plural
+
 
 ##### Constants #####
 
