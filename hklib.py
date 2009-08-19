@@ -1241,6 +1241,97 @@ class PostDB(object):
             for post2 in self.iter_thread(self.post(ch_heapid), threadstruct):
                 yield post2
 
+    def walk_thread(self, root):
+        """Walks a thread and yields its posts.
+
+        **Argument:**
+
+        - `root` (Post | ``None``) -- The root of the thread to be walked. If
+          ``None``, the whole post database is walked.
+
+        **Yields:** |PostItem|
+
+        `walk_thread` walks the thread indicated by `root` with deep walk and
+        yields |PostItem| objects. A post item contains a post and some
+        additional information.
+
+        The post item contains the post's position, which can be ``begin`` or
+        ``end``. Each post is yielded twice during the walk. When the deep walk
+        enters the subthread of a post, the post is yielded with ``begin``
+        position. When the deep walk leaves its subthread, it is yielded with
+        ``end`` position.
+
+        The post item also contains the level of the post. The level of the
+        root post is 0, the level of its children is 1, etc. When the `root`
+        argument is ``None`` and the whole database is walked, the level of all
+        root posts is 0.
+
+        **Example:**
+
+        The thread structure walked::
+
+            0 <- 1 <- 2
+              <- 3
+            4
+
+        The post items yielded (indentation is there only to help the human
+        reader)::
+
+            <PostItem: pos=begin, heapid='0', level=0>
+              <PostItem: pos=begin, heapid='1', level=1>
+                <PostItem: pos=begin, heapid='2', level=2>
+                <PostItem: pos=end, heapid='2', level=2>
+              <PostItem: pos=end, heapid='1', level=1>
+              <PostItem: pos=begin, heapid='3', level=1>
+              <PostItem: pos=end, heapid='3', level=1>
+            <PostItem: pos=end, heapid='0', level=0>
+            <PostItem: pos=begin, heapid='4', level=0>
+            <PostItem: pos=end, heapid='4', level=0>
+        """
+
+        # `stack` is initialized with "beginning" `PostItem`s (i.e.
+        # ``item.pos == 'begin'``).
+        # During the execution of the loop:
+        #  - the stack is popped,
+        #  - whatever we got, we yield it,
+        #  - if it is a beginning `PostItem`, we push the matching ending
+        #    `PostItem`
+        #  - then push a beginning `PostItem` for all the children of the
+        #    popped item's post
+        # This means that we will yield the ending `PostItem` once all the
+        # children (and their children etc.) are processed.
+
+        assert(root in self.all() or root == None)
+
+        if root is None:
+            roots = [ PostItem(pos='begin', post=root, level=0)
+                      for root in self.children(None) ]
+            stack = list(reversed(roots))
+        else:
+            stack = [ PostItem(pos='begin', post=root, level=0) ]
+
+        threadstruct = self.threadstruct()
+
+        while len(stack) > 0:
+
+            postitem = stack.pop()
+            yield postitem
+
+            if postitem.pos == 'begin':
+
+                # pushing the closing pair of postitem into the stack
+                postitem_end = postitem.copy()
+                postitem_end.pos = 'end'
+                stack.append(postitem_end)
+
+                # pushing the children of the post into the stack
+                new_level = postitem.level + 1
+                child_postitems = \
+                    [ PostItem(pos='begin', post=child, level=new_level)
+                      for child in self.children(postitem.post) ]
+                stack += reversed(child_postitems)
+
+
     def cycles(self):
         """Returns the posts that are in a cycle of the thread structure.
 
@@ -1287,6 +1378,60 @@ class PostDB(object):
 
     def html_dir(self):
         return self._html_dir
+
+
+class PostItem(object):
+
+    """Represents a post when performing walk on posts.
+
+    Used for example by |PostDB.walk_thread|. For information about what
+    exactly the values of the data attributes will be during a walk, please
+    read the documenation of the function that performs the walk.
+
+    **Data attributes:**
+
+    - `pos` (str) -- The position of the post item. Possible values:
+      ``'begin'``, ``'end'``.
+    - `post` (Post) -- The post represented by the post item.
+    - `level` (int) -- The level of the post.
+    """
+
+    def __init__(self, pos, post, level):
+        """Constructor.
+
+        **Arguments:**
+
+        - `pos` (str) -- Initializes the `pos` data attribute.
+        - `post` (Post) -- Initializes the `post` data attribute.
+        - `level` (int) -- Initializes the `level` data attribute.
+        """
+
+        assert(pos in ['begin', 'end'])
+        self.pos = pos
+        self.post = post
+        self.level = level
+
+    def copy(self):
+        """Creates a shallow copy of the post item."""
+        return PostItem(pos=self.pos,
+                        post=self.post,
+                        level=self.level)
+
+    def __str__(self):
+        """Returns the string representation of the PostItem.
+
+        **Returns:** str
+
+        Example: ``<PostItem: pos=begin, heapid='42', level=0>``
+        """
+
+        if self.post.heapid() is None:
+            heapid_str = None
+        else:
+            heapid_str = "'%s'" % (self.post.heapid(),)
+
+        return ("<PostItem: pos=%s, heapid=%s, level=%d>" %
+                (self.pos, heapid_str, self.level))
 
 
 ##### PostSet #####

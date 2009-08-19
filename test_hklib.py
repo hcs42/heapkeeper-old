@@ -637,6 +637,75 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
             test(Post.from_str(''), [])
         self.assertRaises(AssertionError, f)
 
+    def test_walk_thread(self):
+        postdb = self._postdb
+        p = self._posts
+
+        def test(root, result):
+            """Tests whether the the :func:`PostDB.walk_thread` function
+            returns the given result when executed with the given root."""
+
+            postitem_strings = [ str(postitem)
+                                 for postitem in postdb.walk_thread(root) ]
+            self.assertEquals(result, postitem_strings)
+
+        # The indentation in the following expressions reflects the thread
+        # structure of the posts.
+
+        test(None,
+             [
+             "<PostItem: pos=begin, heapid='0', level=0>",
+               "<PostItem: pos=begin, heapid='1', level=1>",
+                 "<PostItem: pos=begin, heapid='2', level=2>",
+                 "<PostItem: pos=end, heapid='2', level=2>",
+               "<PostItem: pos=end, heapid='1', level=1>",
+               "<PostItem: pos=begin, heapid='3', level=1>",
+               "<PostItem: pos=end, heapid='3', level=1>",
+             "<PostItem: pos=end, heapid='0', level=0>",
+             "<PostItem: pos=begin, heapid='4', level=0>",
+             "<PostItem: pos=end, heapid='4', level=0>",
+             ])
+
+        test(p[0],
+             [
+             "<PostItem: pos=begin, heapid='0', level=0>",
+               "<PostItem: pos=begin, heapid='1', level=1>",
+                 "<PostItem: pos=begin, heapid='2', level=2>",
+                 "<PostItem: pos=end, heapid='2', level=2>",
+               "<PostItem: pos=end, heapid='1', level=1>",
+               "<PostItem: pos=begin, heapid='3', level=1>",
+               "<PostItem: pos=end, heapid='3', level=1>",
+             "<PostItem: pos=end, heapid='0', level=0>",
+             ])
+
+        test(p[1],
+             [
+             "<PostItem: pos=begin, heapid='1', level=0>",
+               "<PostItem: pos=begin, heapid='2', level=1>",
+               "<PostItem: pos=end, heapid='2', level=1>",
+             "<PostItem: pos=end, heapid='1', level=0>",
+             ])
+        test(p[2],
+             [
+             "<PostItem: pos=begin, heapid='2', level=0>",
+             "<PostItem: pos=end, heapid='2', level=0>",
+             ])
+        test(p[3],
+             [
+             "<PostItem: pos=begin, heapid='3', level=0>",
+             "<PostItem: pos=end, heapid='3', level=0>",
+             ])
+        test(p[4],
+             [
+             "<PostItem: pos=begin, heapid='4', level=0>",
+             "<PostItem: pos=end, heapid='4', level=0>",
+             ])
+
+        # if the post is not in the postdb, AssertionError will be raised
+        def f():
+            test(Post.from_str(''), [])
+        self.assertRaises(AssertionError, f)
+
     def test_parent(self):
         postdb = self._postdb
 
@@ -733,6 +802,44 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
              '0': ['0', '1', '3'],
              '1': ['2']},
             ['0', '1', '2', '3'])
+
+
+class Test_PostItem(unittest.TestCase):
+
+    def test_str(self):
+
+        # Post with heapid
+        post = Post.from_str('', heapid=42)
+        postitem = PostItem(pos='begin', post=post, level=0)
+        self.assertEquals(
+            str(postitem),
+            "<PostItem: pos=begin, heapid='42', level=0>")
+
+        # Post without heapid
+        post = Post.from_str('')
+        postitem = PostItem(pos='begin', post=post, level=0)
+        self.assertEquals(
+            str(postitem),
+            "<PostItem: pos=begin, heapid=None, level=0>")
+
+    def test_copy(self):
+
+        # We make a copy of a postitem...
+        post = Post.from_str('', heapid=42)
+        postitem = PostItem(pos='begin', post=post, level=0)
+        postitem2 = postitem.copy()
+
+        # ...modify its data attributes...
+        post2 = Post.from_str('')
+        postitem.pos = 'end'
+        postitem.post = post2
+        postitem.level = 1
+
+        # ... and check that the data attributes of the copied postitem have
+        # not changed
+        self.assertEquals(
+            str(postitem2),
+            "<PostItem: pos=begin, heapid='42', level=0>")
 
 
 class Test_PostSet(unittest.TestCase, PostDBHandler):

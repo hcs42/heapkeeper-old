@@ -81,6 +81,21 @@ PostDB
 
 .. class:: PostDB
 
+    **Methods:**
+
+    .. automethod:: walk_thread
+
+PostItem
+^^^^^^^^
+
+.. autoclass:: PostItem
+
+    **Methods:**
+
+    .. automethod:: __init__
+    .. automethod:: copy
+    .. automethod:: __str__
+
 PostSet
 -------
 
