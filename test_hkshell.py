@@ -436,9 +436,9 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEquals(
             output_list,
             ['<0>   author0 (2008.08.20. 15:41)\n',
-             '<1>   author1 (2008.08.20. 15:41)\n',
-             '<2>   author2 (2008.08.20. 15:41)\n',
-             '<3>   author3 (2008.08.20. 15:41)\n',
+             '  <1>   author1 (2008.08.20. 15:41)\n',
+             '    <2>   author2 (2008.08.20. 15:41)\n',
+             '  <3>   author3 (2008.08.20. 15:41)\n',
              '<4>   author4 (2008.08.20. 15:41)\n'])
 
         # ls with given parameters
@@ -447,8 +447,8 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         hkshell.ls(hkshell.ps([1,2,4]), show_author=False, show_tags=True)
         self.assertEquals(
             output_list,
-            ['<1>   [mytag1,mytag2] (2008.08.20. 15:41)\n',
-             '<2>   [mytag1,mytag2] (2008.08.20. 15:41)\n',
+            ['  <1>   [mytag1,mytag2] (2008.08.20. 15:41)\n',
+             '    <2>   [mytag1,mytag2] (2008.08.20. 15:41)\n',
              '<4>   [] (2008.08.20. 15:41)\n'])
 
     def test_enew(self):

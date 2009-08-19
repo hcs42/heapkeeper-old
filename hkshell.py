@@ -1134,7 +1134,7 @@ def opp():
     return postpage_listener.outdated_post_pages()
 
 @hkshell_cmd(add_events=True)
-def ls(pps=None, show_author=True, show_tags=False):
+def ls(pps=None, show_author=True, show_tags=False, indent=2):
     """Lists the summary of the posts in `pps`.
 
     **Arguments:**
@@ -1143,38 +1143,58 @@ def ls(pps=None, show_author=True, show_tags=False):
       the summary of all posts in the post database will be printed.
     - `show_author` (bool) -- Show the author of the posts.
     - `show_tags` (bool) -- Show the tags of the posts.
+    - `indent` (int) -- The number of spaces to be used to indicate one
+      indentation level.
+
+    **Example:** ::
+
+        >>> ls()
+        <0> Mind-reader robot  ashe@usrobots.com
+          <1> Mind-reader robot  alfred.lanning@usrobots.com
+            <2> Mind-reader robot  peter.bogert@usrobots.com
+              <4> Mind-reader robot  alfred.lanning@usrobots.com
+            <3> Mind-reader robot  susan@usrobots.com
+              <5> Mind-reader robot  alfred.lanning@usrobots.com
+                <6> Mind-reader robot  susan@usrobots.com
+        <7> Cinema  susan@usrobots.com
+          <8> Cinema  ashe@usrobots.com
     """
 
     if pps == None:
         pps = postdb().all()
+    postset = ps(pps)
 
-    # We want to iterate on the posts in the order of their heapids, so we
-    # collect the heapids and iterate over their sorted list.
-    heapids = sorted([post.heapid() for post in ps(pps)])
+    for postitem in postdb().walk_thread(root=None):
 
-    for heapid in heapids:
-        post = postdb().post(heapid)
-        line = '<%s>' % (post.heapid(),)
+        post = postitem.post
 
-        # subject
-        if len(post.subject()) < 40:
-            line += ' ' + post.subject()
-        else:
-            line += ' ' + post.subject()[:37] + '...'
+        if postitem.pos == 'begin' and post in postset:
 
-        # tags
-        if show_tags:
-            line += '  [%s]' % (','.join(post.tags()),)
+            # indentation
+            line = ' ' * (postitem.level * indent)
 
-        # author
-        if show_author:
-            line += '  ' + post.author()
+            # heapid
+            line += '<%s>' % (post.heapid(),)
 
-        # date
-        if post.date_str() != '':
-            line += ' (%s)' % (post.date_str(),)
+            # subject
+            if len(post.subject()) < 40:
+                line += ' ' + post.subject()
+            else:
+                line += ' ' + post.subject()[:37] + '...'
 
-        write(line + '\n')
+            # tags
+            if show_tags:
+                line += '  [%s]' % (','.join(post.tags()),)
+
+            # author
+            if show_author:
+                line += '  ' + post.author()
+
+            # date
+            if post.date_str() != '':
+                line += ' (%s)' % (post.date_str(),)
+
+            write(line + '\n')
 
 @hkshell_cmd(add_events=True)
 def cat(pps):
