@@ -2380,7 +2380,7 @@ class Generator(object):
             section = Section(title='Thread', posts=[post])
             options.section = section
             thread = \
-                self.summarize_thread(self._postdb.root(post), options)
+                self.thread(self._postdb.root(post), options)
             del options.section
             l.append(thread)
 
@@ -2388,73 +2388,6 @@ class Generator(object):
 
         l.append(Html.doc_footer())
         return ''.join(l)
-
-    def summarize_thread(self, post, options):
-        """Converts the summaries of posts in a thread into HTML.
-
-        Warning: if the given post is in a cycle, this function will go into
-        an endless loop.
-
-        **Arguments:**
-
-        - *post* (:class:`Post`)
-        - *options* (:class:`GeneratorOptions`)
-
-        **Returns:** ``HtmlStr``
-        """
-
-        # stack will contain heapids and strings.
-        # A heapid may be a string or None.
-        # If stack contains several items during the execution of the loop, the
-        # loop will do the following.
-        # It goes through all items in reversed order and does the following
-        # to all items:
-        #  - if the item is a string, puts it into 'strings'
-        #  - if item is a heapid, then:
-        #      - if heapid is not None, puts the summary of the post that has
-        #        the heapid into 'strings'
-        #      - puts the summary of the the post's all children into 'strings'
-        root = post
-        stack = [post]
-        threadstruct = self._postdb.threadstruct()
-        strings = []
-
-        while len(stack) > 0:
-            item = stack.pop()
-
-            if isinstance(item, str):
-                strings.append(item)
-
-            else:
-                if item != None:
-                    post = item
-                    parent = self._postdb.parent(post)
-                    subject = post.subject()
-                    if (options.shortsubject and parent != None and
-                        subject == parent.subject()):
-                        subject_to_print = STAR
-                    else:
-                        subject_to_print = Html.escape(subject)
-
-                    tags = post.tags()
-                    if (options.shorttags and parent != None and
-                        tags == parent.tags()):
-                        tags_to_print = STAR
-                    else:
-                        tags_to_print = tags
-
-                    if post == root:
-                        thread_link = root.htmlthreadbasename()
-                    else:
-                        thread_link = None
-
-                    strings.append(
-                        self.post_summary(post, options, subject_to_print,
-                                          tags_to_print, thread_link))
-
-                    stack.append(self.post_summary_end())
-                stack += reversed(self._postdb.children(item))
-        return ''.join(strings)
 
     def full_thread(self, thread, options):
         """Converts the whole thread into HTML.
@@ -2513,7 +2446,7 @@ class Generator(object):
             options.locallinks = True
             options.always_active = True
             thread_summary = \
-                self.summarize_thread(thread, options)
+                self.thread(thread, options)
             del options.section
             l.append(thread_summary)
 
@@ -2620,58 +2553,42 @@ class Generator(object):
         **Returns:** ``HtmlStr``
         """
 
-        # stack will contain heapids and strings.
-        # A heapid may be a string or None.
-        # If stack contains several items during the execution of the loop, the
-        # loop will do the following.
-        # It goes through all items in reversed order and does the following
-        # to all items:
-        #  - if the item is a string, puts it into 'strings'
-        #  - if item is a heapid, then:
-        #      - if heapid is not None, puts the summary of the post that has
-        #        the heapid into 'strings'
-        #      - puts the summary of the the post's all children into 'strings'
         root = post
-        stack = [post]
-        threadstruct = self._postdb.threadstruct()
         strings = []
+        for postitem in self._postdb.walk_thread(post):
 
-        while len(stack) > 0:
-            item = stack.pop()
+            if postitem.pos == 'begin':
 
-            if isinstance(item, str):
-                strings.append(item)
+                post = postitem.post
+                parent = self._postdb.parent(post)
+                subject = post.subject()
+                if (options.shortsubject and parent != None and
+                    subject == parent.subject()):
+                    subject_to_print = STAR
+                else:
+                    subject_to_print = Html.escape(subject)
 
+                tags = post.tags()
+                if (options.shorttags and parent != None and
+                    tags == parent.tags()):
+                    tags_to_print = STAR
+                else:
+                    tags_to_print = tags
+
+                if post == root:
+                    thread_link = root.htmlthreadbasename()
+                else:
+                    thread_link = None
+
+                strings.append(
+                    self.post_summary(post, options, subject_to_print,
+                                      tags_to_print, thread_link))
             else:
-                if item != None:
-                    post = item
-                    parent = self._postdb.parent(post)
-                    subject = post.subject()
-                    if (options.shortsubject and parent != None and
-                        subject == parent.subject()):
-                        subject_to_print = STAR
-                    else:
-                        subject_to_print = Html.escape(subject)
 
-                    tags = post.tags()
-                    if (options.shorttags and parent != None and
-                        tags == parent.tags()):
-                        tags_to_print = STAR
-                    else:
-                        tags_to_print = tags
+                strings.append(self.post_summary_end())
 
-                    if post == root:
-                        thread_link = root.htmlthreadbasename()
-                    else:
-                        thread_link = None
-
-                    strings.append(
-                        self.post_summary(post, options, subject_to_print,
-                                          tags_to_print, thread_link))
-
-                    stack.append(self.post_summary_end())
-                stack += reversed(self._postdb.children(item))
         return ''.join(strings)
+
 
     def section(self, sectionid, options):
         """Converts a section into HTML.
