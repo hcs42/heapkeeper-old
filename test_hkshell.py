@@ -444,12 +444,13 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # ls with given parameters
         hkshell.aTr(1,['mytag1','mytag2'])
         output_list = []
-        hkshell.ls(hkshell.ps([1,2,4]), show_author=False, show_tags=True)
+        hkshell.ls(hkshell.ps([1,2,4]), show_author=False, show_tags=True,
+                   show_date=False, indent=4)
         self.assertEquals(
             output_list,
-            ['  <1>   [mytag1,mytag2] (2008.08.20. 15:41)\n',
-             '    <2>   [mytag1,mytag2] (2008.08.20. 15:41)\n',
-             '<4>   [] (2008.08.20. 15:41)\n'])
+            ['    <1>   [mytag1,mytag2]\n',
+             '        <2>   [mytag1,mytag2]\n',
+             '<4>   []\n'])
 
     def test_enew(self):
         self.init_hkshell()

@@ -1134,7 +1134,7 @@ def opp():
     return postpage_listener.outdated_post_pages()
 
 @hkshell_cmd(add_events=True)
-def ls(pps=None, show_author=True, show_tags=False, indent=2):
+def ls(pps=None, show_author=True, show_tags=False, show_date=True, indent=2):
     """Lists the summary of the posts in `pps`.
 
     **Arguments:**
@@ -1143,6 +1143,7 @@ def ls(pps=None, show_author=True, show_tags=False, indent=2):
       the summary of all posts in the post database will be printed.
     - `show_author` (bool) -- Show the author of the posts.
     - `show_tags` (bool) -- Show the tags of the posts.
+    - `show_date` (bool) -- Show the dates of the posts.
     - `indent` (int) -- The number of spaces to be used to indicate one
       indentation level.
 
@@ -1191,7 +1192,7 @@ def ls(pps=None, show_author=True, show_tags=False, indent=2):
                 line += '  ' + post.author()
 
             # date
-            if post.date_str() != '':
+            if show_date and post.date_str() != '':
                 line += ' (%s)' % (post.date_str(),)
 
             write(line + '\n')
