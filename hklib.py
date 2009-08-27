@@ -680,8 +680,8 @@ class Post(object):
 
     @staticmethod
     def create_header(d):
-        """Transforms the dict(str, [str]) returned by the parse_header
-        function to a str->(str | [str]) dictionary.
+        """Transforms the {str: [str])} returned by the parse_header
+        function to a {str: (str | [str])} dictionary.
 
         Strings will be assigned to the 'Author', 'Subject', etc. attributes,
         while dictionaries to the 'Tag' and 'Flag' strings. If an attribute is
