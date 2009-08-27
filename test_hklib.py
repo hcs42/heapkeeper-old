@@ -147,6 +147,34 @@ post1_output = post_output + '\n'
 post4_output = post_output + 'Hi\n'
 
 
+class Test__logging(unittest.TestCase):
+
+    """Tests the logging functions of hklib."""
+
+    def test__1(self):
+
+        # Used only because otherwise we could not refer to hklib.log_fun
+        import hklib
+
+        # We use a custom log function
+        old_log_fun = hklib.log_fun
+        def log_fun(*args):
+            log.append(list(args))
+        set_log(log_fun)
+
+        # Test logging
+        log = []
+        hklib.log('first line', 'second line')
+        hklib.log('third line')
+        self.assertEquals(
+            log,
+            [['first line', 'second line'],
+             ['third line']])
+
+        # Setting the original logging function back
+        hklib.set_log(old_log_fun)
+
+
 class Test_Post__1(unittest.TestCase):
 
     """Tests the Post class."""

@@ -8,6 +8,7 @@
 Logging
 -------
 
+.. autofunction:: default_log_fun
 .. autofunction:: set_log
 .. autofunction:: log
 

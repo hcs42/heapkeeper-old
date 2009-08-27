@@ -65,6 +65,14 @@ types in the documentation so we can talk about them easily.
   into an index page. When it returns ``None``, no date will be printed.
 
   Real type: fun(|Post|, |GeneratorOptions|), returns (str | ``None``)
+
+.. _hklib_LogFun:
+
+- **LogFun(*args)** -- A function that logs the given strings.
+
+   **Arguments:**
+
+   - `*args` ([str]): list of strings to be logged
 """
 
 
@@ -90,31 +98,52 @@ heapkeeper_version = '0.3uc'
 
 ##### logging #####
 
-log_on = [True]
+def default_log_fun(*args):
+    """Default logging function: prints the arguments to the standard output,
+    terminated with a newline character.
+
+    **Type:** |LogFun|
+    """
+
+    for arg in args:
+        sys.stdout.write(arg)
+    sys.stdout.write('\n')
+    sys.stdout.flush()
+
+# The function to be used for logging.
+log_fun = default_log_fun
 
 def set_log(log):
-    """Turns the logging on or off.
+    """Sets the logging function.
 
     **Arguments:**
 
-    - `log` (bool) -- Whether the logging should be turned on.
+    - `log` (bool | |LogFun|) -- If ``False``, logging will be turned off.
+      If ``True``, the default logging function will be used. Otherwise the
+      specified logging function will be used.
     """
 
-    log_on[0] = log
+    global log_fun
+
+    if log == True:
+        log_fun = default_log_fun
+    elif log == False:
+        # Do nothing when invoked
+        log_fun = lambda *args: None
+    else:
+        log_fun = log
 
 def log(*args):
-    """Log the given strings.
+    """Logs the given strings.
+
+    This function invokes the logger fuction set by :func:`set_log`.
 
     **Arguments:**
 
-    - `*args` -- List of strings to be logged.
+    - `*args` ([str]) -- List of strings to be logged.
     """
 
-    if log_on[0]:
-        for arg in args:
-            sys.stdout.write(arg)
-        sys.stdout.write('\n')
-        sys.stdout.flush()
+    log_fun(*args)
 
 
 ##### Constants #####

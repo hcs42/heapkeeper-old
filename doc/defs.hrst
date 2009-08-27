@@ -24,6 +24,7 @@
 .. |Index| replace:: :class:`Index <hklib.Index>`
 .. |Listener| replace:: :ref:`Listener <hkshell_Listener>`
 .. |LocaltimeFun| replace:: :ref:`LocaltimeFun <hkcustomlib_LocaltimeFun>`
+.. |LogFun| replace:: :ref:`LogFun <hklib_LogFun>`
 .. |Messageid| replace:: :ref:`Messageid <hklib_Messageid>`
 .. |ModificationListener| replace:: :class:`ModificationListener <hkshell.ModificationListener>`
 .. |PostDB.walk_thread| replace:: :func:`PostDB.walk_thread <hklib.PostDB.walk_thread>`
