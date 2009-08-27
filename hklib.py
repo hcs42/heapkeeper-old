@@ -715,9 +715,10 @@ class Post(object):
         h['Tag'].sort()
         h['Flag'].sort()
 
-        if d != {}:
-            raise hkutils.HkException, \
-                  ('Additional keys: "%s".' % d)
+        # Adding additional keys to the _header and print warning about them
+        for attr in d.keys():
+            log('WARNING: Additional keys: "%s".' % d)
+            copy_list(attr)
         return h
 
     def write(self, f):
@@ -725,6 +726,11 @@ class Post(object):
 
         def write_attr(key, value):
             """Writes an attribute to the output."""
+
+            # Remove this attribute from the set of unprinted attributes, since
+            # it is being printed now.
+            unprinted_attrs.discard(key)
+
             t = (key, re.sub(r'\n', r'\n ', value))
             f.write('%s: %s\n' % t)
 
@@ -738,6 +744,8 @@ class Post(object):
             for line in self._header.get(attr, []):
                 write_attr(attr, line)
 
+        unprinted_attrs = set(self._header.keys())
+
         write_str('Author')
         write_str('Subject')
         write_list('Tag')
@@ -745,6 +753,11 @@ class Post(object):
         write_str('Parent')
         write_str('Date')
         write_list('Flag')
+
+        # We print all other attributes that have not been printed yet
+        for attr in sorted(unprinted_attrs):
+            write_list(attr)
+
         f.write('\n')
         f.write(self._body)
 

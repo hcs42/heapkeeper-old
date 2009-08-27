@@ -193,6 +193,48 @@ class Test_Post__1(unittest.TestCase):
             hkutils.HkException,
             lambda: Post.from_str('Malformatted post.'))
 
+    def test_create_header(self):
+
+        """Tests Post.create_header."""
+
+        # Used only because otherwise we could not refer to hklib.log_fun
+        import hklib
+
+        # We use a custom log function
+        old_log_fun = hklib.log_fun
+        def log_fun(*args):
+            log.append(''.join(args))
+        set_log(log_fun)
+
+        # Testing a normal post.
+        #
+        # The 'Nosuchattr' attribute is not known to `create_header`, so we
+        # should get a warning.
+        log = []
+        self.assertEquals(
+            Post.create_header(
+                {'Author': ['someone'],
+                 'Nosuchattr': ['1', '2']}),
+            {'Author': 'someone',
+             'Parent': '',
+             'Flag': [],
+             'Tag': [],
+             'Date': '',
+             'Message-Id': '',
+             'Subject': '',
+             'Nosuchattr': ['1', '2']})
+        self.assertEquals(
+            log,
+            ['''WARNING: Additional keys: "{'Nosuchattr': ['1', '2']}".'''])
+
+        # Testing a malformatted post.
+        self.assertRaises(
+            hkutils.HkException,
+            lambda: Post.from_str('Malformatted post.'))
+
+        # Setting the original logging function back
+        hklib.set_log(old_log_fun)
+
     def test__empty(self):
         p = Post.from_str('')
         self.assertEquals(p.heapid(), None)
@@ -249,8 +291,8 @@ class Test_Post__1(unittest.TestCase):
     def test_write(self):
 
         def check_write(input, output):
-            """Checks that if a post is read from input, it will produce
-            output when written."""
+            """Checks that if a post is read from `input`, it will produce
+            `output` when written."""
             p = Post.from_str(input)
             sio2 = StringIO.StringIO()
             p.write(sio2)
@@ -259,6 +301,17 @@ class Test_Post__1(unittest.TestCase):
 
         check_write(post1_text, post1_output)
         check_write(post4_text, post4_output)
+
+        # Testing when the post has attributes unknown to Hk
+        check_write(
+            ('Author: author\n'
+             'Nosuchattr: something 1\n'
+             'Nosuchattr2: something 2\n'
+             'Nosuchattr2: something 3\n'),
+            ('Author: author\n'
+             'Nosuchattr: something 1\n'
+             'Nosuchattr2: something 2\n'
+             'Nosuchattr2: something 3\n\n\n'))
 
     def test__body_stripping(self):
         p1 = Post.from_str(post1_text)
