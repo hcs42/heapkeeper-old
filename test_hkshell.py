@@ -457,13 +457,15 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
         # creating a new post
 
-        hkshell.options.callbacks.edit_file = lambda file: True
+        hkshell.options.callbacks.edit_files = \
+            lambda files: set(files) # As if everything were edited
         post = hkshell.enew()
         self.assert_(
             hkshell.modification_listener.touched_posts().is_set([post]))
 
         # not creating a new post
-        hkshell.options.callbacks.edit_file = lambda file: False
+        hkshell.options.callbacks.edit_files = \
+            lambda files: set() # As if nothing were edited
         post = hkshell.enew()
         self.assertEquals(post, None)
         self.assert_(hkshell.modification_listener.touched_posts().is_set([]))

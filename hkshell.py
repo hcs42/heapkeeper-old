@@ -283,15 +283,15 @@ class Callbacks(object):
       pages. Default value: :func:`hkcustomlib.gen_threads`.
     - `gen_posts` (|GenPostsFun|) -- Function to be used for generating post
       pages. Default value: :func:`hkcustomlib.gen_posts`.
-    - `edit_file` (|EditFileFun|) -- Function to be used for editing posts.
-      Default value: :func:`hkcustomlib.edit_file`.
+    - `edit_files` (|EditFileFun|) -- Function to be used for editing posts.
+      Default value: :func:`hkcustomlib.edit_files`.
     """
 
     def __init__(self,
                  gen_indices=hkcustomlib.gen_indices,
                  gen_threads=hkcustomlib.gen_threads,
                  gen_posts=hkcustomlib.gen_posts,
-                 edit_file=hkcustomlib.edit_file):
+                 edit_files=hkcustomlib.edit_files):
 
         super(Callbacks, self).__init__()
         hkutils.set_dict_items(self, locals())
@@ -1266,23 +1266,38 @@ def j(pp1, pp2):
     if p1 != None and p2 != None:
         p2.set_parent(p1.heapid())
 
-@hkshell_cmd(add_events=True)
-def e(pp):
+@hkshell_cmd(postset_operation=True)
+def e(pps):
     """Edits a post.
 
     **Argument:**
 
-    - `pp` (|PrePost|)
+    - `pps` (|PrePostSet|)
     """
 
-    p = postdb().post(pp)
-    if p != None:
-        postdb().save()
-        result = options.callbacks.edit_file(p.postfilename())
-        if result == True:
-            p.load()
+    posts = pps.sorted_list()
+    if posts == []:
+        hklib.log('No post to edit.')
     else:
-        hklib.log('Post not found.')
+
+        # Editing the post files of given posts
+        postdb().save()
+        postfilenames = [ post.postfilename() for post in posts ]
+        changed_files = options.callbacks.edit_files(postfilenames)
+
+        # Calculating postfilename_to_post
+        postfilename_to_post = {}
+        for post in posts:
+            postfilename_to_post[post.postfilename()] = post
+
+        # Reloading the modified posts
+        for filename in postfilenames:
+            post = postfilename_to_post[filename]
+            if filename in changed_files:
+                post.load()
+                hklib.log('Post "%s" reloaded.' % (post.heapid(),))
+            else:
+                hklib.log('Post "%s" left unchanged.' % (post.heapid(),))
 
 @hkshell_cmd(add_events=True, touching_command=True)
 def enew():
@@ -1303,8 +1318,8 @@ def enew():
             os.linesep +
             os.linesep)
         os.close(tmp_file_fd)
-        successful_edit = options.callbacks.edit_file(tmp_file_name)
-        if successful_edit == True:
+        changed_files = options.callbacks.edit_files([tmp_file_name])
+        if len(changed_files) > 0:
             post = postdb().add_new_post(hklib.Post.from_file(tmp_file_name))
             hklib.log('Post created.')
             return post

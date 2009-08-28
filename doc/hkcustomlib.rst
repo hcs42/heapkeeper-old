@@ -24,4 +24,4 @@ Miscellaneous
 -------------
 
 .. autofunction:: default_editor
-.. autofunction:: edit_file
+.. autofunction:: edit_files

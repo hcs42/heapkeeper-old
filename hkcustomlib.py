@@ -220,8 +220,8 @@ def default_editor():
     else:
         return None
 
-def edit_file(file):
-    """Opens an editor in which the user edits the given file.
+def edit_files(files):
+    """Opens an editor in which the user edits the given files.
 
     It invokes the editor program stored in the ``EDITOR`` environment
     variable. If ``EDITOR`` is undefined or empty, it invokes the default
@@ -230,7 +230,9 @@ def edit_file(file):
     **Type:** |EditFileFun|
     """
 
-    old_content = hkutils.file_to_string(file, return_none=True)
+    old_content = {}
+    for file in files:
+        old_content[file] = hkutils.file_to_string(file, return_none=True)
 
     editor = os.getenv('EDITOR')
 
@@ -243,10 +245,16 @@ def edit_file(file):
         hklib.log(
             'Cannot determine the default editor based on the operating\n'
             'system. Please set the EDITOR environment variable to the editor\n'
-            'you want to use or set hkshell.options.callback.edit_file to\n'
+            'you want to use or set hkshell.options.callback.edit_files to\n'
             'call your editor of choice.')
         return False
 
-    subprocess.call(editor.split() + [file])
-    return hkutils.file_to_string(file, return_none=True) != old_content
+    subprocess.call(editor.split() + files)
+
+    def did_file_change(file):
+        new_content = hkutils.file_to_string(file, return_none=True)
+        return old_content[file] != new_content
+
+    changed_files = filter(did_file_change, files)
+    return changed_files
 
