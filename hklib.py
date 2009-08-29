@@ -640,7 +640,7 @@ class Post(object):
             value = m.group(2)
             line = f.readline()
             while line not in ['', '\n'] and line[0] == ' ':
-                line.rstrip('\n')
+                line = line.rstrip('\n')
                 value += '\n' + line[1:]
                 line = f.readline()
             if key not in headers:
