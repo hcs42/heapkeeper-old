@@ -1929,15 +1929,18 @@ class EmailDownloader(object):
 
         return post
 
-    def download_new(self, lower_value=0, detailed=False):
+    def download_new(self, lower_value=0, detailed_log=False):
         """Downloads the new emails from the INBOX of the IMAP server and adds
         them to the post database.
 
         **Arguments:**
 
         - `lower_value` (int): only the email indices that are greater or equal
-          to lower_value are examined.
-        - `detailed` (bool): if True, every mail found or download is reported.
+          to `lower_value` are examined.
+        - `detailed_log` (bool): if ``True``, every email found or downloaded
+          is reported.
+
+        **Returns:** |PostSet| -- a set of the new posts
         """
 
         self._server.select("INBOX")
@@ -1964,7 +1967,7 @@ class EmailDownloader(object):
             post = self._postdb.post_by_messid(messid)
             if post == None:
                 download_list.append(index)
-            elif detailed:
+            elif detailed_log:
                 log('Post #%s (#%s in INBOX) found.' %
                     (post.heapid(), int(index) + lower_value))
         download_imap = ','.join(download_list)
@@ -1979,6 +1982,8 @@ class EmailDownloader(object):
 
         log('Downloading...')
 
+        new_posts = []
+
         result = self._server.fetch(download_imap,
                                     '(BODY[TEXT] BODY[HEADER])')[1]
         for i in range(num_new):
@@ -1986,12 +1991,15 @@ class EmailDownloader(object):
             header = result[i * 3 + 1][1]
             post = self.parse_email(header, text)
             self._postdb.add_new_post(post)
-            if detailed:
+            new_posts.append(post)
+            if detailed_log:
                 log('Post #%s (#%s in INBOX) downloaded.' %
                     (post.heapid(), download_list[i]))
 
         log('%d new message%s downloaded.' %
             (num_new, hkutils.plural(num_new)))
+
+        return PostSet(self._postdb, new_posts)
 
 ##### Html #####
 

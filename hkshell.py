@@ -1328,21 +1328,28 @@ def enew_str(post_string):
     return post
 
 @hkshell_cmd(add_events=True)
-def dl(from_=0, detailed=False):
+def dl(from_=0, detailed_log=False, ps=False):
     """Downloads new posts from an IMAP server.
 
     **Arguments:**
 
-    - `from_` (int): the messages whose index in the INBOX is lower than
+    - `from_` (int) -- The messages whose index in the INBOX is lower than
       this parameter will not be downloaded.
-    - `detailed` (bool): if True, every mail found or download is reported.
+    - `detailed_log` (bool) -- If ``True``, every mail found or download is
+      reported.
+    - `ps` (bool) -- If ``True``, the function returns the set of newly
+      downloaded posts.
+
+    **Returns:** |PostSet| | ``None`` -- The set of the newly downloaded posts
+    if `ps` is ``True``; ``None`` otherwise.
     """
 
     email_downloader = hklib.EmailDownloader(postdb(), options.config)
     email_downloader.connect()
-    email_downloader.download_new(int(from_), bool(detailed))
+    new_posts = email_downloader.download_new(int(from_), bool(detailed_log))
     email_downloader.close()
-
+    if ps:
+        return new_posts
 
 ##### Commands / tags #####
 
