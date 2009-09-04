@@ -1818,11 +1818,11 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
             g.thread(p(4), genopts) +
             Html.section_end())
 
-    def flat_result(self, generator, genopts, posts):
+    def flat_result(self, generator, genopts, posts, sectionname='Sec'):
         """Prints the posts flatly and puts them into a section called
-        'Sec', which should have index 0."""
+        `sectionname`, which should have index 0."""
         return \
-            (Html.section_begin('section_0', 'Sec') +
+            (Html.section_begin('section_0', sectionname) +
              Html.enclose(
                  'flatlist',
                  ''.join([ generator.post_summary(post, genopts)
@@ -1862,6 +1862,17 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
             g.section(0, genopts),
             self.flat_result(g, genopts, [p(1), p(4)]))
 
+        # Tests flat printing with count == True.
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec', [p(1), p(4)])]
+        genopts.section = genopts.sections[0]
+        genopts.section.is_flat = True
+        genopts.section.count = True
+
+        self.assertEquals(
+            g.section(0, genopts),
+            self.flat_result(g, genopts, [p(1), p(4)], sectionname='Sec (2)'))
+
     def test_section__cycle(self):
         postdb, g, p = self.init()
         p(1).set_parent('2')
@@ -1875,6 +1886,17 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         self.assertEquals(
             g.section(0, genopts),
             self.flat_result(g, genopts, [p(1), p(2)]))
+
+        # Tests with count == True.
+        genopts = GeneratorOptions()
+        genopts.sections = [Section('Sec', CYCLES)]
+        genopts.section = genopts.sections[0]
+        genopts.section.count = True
+        genopts.postdb = postdb
+
+        self.assertEquals(
+            g.section(0, genopts),
+            self.flat_result(g, genopts, [p(1), p(2)], sectionname='Sec (2)'))
 
     def test_gen_indices(self):
 
