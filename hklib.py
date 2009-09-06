@@ -1053,11 +1053,31 @@ class PostDB(object):
     def heapids(self):
         return self.heapid_to_post.keys()
 
-    def next_heapid(self):
-        """Calculated the next free heapid."""
-        next = self._next_heapid
-        self._next_heapid += 1
-        return str(next)
+    def next_heapid(self, prefix=''):
+        """Return the next free heapid with form ``prefix + int``.
+
+        If ``prefix + '1'`` is free, the function returns it. Otherwise it tries
+        ``prefix + '2'``, etc.
+        """
+
+        # This function acts the same way if the prefix is '', but the
+        # implementation is a bit different. In the case of '', we have the
+        # `_next_heapid` variable dedicated to storing the next free heapid, so
+        # the function will run faster. In other cases, the function will
+        # probably find all existing heapids that have the given prefix before
+        # returning the first free one.
+        if prefix == '':
+            next = self._next_heapid
+            self._next_heapid += 1
+            return str(next)
+        else:
+            i = 1
+            while True:
+                heapid = prefix + str(i)
+                if heapid not in self.heapids():
+                    break
+                i += 1
+            return heapid
 
     def posts(self):
         """Returns the list of all posts that are not deleted.
@@ -1124,13 +1144,24 @@ class PostDB(object):
 
     # New posts
 
-    def add_new_post(self, post):
+    def add_new_post(self, post, heapid=None, prefix=''):
         """Adds a new post to the postdb.
 
         The heapid of the post will be changed to the next free heapid of the
-        postdb."""
+        postdb.
 
-        heapid = self.next_heapid()
+        **Arguments:**
+
+        - `post` (|Post|) -- The post to be added to the database.
+        - `heapid` (str | ``None``) -- The post should have this heapid.
+          If ``None``, the post should get the next free heapid that starts
+          with `prefix`.
+        - `prefix` (str) -- If `heapid` is ``None``, the post should get the
+          next free heapid that starts with `prefix`.
+        """
+
+        if heapid == None:
+            heapid = self.next_heapid(prefix=prefix)
         post.add_to_postdb(heapid, self)
         self._add_post_to_dicts(post)
         return post

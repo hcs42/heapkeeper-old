@@ -1300,7 +1300,7 @@ def e(pps):
                 hklib.log('Post "%s" left unchanged.' % (post.heapid(),))
 
 @hkshell_cmd(add_events=True, touching_command=True)
-def enew():
+def enew(prefix=''):
     """Creates and edits a post.
 
     A temporary file with a post stub will be created and an editor will be
@@ -1320,7 +1320,8 @@ def enew():
         os.close(tmp_file_fd)
         changed_files = options.callbacks.edit_files([tmp_file_name])
         if len(changed_files) > 0:
-            post = postdb().add_new_post(hklib.Post.from_file(tmp_file_name))
+            post = hklib.Post.from_file(tmp_file_name)
+            postdb().add_new_post(post, prefix=prefix)
             hklib.log('Post created.')
             return post
         else:
