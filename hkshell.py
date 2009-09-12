@@ -1302,23 +1302,34 @@ def e(pps):
                 hklib.log('Post "%s" left unchanged.' % (post.heapid(),))
 
 @hkshell_cmd(add_events=True, touching_command=True)
-def enew(prefix=''):
+def enew(prefix='', author='', parent=None):
     """Creates and edits a post.
 
     A temporary file with a post stub will be created and an editor will be
     opened so that the user can edit it. After saving the file, it will be read
     as a post file and the post created from it will be added to the post
     database. If the post stub was not edited, nothing will happen.
+
+    **Arguments:**
+
+    - `prefix` (str) -- The prefix of the file.
+    - `author` (str) -- The author of the post.
+    - `parent` (|Post| | ``None``) -- The parent of the post. If not ``None``,
+      the subject of the parent is also copied.
+
+    **Returns:** |Post| | ``None`` -- The newly created post.
     """
 
     tmp_file_fd, tmp_file_name = tempfile.mkstemp()
     try:
-        os.write(
-            tmp_file_fd,
-            'Author: ' + os.linesep +
-            'Subject: ' + os.linesep +
-            os.linesep +
-            os.linesep)
+        post = hklib.Post.from_str('')
+        post.set_author(author)
+        if parent != None:
+            parent = p(parent)
+            post.set_parent(parent.heapid())
+            post.set_subject(parent.subject())
+        post_str = post.postfile_str(force_print=set(['Author', 'Subject']))
+        os.write(tmp_file_fd, post_str)
         os.close(tmp_file_fd)
         changed_files = options.callbacks.edit_files([tmp_file_name])
         if len(changed_files) > 0:

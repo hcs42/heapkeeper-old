@@ -455,20 +455,52 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
     def test_enew(self):
         self.init_hkshell()
 
-        # creating a new post
-
+        # If we edit the file, a new post is created.
         hkshell.options.callbacks.edit_files = \
             lambda files: set(files) # As if everything were edited
         post = hkshell.enew()
         self.assert_(
             hkshell.modification_listener.touched_posts().is_set([post]))
 
-        # not creating a new post
+        # If we don't edit it, no new post is created.
         hkshell.options.callbacks.edit_files = \
             lambda files: set() # As if nothing were edited
         post = hkshell.enew()
         self.assertEquals(post, None)
         self.assert_(hkshell.modification_listener.touched_posts().is_set([]))
+
+        def check_content(expected_content):
+            """Returns an editor which (instead of editing the file) checks
+            that the real content of the file is the same as the expected
+            content."""
+            def editor(files):
+                [file] = files
+                real_content = hkutils.file_to_string(file)
+                self.assertEquals(expected_content, real_content)
+                return [file]
+            return editor
+
+        # Calling enew with default arguments
+        hkshell.options.callbacks.edit_files = \
+            check_content('Author: \nSubject: \n\n\n')
+        post = hkshell.enew()
+
+        # Testing the `author` argument
+        hkshell.options.callbacks.edit_files = \
+            check_content('Author: author\nSubject: \n\n\n')
+        post = hkshell.enew(author='author')
+
+        # Testing the `parent` argument
+        parent = self._posts[0]
+        parent.set_subject('subject0')
+        hkshell.options.callbacks.edit_files = \
+            check_content('Author: \nSubject: subject0\nParent: 0\n\n\n')
+        post = hkshell.enew(parent=self._posts[0])
+
+        # Testing the `prefix` argument
+        hkshell.options.callbacks.edit_files = lambda files: set(files)
+        post = hkshell.enew(prefix='myprefix')
+        self.assert_(post.heapid().startswith('myprefix'))
 
     def test_pT__1(self):
         self.init_hkshell()
