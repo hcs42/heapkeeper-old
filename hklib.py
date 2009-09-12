@@ -776,6 +776,18 @@ class Post(object):
         f.write('\n')
         f.write(self._body)
 
+    def postfile_str(self):
+        """Returns a string that contains the post in post file format.
+
+        **Returns:** str
+        """
+
+        sio = StringIO.StringIO()
+        self.write(sio)
+        s = sio.getvalue()
+        sio.close()
+        return s
+
     def save(self):
         assert(self._postdb != None)
         if self._modified:

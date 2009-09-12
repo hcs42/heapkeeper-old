@@ -314,6 +314,12 @@ class Test_Post__1(unittest.TestCase):
              'Nosuchattr2: something 2\n'
              'Nosuchattr2: something 3\n\n\n'))
 
+    def test_postfile_str(self):
+        """Tests Post.postfile_str."""
+        self.assertEquals(
+            Post.from_str(post1_text).postfile_str(),
+            post1_output)
+
     def test__body_stripping(self):
         p1 = Post.from_str(post1_text)
         p2 = Post.from_str(post2_text)
