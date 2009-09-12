@@ -222,6 +222,7 @@ class Test_Post__1(unittest.TestCase):
              'Date': '',
              'Message-Id': '',
              'Subject': '',
+             'Reference': [],
              'Nosuchattr': ['1', '2']})
         self.assertEquals(
             log,
