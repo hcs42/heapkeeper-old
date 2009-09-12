@@ -316,9 +316,23 @@ class Test_Post__1(unittest.TestCase):
 
     def test_postfile_str(self):
         """Tests Post.postfile_str."""
+
+        # Basic test
         self.assertEquals(
             Post.from_str(post1_text).postfile_str(),
             post1_output)
+
+        # Testing empty post
+        post_str = ''
+        self.assertEquals(
+            Post.from_str(post_str).postfile_str(),
+            '\n\n')
+
+        # Testing when force_set is not empty
+        post_str = ''
+        self.assertEquals(
+            Post.from_str(post_str).postfile_str(force_print=set(['Author'])),
+            'Author: \n\n\n')
 
     def test__body_stripping(self):
         p1 = Post.from_str(post1_text)

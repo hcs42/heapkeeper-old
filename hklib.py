@@ -735,8 +735,15 @@ class Post(object):
             copy_list(attr)
         return h
 
-    def write(self, f):
-        """Writes the post to a stream."""
+    def write(self, f, force_print=set()):
+        """Writes the post to a stream.
+
+        **Arguments*:
+
+        - `f` (|Writable|) -- The output stream.
+        - `force_print` (set(str)) -- The attributes in this set will be
+          printed even if they are empty strings.
+        """
 
         def write_attr(key, value):
             """Writes an attribute to the output."""
@@ -750,7 +757,7 @@ class Post(object):
 
         def write_str(attr):
             """Writes a string attribute to the output."""
-            if self._header.get(attr, '') != '':
+            if (self._header.get(attr, '') != '') or (attr in force_print):
                 write_attr(attr, self._header[attr])
 
         def write_list(attr):
@@ -776,14 +783,14 @@ class Post(object):
         f.write('\n')
         f.write(self._body)
 
-    def postfile_str(self):
+    def postfile_str(self, force_print=set()):
         """Returns a string that contains the post in post file format.
 
         **Returns:** str
         """
 
         sio = StringIO.StringIO()
-        self.write(sio)
+        self.write(sio, force_print)
         s = sio.getvalue()
         sio.close()
         return s
