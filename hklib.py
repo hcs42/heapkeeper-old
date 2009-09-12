@@ -2427,15 +2427,15 @@ class Generator(object):
                 threadpng = os.path.join(self._postdb.html_dir(), 'thread.png')
                 hkutils.copy_wo('thread.png', threadpng)
 
-    def post(self, post, options):
-        """Converts the post into HTML.
+    def header(self, post, options):
+        """Creates a header for the post.
 
         **Arguments:**
 
-        - *post* (:class:`Post`)
-        - *options* (:class:`GeneratorOptions`)
+        - `post` (|Post|)
+        - `options` (|GeneratorOptions|)
 
-        **Returns:** ``HtmlStr``
+        **Returns:** |HtmlStr|
         """
 
         l = []
@@ -2473,6 +2473,24 @@ class Generator(object):
             l.append(Html.enclose('date', date_str))
             l.append('\n')
 
+        return ''.join(l)
+
+    def post(self, post, options):
+        """Converts the post into HTML.
+
+        **Arguments:**
+
+        - `post` (|Post|)
+        - `options` (|GeneratorOptions|)
+
+        **Returns:** |HtmlStr|
+        """
+
+        l = []
+
+        # header
+        l.append(self.header(post, options))
+
         # thread
         if options.print_thread_of_post:
             section = Section(title='Thread', posts=[post])
@@ -2503,39 +2521,9 @@ class Generator(object):
         assert(thread._postdb.root(thread) == thread)
 
         l = []
-        h1 = Html.escape(thread.author()) + ': ' + \
-             Html.escape(thread.subject())
-        l.append(Html.doc_header(h1, h1, 'heapindex.css'))
 
-        l2 = []
-        try:
-            first = True
-            for index in options.indices:
-                if not first:
-                    l2.append('<br/>\n')
-                first = False
-                l2.append(Html.link(index.filename,
-                                   'Back to ' + index.filename))
-        except AttributeError:
-            l2.append(Html.link('index.html', 'Back to the index'))
-
-        l2.append('\n')
-        l2.append(Html.enclose('index', Html.escape('<%s>' % (thread.heapid(),))))
-        l2.append('\n')
-
-        l.append(
-            Html.enclose(
-                tag='div',
-                class_=None,
-                id='subheader',
-                content=''.join(l2),
-                newlines=True))
-
-        # date
-        date_str = options.date_fun(thread, options)
-        if date_str != None:
-            l.append(Html.enclose('date', date_str))
-            l.append('\n')
+        # header
+        l.append(self.header(thread, options))
 
         # thread
         if options.print_thread_of_post:

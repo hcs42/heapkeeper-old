@@ -32,6 +32,7 @@
 .. |hklib| replace:: :mod:`hklib`
 .. |hkshell| replace:: :mod:`hkshell`
 .. |hkutils| replace:: :mod:`hkutils`
+.. |HtmlStr| replace:: :ref:`HtmlStr <hklib_HtmlStr>`
 .. |Index| replace:: :class:`Index <hklib.Index>`
 .. |j| replace:: :func:`j <hkshell.j>`
 .. |Listener| replace:: :ref:`Listener <hkshell_Listener>`
