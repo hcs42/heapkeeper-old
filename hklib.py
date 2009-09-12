@@ -2490,6 +2490,28 @@ class Generator(object):
 
         return ''.join(l)
 
+    def refs(self, post, options):
+        """Creates a reference list for the post.
+
+        **Arguments:**
+
+        - `post` (|Post|)
+        - `options` (|GeneratorOptions|)
+
+        **Returns:** |HtmlStr|
+        """
+
+        l = []
+        for ref in post.refs():
+            ref_text = Html.escape('Reference: ' + ref)
+            ref_post = self._postdb.post(ref)
+            if ref_post is None:
+                ref_html = ref_text
+            else:
+                ref_html = Html.link(ref_post.htmlfilebasename(), ref_text)
+            l.append(Html.enclose('postref', ref_html, tag='p'))
+        return ''.join(l)
+
     def post(self, post, options):
         """Converts the post into HTML.
 
@@ -2513,6 +2535,9 @@ class Generator(object):
             thread = self.thread(self._postdb.root(post), options)
             del options.section
             l.append(thread)
+
+        # references
+        l.append(self.refs(post, options))
 
         # body
         l.append(Html.enclose('postbody', Html.escape(post.body()), tag='pre'))
@@ -2564,6 +2589,9 @@ class Generator(object):
                     post.tags(),
                     post.heapid(),
                     options.date_fun(post, options)))
+
+            # references
+            l.append(self.refs(post, options))
 
             # body
             l.append(Html.enclose('postbody',
