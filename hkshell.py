@@ -1037,7 +1037,9 @@ def p(pp):
     **Returns:** |Post|
     """
 
-    return postdb().post(pp)
+    # PostSet is better in making post from a prepost...
+    postset = postdb().postset(pp)
+    return postset.pop()
 
 @hkshell_cmd()
 def ps(pps):
