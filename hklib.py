@@ -2495,14 +2495,16 @@ class Generator(object):
         if options.print_thread_of_post:
             section = Section(title='Thread', posts=[post])
             options.section = section
-            thread = \
-                self.thread(self._postdb.root(post), options)
+            thread = self.thread(self._postdb.root(post), options)
             del options.section
             l.append(thread)
 
+        # body
         l.append(Html.enclose('postbody', Html.escape(post.body()), tag='pre'))
 
+        # footer
         l.append(Html.doc_footer())
+
         return ''.join(l)
 
     def full_thread(self, thread, options):
@@ -2510,14 +2512,14 @@ class Generator(object):
 
         **Arguments:**
 
-        - *thread* (:class:`Post`)
-        - *options* (:class:`GeneratorOptions`)
+        - `thread` (|Post|)
+        - `options` (|GeneratorOptions|)
 
-        **Returns:** ``HtmlStr``
+        **Returns:** |HtmlStr|
 
-        **Notes:**
-        Don't forget that a thread is identified by its root post.
+        **Note:** Don't forget that a thread is identified by its root post.
         """
+
         assert(thread._postdb.root(thread) == thread)
 
         l = []
@@ -2531,24 +2533,30 @@ class Generator(object):
             options.section = section
             options.locallinks = True
             options.always_active = True
-            thread_summary = \
-                self.thread(thread, options)
+            thread_summary = self.thread(thread, options)
             del options.section
             l.append(thread_summary)
 
-        # bodies
-        for curr_post in thread._postdb.iter_thread(thread):
-            l.append(Html.thread_post_header(curr_post.htmlfilebasename(),
-                                             Html.escape(curr_post.author()),
-                                             Html.escape(curr_post.subject()),
-                                             curr_post.tags(),
-                                             curr_post.heapid(),
-                                             options.date_fun(curr_post,
-                                                              options)))
-            l.append(Html.enclose('postbody',
-                                  Html.escape(curr_post.body()), tag='pre'))
+        # posts
+        for post in thread._postdb.iter_thread(thread):
 
+            # post summary
+            l.append(
+                Html.thread_post_header(
+                    post.htmlfilebasename(),
+                    Html.escape(post.author()),
+                    Html.escape(post.subject()),
+                    post.tags(),
+                    post.heapid(),
+                    options.date_fun(post, options)))
+
+            # body
+            l.append(Html.enclose('postbody',
+                                  Html.escape(post.body()), tag='pre'))
+
+        # footer
         l.append(Html.doc_footer())
+
         return ''.join(l)
 
     def index_toc(self, sections, options):
