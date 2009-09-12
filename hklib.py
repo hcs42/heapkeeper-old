@@ -1498,7 +1498,7 @@ class PostItem(object):
     **Data attributes:**
 
     - `pos` (str) -- The position of the post item. Possible values:
-      ``'begin'``, ``'end'``.
+      ``'begin'``, ``'end'``, ``'flat'``.
     - `post` (Post) -- The post represented by the post item.
     - `level` (int) -- The level of the post.
     """
@@ -1513,7 +1513,7 @@ class PostItem(object):
         - `level` (int) -- Initializes the `level` data attribute.
         """
 
-        assert(pos in ['begin', 'end'])
+        assert(pos in ['begin', 'end', 'flat'])
         self.pos = pos
         self.post = post
         self.level = level
