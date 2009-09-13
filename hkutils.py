@@ -253,7 +253,7 @@ def copy_wo(src, dst):
 def plural(n, singular='', plural='s'):
     """Give the appropriate (singular or plural) noun ending for a number.
 
-    Minus one is singular. This decision is based on 
+    Minus one is singular. This decision is based on
     http://en.wiktionary.org/wiki/cardinal_number#Usage_notes
 
     Can also be used with irregular plurals, just use whole word instead of
