@@ -1823,6 +1823,9 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
             g.post_summary_end()) # end of 4
 
     def test_thread__cycles(self):
+        """Tests Generator.threads when there are cycles in the thread
+        structure."""
+
         postdb, g, p = self.init()
         p(1).set_parent('2')
 
@@ -1838,8 +1841,12 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
             g.post_summary_end() + # end of 3
             g.post_summary_end()) # end of 0
 
-        # All threads.
+        # A post in a cycle.
+        self.assertRaises(
+            AssertionError,
+            lambda: g.thread(p(1), genopts))
 
+        # All threads: it will not contain the posts that are in the cycle.
         self.assertEquals(
             g.thread(None, genopts),
             g.post_summary(p(0), genopts, thread_link='thread_0.html') +

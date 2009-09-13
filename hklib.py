@@ -2789,8 +2789,7 @@ class Generator(object):
     def thread(self, post, options):
         """Converts the summaries of posts in a thread into HTML.
 
-        Warning: if the given post is in a cycle, this function will go into
-        an endless loop.
+        If the given post is in a cycle, an AssertionError will be raised.
 
         **Arguments:**
 
@@ -2801,6 +2800,7 @@ class Generator(object):
         **Returns:** ``HtmlStr``
         """
 
+        assert(post not in self._postdb.cycles())
         strings = []
         for postitem in self._postdb.walk_thread(post):
              strings.append(self.postitem(postitem, options))
