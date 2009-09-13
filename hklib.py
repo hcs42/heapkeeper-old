@@ -2946,7 +2946,8 @@ class Generator(object):
             if isinstance(posts, PostSet):
                 posts = posts.sorted_list()
             for post in posts:
-                l.append(self.post_summary(post, options))
+                postitem = PostItem(pos='flat', post=post, level=0)
+                l.append(self.postitem(postitem, options))
             l.append('</table>\n')
         else:
             if isinstance(posts, list):

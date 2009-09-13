@@ -1846,12 +1846,17 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
     def flat_result(self, generator, genopts, posts, sectionname='Sec'):
         """Prints the posts flatly and puts them into a section called
         `sectionname`, which should have index 0."""
+
+        l = []
+        for post in posts:
+            postitem = PostItem(pos='flat', post=post, level=0)
+            l.append(generator.postitem(postitem, genopts))
+
         return \
             (Html.section_begin('section_0', sectionname) +
              Html.enclose(
                  'flatlist',
-                 ''.join([ generator.post_summary(post, genopts)
-                           for post in posts ]),
+                 ''.join(l),
                  tag='table', newlines=True) +
              Html.section_end())
 
