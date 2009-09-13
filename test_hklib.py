@@ -1451,6 +1451,9 @@ class Test_Html(unittest.TestCase):
         enc = Html.enclose
         link = Html.link
 
+        # Note: 'mytag' represents "my HTML tag", like 'div' or 'span'.
+        # 'mytag1' and 'mytag2' represents "my heap tags", like 'programming'.
+
         # basic case
         self.assertEquals(
             Html.post_summary('mylink', 'myauthor', 'mysubject',
@@ -1494,6 +1497,16 @@ class Test_Html(unittest.TestCase):
             enc('index', '&lt;%s&gt;' % link('mylink', 'myindex'), 'mytag') +
             '\n' +
             enc('date', link('mylink', 'mydate'), 'mytag') + '\n')
+
+        # `tags` is a string and not a list
+        self.assertEquals(
+            Html.post_summary('mylink', 'myauthor', 'mysubject',
+                              '[mytag1;mytag2]', 'myindex', None, 'mytag'),
+            enc('author', link('mylink', 'myauthor'), 'mytag') + '\n' +
+            enc('subject', link('mylink', 'mysubject'), 'mytag') + '\n' +
+            enc('tags', '[mytag1;mytag2]', 'mytag') + '\n' +
+            enc('index', '&lt;%s&gt;' % link('mylink', 'myindex'), 'mytag') +
+            '\n')
 
     def test_list(self):
         self.assertEquals(

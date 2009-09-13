@@ -2202,11 +2202,13 @@ class Html():
                          link(thread_link, '<img src="thread.png" />')))
             newline()
 
-        if tags != STAR:
+        if tags == STAR:
+            tags = enc('star', link(postlink, '[&mdash;]'))
+        elif isinstance(tags, str):
+            pass
+        else:
             tags = ', '.join(tags)
             tags = link(postlink, '[%s]' % tags)
-        else:
-            tags = enc('star', link(postlink, '[&mdash;]'))
         l.append(enc('tags', tags, tag))
         newline()
 
