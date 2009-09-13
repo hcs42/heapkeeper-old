@@ -2867,57 +2867,6 @@ class Generator(object):
             raise hkutils.HkException, \
                   "Unknown 'pos' in postitem: %s" % (postitem,)
 
-    def thread_old(self, post, options):
-        """Converts the summaries of posts in a thread into HTML.
-
-        Warning: if the given post is in a cycle, this function will go into
-        an endless loop.
-
-        **Arguments:**
-
-        - *post* (``None |`` :class:`Post`) -- The root of the thread to be
-          printed.
-        - *options* (:class:`GeneratorOptions`)
-
-        **Returns:** ``HtmlStr``
-        """
-
-        root = post
-        strings = []
-        for postitem in self._postdb.walk_thread(post):
-
-            if postitem.pos == 'begin':
-
-                post = postitem.post
-                parent = self._postdb.parent(post)
-                subject = post.subject()
-                if (options.shortsubject and parent != None and
-                    subject == parent.subject()):
-                    subject_to_print = STAR
-                else:
-                    subject_to_print = Html.escape(subject)
-
-                tags = post.tags()
-                if (options.shorttags and parent != None and
-                    tags == parent.tags()):
-                    tags_to_print = STAR
-                else:
-                    tags_to_print = tags
-
-                if post == root:
-                    thread_link = root.htmlthreadbasename()
-                else:
-                    thread_link = None
-
-                strings.append(
-                    self.post_summary(post, options, subject_to_print,
-                                      tags_to_print, thread_link))
-            else:
-
-                strings.append(self.post_summary_end())
-
-        return ''.join(strings)
-
     def thread(self, post, options):
         """Converts the summaries of posts in a thread into HTML.
 
