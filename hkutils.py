@@ -238,17 +238,23 @@ def calc_timestamp(date):
 def copy_wo(src, dst):
     """Copy without overwriting.
 
-    If *dst* does not exist, the function copies *src* to *dst*.
+    If *src* does exist but *dst* does not, the function copies *src* to *dst*.
 
     **Arguments:**
 
     - `src` (str) -- The source file.
     - `dst` (str) -- The destination file. It must be the complete target file
       name.
+
+    **Returns:** bool -- ``True`` is copying happened, ``False`` otherwise.
     """
 
+    if not os.path.exists(src):
+        return False
     if not os.path.exists(dst):
         shutil.copyfile(src, dst)
+        return True
+    return False
 
 def plural(n, singular='', plural='s'):
     """Give the appropriate (singular or plural) noun ending for a number.
