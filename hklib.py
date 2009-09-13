@@ -2096,18 +2096,23 @@ class Html():
         return re.sub(r'[<>&]', Html.escape_char, text)
 
     @staticmethod
-    def doc_header(title, h1, css):
+    def doc_header(title, h1, css_files):
         """An HTML document's beginning."""
+
         s = ('<html>\n'
              '  <head>\n'
              '    <meta http-equiv="Content-Type" '
              'content="text/html;charset=utf-8">\n'
-             '    <title>%s</title>\n'
-             '    <link rel=stylesheet href="%s" type="text/css">\n'
-             '  </head>\n'
-             '  <body>\n'
-             '    <h1 id="header">%s</h1>\n\n') % \
-            (title, css, h1)
+             '    <title>%s</title>\n') % (title,)
+
+        for css in css_files:
+             s += '    <link rel=stylesheet href="%s" type="text/css">\n' % \
+                  (css,)
+
+        s += ('  </head>\n'
+              '  <body>\n'
+              '    <h1 id="header">%s</h1>\n\n') % (h1,)
+
         return s
 
     @staticmethod
@@ -2387,11 +2392,11 @@ class GeneratorOptions(object):
     html_h1 --- The string to print as the title (<h1>) of the HTML file.
         Type: str
         Default: 'Heap'
-    cssfile --- The name of the CSS file that should be referenced.
+    cssfiles --- The name of the CSS files that should be referenced.
         Type: str
     trycopyfiles --- Copy the CSS file, images and other files into the
-        HTML directory if it does not exist. If cssfile is given with an absolute
-        path, trycopyfiles should be False.
+        HTML directory if it does not exist. If `cssfiles` are given with absolute
+        paths, trycopyfiles should be False.
         Type: bool
         Default: True
     print_thread_of_post --- The thread of the post will be printed into the
@@ -2416,7 +2421,7 @@ class GeneratorOptions(object):
                  date_fun=lambda post, options: None,
                  html_title='Heap index',
                  html_h1='Heap index',
-                 cssfile='heapindex.css',
+                 cssfiles=['heapindex.css'],
                  trycopyfiles=True,
                  print_thread_of_post=False,
                  section=hkutils.NOT_SET,
@@ -2463,8 +2468,25 @@ class Generator(object):
         """Copies the CSS file and other files to the HTML directory if needed."""
 
         if options.trycopyfiles:
-            newcssfile = os.path.join(self._postdb.html_dir(), options.cssfile)
-            hkutils.copy_wo(options.cssfile, newcssfile)
+
+            for css in options.cssfiles:
+
+                # If the CSS file exists, OK
+                newcssfile = os.path.join(self._postdb.html_dir(), css)
+                if os.path.exists(newcssfile):
+                    continue # ok, file exists
+
+                # Try to copy the CSS file from the current directory
+                if hkutils.copy_wo(css, newcssfile):
+                    continue # ok, copied
+
+                # Try to copy the CSS file from the heap
+                cssfile_on_heap = os.path.join(self._postdb.postfile_dir(), css)
+                if hkutils.copy_wo(cssfile_on_heap, newcssfile):
+                    continue # ok, copied
+
+                log('WARNING: CSS file "%s" not found' % (css,))
+
             if os.path.exists('thread.png'):
                 threadpng = os.path.join(self._postdb.html_dir(), 'thread.png')
                 hkutils.copy_wo('thread.png', threadpng)
@@ -2483,7 +2505,7 @@ class Generator(object):
         l = []
         h1 = Html.escape(post.author()) + ': ' + \
              Html.escape(post.subject())
-        l.append(Html.doc_header(h1, h1, options.cssfile))
+        l.append(Html.doc_header(h1, h1, options.cssfiles))
 
         l2 = []
         try:
@@ -2964,7 +2986,7 @@ class Generator(object):
         hkutils.check(
             options,
             ['indices', 'write_toc', 'shortsubject', 'shorttags', 'date_fun',
-             'html_title', 'html_h1', 'cssfile', 'trycopyfiles'])
+             'html_title', 'html_h1', 'cssfiles', 'trycopyfiles'])
 
         self.settle_files_to_copy(options)
         threadst = self._postdb.threadstruct()
@@ -2976,7 +2998,7 @@ class Generator(object):
                 with open(filename, 'w') as f:
                     doc_header = Html.doc_header(options.html_title,
                                                  options.html_h1,
-                                                 options.cssfile)
+                                                 options.cssfiles)
                     f.write(doc_header)
                     if options.write_toc:
                         f.write(self.index_toc(index.sections, options))
@@ -3005,7 +3027,7 @@ class Generator(object):
 
         hkutils.check(
             options,
-            ['date_fun', 'html_title', 'html_h1', 'cssfile', 'trycopyfiles',
+            ['date_fun', 'html_title', 'html_h1', 'cssfiles', 'trycopyfiles',
              'print_thread_of_post'])
 
         self.settle_files_to_copy(options)
@@ -3031,7 +3053,7 @@ class Generator(object):
 
         hkutils.check(
             options,
-            ['date_fun', 'html_title', 'html_h1', 'cssfile', 'trycopyfiles',
+            ['date_fun', 'html_title', 'html_h1', 'cssfiles', 'trycopyfiles',
              'print_thread_of_post'])
 
         self.settle_files_to_copy(options)

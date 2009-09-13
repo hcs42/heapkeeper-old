@@ -1464,7 +1464,7 @@ class Test_Html(unittest.TestCase):
                 '<link rel=stylesheet href="mycss" type="text/css">.*'
                 '<h1 id="header">myh1</h1>',
                 re.IGNORECASE | re.DOTALL)
-        search = r.search(Html.doc_header('mytitle', 'myh1', 'mycss'))
+        search = r.search(Html.doc_header('mytitle', 'myh1', ['mycss']))
         self.assertNotEquals(search, None)
 
     def test_link(self):
@@ -1589,7 +1589,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         self.assertFalse(os.path.exists(new_cssfile))
 
         genopts = GeneratorOptions()
-        genopts.cssfile = 'my.css'
+        genopts.cssfiles = ['my.css']
         os.chdir(self._dir)
         g.settle_files_to_copy(genopts)
         self.assert_(os.path.exists(new_cssfile))
@@ -1609,7 +1609,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         h1 = Html.escape('author0') + ': ' + Html.escape('subject0')
         self.assertEquals(
             g.post(p(0), genopts),
-            Html.doc_header(h1, h1, 'heapindex.css') +
+            Html.doc_header(h1, h1, ['heapindex.css']) +
             subheader(
                 Html.link('index.html', 'Back to the index') + '\n' +
                 Html.enclose('index', Html.escape('<0>')) + '\n') +
@@ -1625,7 +1625,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         h1 = Html.escape('author0') + ': ' + Html.escape('subject0')
         self.assertEquals(
             g.post(p(0), genopts),
-            Html.doc_header(h1, h1, 'heapindex.css') +
+            Html.doc_header(h1, h1, ['heapindex.css']) +
             subheader(
                 Html.link('index.html', 'Back to the index') + '\n' +
                 Html.enclose('index', Html.escape('<0>')) + '\n') +
@@ -1642,7 +1642,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         genopts.section = Section('Thread', [p(2)])
         h1 = Html.escape('author2') + ': ' + Html.escape('subject2')
         my_post_html = \
-            (Html.doc_header(h1, h1, 'heapindex.css') +
+            (Html.doc_header(h1, h1, ['heapindex.css']) +
              subheader(
                  Html.link('index.html', 'Back to the index') + '\n' +
                  Html.enclose('index', Html.escape('<2>')) + '\n') +
@@ -1991,7 +1991,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         genopts.write_toc = False
         genopts.html_title = 'myhtmltitle'
         genopts.html_h1 = 'myhtmlh1'
-        genopts.cssfile = 'mycssfile'
+        genopts.cssfiles = ['mycssfile']
 
         os.chdir(self._dir)
         hkutils.string_to_file('css content', 'mycssfile')
@@ -2007,7 +2007,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         g.gen_indices(genopts)
         self.assertEquals(
             self.index_html(),
-            Html.doc_header('myhtmltitle', 'myhtmlh1', 'mycssfile') +
+            Html.doc_header('myhtmltitle', 'myhtmlh1', ['mycssfile']) +
             section0_html +
             section1_html +
             Html.doc_footer())
@@ -2019,7 +2019,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
 
         self.assertEquals(
             self.index_html(),
-            Html.doc_header('myhtmltitle', 'myhtmlh1', 'mycssfile') +
+            Html.doc_header('myhtmltitle', 'myhtmlh1', ['mycssfile']) +
             g.index_toc(index.sections, genopts) +
             section0_html +
             section1_html +
@@ -2037,7 +2037,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
         genopts.indices = [index]
         genopts.html_title = 'myhtmltitle'
         genopts.html_h1 = 'myhtmlh1'
-        genopts.cssfile = 'mycssfile'
+        genopts.cssfiles = ['mycssfile']
         genopts.trycopyfiles = False
 
         # normal
