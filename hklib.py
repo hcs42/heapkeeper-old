@@ -2098,25 +2098,24 @@ class Html():
     @staticmethod
     def doc_header(title, h1, css):
         """An HTML document's beginning."""
-        return \
-            '<html>\n' \
-            '  <head>\n' \
-            '    <meta http-equiv="Content-Type" ' \
-            'content="text/html;charset=utf-8">\n' \
-            '    <title>%s</title>\n' \
-            '    <link rel=stylesheet href="%s" type="text/css">\n' \
-            '  </head>\n' \
-            '  <body>\n' \
-            '    <h1 id="header">%s</h1>\n\n' % \
+        s = ('<html>\n'
+             '  <head>\n'
+             '    <meta http-equiv="Content-Type" '
+             'content="text/html;charset=utf-8">\n'
+             '    <title>%s</title>\n'
+             '    <link rel=stylesheet href="%s" type="text/css">\n'
+             '  </head>\n'
+             '  <body>\n'
+             '    <h1 id="header">%s</h1>\n\n') % \
             (title, css, h1)
+        return s
 
     @staticmethod
     def doc_footer():
         """An HTML document's end."""
-        return \
-            '\n' \
-            '  </body>\n' \
-            '</html>\n'
+        return ('\n'
+                '  </body>\n'
+                '</html>\n')
 
     @staticmethod
     def section_begin(sectionid, sectiontitle):
