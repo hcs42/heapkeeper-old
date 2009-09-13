@@ -1721,7 +1721,8 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
 
         self.assertEquals(
             g.thread(None, genopts),
-            g.post_summary(self._posts[0], genopts) +
+            g.post_summary(self._posts[0], genopts,
+                           thread_link='thread_0.html') +
             g.post_summary(self._posts[1], genopts) +
             g.post_summary(self._posts[2], genopts) +
             g.post_summary_end() + # end of 2
@@ -1729,7 +1730,8 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
             g.post_summary(self._posts[3], genopts) +
             g.post_summary_end() + # end of 3
             g.post_summary_end() + # end of 0
-            g.post_summary(self._posts[4], genopts) +
+            g.post_summary(self._posts[4], genopts,
+                           thread_link='thread_4.html') +
             g.post_summary_end()) # end of 4
 
     def test_thread__shortsubject(self):
@@ -1747,7 +1749,8 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
 
         self.assertEquals(
             g.thread(None, genopts),
-            g.post_summary(p(0), genopts) +
+            g.post_summary(p(0), genopts,
+                           thread_link='thread_0.html') +
             g.post_summary(p(1), genopts, subject=STAR) +
             g.post_summary(p(2), genopts, subject=STAR) +
             g.post_summary_end() + # end of 2
@@ -1755,7 +1758,8 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
             g.post_summary(p(3), genopts, subject=STAR) +
             g.post_summary_end() + # end of 3
             g.post_summary_end() + # end of 0
-            g.post_summary(p(4), genopts) +
+            g.post_summary(p(4), genopts,
+                           thread_link='thread_4.html') +
             g.post_summary_end()) # end of 4
 
         # All but one posts have the same subject.
@@ -1764,7 +1768,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
 
         self.assertEquals(
             g.thread(None, genopts),
-            g.post_summary(p(0), genopts) +
+            g.post_summary(p(0), genopts, thread_link='thread_0.html') +
             g.post_summary(p(1), genopts, subject=STAR) +
             g.post_summary(p(2), genopts, subject=STAR) +
             g.post_summary_end() + # end of 2
@@ -1772,7 +1776,7 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
             g.post_summary(p(3), genopts) +
             g.post_summary_end() + # end of 3
             g.post_summary_end() + # end of 0
-            g.post_summary(p(4), genopts) +
+            g.post_summary(p(4), genopts, thread_link='thread_4.html') +
             g.post_summary_end()) # end of 4
 
     def test_thread__cycles(self):
@@ -1795,11 +1799,11 @@ class Test_Generator(unittest.TestCase, PostDBHandler):
 
         self.assertEquals(
             g.thread(None, genopts),
-            g.post_summary(p(0), genopts) +
+            g.post_summary(p(0), genopts, thread_link='thread_0.html') +
             g.post_summary(p(3), genopts) +
             g.post_summary_end() + # end of 3
             g.post_summary_end() + # end of 0
-            g.post_summary(p(4), genopts) +
+            g.post_summary(p(4), genopts, thread_link='thread_4.html') +
             g.post_summary_end()) # end of 4
 
     def test_section(self):

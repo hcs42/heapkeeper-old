@@ -2694,7 +2694,145 @@ class Generator(object):
 
         return '</div>\n'
 
-    def thread(self, post, options):
+    def postitem_author(self, postitem, options):
+        """Returns the author of the post item.
+
+        **Returns:** |HtmlStr|
+        """
+
+        return Html.escape(postitem.post.author())
+
+    def postitem_subject(self, postitem, options):
+        """Returns the subject of the post item.
+
+        Returns ``STAR`` if the post has the same subject as its parent.
+
+        **Returns:** |HtmlStr|
+        """
+
+        post = postitem.post
+        parent = self._postdb.parent(post)
+        subject = post.subject()
+        if (options.shortsubject and parent != None and
+            subject == parent.subject()):
+            return STAR
+        else:
+            return Html.escape(subject)
+
+    def postitem_tags(self, postitem, options):
+        """Returns the tags of the post item.
+
+        Returns ``STAR`` if the post has the same tags as its parent.
+
+        **Returns:** |HtmlStr|
+        """
+
+        post = postitem.post
+        parent = self._postdb.parent(post)
+        tags = post.tags()
+        if (options.shorttags and parent != None and
+            tags == parent.tags()):
+            return STAR
+        else:
+            return tags
+
+    def postitem_threadlink(self, postitem, options):
+        """Returns the thread link of the post item.
+
+        Returns ``None`` if the post is not a root post.
+
+        **Returns:** |HtmlStr| | ``None``
+        """
+
+        post = postitem.post
+        if self._postdb.parent(post) is None:
+            return post.htmlthreadbasename()
+        else:
+            return None
+
+    def postitem_date(self, postitem, options):
+        """Returns the date the post item.
+
+        Returns ``None`` if the post is not a root post.
+
+        **Returns:** |HtmlStr|
+        """
+        return options.date_fun(postitem.post, options)
+
+    def postitem_core(self, postitem, options):
+        """Returns a tuple that contains the core information about the
+        postitem.
+
+        **Returns:** a tuple that contains arguments for Html.post_summary_div
+        and Html.post_summary_table.
+        """
+
+        post = postitem.post
+
+        author = self.postitem_author(postitem, options)
+        subject = self.postitem_subject(postitem, options)
+        tags = self.postitem_tags(postitem, options)
+        thread_link = self.postitem_threadlink(postitem, options)
+        date = self.postitem_date(postitem, options)
+
+        section = options.section
+        if options.always_active or section.posts == CYCLES:
+            active = True
+        else:
+            active = post in section.posts
+
+        if options.locallinks:
+            link = '#' + post.heapid()
+        else:
+            link = post.htmlfilebasename()
+
+        args = (link, author, subject, tags, post.heapid(),
+                date, active, thread_link)
+        return args
+
+    def postitem_begin(self, postitem, options):
+        """Returns the HTML representation of an ``'begin'`` post item.
+
+        **Returns:** |HtmlStr|
+        """
+
+        args = self.postitem_core(postitem, options)
+        return Html.post_summary_div(*args)
+
+    def postitem_end(self, postitem, options):
+        """Returns the HTML representation of an ``'end'`` post item.
+
+        **Returns:** |HtmlStr|
+        """
+
+        return '</div>\n'
+
+    def postitem_flat(self, postitem, options):
+        """Returns the HTML representation of a ``'flat'`` post item.
+
+        **Returns:** |HtmlStr|
+        """
+
+        args = self.postitem_core(postitem, options)
+        return Html.post_summary_table(*args)
+
+    def postitem(self, postitem, options):
+        """Returns the HTML representation of a post item.
+
+        **Returns:** |HtmlStr|
+        """
+
+        if postitem.pos == 'begin':
+            return self.postitem_begin(postitem, options)
+        elif postitem.pos == 'end':
+            return self.postitem_end(postitem, options)
+        elif postitem.pos == 'flat':
+            return self.postitem_flat(postitem, options)
+        else:
+            raise hkutils.HkException, \
+                  "Unknown 'pos' in postitem: %s" % (postitem,)
+
+    def thread_old(self, post, options):
         """Converts the summaries of posts in a thread into HTML.
 
         Warning: if the given post is in a cycle, this function will go into
@@ -2745,6 +2883,25 @@ class Generator(object):
 
         return ''.join(strings)
 
+    def thread(self, post, options):
+        """Converts the summaries of posts in a thread into HTML.
+
+        Warning: if the given post is in a cycle, this function will go into
+        an endless loop.
+
+        **Arguments:**
+
+        - `post` (``None`` | |Post|) -- The root of the (sub)thread to be
+          printed.
+        - `options` (|GeneratorOptions|)
+
+        **Returns:** ``HtmlStr``
+        """
+
+        strings = []
+        for postitem in self._postdb.walk_thread(post):
+             strings.append(self.postitem(postitem, options))
+        return ''.join(strings)
 
     def section(self, sectionid, options):
         """Converts a section into HTML.
