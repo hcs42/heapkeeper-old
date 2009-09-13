@@ -28,6 +28,7 @@ import hkutils
 import hklib
 import hkcustomlib
 import hkshell
+import issue_tracker
 
 def has_tag(tags):
     def has_tag_fun(post):
@@ -87,6 +88,7 @@ def sections1(postdb):
 
 def gen_indices(postdb):
 
+    hkcustomlib.gen_indices(postdb)
     # Date options
     date_options = hkcustomlib.date_defopts()
     date_options.update({
@@ -106,8 +108,12 @@ def gen_indices(postdb):
     genopts.shorttags = True
     genopts.date_fun = date_fun
 
-    # Generating the index
+    # Generating my index
     hklib.Generator(postdb).gen_indices(genopts)
+
+    # Generator the issue tracker index
+    generator = issue_tracker.create_generator(genopts)
+    generator.gen_indices(genopts)
 
 def gen_posts(postdb, posts):
     date_options = hkcustomlib.date_defopts({'postdb': postdb})
