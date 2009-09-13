@@ -2533,96 +2533,6 @@ class Generator(object):
             l.append(Html.enclose('postref', ref_html, tag='p'))
         return ''.join(l)
 
-    def post(self, post, options):
-        """Converts the post into HTML.
-
-        **Arguments:**
-
-        - `post` (|Post|)
-        - `options` (|GeneratorOptions|)
-
-        **Returns:** |HtmlStr|
-        """
-
-        l = []
-
-        # header
-        l.append(self.header(post, options))
-
-        # thread
-        if options.print_thread_of_post:
-            section = Section(title='Thread', posts=[post])
-            options.section = section
-            thread = self.thread(self._postdb.root(post), options)
-            del options.section
-            l.append(thread)
-
-        # references
-        l.append(self.refs(post, options))
-
-        # body
-        l.append(Html.enclose('postbody', Html.escape(post.body()), tag='pre'))
-
-        # footer
-        l.append(Html.doc_footer())
-
-        return ''.join(l)
-
-    def full_thread(self, thread, options):
-        """Converts the whole thread into HTML.
-
-        **Arguments:**
-
-        - `thread` (|Post|)
-        - `options` (|GeneratorOptions|)
-
-        **Returns:** |HtmlStr|
-
-        **Note:** Don't forget that a thread is identified by its root post.
-        """
-
-        assert(thread._postdb.root(thread) == thread)
-
-        l = []
-
-        # header
-        l.append(self.header(thread, options))
-
-        # thread
-        if options.print_thread_of_post:
-            section = Section(title='Thread', posts=[thread])
-            options.section = section
-            options.locallinks = True
-            options.always_active = True
-            thread_summary = self.thread(thread, options)
-            del options.section
-            l.append(thread_summary)
-
-        # posts
-        for post in thread._postdb.iter_thread(thread):
-
-            # post summary
-            l.append(
-                Html.thread_post_header(
-                    post.htmlfilebasename(),
-                    Html.escape(post.author()),
-                    Html.escape(post.subject()),
-                    post.tags(),
-                    post.heapid(),
-                    options.date_fun(post, options)))
-
-            # references
-            l.append(self.refs(post, options))
-
-            # body
-            l.append(Html.enclose('postbody',
-                                  Html.escape(post.body()), tag='pre'))
-
-        # footer
-        l.append(Html.doc_footer())
-
-        return ''.join(l)
-
     def index_toc(self, sections, options):
         """Creates a table of contents.
 
@@ -2944,6 +2854,96 @@ class Generator(object):
                     # if section contains at least part of the thread
                     l.append(self.thread(root, options))
         l.append(Html.section_end())
+
+        return ''.join(l)
+
+    def post(self, post, options):
+        """Converts the post into HTML.
+
+        **Arguments:**
+
+        - `post` (|Post|)
+        - `options` (|GeneratorOptions|)
+
+        **Returns:** |HtmlStr|
+        """
+
+        l = []
+
+        # header
+        l.append(self.header(post, options))
+
+        # thread
+        if options.print_thread_of_post:
+            section = Section(title='Thread', posts=[post])
+            options.section = section
+            thread = self.thread(self._postdb.root(post), options)
+            del options.section
+            l.append(thread)
+
+        # references
+        l.append(self.refs(post, options))
+
+        # body
+        l.append(Html.enclose('postbody', Html.escape(post.body()), tag='pre'))
+
+        # footer
+        l.append(Html.doc_footer())
+
+        return ''.join(l)
+
+    def full_thread(self, thread, options):
+        """Converts the whole thread into HTML.
+
+        **Arguments:**
+
+        - `thread` (|Post|)
+        - `options` (|GeneratorOptions|)
+
+        **Returns:** |HtmlStr|
+
+        **Note:** Don't forget that a thread is identified by its root post.
+        """
+
+        assert(thread._postdb.root(thread) == thread)
+
+        l = []
+
+        # header
+        l.append(self.header(thread, options))
+
+        # thread
+        if options.print_thread_of_post:
+            section = Section(title='Thread', posts=[thread])
+            options.section = section
+            options.locallinks = True
+            options.always_active = True
+            thread_summary = self.thread(thread, options)
+            del options.section
+            l.append(thread_summary)
+
+        # posts
+        for post in thread._postdb.iter_thread(thread):
+
+            # post summary
+            l.append(
+                Html.thread_post_header(
+                    post.htmlfilebasename(),
+                    Html.escape(post.author()),
+                    Html.escape(post.subject()),
+                    post.tags(),
+                    post.heapid(),
+                    options.date_fun(post, options)))
+
+            # references
+            l.append(self.refs(post, options))
+
+            # body
+            l.append(Html.enclose('postbody',
+                                  Html.escape(post.body()), tag='pre'))
+
+        # footer
+        l.append(Html.doc_footer())
 
         return ''.join(l)
 
