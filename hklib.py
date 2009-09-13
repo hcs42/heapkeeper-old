@@ -1265,17 +1265,24 @@ class PostDB(object):
     def root(self, post):
         """Returns the root of the post.
 
-        Warning: if the thread structure contains cycles, calling this
-        function may result in an endless loop. Before calling this function,
-        the called should check that postdb.has_cycle() == False.
+        **Argument:**
+
+        - `post` (|Post|)
+
+        **Returns:** |Post| | ``None`` -- ``None`` is returned when the post
+        is in a cycle.
         """
 
         assert(post in self.all())
+        posts = set([post])
         while True:
             parentpost = self.parent(post)
             if parentpost == None:
                 return post
+            elif parentpost in posts:
+                return None # we found a cycle
             else:
+                posts.add(parentpost)
                 post = parentpost
 
     def children(self, post):

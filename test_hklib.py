@@ -44,7 +44,7 @@ class PostDBHandler(object):
 
     # Creating an ordered array of dates.
     dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200\n' % i \
-              for i in range(6) ]
+              for i in range(10) ]
 
     def setUpDirs(self):
         self._dir = tempfile.mkdtemp()
@@ -828,19 +828,49 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
     def test_root(self):
         postdb = self._postdb
 
-        def test(post_heapid, parent_heapid):
-            if parent_heapid != None:
-                parentpost = postdb.post(parent_heapid)
+        def test(post_heapid, root_heapid):
+            if root_heapid != None:
+                parentpost = postdb.post(root_heapid)
             else:
                 parentpost = None
-            self.assertEquals(postdb.root(postdb.post(post_heapid)), \
+            self.assertEquals(postdb.root(postdb.post(post_heapid)),
                               parentpost)
+
+        ## Testing when there is no cycle
 
         test('0', '0')
         test('1', '0')
         test('2', '0')
         test('3', '0')
         test('4', '4')
+
+        ## Testing cycles
+
+        # Introducing a cycle
+
+        # New thread structure:
+        #
+        # 0 <- 1 <- 2
+        # 4
+        # 3 <- 5 <- 6 <- 7
+        #  \        ^
+        #   -------/
+        self.add_post(5, 3)
+        self.add_post(6, 5)
+        self.add_post(7, 6)
+        postdb.post('3').set_parent('7')
+
+        # Normal posts:
+        test('0', '0')
+        test('1', '0')
+        test('2', '0')
+        test('4', '4')
+
+        # Posts in cycle:
+        test('3', None)
+        test('5', None)
+        test('6', None)
+        test('7', None)
 
     def threadstruct_cycle_general(self, parents, threadstruct, cycles):
         """The general function that tests the cycle detection of the thread
