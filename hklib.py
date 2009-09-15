@@ -2067,8 +2067,20 @@ class Html():
 
     @staticmethod
     def link(link, content):
-        """Creates a link."""
-        return '<a href="%s">%s</a>' % (link, content)
+        """Creates a link.
+
+        Any double quotes in the URL are replaced by its code (``%22``).
+
+        **Arguments:**
+
+        - `link` (str) -- The URL that the link points to.
+        - `content` (str) -- The way the link should appear.
+
+        **Returns:** str -- The HTML code for the link.
+        """
+
+        escaped_link = link.replace('"', '%22')
+        return '<a href="%s">%s</a>' % (escaped_link, content)
 
     @staticmethod
     def enclose(class_, content, tag='span', newlines=False, id=None):
