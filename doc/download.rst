@@ -23,11 +23,17 @@ Packaged releases
 | version  | date       | source      | HTML documentation |
 |          |            |             |                    |
 +==========+============+=============+====================+
+| `0.3`_   | 2009-10-11 | tgz__ zip__ | tgz__ zip__        |
++----------+------------+-------------+--------------------+
 | `0.2`_   | 2009-02-17 | tgz__ zip__ |  --                |
 +----------+------------+-------------+--------------------+
 | `0.1`_   | 2008-10-16 | tgz__ zip__ |  --                |
 +----------+------------+-------------+--------------------+
 
+__ http://heapkeeper.org/releases/heapkeeper-0.3.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.3.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.3.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.3.zip
 __ http://github.com/hcs42/heapkeeper/tarball/v0.2
 __ http://github.com/hcs42/heapkeeper/zipball/v0.2
 __ http://github.com/hcs42/heapkeeper/tarball/v0.1
@@ -38,7 +44,7 @@ __ http://github.com/hcs42/heapkeeper/zipball/v0.1
 Version 0.3
 ^^^^^^^^^^^
 
-- **date:** 2009-09-25
+- **date:** 2009-10-11
 - **download:** tgz__, zip__
 - **download HTML documentation:** tgz__, zip__
 

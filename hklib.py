@@ -94,7 +94,7 @@ import datetime
 import hkutils
 
 
-heapkeeper_version = '0.3uc'
+heapkeeper_version = '0.3'
 
 ##### logging #####
 
