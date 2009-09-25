@@ -69,3 +69,63 @@ Example:
    format shall be used in all docstrings.
 
    The modified class is MyClass, the modified function is `is`.
+
+Creating a release
+------------------
+
+.. highlight:: none
+
+This section will describe our release process. ``<version>`` is the version of
+Heapkeeper, it is something like ``0.3``.
+
+#. Get into a clean state in git; a state that you want as the release. Use the
+   branch ``_v<version>``
+
+#. Make a list of the most important changes since the last release. Put these
+   into ``doc/download.rst`` and commit it.
+
+#. Update the Heapkeeper version number in the following files:
+
+   - ``README``
+   - ``hklib.py``
+   - ``doc/conf.py``
+   - ``doc/tutorial.rst``
+   - ``doc/download.rst``
+
+#. Make a commit. The commit message shall use this template::
+
+    Heapkeeper v<version> released.
+
+    <List of changes copied from download.rst>.
+
+#. Push the changes to the GitHub repository::
+
+    $ git push origin _v<version>
+
+#. Let the others review the commits.
+
+#. If everybody is satisfied, tag the commit, push the tag and merge the master::
+
+    $ git tag v<version>
+    $ git push origin v<version>
+    $ git checkout master
+    $ git merge v<version>
+    $ git push origin master
+    $ git push origin :_v<version>
+
+#. Execute the documentation pusher and package maker scripts::
+
+    $ scripts/pushdoc hcs@heapkeeper.org
+    $ scripts/make_package
+    $ scripts/pushrelease hcs@heapkeeper.org
+
+#. Make an announcement on Freshmeat__
+
+#. Change the new version string in the following files to ``<version>+`` (e.g.
+   ``0.3+``):
+
+   - ``README``
+   - ``hklib.py``
+   - ``doc/conf.py``
+
+__ http://freshmeat.net/
