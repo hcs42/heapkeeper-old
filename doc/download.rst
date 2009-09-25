@@ -58,6 +58,8 @@ Major new features:
 - Thread pages.
 - New CSS design: colors and style from http://vim.org.
 - Optional feature: pages are re-generated only when needed.
+- Forward compatible handling of post files.
+- Much faster IMAP downloading.
 
 - :mod:`hkshell`:
 
@@ -66,7 +68,7 @@ Major new features:
   - Better handling of arguments using the ``optparse`` module.
   - Better way to provide a Python shell to the user, using the ``code``
     module.
-  - New commands, e.g. enew, enew_str, cat.
+  - New commands, e.g. enew, enew_str, ls, cat.
 
 Major refactorings:
 
@@ -80,7 +82,8 @@ Major refactorings:
 Other major improvements:
 
 - A lot of new documentation, including a :doc:`tutorial`. We moved our
-  documentation to use Sphinx_.
+  documentation to use Sphinx_. All modules except for hklib are fully
+  documented with the chosen docstring format.
 - A lot of new tests.
 - We adapted the GPLv3 license and got the domain http://heapkeeper.org.
 - We made semi-automatic scripts for packaging and uploading releases and
