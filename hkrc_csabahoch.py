@@ -151,7 +151,7 @@ def gvim():
 @hkshell.hkshell_cmd()
 def R(pps):
     """Mark thread as reviewed."""
-    hkshell.aTr(pps, 'r')
+    hkshell.aTr(pps, 'reviewed')
 
 def main():
     hkshell.options.callbacks.gen_indices = gen_indices
