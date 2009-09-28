@@ -237,7 +237,8 @@ cSr(pps, subj)     - capitalize the subject recursively
 d(pps)             - delete
 dr(pps)            - delete recursively
 j(pp, pp)          - join two threads
-e(pp)              - edit the post as a file
+e(pps)             - edit posts as files
+eR(pps)            - edit posts as files recursively
 enew()             - creates and edits a new post as a file
 enew_str(str)      - creates a new post from a string
 dl()               - download new mail
@@ -1268,9 +1269,9 @@ def j(pp1, pp2):
     if p1 != None and p2 != None:
         p2.set_parent(p1.heapid())
 
-@hkshell_cmd(postset_operation=True)
-def e(pps):
-    """Edits a post.
+
+def edit_posts(pps):
+    """Edits the posts in `pps`.
 
     **Argument:**
 
@@ -1300,6 +1301,28 @@ def e(pps):
                 hklib.log('Post "%s" reloaded.' % (post.heapid(),))
             else:
                 hklib.log('Post "%s" left unchanged.' % (post.heapid(),))
+
+@hkshell_cmd(postset_operation=True)
+def e(pps):
+    """Edits the posts in `pps`.
+
+    **Argument:**
+
+    - `pps` (|PrePostSet|)
+    """
+
+    edit_posts(pps)
+
+@hkshell_cmd(postset_operation=True)
+def eR(pps):
+    """Edits the posts in `pps` and all their children.
+
+    **Argument:**
+
+    - `pps` (|PrePostSet|)
+    """
+
+    edit_posts(pps.expf())
 
 @hkshell_cmd(add_events=True, touching_command=True)
 def enew(prefix='', author='', parent=None):
