@@ -107,12 +107,16 @@ class IssueTrackerGenerator(hklib.Generator):
         parent = self._postdb.parent(post)
         if parent == None and post in self.open_issues:
             result = '<span class="open-issue">' + result
+        if post in self.review_needed:
+            result = '<span class="review-needed">' + result
         return result
 
     def postitem_end(self, postitem, options):
         result = hklib.Generator.postitem_end(self, postitem, options)
         post = postitem.post
         parent = self._postdb.parent(post)
+        if post in self.review_needed:
+            result += '</span><!-- for "review-needed" -->\n'
         if parent == None and post in self.open_issues:
             result += '</span><!-- for "open-issue" -->\n'
         return result
@@ -142,6 +146,14 @@ class IssueTrackerGenerator(hklib.Generator):
 
 def indices(postdb):
 
+    # posts that need review
+
+    ps_review_needed = \
+        (postdb.all().
+         collect(lambda p: not p.has_tag('reviewed')).
+         exp().
+         collect.is_root())
+
     # issues
 
     def is_issue(root):
@@ -152,34 +164,44 @@ def indices(postdb):
 
     ps_issues = postdb.postset(postdb.roots()).collect(is_issue)
     ps_open_issues = ps_issues.collect(is_open)
-    ps_closed_issues = ps_issues - ps_open_issues
+    ps_review_needed_issues = ps_issues & ps_review_needed - ps_open_issues
+    ps_closed_issues = ps_issues - ps_open_issues - ps_review_needed_issues
 
     ps_hh = postdb.all().collect.has_tag('hh')
-    ps_not_hh = postdb.all() - ps_hh
-    ps_open_issues = ps_open_issues.expf() - ps_not_hh
-    ps_closed_issues = ps_closed_issues.expf() - ps_not_hh
+    ps_post_syntax = postdb.all().collect.has_tag('post syntax')
 
-    ps_all = postdb.all().copy()
+    # non-hh posts and post syntax posts are both unwanted
+    ps_unwanted = (postdb.all() - ps_hh) | ps_post_syntax
+
+    ps_open_issues = ps_open_issues.expf() - ps_unwanted
+    ps_review_needed_issues = ps_review_needed_issues.expf() - ps_unwanted
+    ps_closed_issues = ps_closed_issues.expf() - ps_unwanted
+
+    ps_wanted = ps_open_issues | ps_review_needed_issues | ps_closed_issues
 
     # indices
+
     index_issues = hklib.Index(filename='issues_all.html')
     index_issues.sections = \
-        [ hklib.Section("All issues", ps_open_issues | ps_closed_issues) ]
+        [ hklib.Section("All issues", ps_wanted)]
 
     index_issues2 = hklib.Index(filename='issues_sorted.html')
-    index_issues2.sections = [hklib.Section("Open issues", ps_open_issues),
-                             hklib.Section("Closed issues", ps_closed_issues)]
+    index_issues2.sections = \
+        [hklib.Section("Open issues", ps_open_issues),
+         hklib.Section("Closed, but review needed", ps_review_needed_issues),
+         hklib.Section("Closed issues", ps_closed_issues)]
 
-    return [index_issues, index_issues2], ps_open_issues
+    return [index_issues, index_issues2], ps_open_issues, ps_review_needed
 
 def create_generator(genopts):
-    indices_, open_issues = indices(genopts.postdb)
+    indices_, open_issues, review_needed = indices(genopts.postdb)
     genopts.indices = indices_
     genopts.html_title = 'Heapkeeper issue tracker'
     genopts.html_h1 = 'Heapkeeper issue tracker'
     genopts.cssfiles = ['heapindex.css', 'issues.css']
     generator = IssueTrackerGenerator(genopts.postdb)
     generator.open_issues = open_issues
+    generator.review_needed = review_needed
     return generator
 
 ##### hkshell commands #####
