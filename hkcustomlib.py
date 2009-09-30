@@ -234,7 +234,11 @@ def edit_files(files):
     for file in files:
         old_content[file] = hkutils.file_to_string(file, return_none=True)
 
-    editor = os.getenv('EDITOR')
+    editor = os.getenv('HEAPKEEPER_EDITOR')
+
+    # if HEAPKEEPER_EDITOR is not set, get EDITOR
+    if editor is None or editor == '':
+        editor = os.getenv('EDITOR')
 
     # if EDITOR is not set, get the default editor
     if editor is None or editor == '':
