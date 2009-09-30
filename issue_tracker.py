@@ -79,12 +79,13 @@ def mod_set(tagset):
             tagset.remove(tag)
             tagset.add(red(tag.upper()))
     capitalize('prop')
+    capitalize('issue')
     capitalize('bug')
 
 def is_open(root):
     postdb = root._postdb
     openness = 0
-    if root.has_tag('prop'):
+    if root.has_tag('prop') or root.has_tag('issue'):
         openness += 1
     for post in postdb.postset(root).expf():
         if tag_in_body(post, 'open'):
@@ -158,7 +159,7 @@ def indices(postdb):
 
     def is_issue(root):
         for post in postdb.postset(root).expf():
-            if post.has_tag('prop') or post.has_tag('open'):
+            if post.has_tag('prop') or post.has_tag('issue'):
                 return True
         return False
 
