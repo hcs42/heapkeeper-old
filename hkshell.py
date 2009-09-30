@@ -1351,6 +1351,7 @@ def enew(prefix='', author='', parent=None):
             parent = p(parent)
             post.set_parent(parent.heapid())
             post.set_subject(parent.subject())
+            post.set_tags(parent.tags())
         post_str = post.postfile_str(force_print=set(['Author', 'Subject']))
         os.write(tmp_file_fd, post_str)
         os.close(tmp_file_fd)

@@ -493,8 +493,12 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # Testing the `parent` argument
         parent = self._posts[0]
         parent.set_subject('subject0')
+        parent.add_tag('tag1')
+        parent.add_tag('tag2')
         hkshell.options.callbacks.edit_files = \
-            check_content('Author: \nSubject: subject0\nParent: 0\n\n\n')
+            check_content(
+                'Author: \nSubject: subject0\n'
+                'Tag: tag1\nTag: tag2\nParent: 0\n\n\n')
         post = hkshell.enew(parent=self._posts[0])
 
         # Testing the `prefix` argument
