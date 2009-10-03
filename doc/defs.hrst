@@ -62,6 +62,7 @@
 .. |sS| replace:: :func:`sS <hkshell.sS>`
 .. |s| replace:: :func:`s <hkshell.s>`
 .. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
+.. |TextStruct| replace:: :ref:`TextStruct <hkutils_TextStruct>`
 .. |TouchedPostPrinterListener| replace:: :class:`TouchedPostPrinterListener <hkshell.TouchedPostPrinterListener>`
 .. |UserDoc| replace:: :doc:`user documentation of hkshell <hkshell>`
 .. |Writable| replace:: :ref:`Writable <hkshell_Writable>`

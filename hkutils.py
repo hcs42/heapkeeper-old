@@ -16,7 +16,41 @@
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
-"""|hkutils| contains utility functions for Heapkeeper."""
+"""|hkutils| contains utility functions for Heapkeeper.
+
+Pseudo-types
+''''''''''''
+
+|hkutils| has pseudo-types that are not real Python types, but we use them as
+types in the documentation so we can talk about them easily.
+
+.. _hkutils_TextStruct:
+
+- **TextStruct** -- A recursive structure that represents a string. A
+  |TextStruct| object can be a string, or an iterable object (e.g. list or
+  tuple) that contains |TextStruct| objects; i.e. strings or other iterable
+  objects. The represented string can be obtained from a |TextStruct| object by
+  walking all its leaves and concatenating them.
+
+  The reason for using |TextStruct| objects instead of strings is purely
+  efficiency. A |TextStruct| object can be converted to a string using the
+  :func:`textstruct_to_str` function, and it can be written into a file object
+  using the :func:`write_textstruct` function.
+
+  Examples of |TextStruct| objects:
+
+  - ``'Susan Calvin was born in 1982.'``
+  - ``['Susan Calvin ', 'was born ', 'in 1982.']``
+  - ``[['Susan ','Calvin '], ('was born ', 'in '), '1982.']``
+  - Defining a |TextStruct| called ``iter``::
+
+        def iter():
+            yield 'Susan Calvin '
+            yield 'was born '
+            yield 'in 1982.'
+
+  Real type: str | iterable(|TextStruct|)
+"""
 
 from __future__ import with_statement
 import datetime
@@ -284,6 +318,42 @@ def plural(n, singular='', plural='s'):
         return singular
     else:
         return plural
+
+def textstruct_to_str(text):
+    """Convert a text structure to a string.
+
+    **Argument:**
+
+    - `text` (|TextStruct|)
+
+    **Returns:** str
+
+    **Raises:** TypeError
+    """
+
+    if isinstance(text, str):
+        return text
+    else:
+        # Could be done more efficiently walking the structure without
+        # recursion, and not creating a bunch of temporary structures.
+        return ''.join([ textstruct_to_str(item) for item in text ])
+
+def write_textstruct(f, text):
+    """Writes a text structure to a file object.
+
+    **Arguments:**
+
+    - `f` (|Writable|)
+    - `text` (|TextStruct|)
+
+    **Raises:** TypeError
+    """
+
+    if isinstance(text, str):
+        f.write(text)
+    else:
+        for item in text:
+            write_textstruct(f, item)
 
 
 ##### Constants #####
