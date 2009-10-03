@@ -943,6 +943,19 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
              '1': ['2']},
             ['0', '1', '2', '3'])
 
+    def test_cycles(self):
+
+        # Testing when there are no cycles
+        self.assertEquals(
+            self._postdb.cycles(),
+            self._postdb.postset([]))
+
+        # Testing cycles
+        self.introduce_cycle()
+        self.assertEquals(
+            self._postdb.cycles(),
+            self._postdb.postset(['3', '5', '6', '7']))
+
 
 class Test_PostItem(unittest.TestCase):
 
