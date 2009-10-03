@@ -1547,6 +1547,9 @@ class PostItem(object):
         return ("<PostItem: pos=%s, heapid=%s, level=%d>" %
                 (self.pos, heapid_str, self.level))
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
 
 ##### PostSet #####
 

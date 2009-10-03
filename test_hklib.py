@@ -34,6 +34,7 @@ import os.path
 import ConfigParser
 import re
 
+import hklib
 from hklib import *
 
 
@@ -972,6 +973,19 @@ class Test_PostItem(unittest.TestCase):
         self.assertEquals(
             str(postitem2),
             "<PostItem: pos=begin, heapid='42', level=0>")
+
+    def test_eq(self):
+
+        post = Post.from_str('', heapid=42)
+        postitem1 = PostItem(pos='begin', post=post, level=0)
+        postitem2 = PostItem(pos='begin', post=post, level=0)
+        postitem3 = PostItem(pos='end', post=post, level=0)
+        postitem4 = postitem1.copy()
+        postitem4.new_attr = 'something'
+
+        self.assertEquals(postitem1, postitem2)
+        self.assertNotEquals(postitem1, postitem3)
+        self.assertNotEquals(postitem1, postitem4)
 
 
 class Test_PostSet(unittest.TestCase, PostDBHandler):
