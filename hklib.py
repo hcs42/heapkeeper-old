@@ -1465,6 +1465,18 @@ class PostDB(object):
             for post in self.iter_thread(None):
                 self._cycles.remove(post)
 
+    def walk_cycles(self):
+        """Walks and yields post items for the posts in cycles.
+
+        The ``pos`` attribute of the post items will be ``'flat'``. The
+        ``level`` attribute will be 0.
+
+        **Returns:** iterator(|PostItem|)
+        """
+
+        for post in self.cycles().sorted_list():
+            yield PostItem(pos='flat', post=post, level=0)
+
     def roots(self):
         self._recalc_roots()
         return self._roots

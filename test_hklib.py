@@ -956,6 +956,22 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
             self._postdb.cycles(),
             self._postdb.postset(['3', '5', '6', '7']))
 
+    def test_walk_cycles(self):
+
+        # Testing when there are no cycles
+        self.assertEquals(
+            [ pi for pi in self._postdb.walk_cycles() ],
+            [])
+
+        # Testing cycles
+        self.introduce_cycle()
+        self.assertEquals(
+            [ pi for pi in self._postdb.walk_cycles() ],
+            [hklib.PostItem(pos='flat', post=self._posts[3], level=0),
+             hklib.PostItem(pos='flat', post=self._posts[5], level=0),
+             hklib.PostItem(pos='flat', post=self._posts[6], level=0),
+             hklib.PostItem(pos='flat', post=self._posts[7], level=0)])
+
 
 class Test_PostItem(unittest.TestCase):
 
