@@ -85,7 +85,9 @@ class PostDBHandler(object):
             s += PostDBHandler.dates[index] + '\n'
         s += ('\n' +
               'body%s' % (index,))
-        self._postdb.add_new_post(Post.from_str(s))
+        post = Post.from_str(s)
+        self._postdb.add_new_post(post)
+        return post
 
     def create_threadst(self, skipdates=False):
         """Adds a thread structure to the postdb with the following structure.
@@ -102,6 +104,23 @@ class PostDBHandler(object):
         self.add_post(3, 0)
         self.add_post(4)
         self._posts = [ self._postdb.post(str(i)) for i in range(5) ]
+
+    def introduce_cycle(self):
+        """Introcudes a cycle in the thread structure."""
+
+        # New thread structure:
+        #
+        # 0 <- 1 <- 2
+        # 4
+        # 3 <- 5 <- 6 <- 7
+        #  \        ^
+        #   -------/
+        self._posts += [
+            self.add_post(5, 3),
+            self.add_post(6, 5),
+            self.add_post(7, 6),
+        ]
+        self._postdb.post('3').set_parent('7')
 
 
 # global strings for tests
@@ -847,19 +866,7 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
 
         ## Testing cycles
 
-        # Introducing a cycle
-
-        # New thread structure:
-        #
-        # 0 <- 1 <- 2
-        # 4
-        # 3 <- 5 <- 6 <- 7
-        #  \        ^
-        #   -------/
-        self.add_post(5, 3)
-        self.add_post(6, 5)
-        self.add_post(7, 6)
-        postdb.post('3').set_parent('7')
+        self.introduce_cycle()
 
         # Normal posts:
         test('0', '0')
