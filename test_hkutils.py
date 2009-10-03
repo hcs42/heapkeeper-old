@@ -32,61 +32,6 @@ import StringIO
 import hkutils
 
 
-class TestUtilities(unittest.TestCase):
-
-    """Tests the utility functions of hklib."""
-
-    def test_calc_timestamp(self):
-        ts = hkutils.calc_timestamp('Wed, 20 Aug 2008 17:41:30 +0200')
-        self.assertEquals(ts, 1219246890.0)
-
-    def test_HkException(self):
-        def f():
-            raise hkutils.HkException, 'description'
-        self.assertRaises(hkutils.HkException, f)
-
-        try:
-            raise hkutils.HkException, 'description'
-        except hkutils.HkException, h:
-            self.assertEquals(h.value, 'description')
-            self.assertEquals(str(h), "'description'")
-
-    def test_textstruct_to_str(self):
-
-        # Converting a string
-        self.assertEquals(
-            hkutils.textstruct_to_str('text'),
-            'text')
-
-        # Converting a structure that contains both lists and tuples
-        self.assertEquals(
-            hkutils.textstruct_to_str(['text1', ('2', ['3']), '4']),
-            'text1234')
-
-        # Trying to converting something that is not a TextStruct
-        self.assertRaises(
-            TypeError,
-            lambda: hkutils.textstruct_to_str(0))
-
-    def test_write_textstruct(self):
-
-        # Writing a string
-        sio = StringIO.StringIO()
-        hkutils.write_textstruct(sio, 'text')
-        self.assertEquals(sio.getvalue(), 'text')
-
-        # Writing a structure that contains both lists and tuples
-        sio = StringIO.StringIO()
-        hkutils.write_textstruct(sio, ['text1', ('2', ['3']), '4'])
-        self.assertEquals(sio.getvalue(), 'text1234')
-
-        # Trying to writing something that is not a TextStruct
-        sio = StringIO.StringIO()
-        self.assertRaises(
-            TypeError,
-            lambda: hkutils.write_textstruct(sio, 0))
-
-
 class TestOptionHandling(unittest.TestCase):
 
     def f(a, b, c=1, d=2):
@@ -158,6 +103,61 @@ class TestOptionHandling(unittest.TestCase):
         a.x = 1
         self.assertTrue(hkutils.check(a, ['x']))
         self.assertRaises(AttributeError, lambda: hkutils.check(a, ['y']))
+
+
+class TestMisc(unittest.TestCase):
+
+    """Tests the utility functions of hklib."""
+
+    def test_calc_timestamp(self):
+        ts = hkutils.calc_timestamp('Wed, 20 Aug 2008 17:41:30 +0200')
+        self.assertEquals(ts, 1219246890.0)
+
+    def test_HkException(self):
+        def f():
+            raise hkutils.HkException, 'description'
+        self.assertRaises(hkutils.HkException, f)
+
+        try:
+            raise hkutils.HkException, 'description'
+        except hkutils.HkException, h:
+            self.assertEquals(h.value, 'description')
+            self.assertEquals(str(h), "'description'")
+
+    def test_textstruct_to_str(self):
+
+        # Converting a string
+        self.assertEquals(
+            hkutils.textstruct_to_str('text'),
+            'text')
+
+        # Converting a structure that contains both lists and tuples
+        self.assertEquals(
+            hkutils.textstruct_to_str(['text1', ('2', ['3']), '4']),
+            'text1234')
+
+        # Trying to converting something that is not a TextStruct
+        self.assertRaises(
+            TypeError,
+            lambda: hkutils.textstruct_to_str(0))
+
+    def test_write_textstruct(self):
+
+        # Writing a string
+        sio = StringIO.StringIO()
+        hkutils.write_textstruct(sio, 'text')
+        self.assertEquals(sio.getvalue(), 'text')
+
+        # Writing a structure that contains both lists and tuples
+        sio = StringIO.StringIO()
+        hkutils.write_textstruct(sio, ['text1', ('2', ['3']), '4'])
+        self.assertEquals(sio.getvalue(), 'text1234')
+
+        # Trying to writing something that is not a TextStruct
+        sio = StringIO.StringIO()
+        self.assertRaises(
+            TypeError,
+            lambda: hkutils.write_textstruct(sio, 0))
 
     def test_plural(self):
 
