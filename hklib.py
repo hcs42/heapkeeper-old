@@ -2402,10 +2402,10 @@ class GeneratorOptions(object):
         Default: (lambda post, options: None)
     html_title --- The string to print as the <title> of the HTML file.
         Type: str
-        Default: 'Heap'
+        Default: 'Heap index'
     html_h1 --- The string to print as the title (<h1>) of the HTML file.
         Type: str
-        Default: 'Heap'
+        Default: 'Heap index'
     cssfiles --- The name of the CSS files that should be referenced.
         Type: str
     trycopyfiles --- Copy the CSS file, images and other files into the
