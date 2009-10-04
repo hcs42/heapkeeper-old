@@ -1363,7 +1363,7 @@ class PostDB(object):
         - `root` (Post | ``None``) -- The root of the thread to be walked. If
           ``None``, the whole post database is walked.
 
-        **Yields:** |PostItem|
+        **Returns:** iterable(|PostItem|)
 
         `walk_thread` walks the thread indicated by `root` with deep walk and
         yields |PostItem| objects. A post item contains a post and some
@@ -1444,7 +1444,6 @@ class PostDB(object):
                     [ PostItem(pos='begin', post=child, level=new_level)
                       for child in self.children(postitem.post) ]
                 stack += reversed(child_postitems)
-
 
     def cycles(self):
         """Returns the posts that are in a cycle of the thread structure.
