@@ -77,7 +77,6 @@ Documentation
 * :doc:`usersguide`
 
   * :doc:`tutorial`
-  * :doc:`basics` -- under construction
   * :doc:`customization` -- under construction
   * :doc:`glossary`
 
