@@ -220,6 +220,69 @@ def default_editor():
     else:
         return None
 
+class IncorrectEditorException(hkutils.HkException):
+
+    """Raised when the editor variable is incorrect."""
+
+    def __init__(self, editor, message):
+        """Constructor."""
+        value = ('Incorrect editor variable:\n'
+                 '    %s\n'
+                 '%s' % (editor, message))
+        super(IncorrectEditorException, self).__init__('Incorrect editor.')
+
+def editor_to_editor_list(editor):
+    r"""Converts an editor variable to a list of program name and arguments.
+
+    **Argument:**
+
+    - `editor` (str)
+
+    **Returns:** [str]
+
+    **Examples:** ::
+
+        >>> editor_to_editor_list('gvim')
+        ['gvim']
+        >>> editor_to_editor_list('vim arg1 arg2')
+        ['vim', 'arg1', 'arg2']
+        >>> editor_to_editor_list('vim long\\ argument')
+        ['vim', 'long argument']
+        >>> editor_to_editor_list('vim argument\\\\with\\\\backspace')
+        ['vim', 'argument\\with\\backspace']
+    """
+
+    editor_list = []
+    current_arg = []
+    i = 0
+    while i < len(editor):
+        # If a backslash is found, the next character has to be a space or a
+        # backslash, and it should be added to the current argument.
+        if editor[i] == '\\':
+            if len(editor) <=  i + 1:
+                msg = 'Unescaped backslash should not be the final character.'
+                raise IncorrectEditorException(editor, msg)
+            i += 1
+            if editor[i] in [' ', '\\']:
+                current_arg.append(editor[i])
+            else:
+                msg = 'Unexpected character after backslash.'
+                raise IncorrectEditorException(editor, msg)
+        # If a space is found, a new argument should be started.
+        elif editor[i] == ' ':
+            if current_arg != []:
+                editor_list.append(''.join(current_arg))
+                current_arg = []
+        # Otherwise the current character has to be added to the current
+        # argument.
+        else:
+            current_arg.append(editor[i])
+        i += 1
+    if current_arg != []:
+        editor_list.append(''.join(current_arg))
+        current_arg = []
+    return editor_list
+
 def edit_files(files):
     """Opens an editor in which the user edits the given files.
 
@@ -253,7 +316,18 @@ def edit_files(files):
             'call your editor of choice.')
         return False
 
-    subprocess.call(editor.split() + files)
+    try:
+        editor = editor_to_editor_list(editor)
+    except IncorrectEditorException:
+        hklib.log(
+            'The editor variable is incorrect:\n' +
+            editor +
+            'Please set the EDITOR environment variable to the editor\n'
+            'you want to use or set hkshell.options.callback.edit_files to\n'
+            'call your editor of choice.')
+        return False
+
+    subprocess.call(editor + files)
 
     def did_file_change(file):
         new_content = hkutils.file_to_string(file, return_none=True)

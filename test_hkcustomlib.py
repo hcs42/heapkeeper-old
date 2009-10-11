@@ -29,6 +29,7 @@ import time
 import unittest
 import hklib
 import test_hklib
+import hkcustomlib
 from hkcustomlib import *
 
 
@@ -103,6 +104,33 @@ class Test__1(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEquals(f(self._posts[2], genopts), None)
         self.assertNotEquals(f(self._posts[3], genopts), None)
         self.assertEquals(f(self._posts[4], genopts), None)
+
+    def test_editor_to_editor_list(self):
+
+        """Tests :func:`hkcustomlib.editor_to_editor_list`."""
+
+        def check(input, output):
+            self.assertEquals(
+                hkcustomlib.editor_to_editor_list(input),
+                output)
+
+        check('vim', ['vim'])
+        check('vim arg', ['vim', 'arg'])
+        check('vim arg1 arg2', ['vim', 'arg1', 'arg2'])
+        check(' vim  arg1  arg2 ', ['vim', 'arg1', 'arg2'])
+        check(r'vim long\ argument', ['vim', 'long argument'])
+        check(r'vim argument\\with\\backspace',
+              ['vim', r'argument\with\backspace'])
+
+        # Incorrect editor variables
+
+        self.assertRaises(
+            hkcustomlib.IncorrectEditorException,
+            lambda: hkcustomlib.editor_to_editor_list('vim\\'))
+
+        self.assertRaises(
+            hkcustomlib.IncorrectEditorException,
+            lambda: hkcustomlib.editor_to_editor_list('vim \\x'))
 
 if __name__ == '__main__':
     hklib.set_log(False)
