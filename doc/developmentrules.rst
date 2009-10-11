@@ -24,24 +24,6 @@ Using the version control system
   course if the documentation is about the new class, it is better to have them
   in the same commit.
 
-Special commits
----------------
-
-* Documentation that does not document code (e.g. this page, the :doc:`todo
-  <todo>` page) should be modified only on the master branch.
-* If you change the Development Rules, it must be done in a separate commit on
-  the master branch with a commit message title that starts with ``DevRules:``.
-  This way every developer will be able to follow easily what are the current
-  rules of development.
-* If you add a :doc:`todo <todo>` item, it must be done in a separate commit on
-  the master branch with a commit message title that starts with ``Todo:``.
-  This way every developer will be able to follow easily the current plans and
-  goals of development.
-* If you implement a :doc:`todo <todo>` item, try to do the implementation and
-  the removal of the todo item in the same commit.
-* Try to modify the :doc:`todo <todo>` items either in separate commits, or in
-  commits where the reason of the modification is implemented.
-
 Commit messages
 ^^^^^^^^^^^^^^^
 
