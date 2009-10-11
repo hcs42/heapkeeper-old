@@ -1,8 +1,10 @@
 Todo - "feature and bug tracking system"
 ========================================
 
-This file is our feature and bug tracking "system". The items are in sorted in
-a descending order according to their priorities.
+This file is our feature and bug tracking "system". It will be replaced by the
+Heapkeeper heap, which will be managed with Heapkeeper of course.
+
+The items are in sorted in a descending order according to their priorities.
 
 The items may have identifiers (``#1``, ``#2`` etc). Next free identifier:
 ``#5``
@@ -18,22 +20,6 @@ Notation
 
 Todo items
 ----------
-
-* **Heapkeeper 0.3**
-
-  * misc
-
-    * rewriting git history //Attis
-    * recreating the heapkeeper repo and pushing the new history //Csabi
-
-  * during the release procedure
-
-    * 0.3uc -> 0.3 in "grep 0.3uc \* doc/\*"
-
-  * administrative: after releasing 0.3
-
-    * register to freshmeat
-    * write to Sphinx that we use Sphinx
 
 * **Priority**
 
