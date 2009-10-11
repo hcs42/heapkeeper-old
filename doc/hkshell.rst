@@ -136,8 +136,6 @@ following:
 .. autofunction:: on(feature)
 .. autofunction:: off(feature)
 
-.. _hkshell_commands:
-
 Generic functionality
 ---------------------
 
@@ -146,6 +144,8 @@ Generic functionality
 .. autofunction:: gen_threads
 .. autofunction:: gen_posts
 .. autofunction:: tagset
+
+.. _hkshell_commands:
 
 Commands
 --------
