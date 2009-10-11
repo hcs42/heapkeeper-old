@@ -5,12 +5,23 @@
 .. ..
 .. ..     :/^$/,$sort i
 
+.. |aTr| replace:: :func:`aTr <hkshell.aTr>`
+.. |aT| replace:: :func:`aT <hkshell.aT>`
 .. |Callbacks| replace:: :class:`Callbacks <hkshell.Callbacks>`
+.. |cat| replace:: :func:`cat <hkshell.cat>`
+.. |collect| replace:: :class:`collect <hklib.PostSetCollectDelegate>`
 .. |DateFun| replace:: :ref:`DateFun <hklib_DateFun>`
 .. |DateOptions| replace:: :ref:`DateOptions <hkcustomlib_DateOptions>`
+.. |dl| replace:: :func:`dl <hkshell.dl>`
+.. |d| replace:: :func:`d <hkshell.d>`
 .. |EditFileFun| replace:: :ref:`EditFileFun <hkshell_EditFileFun>`
+.. |enew_str| replace:: :func:`enew_str <hkshell.enew_str>`
+.. |enew| replace:: :func:`enew <hkshell.enew>`
 .. |Event| replace:: :class:`Event <hkshell.Event>`
+.. |expf| replace:: :func:`expf <hklib.PostSet.expf>`
 .. |FeatureState| replace:: :ref:`FeatureState <hkshell_FeatureState>`
+.. |forall| replace:: :class:`forall <hklib.PostSetForallDelegate>`
+.. |ga| replace:: :func:`ga <hkshell.ga>`
 .. |GeneratorOptions| replace:: :class:`GeneratorOptions <hklib.GeneratorOptions>`
 .. |Generator| replace:: :class:`Generator <hklib.Generator>`
 .. |GenIndicesFun| replace:: :ref:`GenIndicesFun <hkshell_GenIndicesFun>`
@@ -22,13 +33,16 @@
 .. |hkshell| replace:: :mod:`hkshell`
 .. |hkutils| replace:: :mod:`hkutils`
 .. |Index| replace:: :class:`Index <hklib.Index>`
+.. |j| replace:: :func:`j <hkshell.j>`
 .. |Listener| replace:: :ref:`Listener <hkshell_Listener>`
 .. |LocaltimeFun| replace:: :ref:`LocaltimeFun <hkcustomlib_LocaltimeFun>`
 .. |LogFun| replace:: :ref:`LogFun <hklib_LogFun>`
+.. |ls| replace:: :func:`ls <hkshell.ls>`
 .. |Messageid| replace:: :ref:`Messageid <hklib_Messageid>`
 .. |ModificationListener| replace:: :class:`ModificationListener <hkshell.ModificationListener>`
 .. |PostDB.walk_thread| replace:: :func:`PostDB.walk_thread <hklib.PostDB.walk_thread>`
 .. |PostDB| replace:: :class:`PostDB <hklib.PostDB>`
+.. |postdb| replace:: :func:`postdb <hkshell.postdb>`
 .. |PostItem| replace:: :class:`PostItem <hklib.PostItem>`
 .. |PostPageListener| replace:: :class:`PostPageListener <hkshell.PostPageListener>`
 .. |PostSet| replace:: :class:`PostSet <hklib.PostSet>`
@@ -36,9 +50,18 @@
 .. |PrePostSet| replace:: :ref:`PrePostSet <hklib_PrePostSet>`
 .. |PrePost| replace:: :ref:`PrePost <hklib_PrePost>`
 .. |PreTagSet| replace:: :ref:`PreTagSet <hkshell_PreTagSet>`
+.. |ps| replace:: :func:`ps <hkshell.ps>`
+.. |p| replace:: :func:`p <hkshell.p>`
+.. |q| replace:: :func:`q <hkshell.q>`
+.. |rTr| replace:: :func:`rTr <hkshell.rTr>`
+.. |rT| replace:: :func:`rT <hkshell.rT>`
 .. |Section| replace:: :class:`Section <hklib.Section>`
 .. |ShouldPrintDateFun| replace:: :ref:`ShouldPrintDateFun <hkcustomlib_ShouldPrintDateFun>`
+.. |sSr| replace:: :func:`sSr <hkshell.sSr>`
+.. |sS| replace:: :func:`sS <hkshell.sS>`
+.. |s| replace:: :func:`s <hkshell.s>`
 .. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
 .. |TouchedPostPrinterListener| replace:: :class:`TouchedPostPrinterListener <hkshell.TouchedPostPrinterListener>`
 .. |UserDoc| replace:: :doc:`user documentation of hkshell <hkshell>`
 .. |Writable| replace:: :ref:`Writable <hkshell_Writable>`
+.. |x| replace:: :func:`x <hkshell.x>`

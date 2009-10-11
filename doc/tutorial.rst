@@ -1,34 +1,7 @@
 Tutorial
 ========
 
-.. |aTr| replace:: :func:`aTr <hkshell.aTr>`
-.. |aT| replace:: :func:`aT <hkshell.aT>`
-.. |cat| replace:: :func:`cat <hkshell.cat>`
-.. |collect| replace:: :class:`collect <hklib.PostSetCollectDelegate>`
-.. |dl| replace:: :func:`dl <hkshell.dl>`
-.. |d| replace:: :func:`d <hkshell.d>`
-.. |enew_str| replace:: :func:`enew_str <hkshell.enew_str>`
-.. |enew| replace:: :func:`enew <hkshell.enew>`
-.. |expf| replace:: :func:`expf <hklib.PostSet.expf>`
-.. |forall| replace:: :class:`forall <hklib.PostSetForallDelegate>`
-.. |ga| replace:: :func:`ga <hkshell.ga>`
-.. |hkshell| replace:: :mod:`hkshell`
-.. |j| replace:: :func:`j <hkshell.j>`
-.. |ls| replace:: :func:`ls <hkshell.ls>`
-.. |PostDB| replace:: :func:`PostDB <hklib.PostDB>`
-.. |postdb| replace:: :func:`postdb <hkshell.postdb>`
-.. |PostSet| replace:: :func:`PostSet <hklib.PostSet>`
-.. |Post| replace:: :func:`Post <hklib.Post>`
-.. |ps| replace:: :func:`ps <hkshell.ps>`
-.. |p| replace:: :func:`p <hkshell.p>`
-.. |q| replace:: :func:`q <hkshell.q>`
-.. |rTr| replace:: :func:`rTr <hkshell.rTr>`
-.. |rT| replace:: :func:`rT <hkshell.rT>`
-.. |sSr| replace:: :func:`sSr <hkshell.sSr>`
-.. |sS| replace:: :func:`sS <hkshell.sS>`
-.. |s| replace:: :func:`s <hkshell.s>`
-.. |x| replace:: :func:`x <hkshell.x>`
-.. .. |XX| replace:: :func:`XX <hkshell.XX>`
+.. include:: defs.hrst
 
 This tutorial describes how to use Heapkeeper. It will show:
 
@@ -41,6 +14,25 @@ This tutorial describes how to use Heapkeeper. It will show:
 __ downloading_hk_
 __ configuring_hk_
 __ adding_posts_
+__ generating_html_
+__ manipulating_posts_
+__ mailing_list_
+
+Table of contents
+-----------------
+
+- `Downloading Heapkeeper`__
+- `Configuration`__
+- `Adding a new post to the heap`__
+- `Adding new posts to the heap from outside hkshell`__
+- `Generating HTML pages`__
+- `Modifying the heap with hkshell`__
+- `Creating a heap for a mailing list`__
+
+__ downloading_hk_
+__ configuring_hk_
+__ adding_posts_
+__ adding_posts_from_outside
 __ generating_html_
 __ manipulating_posts_
 __ mailing_list_
@@ -84,7 +76,7 @@ Or you can execute the automatic test:
 
     $ python test.py
     ----------------------------------------------------------------------
-    Ran 87 tests in 0.172s
+    Ran 93 tests in 0.172s
 
     OK
 
@@ -148,9 +140,13 @@ Let's create now a new post with the |enew| command::
 
     >>> enew()
 
-An editor will pop up (by default, the editor is ``notepad`` on Windows and
-``vi`` on Unix systems; this can be overridden by setting the ``EDITOR``
-environment variable). The editor will contain the following template:
+An editor will pop up that lets you edit the post to be created. By default,
+the editor is ``notepad`` on Windows and ``vi`` on Unix systems; this can be
+overridden by setting the ``EDITOR`` environment variable. If you realize that
+its not your favourite editor that was opened, just exit without doing
+anything. In this case no post will be created.
+
+The editor will contain the following template:
 
 .. code-block:: none
 
@@ -209,6 +205,8 @@ Heapkeeper with the |x| command and examine ``posts/0.post``:
     could read my mind.
 
     Ashe
+
+.. _adding_posts_from_outside:
 
 Adding new posts to the heap from outside hkshell
 -------------------------------------------------
@@ -394,14 +392,24 @@ short names that are essentially mnemonics. See the list of |hkshell| commands
 ::::::::::::::
 
 First let's have a look at the |ls| command. It prints out the header of given
-post or posts, which can be specified for example by their heapid (or are all
-posts by default)::
+post or posts, which can be specified for example by their heapid. If no posts
+are specified, it prints the header of all posts. The posts in the output of
+|ls| have the same indentation as in the index page that we saw previously. ::
 
     >>> ls(0)
     <0> RB-34  ashe@usrobots.com
     >>> ls([0,1])
     <0> RB-34  ashe@usrobots.com
-    <1> RB-34  alfred.lanning@usrobots.com
+      <1> RB-34  alfred.lanning@usrobots.com
+    >>> ls()
+    <0> RB-34  ashe@usrobots.com
+      <1> RB-34  alfred.lanning@usrobots.com
+        <2> RB-34  peter.bogert@usrobots.com
+          <4> RB-34  alfred.lanning@usrobots.com
+        <3> RB-34  susan@usrobots.com
+          <5> RB-34  alfred.lanning@usrobots.com
+            <6> RB-34  susan@usrobots.com
+    <7> Cinema  susan@usrobots.com
 
 The |cat| command prints the post itself::
 
@@ -427,12 +435,12 @@ example the |sS| command ("set subject") sets the subject of the given posts. An
     >>> sS([0,1], 'Robot Problem: RB-34')
     >>> ls()
     <0> Robot Problem: RB-34  ashe@usrobots.com
-    <1> Robot Problem: RB-34  alfred.lanning@usrobots.com
-    <2> RB-34  peter.bogert@usrobots.com
-    <3> RB-34  susan@usrobots.com
-    <4> RB-34  alfred.lanning@usrobots.com
-    <5> RB-34  alfred.lanning@usrobots.com
-    <6> RB-34  susan@usrobots.com
+      <1> Robot Problem: RB-34  alfred.lanning@usrobots.com
+        <2> RB-34  peter.bogert@usrobots.com
+          <4> RB-34  alfred.lanning@usrobots.com
+        <3> RB-34  susan@usrobots.com
+          <5> RB-34  alfred.lanning@usrobots.com
+            <6> RB-34  susan@usrobots.com
     <7> Cinema  susan@usrobots.com
 
 There is a recursive version of |sS| that is called |sSr| ("set subject
@@ -444,12 +452,12 @@ recursively, and all posts' subject will be set::
     >>> sSr(0, 'Mind-reader robot')
     >>> ls()
     <0> Mind-reader robot  ashe@usrobots.com
-    <1> Mind-reader robot  alfred.lanning@usrobots.com
-    <2> Mind-reader robot  peter.bogert@usrobots.com
-    <3> Mind-reader robot  susan@usrobots.com
-    <4> Mind-reader robot  alfred.lanning@usrobots.com
-    <5> Mind-reader robot  alfred.lanning@usrobots.com
-    <6> Mind-reader robot  susan@usrobots.com
+      <1> Mind-reader robot  alfred.lanning@usrobots.com
+        <2> Mind-reader robot  peter.bogert@usrobots.com
+          <4> Mind-reader robot  alfred.lanning@usrobots.com
+        <3> Mind-reader robot  susan@usrobots.com
+          <5> Mind-reader robot  alfred.lanning@usrobots.com
+            <6> Mind-reader robot  susan@usrobots.com
     <7> Cinema  susan@usrobots.com
 
 There are similar functions to control tags, for example |aT| ("add tag"),
@@ -475,6 +483,8 @@ works like |enew|, but receives the content of the post as an argument::
     ...          "Yes, I'd like to go!\n"
     ...          "\n"
     ...          "Ashe\n")
+    Post created.
+    <post '8'>
     >>> ga()
     Indices generated.
     Thread HTMLs generated.
@@ -563,26 +573,26 @@ by a placeholder content::
 
     >>> ls()
     <0> Mind-reader robot  ashe@usrobots.com
-    <1> Mind-reader robot  alfred.lanning@usrobots.com
-    <2> Mind-reader robot  peter.bogert@usrobots.com
-    <3> Mind-reader robot  susan@usrobots.com
-    <4> Mind-reader robot  alfred.lanning@usrobots.com
-    <5> Mind-reader robot  alfred.lanning@usrobots.com
-    <6> Mind-reader robot  susan@usrobots.com
-    <7> How about cinema?  susan@usrobots.com
-    <8> How about cinema?  ashe@usrobots.com
+      <1> Mind-reader robot  alfred.lanning@usrobots.com
+        <2> Mind-reader robot  peter.bogert@usrobots.com
+          <4> Mind-reader robot  alfred.lanning@usrobots.com
+        <3> Mind-reader robot  susan@usrobots.com
+          <5> Mind-reader robot  alfred.lanning@usrobots.com
+            <6> Mind-reader robot  susan@usrobots.com
+    <7> Cinema  susan@usrobots.com
+      <8> Cinema  ashe@usrobots.com
     <9> Ugly spam  noname spammer
     >>> d(9)
     >>> ls()
     <0> Mind-reader robot  ashe@usrobots.com
-    <1> Mind-reader robot  alfred.lanning@usrobots.com
-    <2> Mind-reader robot  peter.bogert@usrobots.com
-    <3> Mind-reader robot  susan@usrobots.com
-    <4> Mind-reader robot  alfred.lanning@usrobots.com
-    <5> Mind-reader robot  alfred.lanning@usrobots.com
-    <6> Mind-reader robot  susan@usrobots.com
-    <7> How about cinema?  susan@usrobots.com
-    <8> How about cinema?  ashe@usrobots.com
+      <1> Mind-reader robot  alfred.lanning@usrobots.com
+        <2> Mind-reader robot  peter.bogert@usrobots.com
+          <4> Mind-reader robot  alfred.lanning@usrobots.com
+        <3> Mind-reader robot  susan@usrobots.com
+          <5> Mind-reader robot  alfred.lanning@usrobots.com
+            <6> Mind-reader robot  susan@usrobots.com
+    <7> Cinema  susan@usrobots.com
+      <8> Cinema  ashe@usrobots.com
     >>> cat(9)
     Heapid: 9
     Flag: deleted
@@ -607,7 +617,7 @@ The |PostSet| object can also be created explicitly, using the |ps| function::
     >>> sS(posts,'How about cinema?')
     >>> ls(posts)
     <7> How about cinema?  susan@usrobots.com
-    <8> How about cinema?  ashe@usrobots.com
+      <8> How about cinema?  ashe@usrobots.com
 
 :func:`postdb().all() <hklib.PostSet.all>` returns a post set that contains all
 posts. In the following example, we use it to add the ``internal`` tag to all
@@ -616,14 +626,14 @@ posts::
     >>> aT(postdb().all(),'internal')
     >>> ls(show_tags=True, show_author=False)
     <0> Mind-reader robot  [interesting,internal,robot]
-    <1> Mind-reader robot  [interesting,internal,robot]
-    <2> Mind-reader robot  [interesting,internal,robot]
-    <3> Mind-reader robot  [interesting,internal,psychology,robot]
-    <4> Mind-reader robot  [interesting,internal,robot]
-    <5> Mind-reader robot  [interesting,internal,psychology,robot]
-    <6> Mind-reader robot  [interesting,internal,psychology,robot]
+      <1> Mind-reader robot  [interesting,internal,robot]
+        <2> Mind-reader robot  [interesting,internal,robot]
+          <4> Mind-reader robot  [interesting,internal,robot]
+        <3> Mind-reader robot  [interesting,internal,psychology,robot]
+          <5> Mind-reader robot  [interesting,internal,psychology,robot]
+            <6> Mind-reader robot  [interesting,internal,psychology,robot]
     <7> How about cinema?  [free time,internal]
-    <8> How about cinema?  [internal]
+      <8> How about cinema?  [internal]
 
 There are many things we can do with a post set. It has standard set operations
 like union, intersection, etc; but it also has operations that are specific to
@@ -634,12 +644,12 @@ mind-reader robot::
 
     >>> ls(ps([0]).expf())
     <0> Mind-reader robot  ashe@usrobots.com
-    <1> Mind-reader robot  alfred.lanning@usrobots.com
-    <2> Mind-reader robot  peter.bogert@usrobots.com
-    <3> Mind-reader robot  susan@usrobots.com
-    <4> Mind-reader robot  alfred.lanning@usrobots.com
-    <5> Mind-reader robot  alfred.lanning@usrobots.com
-    <6> Mind-reader robot  susan@usrobots.com
+      <1> Mind-reader robot  alfred.lanning@usrobots.com
+        <2> Mind-reader robot  peter.bogert@usrobots.com
+          <4> Mind-reader robot  alfred.lanning@usrobots.com
+        <3> Mind-reader robot  susan@usrobots.com
+          <5> Mind-reader robot  alfred.lanning@usrobots.com
+            <6> Mind-reader robot  susan@usrobots.com
 
 |PostSet| has two special attributes: |collect| and |forall|.
 |collect| collects posts from a post set which have certain property.
@@ -655,14 +665,14 @@ add ``psycho`` instead (using |aT|)::
     >>> posts.forall(lambda p: aT(p, 'psycho'))
     >>> ls(show_tags=True, show_author=False)
     <0> Mind-reader robot  [interesting,internal,robot]
-    <1> Mind-reader robot  [interesting,internal,robot]
-    <2> Mind-reader robot  [interesting,internal,robot]
-    <3> Mind-reader robot  [interesting,internal,psycho,robot]
-    <4> Mind-reader robot  [interesting,internal,robot]
-    <5> Mind-reader robot  [interesting,internal,psycho,robot]
-    <6> Mind-reader robot  [interesting,internal,psycho,robot]
+      <1> Mind-reader robot  [interesting,internal,robot]
+        <2> Mind-reader robot  [interesting,internal,robot]
+          <4> Mind-reader robot  [interesting,internal,robot]
+        <3> Mind-reader robot  [interesting,internal,psycho,robot]
+          <5> Mind-reader robot  [interesting,internal,psycho,robot]
+            <6> Mind-reader robot  [interesting,internal,psycho,robot]
     <7> How about cinema?  [free time,internal]
-    <8> How about cinema?  [internal]
+      <8> How about cinema?  [internal]
 
 .. _mailing_list:
 
