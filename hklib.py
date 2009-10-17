@@ -1548,9 +1548,11 @@ class PostItem(object):
 
     def copy(self):
         """Creates a shallow copy of the post item."""
-        return PostItem(pos=self.pos,
-                        post=self.post,
-                        level=self.level)
+        p = PostItem(pos=self.pos,
+                     post=self.post,
+                     level=self.level)
+        p.__dict__ = self.__dict__.copy()
+        return p
 
     def __str__(self):
         """Returns the string representation of the PostItem.
@@ -1565,8 +1567,18 @@ class PostItem(object):
         else:
             heapid_str = "'%s'" % (self.post.heapid(),)
 
-        return ("<PostItem: pos=%s, heapid=%s, level=%d>" %
-                (self.pos, heapid_str, self.level))
+        s = ('<PostItem: pos=%s, heapid=%s, level=%d' %
+             (self.pos, heapid_str, self.level))
+        attrs = self.__dict__.copy()
+        del attrs['pos']
+        del attrs['post']
+        del attrs['level']
+
+        for attr, value in attrs.items():
+             s += ', %s=%s' % (attr, value)
+
+        s += '>'
+        return s
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
