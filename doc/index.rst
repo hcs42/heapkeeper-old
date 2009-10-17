@@ -18,5 +18,5 @@ especially mailing list archives.
 
 * :doc:`screenshots`
 * :doc:`tutorial`
-* :doc:`Detailed introduction and documentation <index-main>`
+* :doc:`Main page <index-main>`
 * :doc:`download`
