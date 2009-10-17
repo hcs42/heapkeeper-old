@@ -1,36 +1,36 @@
 body, html
 {
-	background-color: #fff;
+    background-color: #fff;
     margin: 0;
     padding: 0;
 }
 
 a
 {
-	text-decoration: none;
+    text-decoration: none;
     color: #006;
 }
 
 #subheader
 {
     background-color: #cc9;
-	border: 1px solid #cc9;
-	margin: 2em 1em 2em 1em;
+    border: 1px solid #cc9;
+    margin: 2em 1em 2em 1em;
     padding: 0.3em;
     padding-left: 1em;
 }
 
 #subheader > a
 {
-	font-weight: bold;
-	font-size: 18;
+    font-weight: bold;
+    font-size: 18;
 }
 
 #subheader > .index
 {
     padding-left: 3em;
-	font-weight: bold;
-	font-size: 18;
+    font-weight: bold;
+    font-size: 18;
 }
 
 #subheader + .date
@@ -42,10 +42,10 @@ a
 #header
 {
     margin: 0;
-	padding: 0.5em;
-	border-bottom: 10px solid #080;
-	font-family: Arial, sans-serif;
-	color: #006;
+    padding: 0.5em;
+    border-bottom: 10px solid #080;
+    font-family: Arial, sans-serif;
+    color: #006;
     background-color: #cc9;
 }
 
@@ -57,14 +57,14 @@ a
 .sectiontitle
 {
     display: block;
-	color: #006;
+    color: #006;
     background-color: #cc9;
-	border: 1px solid #cc9;
-	margin: 3em 1em 1em 1em;
+    border: 1px solid #cc9;
+    margin: 3em 1em 1em 1em;
     padding: 0.3em;
     padding-left: 1em;
-	font-weight: bold;
-	font-size: 18;
+    font-weight: bold;
+    font-size: 18;
 }
 
 .flatlist
@@ -74,23 +74,23 @@ a
 
 .postbox
 {
-	display: block;
+    display: block;
     background-color: #eed;
-	border: 1px solid #080;
-	margin: 1em;
-	padding: 0.7em 0 0.7em 0.7em;
+    border: 1px solid #080;
+    margin: 1em;
+    padding: 0.7em 0 0.7em 0.7em;
 }
 
 .postbox .postbox
 {
     background-color: #eed;
-	border: none;
-	margin-left: 0.5em;
-	margin-top: 0.3em;
-	margin-right: 0.3em;
-	padding-top: 0;
-	padding-bottom: 0;
-	margin-bottom: 0;
+    border: none;
+    margin-left: 0.5em;
+    margin-top: 0.3em;
+    margin-right: 0.3em;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
 }
 
 .flatlist td
@@ -100,8 +100,8 @@ a
 
 span, td
 {
-	color: #f22;
-	font-family: Arial, sans-serif;
+    color: #f22;
+    font-family: Arial, sans-serif;
 }
 
 td
@@ -114,24 +114,24 @@ td
 
 .subject
 {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .subject a:link
 {
-	color: #000;
+    color: #000;
     text-decoration: underline;
 }
 
 .subject a:visited
 {
-	color: #666;
+    color: #666;
     text-decoration: underline;
 }
 
 .subject a:active
 {
-	color: #666;
+    color: #666;
 }
 
 .subject .star a:link
@@ -175,8 +175,8 @@ td
 
 .author
 {
-	margin-right: 1em;
-	font-style: italic;
+    margin-right: 1em;
+    font-style: italic;
 }
 
 pre
@@ -186,7 +186,6 @@ pre
 
 .button a img
 {
-	text-decoration: none;
+    text-decoration: none;
     border: none;
 }
-
