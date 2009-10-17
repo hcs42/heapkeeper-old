@@ -1687,9 +1687,9 @@ class PostSet(set):
         """Returns the list of posts contains by the postset sorted by their
         date."""
 
-        posts = [ (post.timestamp(), post) for post in self ]
+        posts = [ (post.timestamp(), post.heapid(), post) for post in self ]
         posts.sort()
-        return [ post for timestamp, post in posts]
+        return [ post for timestamp, heapid, post in posts]
 
     # Overriding set's methods
 
