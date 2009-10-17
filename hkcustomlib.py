@@ -310,10 +310,10 @@ def edit_files(files):
     # if not even the default is set, print an error message
     if editor is None:
         hklib.log(
-            'Cannot determine the default editor based on the operating\n'
-            'system. Please set the EDITOR environment variable to the editor\n'
-            'you want to use or set hkshell.options.callback.edit_files to\n'
-            'call your editor of choice.')
+           'Cannot determine the default editor based on the operating\n'
+           'system. Please set the EDITOR environment variable to the editor\n'
+           'you want to use or set hkshell.options.callback.edit_files to\n'
+           'call your editor of choice.')
         return False
 
     try:

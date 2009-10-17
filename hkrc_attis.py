@@ -80,7 +80,8 @@ def sections(postdb):
     # posts that belong here either:
     # * contain quote introduction (like "xyz wrote:")
     # * contain more quote lines than non-quote
-    ps_tidy = ps_all.collect.body_contains('\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>')
+    regexp = '\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>'
+    ps_tidy = ps_all.collect.body_contains(regexp)
     ps_tidy |= ps_all.collect.body_contains('wrote:')
     ps_tidy |= [post for post in postdb.all() if overquoted(post)]
     ps_tidy -= ps_all.collect.has_tag('reviewed')
@@ -154,8 +155,9 @@ def get_date_limits(postdb):
     return (start_date, end_date)
 
 def get_month(year, month):
-    months = ['január', 'február', 'március', 'április', 'május', 'június', 'július', \
-        'augusztus', 'szeptember', 'október', 'november', 'december']
+    months = ['január', 'február', 'március', 'április', 'május', 'június',
+              'július', 'augusztus', 'szeptember', 'október', 'november',
+              'december']
     return "%d %s" % (year, months[month - 1])
 
 def get_posts_in_month(postdb, year, month):
@@ -210,7 +212,8 @@ def gen_indices(postdb):
     # Generator options
     genopts = hklib.GeneratorOptions()
     genopts.postdb = postdb
-    #    genopts.indices = [hklib.Index(sections(postdb)), hklib.Index(do_monthly(postdb),"monthly.html")]
+    #    genopts.indices = [hklib.Index(sections(postdb)),
+    #                       hklib.Index(do_monthly(postdb),"monthly.html")]
     # new idea is:
     # - add static main index,
     # - do_montly() and store its results,

@@ -385,13 +385,21 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
     def test_TouchedPostPrinter__feature(self):
         def on_fun():
-            self.assertEquals(hkshell.features()['touched_post_printer'], 'off')
+            self.assertEquals(
+                hkshell.features()['touched_post_printer'],
+                'off')
             hkshell.on('touched_post_printer')
-            self.assertEquals(hkshell.features()['touched_post_printer'], 'on')
+            self.assertEquals(
+                hkshell.features()['touched_post_printer'],
+                'on')
         def off_fun():
-            self.assertEquals(hkshell.features()['touched_post_printer'], 'on')
+            self.assertEquals(
+                hkshell.features()['touched_post_printer'],
+                'on')
             hkshell.off('touched_post_printer')
-            self.assertEquals(hkshell.features()['touched_post_printer'], 'off')
+            self.assertEquals(
+                hkshell.features()['touched_post_printer'],
+                'off')
         self._test_TouchedPostPrinter(on=on_fun, off=off_fun)
 
     def test_tagset(self):

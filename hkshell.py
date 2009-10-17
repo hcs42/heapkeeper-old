@@ -166,9 +166,9 @@ types in the documentation so we can talk about them easily.
 
 .. _hkshell_EditFileFun:
 
-- **EditFileFun(filename)** -- Function that opens an editor with the given file.
-  It should return ``True`` or ``False`` when the user finished editing the
-  file. If the file was changed, it should return ``True``, otherwise
+- **EditFileFun(filename)** -- Function that opens an editor with the given
+  file. It should return ``True`` or ``False`` when the user finished editing
+  the file. If the file was changed, it should return ``True``, otherwise
   ``False``.
 
   Real type: fun(str), returns bool
@@ -278,10 +278,10 @@ class Callbacks(object):
 
     **Data attributes:**
 
-    - `gen_indices` (|GenIndicesFun|) -- Function to be used for generating index
-      pages. Default value: :func:`hkcustomlib.gen_indices`.
-    - `gen_threads` (|GenThreadsFun|) -- Function to be used for generating thead
-      pages. Default value: :func:`hkcustomlib.gen_threads`.
+    - `gen_indices` (|GenIndicesFun|) -- Function to be used for generating
+      index pages. Default value: :func:`hkcustomlib.gen_indices`.
+    - `gen_threads` (|GenThreadsFun|) -- Function to be used for generating
+      thread pages. Default value: :func:`hkcustomlib.gen_threads`.
     - `gen_posts` (|GenPostsFun|) -- Function to be used for generating post
       pages. Default value: :func:`hkcustomlib.gen_posts`.
     - `edit_files` (|EditFileFun|) -- Function to be used for editing posts.
@@ -354,8 +354,8 @@ def hkshell_cmd(add_events=False, postset_operation=False,
     - `touching_command` (bool): If ``True``, the |TouchedPostPrinterListener|
       objects will print the touched posts after the command has been finished.
 
-    Defining a hkshell command means that *f* can be used from |hkshell| without
-    specifying in which module it is. It also can be used after the
+    Defining a hkshell command means that *f* can be used from |hkshell|
+    without specifying in which module it is. It also can be used after the
     ``--before`` and ``--command`` arguments of |hkshell|.
 
     **Examples:**
@@ -368,7 +368,8 @@ def hkshell_cmd(add_events=False, postset_operation=False,
         def mycmd():
             print 'Hi, this is my command.'
 
-    The *mycmd* function can be used from the hkshell as a normal hkshell command::
+    The *mycmd* function can be used from the hkshell as a normal hkshell
+    command::
 
         >>> mycmd()
         Hi, this is my command.
@@ -426,8 +427,8 @@ def register_cmd(name, fun):
       when the command is invoked.
     """
 
-    # It defines the command in the hkshell_commands dictionary, which is used by
-    # the exec_commands function to specify the global variables.
+    # It defines the command in the hkshell_commands dictionary, which is used
+    # by the exec_commands function to specify the global variables.
     hkshell_commands[name] = fun
 
 
@@ -675,7 +676,8 @@ class ModificationListener(object):
             self._posts.add(e.post)
 
     def touched_posts(self):
-        """Returns the posts modified since the beginning of the latest command."""
+        """Returns the posts modified since the beginning of the latest
+        command."""
         return self._posts
 
 
@@ -852,8 +854,8 @@ class TouchedPostPrinterListener(object):
                       sorted([ post.heapid() for post in touched_posts]))
 
 # Commands after which the touched_post_printer should print the touched posts.
-# The preferred way to add a command to the list is use the add_touching_command
-# function.
+# The preferred way to add a command to the list is use the
+# add_touching_command function.
 touching_commands = []
 
 def add_touching_command(command):

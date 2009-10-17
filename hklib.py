@@ -1092,8 +1092,8 @@ class PostDB(object):
     def next_heapid(self, prefix=''):
         """Return the next free heapid with form ``prefix + int``.
 
-        If ``prefix + '1'`` is free, the function returns it. Otherwise it tries
-        ``prefix + '2'``, etc.
+        If ``prefix + '1'`` is free, the function returns it. Otherwise it
+        tries ``prefix + '2'``, etc.
         """
 
         # This function acts the same way if the prefix is '', but the
@@ -2433,8 +2433,8 @@ class GeneratorOptions(object):
     cssfiles --- The name of the CSS files that should be referenced.
         Type: str
     trycopyfiles --- Copy the CSS file, images and other files into the
-        HTML directory if it does not exist. If `cssfiles` are given with absolute
-        paths, trycopyfiles should be False.
+        HTML directory if it does not exist. If `cssfiles` are given with
+        absolute paths, trycopyfiles should be False.
         Type: bool
         Default: True
     print_thread_of_post --- The thread of the post will be printed into the
@@ -2503,7 +2503,8 @@ class Generator(object):
         self._postdb = postdb
 
     def settle_files_to_copy(self, options):
-        """Copies the CSS file and other files to the HTML directory if needed."""
+        """Copies the CSS file and other files to the HTML directory if
+        needed."""
 
         if options.trycopyfiles:
 
@@ -2519,7 +2520,8 @@ class Generator(object):
                     continue # ok, copied
 
                 # Try to copy the CSS file from the heap
-                cssfile_on_heap = os.path.join(self._postdb.postfile_dir(), css)
+                cssfile_on_heap = \
+                    os.path.join(self._postdb.postfile_dir(), css)
                 if hkutils.copy_wo(cssfile_on_heap, newcssfile):
                     continue # ok, copied
 
@@ -2558,7 +2560,8 @@ class Generator(object):
             l2.append(Html.link('index.html', 'Back to the index'))
 
         l2.append('\n')
-        l2.append(Html.enclose('index', Html.escape('<%s>' % (post.heapid(),))))
+        l2.append(Html.enclose('index',
+                               Html.escape('<%s>' % (post.heapid(),))))
         l2.append('\n')
 
         l.append(
