@@ -62,10 +62,10 @@ as types in the documentation so we can talk about them easily.
 """
 
 
-import os
-import time
 import datetime
+import os
 import subprocess
+import time
 
 import hkutils
 import hklib
@@ -335,4 +335,3 @@ def edit_files(files):
 
     changed_files = filter(did_file_change, files)
     return changed_files
-

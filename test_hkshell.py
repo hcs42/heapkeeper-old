@@ -25,15 +25,17 @@ Usage:
     $ python test_hkshell.py
 """
 
+
 from __future__ import with_statement
-import unittest
+
 import os
+import time
+import unittest
 
 import hkutils
 import hklib
-import test_hklib
 import hkshell
-import time
+import test_hklib
 
 
 class Test__1(unittest.TestCase):

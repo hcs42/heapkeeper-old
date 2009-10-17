@@ -43,16 +43,18 @@ If you want to use it, the simplest way is to append its invocation to your
     hkshell.options.callbacks.gen_indices = gen_indices
 """
 
+
+import datetime
 import os
+import re
 import subprocess
 import time
-import datetime
-import re
 
 import hkutils
 import hklib
 import hkcustomlib
 import hkshell
+
 
 ##### Utilities #####
 

@@ -25,12 +25,14 @@ Usage:
     $ python test_hklib.py
 """
 
+
+import datetime
 import time
 import unittest
+
 import hklib
-import test_hklib
 import hkcustomlib
-from hkcustomlib import *
+import test_hklib
 
 
 class Test__1(unittest.TestCase, test_hklib.PostDBHandler):
@@ -45,12 +47,14 @@ class Test__1(unittest.TestCase, test_hklib.PostDBHandler):
 
     def test_format_date(self):
 
-        options = date_defopts({'localtime_fun': time.gmtime})
-        self.assertEquals(format_date(self._posts[0], options), '(2008.08.20.)')
+        options = hkcustomlib.date_defopts({'localtime_fun': time.gmtime})
+        self.assertEquals(
+            hkcustomlib.format_date(self._posts[0], options),
+            '(2008.08.20.)')
 
         options['date_format'] = '%Y.%m.%d. %H:%M:%S'
         self.assertEquals(
-            format_date(self._posts[0], options),
+            hkcustomlib.format_date(self._posts[0], options),
             '2008.08.20. 15:41:00')
 
     def test_create_should_print_date_fun(self):
@@ -60,9 +64,11 @@ class Test__1(unittest.TestCase, test_hklib.PostDBHandler):
         genopts.section = genopts.sections[0]
 
         # date options
-        options = date_defopts({'postdb': self._postdb,
-                                'timedelta': datetime.timedelta(seconds=3)})
-        f = create_should_print_date_fun(options)
+        options = \
+            hkcustomlib.date_defopts(
+                {'postdb': self._postdb,
+                 'timedelta': datetime.timedelta(seconds=3)})
+        f = hkcustomlib.create_should_print_date_fun(options)
 
         # Dates for post 0 and 4 has to be printed, because they do not have a
         # parent
@@ -95,9 +101,10 @@ class Test__1(unittest.TestCase, test_hklib.PostDBHandler):
         def my_should_fun(post, genopts):
             return post.heapid() in ['1', '3']
         # date options
-        options = date_defopts({'postdb': self._postdb,
-                                'should_print_date_fun': my_should_fun})
-        f = create_date_fun(options)
+        options = \
+            hkcustomlib.date_defopts({'postdb': self._postdb,
+                                     'should_print_date_fun': my_should_fun})
+        f = hkcustomlib.create_date_fun(options)
 
         self.assertEquals(f(self._posts[0], genopts), None)
         self.assertNotEquals(f(self._posts[1], genopts), None)

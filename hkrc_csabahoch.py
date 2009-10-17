@@ -20,15 +20,18 @@
 
 """My (Csaba Hoch) hkrc."""
 
+
+import datetime
 import os
 import subprocess
 import time
-import datetime
+
 import hkutils
 import hklib
 import hkcustomlib
 import hkshell
 import issue_tracker
+
 
 def has_tag(tags):
     def has_tag_fun(post):

@@ -253,14 +253,14 @@ documentation.
 """
 
 
+import code
+import ConfigParser
+import functools
+import optparse
 import os
 import sys
-import time
-import ConfigParser
 import tempfile
-import optparse
-import code
-from functools import wraps
+import time
 
 import hkutils
 import hklib
@@ -552,7 +552,7 @@ def add_events(command=None):
 
     def inner(f):
         command2 = f.__name__ if command == None else command
-        @wraps(f)
+        @functools.wraps(f)
         def inner2(*args, **kw):
             event('before', command=command2)
             try:
@@ -609,7 +609,7 @@ def postset_operation(operation):
                 p.set_tags(tags.union(p.tags()))
     '''
 
-    @wraps(operation)
+    @functools.wraps(operation)
     def inner(pps, *args, **kw):
         try:
             command = operation.__name__
@@ -1741,4 +1741,3 @@ def main(cmdl_options, args):
             break
         else:
             break
-

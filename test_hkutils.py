@@ -25,9 +25,11 @@ Usage:
     $ python test_hkutils.py
 """
 
+
 from __future__ import with_statement
-import unittest
+
 import StringIO
+import unittest
 
 import hkutils
 

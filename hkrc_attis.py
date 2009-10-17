@@ -20,14 +20,17 @@
 
 """My (Attis) hkrc."""
 
-import hklib
-import hkshell
-import hkcustomlib
-import hkutils
-import subprocess
-import time
+
 import datetime
 import re
+import subprocess
+import time
+
+import hkutils
+import hklib
+import hkcustomlib
+import hkshell
+
 
 def overquoted(post):
     all = 0

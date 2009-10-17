@@ -37,4 +37,3 @@ if __name__ == '__main__':
         sys.exit(0)
 
     hkshell.main(cmdl_options, args)
-

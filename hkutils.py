@@ -53,9 +53,10 @@ types in the documentation so we can talk about them easily.
 """
 
 from __future__ import with_statement
+
 import datetime
-import inspect
 import email.utils
+import inspect
 import os.path
 import shutil
 

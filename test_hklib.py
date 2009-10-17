@@ -25,16 +25,21 @@ Usage:
     $ python test_hklib.py
 """
 
+
 from __future__ import with_statement
-import StringIO
-import unittest
-import tempfile
+
+import ConfigParser
 import os
 import os.path
-import ConfigParser
 import re
+import StringIO
+import tempfile
+import unittest
 
 import hklib
+
+# The following line should be removed and calls that require this should be
+# modified.
 from hklib import *
 
 

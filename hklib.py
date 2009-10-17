@@ -77,20 +77,22 @@ types in the documentation so we can talk about them easily.
 
 
 from __future__ import with_statement
-from imaplib import IMAP4_SSL
-import string
-import os
-import os.path
-import shutil
-import re
+
+import base64
+import datetime
 import email
 import email.header
-import base64
+import imaplib
+import os
+import os.path
 import quopri
+import re
+import shutil
+import string
+import StringIO
 import sys
 import time
-import StringIO
-import datetime
+
 import hkutils
 
 
@@ -1938,7 +1940,7 @@ class EmailDownloader(object):
     _config -- The configuration.
         Type: ConfigParser
     _server -- The object that represents the IMAP server.
-        Type: IMAP4_SSL | NoneType
+        Type: imaplib.IMAP4_SSL | NoneType
     """
 
     def __init__(self, postdb, config):
@@ -1963,7 +1965,7 @@ class EmailDownloader(object):
         username = self._config.get('server', 'username')
         password = self._config.get('server', 'password')
         log('Connecting...')
-        self._server = IMAP4_SSL(host, port)
+        self._server = imaplib.IMAP4_SSL(host, port)
         self._server.login(username, password)
         log('Connected')
 
