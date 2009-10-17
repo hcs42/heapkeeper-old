@@ -1285,7 +1285,7 @@ class PostDB(object):
                 posts.add(parentpost)
                 post = parentpost
 
-    def children(self, post):
+    def children(self, post, threadstruct=None):
         """Returns the children of the given post.
 
         If 'post' is None, returns the posts with no parents (i.e. whose
@@ -1294,16 +1294,25 @@ class PostDB(object):
         Arguments:
         post ---
             Type: Post | None
+        threadstruct ---
 
         Returns: [Post]
         """
 
         assert(post == None or post in self.all())
 
+        if threadstruct is None:
+            threadstruct = self.threadstruct()
+
         if post == None:
-            children_heapids = self.threadstruct().get(None, [])
+            children_heapids = threadstruct.get(None, [])
         else:
-            children_heapids = self.threadstruct().get(post.heapid(), [])
+            children_heapids = threadstruct.get(post.heapid(), [])
+
+        # This assertion can catch nasty bugs when the thread structure
+        # contains a string as a value instead of a list.
+        assert(isinstance(children_heapids, list))
+
         return [ self.post(heapid) for heapid in children_heapids ]
 
     def _recalc_threadstruct(self):
@@ -1355,13 +1364,16 @@ class PostDB(object):
             for post2 in self.iter_thread(self.post(ch_heapid), threadstruct):
                 yield post2
 
-    def walk_thread(self, root):
+    def walk_thread(self, root, threadstruct=None):
         """Walks a thread and yields its posts.
 
         **Argument:**
 
-        - `root` (Post | ``None``) -- The root of the thread to be walked. If
-          ``None``, the whole post database is walked.
+        - `root` (|Post| | ``None``) -- The root of the thread to be walked. If
+          ``None``, the whole thread structure is walked.
+        - `threadstruct` ({(``None`` | |Heapid|): |Heapid|} | ``None``) -- The
+          thread structure to be used. If ``None``, the thread structure of the
+          post database will be used.
 
         **Returns:** iterable(|PostItem|)
 
@@ -1419,12 +1431,10 @@ class PostDB(object):
 
         if root is None:
             roots = [ PostItem(pos='begin', post=root, level=0)
-                      for root in self.children(None) ]
+                      for root in self.children(None, threadstruct) ]
             stack = list(reversed(roots))
         else:
             stack = [ PostItem(pos='begin', post=root, level=0) ]
-
-        threadstruct = self.threadstruct()
 
         while len(stack) > 0:
 
@@ -1442,7 +1452,7 @@ class PostDB(object):
                 new_level = postitem.level + 1
                 child_postitems = \
                     [ PostItem(pos='begin', post=child, level=new_level)
-                      for child in self.children(postitem.post) ]
+                      for child in self.children(postitem.post, threadstruct) ]
                 stack += reversed(child_postitems)
 
     def cycles(self):
