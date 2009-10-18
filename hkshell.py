@@ -612,10 +612,15 @@ def postset_operation(operation):
 
     @functools.wraps(operation)
     def inner(pps, *args, **kw):
+        posts = []
         try:
             command = operation.__name__
             event('before', command)
-            posts = ps(pps)
+            try:
+                posts = ps(pps)
+            except:
+                hklib.log('Posts not found: %s' % (pps,))
+                return
             event('postset_calculated', command, postset=posts)
             if len(posts) != 0:
                 result = operation(posts, *args, **kw)
