@@ -356,6 +356,26 @@ def write_textstruct(f, text):
         for item in text:
             write_textstruct(f, item)
 
+def is_textstruct(text):
+    """Returns whether the given object is a |TextStruct|.
+
+    **Arguments:**
+
+    - `text` (object)
+
+    **Returns:** True
+    """
+
+    if isinstance(text, str):
+        return True
+    else:
+        try:
+            for item in text:
+                if not is_textstruct(item):
+                    return False
+            return True
+        except:
+            return False
 
 ##### Constants #####
 

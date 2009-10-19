@@ -161,6 +161,16 @@ class TestMisc(unittest.TestCase):
             TypeError,
             lambda: hkutils.write_textstruct(sio, 0))
 
+    def test_is_textstruct(self):
+
+        self.assert_(hkutils.is_textstruct(''))
+        self.assert_(hkutils.is_textstruct('text'))
+        self.assert_(hkutils.is_textstruct([]))
+        self.assert_(hkutils.is_textstruct(['text1', ('2', ['3']), '4']))
+
+        # Testing something that is not a TextStruct
+        self.assertFalse(hkutils.is_textstruct(0))
+
     def test_plural(self):
 
         for i in (-1, 1):

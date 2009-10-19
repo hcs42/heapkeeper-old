@@ -42,6 +42,7 @@ Miscellaneous
 .. autofunction:: copy_wo
 .. autofunction:: plural
 .. autofunction:: textstruct_to_str
+.. autofunction:: is_textstruct
 .. autofunction:: write_textstruct
 .. autoclass:: NOT_SET
 
