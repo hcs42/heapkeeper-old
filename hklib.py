@@ -2694,6 +2694,43 @@ class Generator(object):
 
         return '</div>\n'
 
+    def postitem_is_star_needed(self, postitem, param, options):
+        """Determines if we can use a "star" to denote the repetition of the
+        parent post's subject or tags.
+
+        We can use a star if the following conditions are all met:
+
+        - using stars is enabled (`shortsubject`, `shorttags` options),
+        - the post item is not flat,
+        - the post described has a parent,
+        - the value of the property being examined is the same as that of the
+          parent.
+
+        **Arguments:**
+
+        - `postitem` (|PostItem|) -- The post item being examined.
+        - `param` (str) -- The name of the parameter to examine, either
+          ``'subject'`` or ``'tags'``.
+        - `options` (|GeneratorOptions|)
+
+        **Returns:** bool
+        """
+
+        enabled = getattr(options, 'short' + param)
+        if not enabled:
+            return False
+
+        post = postitem.post
+        parent = self._postdb.parent(post)
+        if parent is None:
+            return False
+
+        getter = getattr(post, param)
+        parent_getter = getattr(parent, param)
+
+        return (postitem.pos != 'flat' and
+                getter() == parent_getter())
+
     def postitem_author(self, postitem, options):
         """Returns the author of the post item.
 
@@ -2713,8 +2750,7 @@ class Generator(object):
         post = postitem.post
         parent = self._postdb.parent(post)
         subject = post.subject()
-        if (options.shortsubject and parent != None and
-            subject == parent.subject()):
+        if self.postitem_is_star_needed(postitem, 'subject', options):
             return STAR
         else:
             return Html.escape(subject)
@@ -2730,8 +2766,7 @@ class Generator(object):
         post = postitem.post
         parent = self._postdb.parent(post)
         tags = post.tags()
-        if (options.shorttags and parent != None and
-            tags == parent.tags()):
+        if self.postitem_is_star_needed(postitem, 'tags', options):
             return STAR
         else:
             return tags
