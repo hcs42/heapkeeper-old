@@ -98,7 +98,7 @@ class HkException(Exception):
 
         **Argument:**
 
-        - `value` (object) -- the reason of the error
+        - `value` (object) -- The reason of the error.
         """
         self.value = value
 
@@ -213,7 +213,7 @@ def file_to_string(file_name, return_none=False):
       If `return_none` is ``True``, ``None`` will be returned. Otherwise an
       `IOError` exception will be raised.
 
-    **Returns:** str | None
+    **Returns:** str | ``None``
     """
 
     if return_none and not os.path.exists(file_name):

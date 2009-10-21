@@ -347,16 +347,17 @@ def hkshell_cmd(add_events=False, postset_operation=False,
 
     **Arguments:**
 
-    - `add_events` (bool): If ``True``, the decorator :func:`add_events`
+    - `add_events` (bool) -- If ``True``, the decorator :func:`add_events`
       will also be applied to the function, with default arguments.
-    - `postset_operation` (bool): If ``True``, the decorator
+    - `postset_operation` (bool) -- If ``True``, the decorator
       :func:`postset_operation` will also be applied to the function.
-    - `touching_command` (bool): If ``True``, the |TouchedPostPrinterListener|
-      objects will print the touched posts after the command has been finished.
+    - `touching_command` (bool) -- If ``True``, the
+      |TouchedPostPrinterListener| objects will print the touched posts after
+      the command has been finished.
 
-    Defining a hkshell command means that *f* can be used from |hkshell|
-    without specifying in which module it is. It also can be used after the
-    ``--before`` and ``--command`` arguments of |hkshell|.
+    Defining a hkshell command means that the decorated function can be used
+    from |hkshell| without specifying in which module it is. It also can be
+    used after the ``--before`` and ``--command`` arguments of |hkshell|.
 
     **Examples:**
 
@@ -421,9 +422,9 @@ def register_cmd(name, fun):
 
     **Arguments:**
 
-    - *name* (str): The name by which the command can be invoked, i.e. the
+    - `name` (str) -- The name by which the command can be invoked, i.e. the
       name to which the function should be bound.
-    - *fun* (fun(\*args, \*\*kw)): An arbitrary function. This will be called
+    - `fun` (fun(\*args, \*\*kw)) -- An arbitrary function. This will be called
       when the command is invoked.
     """
 
@@ -746,7 +747,7 @@ class PostPageListener(object):
     def outdated_post_pages(self):
         """Returns the posts whose post pages are outdated.
 
-        Returns: |PostSet|
+        **Returns:** |PostSet|
         """
 
         return self._posts
