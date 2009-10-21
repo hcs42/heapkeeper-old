@@ -828,6 +828,36 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
              "<PostItem: pos=end, heapid='4', level=0>",
              ])
 
+        # Testing
+
+        def test(root, result):
+            """Tests whether the the :func:`PostDB.walk_thread` function
+            returns the given result when executed with the given root."""
+
+            postitem_strings = \
+                [ str(postitem)
+                  for postitem in postdb.walk_thread(root, yield_main=True) ]
+            self.assertEquals(result, postitem_strings)
+
+        test(None,
+             [
+             "<PostItem: pos=begin, heapid='0', level=0>",
+             "<PostItem: pos=main, heapid='0', level=0>",
+               "<PostItem: pos=begin, heapid='1', level=1>",
+               "<PostItem: pos=main, heapid='1', level=1>",
+                 "<PostItem: pos=begin, heapid='2', level=2>",
+                 "<PostItem: pos=main, heapid='2', level=2>",
+                 "<PostItem: pos=end, heapid='2', level=2>",
+               "<PostItem: pos=end, heapid='1', level=1>",
+               "<PostItem: pos=begin, heapid='3', level=1>",
+               "<PostItem: pos=main, heapid='3', level=1>",
+               "<PostItem: pos=end, heapid='3', level=1>",
+             "<PostItem: pos=end, heapid='0', level=0>",
+             "<PostItem: pos=begin, heapid='4', level=0>",
+             "<PostItem: pos=main, heapid='4', level=0>",
+             "<PostItem: pos=end, heapid='4', level=0>",
+             ])
+
         # if the post is not in the postdb, AssertionError will be raised
         def f():
             test(Post.from_str(''), [])

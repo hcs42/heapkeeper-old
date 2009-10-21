@@ -1366,7 +1366,7 @@ class PostDB(object):
             for post2 in self.iter_thread(self.post(ch_heapid), threadstruct):
                 yield post2
 
-    def walk_thread(self, root, threadstruct=None):
+    def walk_thread(self, root, threadstruct=None, yield_main=False):
         """Walks a thread and yields its posts.
 
         **Argument:**
@@ -1444,6 +1444,11 @@ class PostDB(object):
             yield postitem
 
             if postitem.pos == 'begin':
+
+                if yield_main:
+                    postitem_main = postitem.copy()
+                    postitem_main.pos = 'main'
+                    yield postitem_main
 
                 # pushing the closing pair of postitem into the stack
                 postitem_end = postitem.copy()
@@ -1533,7 +1538,7 @@ class PostItem(object):
     - `level` (int) -- The level of the post.
     """
 
-    def __init__(self, pos, post, level):
+    def __init__(self, pos, post, level=0):
         """Constructor.
 
         **Arguments:**
@@ -1543,7 +1548,7 @@ class PostItem(object):
         - `level` (int) -- Initializes the `level` data attribute.
         """
 
-        assert(pos in ['begin', 'end', 'flat'])
+        assert(pos in ['begin', 'end', 'main', 'flat'])
         self.pos = pos
         self.post = post
         self.level = level
