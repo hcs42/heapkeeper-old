@@ -22,6 +22,7 @@
 .. |FeatureState| replace:: :ref:`FeatureState <hkshell_FeatureState>`
 .. |forall| replace:: :class:`forall <hklib.PostSetForallDelegate>`
 .. |ga| replace:: :func:`ga <hkshell.ga>`
+.. |Generator2| replace:: :class:`Generator <hkgen.Generator>`
 .. |GeneratorOptions| replace:: :class:`GeneratorOptions <hklib.GeneratorOptions>`
 .. |Generator| replace:: :class:`Generator <hklib.Generator>`
 .. |GenIndicesFun| replace:: :ref:`GenIndicesFun <hkshell_GenIndicesFun>`
@@ -29,10 +30,12 @@
 .. |GenThreadsFun| replace:: :ref:`GenThreadsFun <hkshell_GenThreadsFun>`
 .. |Heapid| replace:: :ref:`Heapid <hklib_Heapid>`
 .. |hkcustomlib| replace:: :mod:`hkcustomlib`
+.. |hkgen| replace:: :mod:`hkgen`
 .. |hklib| replace:: :mod:`hklib`
 .. |hkshell| replace:: :mod:`hkshell`
 .. |hkutils| replace:: :mod:`hkutils`
 .. |HtmlStr| replace:: :ref:`HtmlStr <hklib_HtmlStr>`
+.. |HtmlText| replace:: :ref:`HtmlText <hklib_HtmlText>`
 .. |Index| replace:: :class:`Index <hklib.Index>`
 .. |j| replace:: :func:`j <hkshell.j>`
 .. |Listener| replace:: :ref:`Listener <hkshell_Listener>`
@@ -58,6 +61,7 @@
 .. |rT| replace:: :func:`rT <hkshell.rT>`
 .. |Section| replace:: :class:`Section <hklib.Section>`
 .. |ShouldPrintDateFun| replace:: :ref:`ShouldPrintDateFun <hkcustomlib_ShouldPrintDateFun>`
+.. |PostItemModifierFun| replace:: :ref:`PostItemModifierFun <hkgen_PostItemModifierFun>`
 .. |sSr| replace:: :func:`sSr <hkshell.sSr>`
 .. |sS| replace:: :func:`sS <hkshell.sS>`
 .. |s| replace:: :func:`s <hkshell.s>`

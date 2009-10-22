@@ -58,6 +58,12 @@ types in the documentation so we can talk about them easily.
 
   Real type: str
 
+.. _hklib_HtmlText:
+
+- **HtmlText** -- Text that contains HTML code.
+
+  Subtype of |TextStruct|.
+
 .. _hklib_DateFun:
 
 - **DateFun(post, genopts)** -- A function that specifies how to print the
@@ -1488,7 +1494,7 @@ class PostDB(object):
         The ``pos`` attribute of the post items will be ``'flat'``. The
         ``level`` attribute will be 0.
 
-        **Returns:** iterator(|PostItem|)
+        **Returns:** iterable(|PostItem|)
         """
 
         for post in self.cycles().sorted_list():

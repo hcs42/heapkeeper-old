@@ -28,128 +28,40 @@ import time
 
 import hkutils
 import hklib
+import hkgen
 import hkcustomlib
 import hkshell
 import issue_tracker
 
 
-def has_tag(tags):
-    def has_tag_fun(post):
-        for tag in tags:
-            if post.has_tag(tag):
-                return True
-        return False
-    return has_tag_fun
+class MyGenerator(hkgen.Generator):
 
-def indices0(postdb):
-    ps_all = postdb.all().copy()
+    def __init__(self, postdb):
+        """Constructor.
 
-    # heap
-    heap_tags = ['heap', 'Heap']
-    ps_hk = ps_all.collect(has_tag(heap_tags))
-    ps_all -= ps_hk
+        **Arguments:**
 
-    # hh
-    heap_tags = ['hh', 'Hh', 'HH']
-    ps_hh = ps_all.collect(has_tag(heap_tags))
-    ps_all -= ps_hh
+        - `postdb` (|PostDB|)
+        """
 
-    # python
-    python_tags = ['python', 'Python']
-    ps_python = ps_all.collect(has_tag(python_tags))
-    ps_all -= ps_python
-
-    # git
-    git_tags = ['git', 'Git']
-    ps_git = ps_all.collect(has_tag(git_tags))
-    ps_all -= ps_git
-
-    # cp
-    cp_tags = ['programozás', 'c++', 'C++']
-    ps_cp = ps_all.collect(has_tag(cp_tags))
-    ps_all -= ps_cp
-
-    # indices
-    index_hh = hklib.Index(filename='hh.html')
-    index_hh.sections = [hklib.Section("hh", ps_hh)]
-
-    index_ums = hklib.Index(filename='ums.html')
-    index_ums.sections = [hklib.Section("Cycles", hklib.CYCLES),
-                          hklib.Section("Heapkeeper", ps_hk),
-                          hklib.Section("Python", ps_python),
-                          hklib.Section("Git", ps_git),
-                          hklib.Section("Programozás", ps_cp),
-                          hklib.Section("Egyéb", ps_all)]
-
-    return [index_hh, index_ums]
-
-
-def sections1(postdb):
-    ps = postdb.postset('1204').exp()
-    # sections
-    return [("Heap", ps)]
+        super(MyGenerator, self).__init__(postdb)
+        self.options.shortsubject = True
+        self.options.shorttags = True
 
 def gen_indices(postdb):
+    g = issue_tracker.Generator(postdb)
+    g.write_all()
+    g = MyGenerator(postdb)
+    g.write_all()
 
-    hkcustomlib.gen_indices(postdb)
-    # Date options
-    date_options = hkcustomlib.date_defopts()
-    date_options.update({
-                         'postdb': postdb,
-                         'timedelta': datetime.timedelta(days=5),
-                         'date_format': '(%Y.%m.%d. %H:%M:%S)',
-                         })
-    date_fun = hkcustomlib.create_date_fun(date_options)
+def gen_indices_fast(postdb):
+    g = issue_tracker.Generator(postdb)
+    g.calc()
+    g.write_issues_sorted_page()
+    g = MyGenerator(postdb)
+    g.write_thread_pages()
 
-    # Generator options
-
-    genopts = hklib.GeneratorOptions()
-    genopts.postdb = postdb
-    genopts.indices = indices0(postdb)
-    genopts.write_toc = False
-    genopts.shortsubject = True
-    genopts.shorttags = True
-    genopts.date_fun = date_fun
-
-    # Generating my index
-    hklib.Generator(postdb).gen_indices(genopts)
-
-    # Generator the issue tracker index
-    generator = issue_tracker.create_generator(genopts)
-    generator.gen_indices(genopts)
-
-def gen_posts(postdb, posts):
-    date_options = hkcustomlib.date_defopts({'postdb': postdb})
-    date_fun = hkcustomlib.create_date_fun(date_options)
-    genopts = hklib.GeneratorOptions()
-    genopts.postdb = postdb
-    genopts.date_fun = date_fun
-    genopts.print_thread_of_post = True
-    hklib.Generator(postdb).gen_posts(genopts, posts)
-
-def get_content(file):
-    return hkutils.file_to_string(file, return_none=True)
-
-def edit_file(file):
-    old_content = get_content(file)
-    subprocess.call(['vim', '-f', file])
-    return get_content(file) != old_content
-
-@hkshell.hkshell_cmd()
-def vim():
-    def edit_file(file):
-        old_content = get_content(file)
-        subprocess.call(['vim', '-f', file])
-        return get_content(file) != old_content
-    hkshell.options.callbacks.edit_file = edit_file
-
-@hkshell.hkshell_cmd()
-def gvim():
-    def edit_file(file):
-        old_content = get_content(file)
-        subprocess.call(['gvim', '-f', file])
-        return get_content(file) != old_content
-    hkshell.options.callbacks.edit_file = edit_file
+hkshell.options.callbacks.gen_indices = gen_indices
 
 @hkshell.hkshell_cmd()
 def R(pps):
@@ -158,12 +70,9 @@ def R(pps):
 
 def main():
     hkshell.options.callbacks.gen_indices = gen_indices
-    hkshell.options.callbacks.gen_posts = gen_posts
-    hkshell.options.callbacks.edit_file = edit_file
     hkshell.options.save_on_ctrl_d = False
     hkshell.on('tpp')
     hkshell.on('s')
     hkshell.on('gi')
-    hkshell.on('gp')
 
 main()

@@ -3,6 +3,7 @@ body, html
     background-color: #fff;
     margin: 0;
     padding: 0;
+    color: #000;
 }
 
 a
@@ -100,7 +101,6 @@ a
 
 span, td
 {
-    color: #f22;
     font-family: Arial, sans-serif;
 }
 
@@ -188,4 +188,22 @@ pre
 {
     text-decoration: none;
     border: none;
+}
+
+.postbody
+{
+    background-color: #fff;
+    border: 1px solid #080;
+    color: #000;
+    font-family: Courier, sans-serif;
+
+    padding-left: 0.5em;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+.author, .subject, .button, .tags
+{
+    margin-right: 1em;
 }

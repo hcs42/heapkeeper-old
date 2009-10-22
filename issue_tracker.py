@@ -45,6 +45,7 @@ If you want to use it, the simplest way is to append its invocation to your
 
 
 import datetime
+import itertools
 import os
 import re
 import subprocess
@@ -53,6 +54,7 @@ import time
 import hkutils
 import hklib
 import hkcustomlib
+import hkgen
 import hkshell
 
 
@@ -84,47 +86,17 @@ def mod_set(tagset):
     capitalize('issue')
     capitalize('bug')
 
-def is_open(root):
-    postdb = root._postdb
-    openness = 0
-    if root.has_tag('prop') or root.has_tag('issue'):
-        openness += 1
-    for post in postdb.postset(root).expf():
-        if tag_in_body(post, 'open'):
-            openness += 1
-        elif tag_in_body(post, 'close'):
-            openness -= 1
-    return openness > 0
-
 ##### Index page generation #####
 
-class IssueTrackerGenerator(hklib.Generator):
+class Generator(hkgen.Generator):
 
     def __init__(self, postdb):
-        super(IssueTrackerGenerator, self).__init__(postdb)
-        self.open_issues = set()
+        super(Generator, self).__init__(postdb)
+        self.options.html_title = 'Heapkeeper issue tracker'
+        self.options.html_h1 = 'Heapkeeper issue tracker'
+        self.options.cssfiles = ['heapindex.css', 'issues.css']
 
-    def postitem_begin(self, postitem, options):
-        result = hklib.Generator.postitem_begin(self, postitem, options)
-        post = postitem.post
-        parent = self._postdb.parent(post)
-        if parent == None and post in self.open_issues:
-            result = '<span class="open-issue">' + result
-        if post in self.review_needed:
-            result = '<span class="review-needed">' + result
-        return result
-
-    def postitem_end(self, postitem, options):
-        result = hklib.Generator.postitem_end(self, postitem, options)
-        post = postitem.post
-        parent = self._postdb.parent(post)
-        if post in self.review_needed:
-            result += '</span><!-- for "review-needed" -->\n'
-        if parent == None and post in self.open_issues:
-            result += '</span><!-- for "open-issue" -->\n'
-        return result
-
-    def postitem_tags(self, postitem, options):
+    def print_postitem_tags(self, postitem):
         post = postitem.post
         parent = self._postdb.parent(post)
         post_tags = set(post.tags())
@@ -147,65 +119,147 @@ class IssueTrackerGenerator(hklib.Generator):
         else:
             return '[%s]' % (', '.join(tags),)
 
-def indices(postdb):
-
-    # posts that need review
-
-    ps_review_needed = \
-        (postdb.all().
-         collect(lambda p: not p.has_tag('reviewed')).
-         exp().
-         collect.is_root())
-
-    # issues
-
-    def is_issue(root):
-        for post in postdb.postset(root).expf():
-            if post.has_tag('prop') or post.has_tag('issue'):
+    def is_thread_issue(self, root):
+        for post in self._postdb.postset(root).expf():
+            if (post.has_tag('hh') and
+                not post.has_tag('post syntax') and
+                (post.has_tag('prop') or post.has_tag('issue') or
+                 post.has_tag('bug'))):
                 return True
         return False
 
-    ps_issues = postdb.postset(postdb.roots()).collect(is_issue)
-    ps_open_issues = ps_issues.collect(is_open)
-    ps_review_needed_issues = ps_issues & ps_review_needed - ps_open_issues
-    ps_closed_issues = ps_issues - ps_open_issues - ps_review_needed_issues
+    def is_post_wanted(self, post):
+        return (post.has_tag('hh') and not post.has_tag('post syntax'))
 
-    ps_hh = postdb.all().collect.has_tag('hh')
-    ps_post_syntax = postdb.all().collect.has_tag('post syntax')
+    def is_review_needed(self, post):
+        return not post.has_tag('reviewed')
 
-    # non-hh posts and post syntax posts are both unwanted
-    ps_unwanted = (postdb.all() - ps_hh) | ps_post_syntax
+    def is_thread_open(self, root):
+        openness = 0
+        if (root.has_tag('prop') or root.has_tag('issue') or
+            root.has_tag('bug')):
+            openness += 1
+        for post in self._postdb.postset(root).expf():
+            if tag_in_body(post, 'open'):
+                openness += 1
+            elif tag_in_body(post, 'close'):
+                openness -= 1
+        return openness > 0
 
-    ps_open_issues = ps_open_issues.expf() - ps_unwanted
-    ps_review_needed_issues = ps_review_needed_issues.expf() - ps_unwanted
-    ps_closed_issues = ps_closed_issues.expf() - ps_unwanted
+    def calc(self):
 
-    ps_wanted = ps_open_issues | ps_review_needed_issues | ps_closed_issues
+        # These are the threads and posts that are interesting for us
+        postdb = self._postdb
+        roots = postdb.postset(postdb.roots())
+        issue_threads = roots.collect(self.is_thread_issue)
+        issue_posts = issue_threads.expf().collect(self.is_post_wanted)
 
-    # indices
+        open_threads = issue_threads.collect(self.is_thread_open)
+        open_posts = open_threads.expf() & issue_posts
 
-    index_issues = hklib.Index(filename='issues_all.html')
-    index_issues.sections = \
-        [ hklib.Section("All issues", ps_wanted)]
+        review_needed_posts = issue_posts.collect(self.is_review_needed)
+        review_needed_threads = review_needed_posts.expb().collect.is_root()
 
-    index_issues2 = hklib.Index(filename='issues_sorted.html')
-    index_issues2.sections = \
-        [hklib.Section("Open issues", ps_open_issues),
-         hklib.Section("Closed, but review needed", ps_review_needed_issues),
-         hklib.Section("Closed issues", ps_closed_issues)]
+        all_section = issue_posts
+        open_section = open_posts
+        review_needed_section = \
+            review_needed_posts.exp() & issue_posts - open_posts
+        closed_section = issue_posts - open_section - review_needed_section
 
-    return [index_issues, index_issues2], ps_open_issues, ps_review_needed
+        self.issue_threads = issue_threads
+        self.issue_posts = issue_posts
+        self.all_section = all_section
+        self.open_threads = open_threads
+        self.open_posts = open_posts
+        self.open_section = open_section
+        self.review_needed_posts = review_needed_posts
+        self.review_needed_threads = review_needed_threads
+        self.review_needed_section = review_needed_section
+        self.closed_section = closed_section
 
-def create_generator(genopts):
-    indices_, open_issues, review_needed = indices(genopts.postdb)
-    genopts.indices = indices_
-    genopts.html_title = 'Heapkeeper issue tracker'
-    genopts.html_h1 = 'Heapkeeper issue tracker'
-    genopts.cssfiles = ['heapindex.css', 'issues.css']
-    generator = IssueTrackerGenerator(genopts.postdb)
-    generator.open_issues = open_issues
-    generator.review_needed = review_needed
-    return generator
+    def enclose_issue_posts(self, posts):
+        """Walks the given post set and encloses the issue posts that posts
+        that need review/are open into ``'review_needed'`` and ``'open-issue'``
+        spans.
+
+        **Argument:**
+
+        - `posts` (|PostSet|) -- The posts that should be enclosed.
+
+        **Returns:** iterable(|PostItem|)
+        """
+
+        # Get the post items for the expanded post set
+        xpostitems = self.walk_exp_posts(posts)
+
+        # We add 'review-needed' spans around the posts that need review
+        xpostitems = itertools.imap(
+                        self.enclose_posts(
+                            'review-needed-post',
+                            self.review_needed_posts),
+                        xpostitems)
+
+        # We add 'review-needed' spans around the threads that need review
+        xpostitems = itertools.imap(
+                         self.enclose_threads(
+                            'review-needed-thread',
+                            self.review_needed_threads),
+                         xpostitems)
+
+        # We add 'open' spans around the threads that are open
+        xpostitems = itertools.imap(
+                         self.enclose_threads(
+                            'open-issue',
+                            self.open_threads),
+                         xpostitems)
+
+        return self.print_postitems(xpostitems)
+
+    def print_issues_all_page(self):
+
+        return \
+            self.section(
+                'all',
+                'All issues',
+                self.enclose_issue_posts(self.all_section))
+
+    def print_issues_sorted_page(self):
+        return \
+            (self.section(
+                'open',
+                'Open issues',
+                self.enclose_issue_posts(self.open_section)),
+             self.section(
+                'review_needed',
+                'Closed, but review needed',
+                self.enclose_issue_posts(self.review_needed_section)),
+             self.section(
+                'closed',
+                'Closed issues',
+                self.enclose_issue_posts(self.closed_section)))
+
+    def write_issues_all_page(self):
+        # Call self.calc before you call this function
+
+        hklib.log('Generating issues_all.html...')
+        self.options.html_title = 'All issues'
+        self.write_page(
+            'issues_all.html',
+            self.print_issues_all_page())
+
+    def write_issues_sorted_page(self):
+        # Call self.calc before you call this function
+
+        hklib.log('Generating issues_sorted.html...')
+        self.options.html_title = 'Sorted issues'
+        self.write_page(
+             'issues_sorted.html',
+             self.print_issues_sorted_page())
+
+    def write_all(self):
+        self.calc()
+        self.write_issues_all_page()
+        self.write_issues_sorted_page()
 
 ##### hkshell commands #####
 

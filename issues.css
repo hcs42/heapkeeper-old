@@ -1,4 +1,4 @@
-.review-needed .postbox
+.review-needed-thread .postbox
 {
     border: 4px solid #080;
 }
@@ -6,6 +6,11 @@
 .postbox .postbox
 {
 	border: none;
+}
+
+.review-needed-post > .postsummary
+{
+    border: 1px solid #080;
 }
 
 .open-issue .postbox

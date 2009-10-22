@@ -6,5 +6,6 @@ Module documentation
    hkutils
    hkcustomlib
    hklib
+   hkgen
    hkshell
    hk
