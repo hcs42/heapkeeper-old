@@ -60,17 +60,6 @@ import hkshell
 
 ##### Utilities #####
 
-def has_tag(tags):
-    def has_tag_fun(post):
-        for tag in tags:
-            if post.has_tag(tag):
-                return True
-        return False
-    return has_tag_fun
-
-def ct(tagset, sign):
-    return set([ sign + tag for tag in tagset])
-
 def tag_in_body(post, tag):
     return re.search(r'^\[%s\]$' % (tag,), post.body(), re.MULTILINE)
 
