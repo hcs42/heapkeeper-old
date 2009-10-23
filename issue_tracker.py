@@ -60,9 +60,6 @@ import hkshell
 
 ##### Utilities #####
 
-def tag_in_body(post, tag):
-    return re.search(r'^\[%s\]$' % (tag,), post.body(), re.MULTILINE)
-
 def red(s):
     return hklib.Html.enclose('important', s)
 
@@ -99,9 +96,9 @@ class Generator(hkgen.Generator):
                 set([ '-' + tag for tag in parent_tags - post_tags]).union( \
                 set([ '+' + tag for tag in post_tags - parent_tags]))
 
-        if tag_in_body(post, 'close'):
+        if 'close' in post.meta_dict():
             tags.add(red('CLOSE'))
-        if tag_in_body(post, 'open'):
+        if 'open' in post.meta_dict():
             tags.add(red('OPEN'))
         if len(tags) == 0:
             return ''
@@ -129,9 +126,9 @@ class Generator(hkgen.Generator):
             root.has_tag('bug')):
             openness += 1
         for post in self._postdb.postset(root).expf():
-            if tag_in_body(post, 'open'):
+            if 'open' in post.meta_dict():
                 openness += 1
-            elif tag_in_body(post, 'close'):
+            elif 'close' in post.meta_dict():
                 openness -= 1
         return openness > 0
 
