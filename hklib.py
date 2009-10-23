@@ -191,6 +191,8 @@ class Post(object):
     - `_modified` (bool) -- It is ``False`` if the post file that belongs to
       the post object is up-to-date. It is ``True`` if there is no such file or
       the post has been modified since the last synchronization.
+    - `_meta_dict` ({str: (str | ``None``)}) -- Dictionary that contains meta
+      text from the body.
 
     The `_header` attribute is a dictonary that contains attributes of the post
     such as the subject. The `_header` always contains all the following items:
@@ -230,6 +232,7 @@ class Post(object):
             self._postdb = postdb
             self._datetime = hkutils.NOT_SET
             self._modified = not self.postfile_exists()
+            self._meta_dict = None
         except Exception, e:
             raise hkutils.HkException, \
                   ('Error parsing post "%s"\n%s' %
@@ -306,6 +309,7 @@ class Post(object):
         self._datetime = hkutils.NOT_SET
         if self._postdb != None:
             self._postdb.touch(self)
+        self._meta_dict = None
 
     def is_modified(self):
         """Returns whether the post is modified.
@@ -646,6 +650,40 @@ class Post(object):
         self._header['Flag'] = ['deleted']
         self._body = ''
         self.touch()
+
+    # meta field
+
+    def meta_dict(self):
+        """Returns the dictionary of meta texts in the post body.
+
+        A meta text is a string or a key-value pair in the posts body. It
+        should be enclosed within brackets, and nothing else should be in the
+        line in which a meta text is. The key and value of the meta text are
+        separated with a colon.
+
+        **Returns:** {str: (str | ``None``)}
+
+        **Examples of meta text:** ::
+
+            [priority: low]
+            [important]
+        """
+
+        self._recalc_meta_dict()
+        return self._meta_dict
+
+    def _recalc_meta_dict(self):
+        """Recalculates the dictionary of meta texts in the post body."""
+        if self._meta_dict is None:
+            self._meta_dict = {}
+            for line in self.body().split('\n'):
+                match = re.match(r'\[([^:]*)(:(.*))?\]$', line)
+                if match:
+                    key = match.group(1).strip()
+                    value = match.group(3)
+                    if value is not None:
+                        value = value.strip()
+                    self._meta_dict[key] = value
 
     # body
 

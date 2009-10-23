@@ -49,6 +49,9 @@ Post
     .. automethod:: tags
     .. automethod:: set_tags
 
+    .. automethod:: meta_dict
+    .. automethod:: _recalc_meta_dict
+
 PostDB
 ------
 
