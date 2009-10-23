@@ -1,5 +1,5 @@
-The state of the project
-------------------------
+Status
+------
 
 .. include:: defs.hrst
 
@@ -25,8 +25,8 @@ This page describes the status of the project's components.
   is also quite incomplete.
 - Homepage: The non-documentation part of the homepage is fine for now. We
   could improve the web page design by making a custom theme though.
-- Processes: We are just on the way to develop our workflow and other
-  processes. We have ideas and we are trying them out in practice, but we will
-  have to see.
+- Workflow: our workflow has gone stable with the release of 0.3. We
+  strongly rely on Git in continuous integration of bugfixes and new
+  features into mature code.
 
-11th October, 2009
+23th October, 2009

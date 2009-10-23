@@ -6,7 +6,7 @@ Heapkeeper
 
    usersguide
    developersguide
-   state
+   status
 
 **Heapkeeper is a program to store, modify and display email archives,
 especially mailing list archives.** "Modifying" means that the archive is not
@@ -60,9 +60,9 @@ Quick information
   it can be executed without any specific installation steps.
 * **Documentation**: The home page and the documentation is written in
   reStructuredText_ format. Sphinx_ is used to generate HTML pages.
-* **The state of the project**: Heapkeeper is in a usable form now, although
-  there are many things which could be done to make it more convenient. Read
-  more on the project's :doc:`State <state>` page. Heapkeeper is under active
+* **Status**: Heapkeeper is in a usable form now, although there are many
+  things which could be done to make it more convenient. Read more on the
+  project's :doc:`Status <status>` page. Heapkeeper is under active
   development; look at the `commit history`__ or the `impact graph`__ of the
   repository.
 * **Contact**:
