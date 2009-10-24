@@ -164,6 +164,7 @@ def set_defaultoptions(options, fun, excluded):
         raise HkException, \
               'Unused options %s in %s' % (list(unused_options), options)
 
+
 ##### Option handling #####
 
 def set_dict_items(object, dict):
@@ -200,6 +201,66 @@ def check(object, attributes):
     for attr in attributes:
         getattr(object, attr)
     return True
+
+
+##### TextStruct #####
+
+def textstruct_to_str(text):
+    """Convert a text structure to a string.
+
+    **Argument:**
+
+    - `text` (|TextStruct|)
+
+    **Returns:** str
+
+    **Raises:** TypeError
+    """
+
+    if isinstance(text, str):
+        return text
+    else:
+        # Could be done more efficiently walking the structure without
+        # recursion, and not creating a bunch of temporary structures.
+        return ''.join([ textstruct_to_str(item) for item in text ])
+
+def write_textstruct(f, text):
+    """Writes a text structure to a file object.
+
+    **Arguments:**
+
+    - `f` (|Writable|)
+    - `text` (|TextStruct|)
+
+    **Raises:** TypeError
+    """
+
+    if isinstance(text, str):
+        f.write(text)
+    else:
+        for item in text:
+            write_textstruct(f, item)
+
+def is_textstruct(text):
+    """Returns whether the given object is a |TextStruct|.
+
+    **Arguments:**
+
+    - `text` (object)
+
+    **Returns:** True
+    """
+
+    if isinstance(text, str):
+        return True
+    else:
+        try:
+            for item in text:
+                if not is_textstruct(item):
+                    return False
+            return True
+        except:
+            return False
 
 
 ##### Misc #####
@@ -335,62 +396,6 @@ def add_method(obj, methodname, fun):
     method = types.MethodType(fun, obj, type(obj))
     setattr(obj, methodname, method)
 
-def textstruct_to_str(text):
-    """Convert a text structure to a string.
-
-    **Argument:**
-
-    - `text` (|TextStruct|)
-
-    **Returns:** str
-
-    **Raises:** TypeError
-    """
-
-    if isinstance(text, str):
-        return text
-    else:
-        # Could be done more efficiently walking the structure without
-        # recursion, and not creating a bunch of temporary structures.
-        return ''.join([ textstruct_to_str(item) for item in text ])
-
-def write_textstruct(f, text):
-    """Writes a text structure to a file object.
-
-    **Arguments:**
-
-    - `f` (|Writable|)
-    - `text` (|TextStruct|)
-
-    **Raises:** TypeError
-    """
-
-    if isinstance(text, str):
-        f.write(text)
-    else:
-        for item in text:
-            write_textstruct(f, item)
-
-def is_textstruct(text):
-    """Returns whether the given object is a |TextStruct|.
-
-    **Arguments:**
-
-    - `text` (object)
-
-    **Returns:** True
-    """
-
-    if isinstance(text, str):
-        return True
-    else:
-        try:
-            for item in text:
-                if not is_textstruct(item):
-                    return False
-            return True
-        except:
-            return False
 
 ##### Constants #####
 

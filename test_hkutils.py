@@ -34,19 +34,26 @@ import unittest
 import hkutils
 
 
-class TestOptionHandling(unittest.TestCase):
+class Test__OptionHandling(unittest.TestCase):
+
+    """Tests the option handling in |hkutils|."""
 
     def f(a, b, c=1, d=2):
         pass
 
     def test_arginfo(self):
+
+        """Tests :func:`hkutils.arginfo`."""
+
         def f(a, b, c=1, d=2):
             pass
         self.assertEquals(hkutils.arginfo(f), (['a', 'b'], {'c':1, 'd':2}))
-        f2 = TestOptionHandling.f
+        f2 = Test__OptionHandling.f
         self.assertEquals(hkutils.arginfo(f2), (['a', 'b'], {'c':1, 'd':2}))
 
     def test_set_defaultoptions(self):
+
+        """Tests :func:`hkutils.set_defaultoptions`."""
 
         def f(other1, a, b=1, c=2, other2=None):
             pass
@@ -67,6 +74,8 @@ class TestOptionHandling(unittest.TestCase):
 
     def test_set_dict_items_1(self):
 
+        """Tests :func:`hkutils.set_dict_items`."""
+
         class A:
             pass
         a = A()
@@ -82,7 +91,9 @@ class TestOptionHandling(unittest.TestCase):
             a.notset
         self.assertRaises(AttributeError, f)
 
-    def test_set_dict_items_2(self):
+    def test_set_dict_items__2(self):
+
+        """Tests :func:`hkutils.set_dict_items`."""
 
         NOT_SET = hkutils.NOT_SET
         class A(object):
@@ -98,6 +109,8 @@ class TestOptionHandling(unittest.TestCase):
 
     def test_check(self):
 
+        """Tests :func:`hkutils.check`."""
+
         class A(object):
             pass
 
@@ -106,27 +119,13 @@ class TestOptionHandling(unittest.TestCase):
         self.assertTrue(hkutils.check(a, ['x']))
         self.assertRaises(AttributeError, lambda: hkutils.check(a, ['y']))
 
+class Test__TextStruct(unittest.TestCase):
 
-class TestMisc(unittest.TestCase):
-
-    """Tests the utility functions of hklib."""
-
-    def test_calc_timestamp(self):
-        ts = hkutils.calc_timestamp('Wed, 20 Aug 2008 17:41:30 +0200')
-        self.assertEquals(ts, 1219246890.0)
-
-    def test_HkException(self):
-        def f():
-            raise hkutils.HkException, 'description'
-        self.assertRaises(hkutils.HkException, f)
-
-        try:
-            raise hkutils.HkException, 'description'
-        except hkutils.HkException, h:
-            self.assertEquals(h.value, 'description')
-            self.assertEquals(str(h), "'description'")
+    """Tests text structures in |hkutils|."""
 
     def test_textstruct_to_str(self):
+
+        """Tests :func:`hkutils.textstruct_to_str`."""
 
         # Converting a string
         self.assertEquals(
@@ -144,6 +143,8 @@ class TestMisc(unittest.TestCase):
             lambda: hkutils.textstruct_to_str(0))
 
     def test_write_textstruct(self):
+
+        """Tests :func:`hkutils.write_textstruct`."""
 
         # Writing a string
         sio = StringIO.StringIO()
@@ -163,6 +164,8 @@ class TestMisc(unittest.TestCase):
 
     def test_is_textstruct(self):
 
+        """Tests :func:`hkutils.is_textstruct`."""
+
         self.assert_(hkutils.is_textstruct(''))
         self.assert_(hkutils.is_textstruct('text'))
         self.assert_(hkutils.is_textstruct([]))
@@ -171,7 +174,35 @@ class TestMisc(unittest.TestCase):
         # Testing something that is not a TextStruct
         self.assertFalse(hkutils.is_textstruct(0))
 
+
+class Test__Misc(unittest.TestCase):
+
+    """Tests the miscellaneous functions in |hkutils|."""
+
+    def test_calc_timestamp(self):
+
+        """Tests :func:`hkutils.calc_timestamp`."""
+
+        ts = hkutils.calc_timestamp('Wed, 20 Aug 2008 17:41:30 +0200')
+        self.assertEquals(ts, 1219246890.0)
+
+    def test_HkException(self):
+
+        """Tests :class:`hkutils.HkException`."""
+
+        def f():
+            raise hkutils.HkException, 'description'
+        self.assertRaises(hkutils.HkException, f)
+
+        try:
+            raise hkutils.HkException, 'description'
+        except hkutils.HkException, h:
+            self.assertEquals(h.value, 'description')
+            self.assertEquals(str(h), "'description'")
+
     def test_plural(self):
+
+        """Tests :func:`hkutils.plural`."""
 
         for i in (-1, 1):
             self.assertEquals(hkutils.plural(i), '')
@@ -182,6 +213,8 @@ class TestMisc(unittest.TestCase):
             self.assertEquals(hkutils.plural(i, 'ox', 'oxen'), 'oxen')
 
     def test_add_method(self):
+
+        """Tests :func:`hkutils.add_method`."""
 
         class A(object):
             pass

@@ -32,6 +32,13 @@ Options handling
 
 .. autofunction:: set_dict_items
 
+Text structures
+---------------
+
+.. autofunction:: textstruct_to_str
+.. autofunction:: is_textstruct
+.. autofunction:: write_textstruct
+
 Miscellaneous
 -------------
 
@@ -42,8 +49,5 @@ Miscellaneous
 .. autofunction:: copy_wo
 .. autofunction:: plural
 .. autofunction:: add_method
-.. autofunction:: textstruct_to_str
-.. autofunction:: is_textstruct
-.. autofunction:: write_textstruct
 .. autoclass:: NOT_SET
 
