@@ -208,6 +208,8 @@ class Generator(object):
             </span><!-- Chapter 10 --><!-- chapter -->
         """
 
+        assert(hkutils.is_textstruct(content))
+
         if content == '':
             return ''
         newline = '\n' if newlines else ''
