@@ -526,7 +526,7 @@ class Generator(object):
         """
 
         heapid = postitem.post.heapid()
-        return ('<div class="postbox">',
+        return ('\n<div class="postbox">',
                 self.print_comment('post ' + heapid), '\n')
 
     # TODO: test
@@ -572,8 +572,10 @@ class Generator(object):
         enclose('author', self.print_postitem_author)
         enclose('subject', self.print_postitem_subject)
 
-        content.append(self.print_postitem_threadlink(postitem))
-        newline()
+        threadlink = self.print_postitem_threadlink(postitem)
+        if threadlink != '':
+            content.append(threadlink)
+            newline()
 
         enclose('tags', self.print_postitem_tags)
         enclose('index', self.print_postitem_heapid)
@@ -595,7 +597,6 @@ class Generator(object):
                    id=('post_', heapid),
                    newlines=True,
                    content=content,
-                   comment=('post ', heapid),
                    closing_comment=True)
 
     def print_postitem_flat(self, postitem):

@@ -250,7 +250,6 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                 id='post_0',
                 newlines=True,
                 content=expected_header,
-                comment='post 0',
                 closing_comment=True))
 
         # With post body
@@ -269,7 +268,6 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                 id='post_0',
                 newlines=True,
                 content=[expected_header, expected_body],
-                comment='post 0',
                 closing_comment=True))
 
     def test_print_postitem_flat(self):
