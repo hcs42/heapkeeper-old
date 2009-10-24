@@ -43,6 +43,7 @@ Generator
     .. automethod:: walk_exp_posts
     .. automethod:: print_postitems
     .. automethod:: set_postitem_attr
+    .. automethod:: reverse_threads
     .. automethod:: enclose_posts
     .. automethod:: enclose_threads
     .. automethod:: print_main_index_page

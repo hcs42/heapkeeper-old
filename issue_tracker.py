@@ -179,6 +179,9 @@ class Generator(hkgen.Generator):
         # Get the post items for the expanded post set
         xpostitems = self.walk_exp_posts(posts)
 
+        # Reverse the post items
+        xpostitems = self.reverse_threads(xpostitems)
+
         # We add 'review-needed' spans around the posts that need review
         xpostitems = itertools.imap(
                         self.enclose_posts(

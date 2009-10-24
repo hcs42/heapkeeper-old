@@ -48,6 +48,29 @@ class MyGenerator(hkgen.Generator):
         self.options.shortsubject = True
         self.options.shorttags = True
 
+    def print_main_index_page(self):
+        """Prints the main index page.
+
+        **Returns:** |HtmlText|
+        """
+
+        normal_postitems = self.walk_thread(None)
+        normal_postitems = self.reverse_threads(normal_postitems)
+
+        if self._postdb.has_cycle():
+            cycle_postitems = self.walk_postitems(self._postdb.walk_cycles())
+            return (
+                self.section(
+                    '0', 'Posts in cycles',
+                    self.print_postitems(cycle_postitems),
+                    flat=True),
+                self.section(
+                    '1', 'Other posts',
+                    self.print_postitems(normal_postitems)))
+        else:
+            return self.print_postitems(normal_postitems)
+
+
 class MyTestGenerator(MyGenerator):
 
     def __init__(self, postdb):
@@ -99,6 +122,7 @@ class MyTestGenerator(MyGenerator):
             return hkgen.Generator.format_timestamp(self, timestamp)
         else:
             return ''
+
 
 def gen_indices(postdb):
     g = issue_tracker.Generator(postdb)

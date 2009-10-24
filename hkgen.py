@@ -796,6 +796,59 @@ class Generator(object):
         return setter
 
     # TODO: test
+    def reverse_threads(self, xpostitems):
+        """Yields the threads in a "smart" reversed order.
+
+        **Argument:**
+
+        - `xpostitems` (iterable(|PostItem|))
+
+        **Returns:** iterable(|PostItem|)
+
+        **Example:**
+
+        Input::
+
+            <PostItem: pos=begin, heapid='0', level=0>
+              <PostItem: pos=begin, heapid='1', level=1>
+                <PostItem: pos=begin, heapid='2', level=2>
+                <PostItem: pos=end, heapid='2', level=2>
+              <PostItem: pos=end, heapid='1', level=1>
+              <PostItem: pos=begin, heapid='3', level=1>
+              <PostItem: pos=end, heapid='3', level=1>
+            <PostItem: pos=end, heapid='0', level=0>
+            <PostItem: pos=begin, heapid='4', level=0>
+            <PostItem: pos=end, heapid='4', level=0>
+
+        Output::
+
+            <PostItem: pos=begin, heapid='4', level=0>
+            <PostItem: pos=end, heapid='4', level=0>
+            <PostItem: pos=begin, heapid='0', level=0>
+              <PostItem: pos=begin, heapid='1', level=1>
+                <PostItem: pos=begin, heapid='2', level=2>
+                <PostItem: pos=end, heapid='2', level=2>
+              <PostItem: pos=end, heapid='1', level=1>
+              <PostItem: pos=begin, heapid='3', level=1>
+              <PostItem: pos=end, heapid='3', level=1>
+            <PostItem: pos=end, heapid='0', level=0>
+        """
+
+        threads = [] # type: [[PostItem]]
+        last_thread = [] # type: [PostItem]
+        for postitem in xpostitems:
+            last_thread.append(postitem)
+            if postitem.level == 0 and postitem.pos == 'end':
+                threads.append(last_thread)
+                last_thread = []
+        threads.append(last_thread)
+        threads.reverse()
+        result = [] # type: [PostItem]
+        for thread in threads:
+            result += thread
+        return result
+
+    # TODO: test
     def enclose_posts(self, class_, posts):
         """Returns a function that encloses the summaries of the given posts
         into the given HTML class.
