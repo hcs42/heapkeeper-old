@@ -718,6 +718,7 @@ class Generator(object):
 
         **Returns:** iterable(|PostItem|)
         """
+
         xpostitems = \
             self._postdb.walk_thread(root, threadstruct, yield_main=True)
         return self.walk_postitems(xpostitems)
