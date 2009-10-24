@@ -416,6 +416,34 @@ class Generator(object):
                 self.escape('<%s>' % (postitem.post.heapid(),)))
 
     # TODO: test
+    def print_postitem_parent_heapid(self, postitem):
+        """Prints the heapid of the parent of the post.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        if (hasattr(postitem, 'print_parent_heapid') and
+            postitem.print_parent_heapid):
+
+            parent = self._postdb.parent(postitem.post)
+            if parent is not None:
+                parent_postitem = hklib.PostItem('main', parent)
+                return \
+                    self.print_link(
+                        self.print_postitem_link(parent_postitem),
+                        ('&lt;&uarr;',
+                         self.escape(parent.heapid()),
+                         '&gt;'))
+            else:
+                return self.escape('<root>')
+        else:
+            return ''
+
+    # TODO: test
     def print_postitem_date(self, postitem):
         """Prints the date the post item.
 
@@ -530,6 +558,7 @@ class Generator(object):
 
         enclose('tags', self.print_postitem_tags)
         enclose('index', self.print_postitem_heapid)
+        enclose('parent', self.print_postitem_parent_heapid)
         enclose('date', self.print_postitem_date)
 
         content.append(
@@ -847,6 +876,10 @@ class Generator(object):
         xpostitems = \
             itertools.imap(
                 self.set_postitem_attr('print_post_body'),
+                xpostitems)
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_parent_heapid'),
                 xpostitems)
         return self.print_postitems(xpostitems)
 

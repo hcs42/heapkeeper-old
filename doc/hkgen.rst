@@ -27,6 +27,7 @@ Generator
     .. automethod:: print_postitem_tags
     .. automethod:: print_postitem_threadlink
     .. automethod:: print_postitem_heapid
+    .. automethod:: print_postitem_parent_heapid
     .. automethod:: print_postitem_date
     .. automethod:: print_postitem_body
     .. automethod:: print_postitem_link
