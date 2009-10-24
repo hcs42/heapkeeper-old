@@ -87,7 +87,7 @@ class Generator(hkgen.Generator):
         parent = self._postdb.parent(post)
         post_tags = set(post.tags())
         mod_set(post_tags)
-        if parent is None:
+        if parent is None or postitem.pos == 'flat':
             tags = post_tags
         else:
             parent_tags = set(parent.tags())

@@ -21,6 +21,7 @@ Generator
     .. automethod:: section_begin
     .. automethod:: section_end
     .. automethod:: section
+    .. automethod:: postitem_is_star_needed
     .. automethod:: print_postitem_author
     .. automethod:: print_postitem_subject
     .. automethod:: print_postitem_tags

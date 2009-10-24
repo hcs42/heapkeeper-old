@@ -82,6 +82,7 @@ class Generator(object):
         self.options.html_h1 = None
 
         self.options.shortsubject = True
+        self.options.shorttags = True
 
     # Printing general HTML
 
@@ -281,6 +282,43 @@ class Generator(object):
     # Printing one post item
 
     # TODO: test
+    def postitem_is_star_needed(self, postitem, param):
+        """Determines if we can use a "star" to denote the repetition of the
+        parent post's subject or tags.
+
+        We can use a star if the following conditions are all met:
+
+        - using stars is enabled (`shortsubject`, `shorttags` options),
+        - the post item is not flat,
+        - the post described has a parent,
+        - the value of the property being examined is the same as that of the
+          parent.
+
+        **Arguments:**
+
+        - `postitem` (|PostItem|) -- The post item being examined.
+        - `param` (str) -- The name of the parameter to examine, either
+          ``'subject'`` or ``'tags'``.
+
+        **Returns:** bool
+        """
+
+        enabled = getattr(self.options, 'short' + param)
+        if not enabled:
+            return False
+
+        post = postitem.post
+        parent = self._postdb.parent(post)
+        if parent is None:
+            return False
+
+        getter = getattr(post, param)
+        parent_getter = getattr(parent, param)
+
+        return (postitem.pos != 'flat' and
+                getter() == parent_getter())
+
+    # TODO: test
     def print_postitem_author(self, postitem):
         """Prints the author of the post item.
 
@@ -307,8 +345,7 @@ class Generator(object):
         post = postitem.post
         parent = self._postdb.parent(post)
         subject = post.subject()
-        if (self.options.shortsubject and parent != None and
-            subject == parent.subject()):
+        if self.postitem_is_star_needed(postitem, 'subject'):
             return self.enclose('star',  '&mdash;')
         else:
             return subject
