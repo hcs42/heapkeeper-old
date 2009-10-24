@@ -181,6 +181,18 @@ class TestMisc(unittest.TestCase):
             self.assertEquals(hkutils.plural(i), 's')
             self.assertEquals(hkutils.plural(i, 'ox', 'oxen'), 'oxen')
 
+    def test_add_method(self):
+
+        class A(object):
+            pass
+
+        def add_method(self, num2):
+            return self.num + num2
+
+        a = A()
+        a.num = 1
+        hkutils.add_method(a, 'add', add_method)
+        self.assertEquals(a.add(2), 3)
 
 if __name__ == '__main__':
     unittest.main()

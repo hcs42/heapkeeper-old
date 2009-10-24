@@ -59,6 +59,7 @@ import email.utils
 import inspect
 import os.path
 import shutil
+import types
 
 
 ##### Performance measurement #####
@@ -319,6 +320,20 @@ def plural(n, singular='', plural='s'):
         return singular
     else:
         return plural
+
+def add_method(obj, methodname, fun):
+    """Adds a new method to the given object.
+
+    **Arguments:**
+
+    - `obj` (object)
+    - `methodname` (str)
+    - `fun` (function) -- The function that will be added to the object as a
+      method. Its first parameter has to be the "self" parameter.
+    """
+
+    method = types.MethodType(fun, obj, type(obj))
+    setattr(obj, methodname, method)
 
 def textstruct_to_str(text):
     """Convert a text structure to a string.

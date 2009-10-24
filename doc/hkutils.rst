@@ -41,6 +41,7 @@ Miscellaneous
 .. autofunction:: calc_timestamp
 .. autofunction:: copy_wo
 .. autofunction:: plural
+.. autofunction:: add_method
 .. autofunction:: textstruct_to_str
 .. autofunction:: is_textstruct
 .. autofunction:: write_textstruct
