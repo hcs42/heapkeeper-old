@@ -613,16 +613,12 @@ class Generator(object):
 
         def enclose(class_, fun):
             text = fun(postitem)
-            columns[0] += 1
             content.append(
                 self.enclose(
                     class_,
                     text,
                     tag='td'))
             newline()
-
-        # We store the number of columns in `columns[0]`.
-        columns = [0]
 
         content = []
         thread_link = self.print_postitem_threadlink(postitem)
@@ -642,7 +638,7 @@ class Generator(object):
                     newlines=True,
                     content=
                         self.enclose(
-                            tag=('td colspan=%d' % (columns[0])),
+                            tag=('td colspan=5'),
                             class_='body',
                             newlines=True,
                             content=body))),
