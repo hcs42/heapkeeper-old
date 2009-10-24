@@ -730,18 +730,22 @@ class Generator(object):
     # Post item modifiers
 
     # TODO: test
-    def set_print_post_body(self, postitem):
-        """Sets the `print_post_body` data attribute of `postitem` to ``True``.
+    def set_postitem_attr(self, key, value=True):
+        """Returns a function that sets the `key` data attribute of `postitem`
+        to the `value`.
 
         **Argument:**
 
-        - `postitem` (|PostItem|)
+        - `key` (str)
+        - `value` (object)
 
-        **Returns:** |PostItem|
+        **Returns:** |PostItemModifierFun|
         """
 
-        postitem.print_post_body = True
-        return postitem
+        def setter(postitem):
+            setattr(postitem, key, value)
+            return postitem
+        return setter
 
     # TODO: test
     def enclose_posts(self, class_, posts):
@@ -840,7 +844,10 @@ class Generator(object):
         """
 
         xpostitems = self.walk_thread(root)
-        xpostitems = itertools.imap(self.set_print_post_body, xpostitems)
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_post_body'),
+                xpostitems)
         return self.print_postitems(xpostitems)
 
     def print_post_page(self, post):
@@ -857,7 +864,10 @@ class Generator(object):
         threadst = {None: [post.heapid()]}
 
         xpostitems = self.walk_thread(threadstruct=threadst)
-        xpostitems = itertools.imap(self.set_print_post_body, xpostitems)
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_post_body'),
+                xpostitems)
         return self.print_postitems(xpostitems)
 
     # Printing HTML headers and footers

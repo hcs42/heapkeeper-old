@@ -40,7 +40,7 @@ Generator
     .. automethod:: walk_thread
     .. automethod:: walk_exp_posts
     .. automethod:: print_postitems
-    .. automethod:: set_print_post_body
+    .. automethod:: set_postitem_attr
     .. automethod:: enclose_posts
     .. automethod:: enclose_threads
     .. automethod:: print_main_index_page
