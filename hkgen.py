@@ -42,6 +42,7 @@ import datetime
 import itertools
 import os
 import re
+import time
 
 import hkutils
 import hklib
@@ -83,6 +84,7 @@ class Generator(object):
 
         self.options.shortsubject = True
         self.options.shorttags = True
+        self.options.localtime_fun = time.localtime
 
     # Printing general HTML
 
@@ -443,6 +445,20 @@ class Generator(object):
         else:
             return ''
 
+    # TODO test
+    def format_timestamp(self, timestamp):
+        """Formats the date of the given post.
+
+        **Arguments:**
+
+        - `timestamp` (timestamp)
+
+        **Returns:** str
+        """
+
+        return time.strftime('(%Y-%m-%d)',
+                             self.options.localtime_fun(timestamp))
+
     # TODO: test
     def print_postitem_date(self, postitem):
         """Prints the date the post item.
@@ -454,8 +470,11 @@ class Generator(object):
         **Returns:** |HtmlText|
         """
 
-        date_str = self.options.date_fun(postitem.post, self.options)
-        return ('' if date_str is None else date_str)
+        timestamp = postitem.post.timestamp()
+        if timestamp == 0:
+            return ''
+        else:
+            return self.format_timestamp(timestamp)
 
     # TODO test
     def print_postitem_body(self, postitem):

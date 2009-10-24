@@ -190,6 +190,11 @@ pre
     border: none;
 }
 
+.date
+{
+    color: gray;
+}
+
 .postbody
 {
     background-color: #fff;
@@ -203,7 +208,7 @@ pre
     padding-bottom: 0.5em;
 }
 
-.author, .subject, .button, .tags, .index, .parent
+.author, .subject, .button, .tags, .index, .parent, .date
 {
     margin-right: 1em;
 }

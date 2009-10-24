@@ -240,7 +240,8 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
              enc('button', thread_link),
              '\n',
              enc('tags', '[tag1, tag2]'), '\n',
-             enc('index', post_link), '\n']
+             enc('index', post_link), '\n',
+             enc('date', '(2008-08-20)'), '\n']
 
         self.assertTextStructsAreEqual(
             g.print_postitem_main(postitem),
@@ -288,7 +289,8 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             [enc('author', 'author0', 'td'), '\n',
              enc('subject', 'subject0', 'td'), '\n',
              enc('tags', '[tag1, tag2]', 'td'), '\n',
-             enc('index', post_link, 'td'), '\n']
+             enc('index', post_link, 'td'), '\n',
+             enc('date', '(2008-08-20)', 'td'), '\n']
 
         self.assertTextStructsAreEqual(
             g.print_postitem_flat(postitem),
@@ -305,7 +307,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                 newlines=True,
                 content=
                     enc(class_='body',
-                        tag='td colspan=4',
+                        tag='td colspan=5',
                         newlines=True,
                         content=
                             enc('postbody', 'body0\n', 'pre')))

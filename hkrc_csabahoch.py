@@ -48,6 +48,58 @@ class MyGenerator(hkgen.Generator):
         self.options.shortsubject = True
         self.options.shorttags = True
 
+class MyTestGenerator(MyGenerator):
+
+    def __init__(self, postdb):
+        """Constructor.
+
+        **Arguments:**
+
+        - `postdb` (|PostDB|)
+        """
+
+        super(MyTestGenerator, self).__init__(postdb)
+
+    def should_print_date(self, postitem):
+        """Returns ``True`` if the post is flat, has no parent, or its parent
+        it more than 3 days older than itself.
+
+        **Arguments:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** bool
+        """
+
+        post = postitem.post
+        parent = self._postdb.parent(post)
+        min_diff = datetime.timedelta(days=3)
+        if postitem.pos == 'flat' or parent == None:
+            return True
+        if (post.date() != '' and parent.date() != '' and
+            (post.datetime() - parent.datetime() >= min_diff)):
+            return True
+        return False
+
+    def print_postitem_date(self, postitem):
+        """Prints the date of the post item.
+
+        It uses :func:`should_print_date` to decide whether or not the date
+        should be printed.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        timestamp = postitem.post.timestamp()
+        if timestamp != 0 and self.should_print_date(postitem):
+            return hkgen.Generator.format_timestamp(self, timestamp)
+        else:
+            return ''
+
 def gen_indices(postdb):
     g = issue_tracker.Generator(postdb)
     g.write_all()
