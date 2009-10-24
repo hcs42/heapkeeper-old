@@ -70,6 +70,7 @@ def mod_set(tagset):
             tagset.add(red(tag.upper()))
     capitalize('prop')
     capitalize('issue')
+    capitalize('feature')
     capitalize('bug')
 
 ##### Index page generation #####
@@ -110,7 +111,7 @@ class Generator(hkgen.Generator):
             if (post.has_tag('hh') and
                 not post.has_tag('post syntax') and
                 (post.has_tag('prop') or post.has_tag('issue') or
-                 post.has_tag('bug'))):
+                 post.has_tag('bug') or post.has_tag('feature'))):
                 return True
         return False
 
@@ -123,7 +124,7 @@ class Generator(hkgen.Generator):
     def is_thread_open(self, root):
         openness = 0
         if (root.has_tag('prop') or root.has_tag('issue') or
-            root.has_tag('bug')):
+            root.has_tag('bug') or root.has_tag('feature')):
             openness += 1
         for post in self._postdb.postset(root).expf():
             if 'open' in post.meta_dict():
