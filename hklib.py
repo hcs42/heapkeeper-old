@@ -612,6 +612,8 @@ class Post(object):
         self._header['Flag'] = sorted(flags)
         self.touch()
 
+    # reference field
+
     def refs(self):
         """Returns the references of the post.
 
@@ -624,6 +626,8 @@ class Post(object):
         assert(isinstance(refs, list))
         self._header['Reference'] = refs
         self.touch()
+
+    # deletion
 
     def is_deleted(self):
         return 'deleted' in self._header['Flag']

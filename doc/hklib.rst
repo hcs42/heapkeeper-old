@@ -48,34 +48,6 @@ Post
     .. automethod:: between
     .. automethod:: tags
     .. automethod:: set_tags
-..    .. automethod:: add_tag
-..    .. automethod:: remove_tag
-..    .. automethod:: has_tag
-..    .. automethod:: has_tag_from
-..    .. automethod:: flags
-..    .. automethod:: set_flags
-..    .. automethod:: is_deleted
-..    .. automethod:: delete
-..    .. automethod:: body
-..    .. automethod:: set_body
-..    .. automethod:: body_contains
-..    .. automethod:: parse
-..    .. automethod:: parse_header
-..    .. automethod:: create_header
-..    .. automethod:: write
-..    .. automethod:: save
-..    .. automethod:: load
-..    .. automethod:: postfilename
-..    .. automethod:: htmlfilebasename
-..    .. automethod:: htmlfilename
-..    .. automethod:: htmlthreadbasename
-..    .. automethod:: htmlthreadfilename
-..    .. automethod:: postfile_exists
-..    .. automethod:: __eq__
-..    .. automethod:: __repr__
-..    .. automethod:: remove_google_stuff
-..    .. automethod:: parse_subject
-..    .. automethod:: normalize_subject
 
 PostDB
 ------
