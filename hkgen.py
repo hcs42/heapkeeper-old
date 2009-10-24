@@ -210,8 +210,6 @@ class Generator(object):
 
         assert(hkutils.is_textstruct(content))
 
-        if content == '':
-            return ''
         newline = '\n' if newlines else ''
         classstr = (' class="', class_, '"') if class_ != None else ''
         idstr = (' id="', id, '"') if id != None else ''
@@ -486,7 +484,7 @@ class Generator(object):
 
         - `postitem` (|PostItem|)
 
-        **Returns:** |HtmlText|
+        **Returns:** |HtmlText| | ``None``
         """
 
         if hasattr(postitem, 'print_post_body') and postitem.print_post_body:
@@ -494,7 +492,7 @@ class Generator(object):
                                 self.escape(postitem.post.body()),
                                 tag='pre')
         else:
-            return ''
+            return None
 
     # TODO: test
     def print_postitem_link(self, postitem):
@@ -582,12 +580,14 @@ class Generator(object):
         enclose('parent', self.print_postitem_parent_heapid)
         enclose('date', self.print_postitem_date)
 
-        content.append(
-            self.enclose(
-                'body',
-                self.print_postitem_body(postitem),
-                tag='div',
-                newlines=True))
+        body = self.print_postitem_body(postitem)
+        if body is not None:
+            content.append(
+                self.enclose(
+                    'body',
+                    body,
+                    tag='div',
+                    newlines=True))
 
         heapid = postitem.post.heapid()
         return self.enclose(
@@ -613,14 +613,13 @@ class Generator(object):
 
         def enclose(class_, fun):
             text = fun(postitem)
-            if text != '':
-                columns[0] += 1
-                content.append(
-                    self.enclose(
-                        class_,
-                        text,
-                        tag='td'))
-                newline()
+            columns[0] += 1
+            content.append(
+                self.enclose(
+                    class_,
+                    text,
+                    tag='td'))
+            newline()
 
         # We store the number of columns in `columns[0]`.
         columns = [0]
@@ -634,18 +633,19 @@ class Generator(object):
         enclose('index', self.print_postitem_heapid)
         enclose('date', self.print_postitem_date)
 
-        content.append(
-            self.enclose(
-                tag='tr',
-                class_='body',
-                newlines=True,
-                content=
-                    self.enclose(
-                        tag=('td colspan=%d' % (columns[0])),
-                        class_='body',
-                        newlines=True,
-                        content=
-                            self.print_postitem_body(postitem)))),
+        body = self.print_postitem_body(postitem)
+        if body is not None:
+            content.append(
+                self.enclose(
+                    tag='tr',
+                    class_='body',
+                    newlines=True,
+                    content=
+                        self.enclose(
+                            tag=('td colspan=%d' % (columns[0])),
+                            class_='body',
+                            newlines=True,
+                            content=body))),
 
         return self.enclose('postsummary', content, tag='tr', newlines=True)
 

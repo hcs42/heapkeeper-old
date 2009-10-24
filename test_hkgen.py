@@ -321,6 +321,32 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                  newlines=True,
                  content=[expected_header,expected_body])))
 
+        # Without post body and some other fields
+
+        postitem.print_post_body = False
+        import types
+
+        def print_postitem_date(self, postitem):
+            return ''
+
+        hkutils.add_method(g, 'print_postitem_date', print_postitem_date)
+
+        post_link = g.print_link('thread_0.html#post_0', '&lt;0&gt;')
+        expected_header = \
+            [enc('author', 'author0', 'td'), '\n',
+             enc('subject', 'subject0', 'td'), '\n',
+             enc('tags', '[tag1, tag2]', 'td'), '\n',
+             enc('index', post_link, 'td'), '\n',
+             enc('date', '', 'td'), '\n']
+
+        self.assertTextStructsAreEqual(
+            g.print_postitem_flat(postitem),
+            (g.enclose(
+                 class_='postsummary',
+                 tag='tr',
+                 newlines=True,
+                 content=expected_header)))
+
     def test_walk_postitems(self):
         """Tests the following functions:
 
