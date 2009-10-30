@@ -1105,8 +1105,10 @@ class PostDB(object):
                 except ValueError:
                     pass
 
-        next_heapid_0 = max(heapids) + 1 if heapids != [] else 0
-        self._next_heapid = max([self._next_heapid, next_heapid_0])
+        if heapids == []:
+            self._next_heapid = 0
+        else:
+            self._next_heapid = max(heapids) + 1
         self.touch()
 
     # Modifications
@@ -1138,10 +1140,16 @@ class PostDB(object):
         return self.heapid_to_post.keys()
 
     def next_heapid(self, prefix=''):
-        """Return the next free heapid with form ``prefix + int``.
+        """Return the next heapid with the form ``prefix + int``.
 
-        If ``prefix + '1'`` is free, the function returns it. Otherwise it
-        tries ``prefix + '2'``, etc.
+        The "next" here means the heapid with smallest number which is larger
+        than all numbers present in all other heapids with the given prefix.
+
+        **Arguments**:
+
+        - `prefix` (str) -- The prefix of the new heapid.
+
+        **Returns**: str
         """
 
         # This function acts the same way if the prefix is '', but the
@@ -1155,13 +1163,18 @@ class PostDB(object):
             self._next_heapid += 1
             return str(next)
         else:
-            i = 1
-            while True:
-                heapid = prefix + str(i)
-                if heapid not in self.heapids():
-                    break
-                i += 1
-            return heapid
+            matches = filter(lambda x: x.startswith(prefix), self.heapids())
+            numbers = []
+            for match in matches:
+                number_str = match[len(prefix):]
+                try:
+                    numbers.append(int(number_str))
+                except ValueError:
+                    pass
+            try:
+                return prefix + str(max(numbers) + 1)
+            except ValueError:
+                return prefix + '1'
 
     def posts(self):
         """Returns the list of all posts that are not deleted.
