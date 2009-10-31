@@ -81,7 +81,8 @@ class Generator(hkgen.Generator):
         super(Generator, self).__init__(postdb)
         self.options.html_title = 'Heapkeeper issue tracker'
         self.options.html_h1 = 'Heapkeeper issue tracker'
-        self.options.cssfiles = ['heapindex.css', 'issues.css']
+        self.options.cssfiles.append('issues.css')
+        self.options.files_to_copy.append('issues.css')
 
     def print_postitem_tags(self, postitem):
         post = postitem.post

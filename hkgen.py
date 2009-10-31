@@ -42,6 +42,7 @@ import datetime
 import itertools
 import os
 import re
+import shutil
 import time
 
 import hkutils
@@ -78,6 +79,9 @@ class Generator(object):
         super(Generator, self).__init__()
         self._postdb = postdb
         self.options = hklib.GeneratorOptions()
+
+        self.options.cssfiles = ['heapindex.css']
+        self.options.files_to_copy = ['heapindex.css', 'thread.png']
 
         # html_h1 is the same as html_title by default
         self.options.html_h1 = None
@@ -1057,34 +1061,24 @@ class Generator(object):
 
     # General page writer
 
+    # TODO test
     def settle_files_to_copy(self):
-        """Copies the CSS file and other files to the HTML directory if
-        needed."""
+        """Copies the files in `self.options.files_to_copy` to the HTML
+        directory."""
 
-        if self.options.trycopyfiles:
+        for file in self.options.files_to_copy:
 
-            for css in self.options.cssfiles:
+            heap_file = os.path.join(self._postdb.postfile_dir(), file)
+            target_file = os.path.join(self._postdb.html_dir(), file)
 
-                # If the CSS file exists, OK
-                newcssfile = os.path.join(self._postdb.html_dir(), css)
-                if os.path.exists(newcssfile):
-                    continue # ok, file exists
-
-                # Try to copy the CSS file from the current directory
-                if hkutils.copy_wo(css, newcssfile):
-                    continue # ok, copied
-
-                # Try to copy the CSS file from the heap
-                cssfile_on_heap = \
-                    os.path.join(self._postdb.postfile_dir(), css)
-                if hkutils.copy_wo(cssfile_on_heap, newcssfile):
-                    continue # ok, copied
-
-                hklib.log('WARNING: CSS file "%s" not found' % (css,))
-
-            if os.path.exists('thread.png'):
-                threadpng = os.path.join(self._postdb.html_dir(), 'thread.png')
-                hkutils.copy_wo('thread.png', threadpng)
+            if os.path.exists(heap_file):
+                # copy from the heap
+                shutil.copyfile(heap_file, target_file)
+            elif os.path.exists(file):
+                # copy from the current directory
+                shutil.copyfile(file, target_file)
+            else:
+                hklib.log('WARNING: file "%s" not found' % (file,))
 
     # TODO test, doc
     def write_page(self, filename, html_body):

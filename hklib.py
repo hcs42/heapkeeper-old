@@ -2506,6 +2506,10 @@ class GeneratorOptions(object):
         absolute paths, trycopyfiles should be False.
         Type: bool
         Default: True
+    files_to_copy --- List of files that should be copied from the heap's
+        directory or from the current directory to the HTML directory.
+        Type: [str]
+        Default: []
     print_thread_of_post --- The thread of the post will be printed into the
         post HTML.
         Type: bool
@@ -2530,6 +2534,7 @@ class GeneratorOptions(object):
                  html_h1='Heap index',
                  cssfiles=['heapindex.css'],
                  trycopyfiles=True,
+                 files_to_copy=['heapindex.css'],
                  print_thread_of_post=False,
                  section=hkutils.NOT_SET,
                  index=hkutils.NOT_SET):
