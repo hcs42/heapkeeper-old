@@ -1005,9 +1005,12 @@ class PostDB(object):
         Type: str
     _html_dir -- The directory that contains the generated HTML files.
         Type: str
-    _next_heapid -- The next free heapid. There is neither a post with this
-        heap id nor with any larger heapid.
-        Type: int
+    _next_heapid -- A dictionary to assign the next free heapid to prefixes.
+        This is part of a caching mechanism. If a prefix is not found here, the
+        whole lookup procedure is performed, then the results are added to this
+        dictionary. The next free heapid for a prefix is a number for which
+        numbers in all other heapids with this prefix are smaller.
+        Type: {str: str}
     _posts -- All non-deleted posts.
         Type: None | [Post()]
     _all -- All posts in a PostSet. It can be asked with all().
@@ -1036,7 +1039,7 @@ class PostDB(object):
         super(PostDB, self).__init__()
         self._postfile_dir = postfile_dir
         self._html_dir = html_dir
-        self._next_heapid = 0
+        self._next_heapid = {'': 0}
         self.heapid_to_post = {}
         self.messid_to_heapid = {}
         self.listeners = []
@@ -1106,9 +1109,9 @@ class PostDB(object):
                     pass
 
         if heapids == []:
-            self._next_heapid = 0
+            self._next_heapid = {'': 0}
         else:
-            self._next_heapid = max(heapids) + 1
+            self._next_heapid = {'': max(heapids) + 1}
         self.touch()
 
     # Modifications
@@ -1145,6 +1148,11 @@ class PostDB(object):
         The "next" here means the heapid with smallest number which is larger
         than all numbers present in all other heapids with the given prefix.
 
+        This function uses a caching mechanism to avoid iterating over all
+        posts on each calling. This cache is the `_next_heapid` data member, 
+        a dictionary where the keys are the prefixes. The empty prefix is
+        always cached, while other prefixes are cached after the first lookup.
+
         **Arguments**:
 
         - `prefix` (str) -- The prefix of the new heapid.
@@ -1152,16 +1160,12 @@ class PostDB(object):
         **Returns**: str
         """
 
-        # This function acts the same way if the prefix is '', but the
-        # implementation is a bit different. In the case of '', we have the
-        # `_next_heapid` variable dedicated to storing the next free heapid, so
-        # the function will run faster. In other cases, the function will
-        # probably find all existing heapids that have the given prefix before
-        # returning the first free one.
-        if prefix == '':
-            next = self._next_heapid
-            self._next_heapid += 1
-            return str(next)
+        cache = self._next_heapid
+
+        if cache.has_key(prefix):
+            next = cache[prefix]
+            cache[prefix] += 1
+            return prefix + str(next)
         else:
             matches = filter(lambda x: x.startswith(prefix), self.heapids())
             numbers = []
@@ -1172,9 +1176,11 @@ class PostDB(object):
                 except ValueError:
                     pass
             try:
-                return prefix + str(max(numbers) + 1)
+                next_number = max(numbers) + 1
             except ValueError:
-                return prefix + '1'
+                next_number = 1
+            cache[prefix] = next_number + 1
+            return prefix + str(next_number)
 
     def posts(self):
         """Returns the list of all posts that are not deleted.

@@ -646,6 +646,22 @@ html=%s
         self.assert_(p1 is postdb.post_by_messid('mess1'))
         self.assert_(p2 is postdb.post_by_messid('mess2'))
 
+    def testNextHeapid(self):
+        """Tests `PostDB.next_heapid`'s prefix handling and caching."""
+        self.createDirs()
+        for i in (1, 2, 3, 5):
+            hkutils.string_to_file('Message-Id: mess%d' % i,
+                                   self.postFileName('%d.post' % i))
+            hkutils.string_to_file('Message-Id: a_mess%d' % i,
+                                   self.postFileName('a_%d.post' % i))
+        postdb = self.createPostDB()
+        self.assertEquals(postdb.next_heapid(), '6')
+        self.assertEquals(postdb.next_heapid(), '7')
+        self.assertEquals(postdb.next_heapid('a_'), 'a_6')
+        self.assertEquals(postdb.next_heapid('a_'), 'a_7')
+        self.assertEquals(postdb.next_heapid('b_'), 'b_1')
+        self.assertEquals(postdb.next_heapid('b_'), 'b_2')
+
     def testModifications(self):
         """Tests the 'set' methods of PostDB."""
 
