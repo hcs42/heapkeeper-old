@@ -36,6 +36,8 @@ Functions
 
         The more lengthy description can go here.
 
+        Note: this is a very complicated function. Use it with care.
+
         **Arguments:**
 
         - `a` (int) -- The first number to add.
@@ -43,7 +45,10 @@ Functions
 
         **Returns:** int
 
-        Note: this is a very complicated function. Use it with care.
+        **Example:** ::
+
+            >>> add(1, 2)
+            3
         """
 
         return a + b
