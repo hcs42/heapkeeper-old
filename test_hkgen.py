@@ -146,25 +146,58 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         postdb, g, p = self.init()
 
+        # Just the two mandatory parameters
         self.assertTextStructsAreEqual(
             g.enclose('myclass', 'mystuff'),
             '<span class="myclass">mystuff</span>')
 
+        # The `class` parameter is None
         self.assertTextStructsAreEqual(
             g.enclose(None, 'mystuff'),
             '<span>mystuff</span>')
 
+        # Testing the `tag` parameter
         self.assertTextStructsAreEqual(
             g.enclose('myclass', 'mystuff', tag='mytag'),
             '<mytag class="myclass">mystuff</mytag>')
 
+        # Testing the `newlines` parameter
         self.assertTextStructsAreEqual(
             g.enclose('myclass', 'mystuff\n', newlines=True),
             '<span class="myclass">\nmystuff\n</span>\n')
 
+        # Testing the `myid` parameter
         self.assertTextStructsAreEqual(
             g.enclose('myclass', 'mystuff', id='myid'),
             '<span class="myclass" id="myid">mystuff</span>')
+
+        # Testing the `comment` parameter
+        self.assertTextStructsAreEqual(
+            g.enclose('myclass', 'mystuff', comment='my comment'),
+            ('<span class="myclass"><!-- my comment -->'
+             'mystuff'
+             '</span><!-- my comment -->'))
+
+        # Testing the `closing_comment` parameter
+        self.assertTextStructsAreEqual(
+            g.enclose('myclass', 'mystuff', closing_comment=True),
+            ('<span class="myclass">mystuff</span>'
+             '<!-- myclass -->'))
+
+        # Testing the `title` parameter
+        self.assertTextStructsAreEqual(
+            g.enclose('myclass', 'mystuff', title='mytitle'),
+            '<span class="myclass" title="mytitle">mystuff</span>')
+
+        # All parameters have a value
+        self.assertTextStructsAreEqual(
+            g.enclose('myclass', 'mystuff\n', tag='mytag', newlines=True,
+                      id='myid', comment='my comment', closing_comment=True,
+                      title='mytitle'),
+            ('<mytag class="myclass" id="myid" title="mytitle">'
+             '<!-- my comment -->\n'
+             'mystuff\n'
+             '</mytag><!-- my comment --><!-- myclass -->\n'))
 
     def test_section_begin(self):
         """Tests :func:`hkgen.section_begin`."""

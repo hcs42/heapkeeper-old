@@ -170,7 +170,7 @@ class Generator(object):
 
     # TODO test: comment and closing_comment args
     def enclose(self, class_, content, tag='span', newlines=False, id=None,
-                comment=None, closing_comment=False):
+                comment=None, closing_comment=False, title=None):
         """Encloses the given content into a tag.
 
         **Arguments:**
@@ -188,6 +188,8 @@ class Generator(object):
           after the enclosing tags.
         - `closing_comment` (bool) -- Whether a comment should be written after
           the closing tag about the class of the matching tag.
+        - `title` (|HtmlText| | ``None``) -- Text for the ``title`` attribute
+          of the tag.
 
         **Returns:** |HtmlText|
 
@@ -217,6 +219,7 @@ class Generator(object):
         newline = '\n' if newlines else ''
         classstr = (' class="', class_, '"') if class_ != None else ''
         idstr = (' id="', id, '"') if id != None else ''
+        title_str = (' title="', title, '"') if title != None else ''
         comment_str = self.print_comment(comment) if comment != None else ''
 
         if closing_comment and class_ is not None:
@@ -224,7 +227,8 @@ class Generator(object):
         else:
             closing_comment_str = ''
 
-        return ('<', tag, classstr, idstr, '>', comment_str, newline,
+        return ('<', tag, classstr, idstr, title_str, '>',
+                comment_str, newline,
                 content,
                 '</', tag, '>', comment_str, closing_comment_str, newline)
 
