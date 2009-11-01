@@ -103,6 +103,12 @@ class PostDBHandler(object):
         """
 
         self._skipdates = skipdates
+
+        # We changed the heapid numbering to start from 1 instead of 0. A
+        # large portion of the tests would have had to be rewritten as a
+        # result, so for the moment, we use this workaround.
+        self._postdb._next_heapid[''] = 0
+
         self.add_post(0)
         self.add_post(1, 0)
         self.add_post(2, 1)
@@ -710,7 +716,7 @@ html=%s
         self.createDirs()
         postdb = self.createPostDB()
         postdb.add_new_post(Post.from_str(''))
-        p1 = postdb.post('0')
+        p1 = postdb.post('1')
 
         # Saving a subject; setting a new one but abandoning it
         p1.set_subject('sub1')
@@ -727,7 +733,7 @@ html=%s
 
         # The subject of p1 is unchanged, x.mail is loaded
         self.assertEquals(p1.subject(), 'sub1')
-        self.assert_(postdb.post('0') is p1)
+        self.assert_(postdb.post('1') is p1)
         self.assertEquals(
             hkutils.file_to_string(p1.postfilename()),
             'Subject: sub1\n\n\n')
@@ -744,15 +750,15 @@ html=%s
         # 4 <- 5
         self.createDirs()
         postdb = self.createPostDB()
-        postdb.add_new_post(Post.from_str(''))               # #0
-        postdb.add_new_post(Post.from_str('Parent: 0')) # #1
-        postdb.add_new_post(Post.from_str(''))               # #2
-        postdb.add_new_post(Post.from_str('Message-Id: 2'))  # #3
-        postdb.add_new_post(Post.from_str('Parent: 2')) # #4
+        postdb.add_new_post(Post.from_str(''))               # #1
+        postdb.add_new_post(Post.from_str('Parent: 1'))      # #2
+        postdb.add_new_post(Post.from_str(''))               # #3
+        postdb.add_new_post(Post.from_str('Message-Id: 2'))  # #4
+        postdb.add_new_post(Post.from_str('Parent: 4'))      # #5
 
-        ts = {None: ['0', '2', '3'],
-              '0': ['1'],
-              '3': ['4']}
+        ts = {None: ['1', '3', '4'],
+              '1': ['2'],
+              '4': ['5']}
         self.assertEquals(ts, postdb.threadstruct())
 
 

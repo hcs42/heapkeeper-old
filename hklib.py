@@ -1039,7 +1039,7 @@ class PostDB(object):
         super(PostDB, self).__init__()
         self._postfile_dir = postfile_dir
         self._html_dir = html_dir
-        self._next_heapid = {'': 0}
+        self._next_heapid = {}
         self.heapid_to_post = {}
         self.messid_to_heapid = {}
         self.listeners = []
@@ -1108,10 +1108,7 @@ class PostDB(object):
                 except ValueError:
                     pass
 
-        if heapids == []:
-            self._next_heapid = {'': 0}
-        else:
-            self._next_heapid = {'': max(heapids) + 1}
+        self._next_heapid = {}
         self.touch()
 
     # Modifications
@@ -1149,7 +1146,7 @@ class PostDB(object):
         than all numbers present in all other heapids with the given prefix.
 
         This function uses a caching mechanism to avoid iterating over all
-        posts on each calling. This cache is the `_next_heapid` data member, 
+        posts on each calling. This cache is the `_next_heapid` data member,
         a dictionary where the keys are the prefixes. The empty prefix is
         always cached, while other prefixes are cached after the first lookup.
 
