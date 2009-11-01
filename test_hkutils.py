@@ -227,5 +227,29 @@ class Test__Misc(unittest.TestCase):
         hkutils.add_method(a, 'add', add_method)
         self.assertEquals(a.add(2), 3)
 
+    def test_insert_sep(self):
+        """Tests :func:`hkutils.insert_sep`."""
+
+        # Normal case
+        self.assertEquals(
+            hkutils.insert_sep([1, 2, 3], 0),
+            [1, 0, 2, 0, 3])
+
+        # List with one element
+        self.assertEquals(
+            hkutils.insert_sep([1], 0),
+            [1])
+
+        # Empty list
+        self.assertEquals(
+            hkutils.insert_sep([], 0),
+            [])
+
+        # Tuple as `seq`
+        self.assertEquals(
+            hkutils.insert_sep((1, 2, 3), 0),
+            [1, 0, 2, 0, 3])
+
+
 if __name__ == '__main__':
     unittest.main()

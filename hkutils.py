@@ -396,6 +396,37 @@ def add_method(obj, methodname, fun):
     method = types.MethodType(fun, obj, type(obj))
     setattr(obj, methodname, method)
 
+def insert_sep(seq, separator):
+    """Returns a list which is the concatenation of the elements in `seq`.
+    `separator` is used as a separator between elements.
+
+    **Arguments:**
+
+    - `seq` (iterable(object))
+    - `separator` (object)
+
+    **Returns:** [object]
+
+    **Examples:** ::
+
+        >>> insert_sep([1, 2, 3], 0)
+        [1, 0, 2, 0, 3]
+        >>> insert_sep([1], 0)
+        [1]
+        >>> insert_sep([], 0)
+        []
+    """
+
+    result = []
+    first = True
+    for item in seq:
+        if first:
+            first = False
+        else:
+            result.append(separator)
+        result.append(item)
+    return result
+
 
 ##### Constants #####
 

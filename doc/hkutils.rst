@@ -49,5 +49,6 @@ Miscellaneous
 .. autofunction:: copy_wo
 .. autofunction:: plural
 .. autofunction:: add_method
+.. autofunction:: insert_sep
 .. autoclass:: NOT_SET
 
