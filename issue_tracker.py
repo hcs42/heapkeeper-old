@@ -134,6 +134,102 @@ class Generator(hkgen.Generator):
                 openness -= 1
         return openness > 0
 
+    def print_postitem_meta_info(self, postitem):
+        """Prints issue-related meta information about the post.
+
+        If the post contains meta information about the effort, version,
+        priority and assignment of the issue, those are printed.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        meta_dict = postitem.post.meta_dict()
+        items = []
+
+        def item(key, prefix=''):
+            """Creates an |HtmlStr| about the given meta information found in
+            `meta_dict` and appends it to `items`.
+
+            **Arguments:**
+
+            - `key` (str) -- The key by which the meta information is stored in
+              `meta_dict`.
+            - `prefix` (str) -- The prefix to be prepended before the meta
+              information.
+            """
+
+            value = meta_dict.get(key)
+            if value is not None:
+                html_text = (prefix, self.escape(value))
+                html_text = self.enclose(key, html_text, title=key)
+                items.append(html_text)
+
+        item('effort')
+        item('version', prefix='v')
+        item('priority')
+        item('assigned')
+        return hkutils.insert_sep(items, ', ')
+
+    def print_postitem_main(self, postitem):
+        """Prints a ``'main'`` post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        def newline():
+            content.append('\n')
+
+        def enclose(class_, fun):
+            text = fun(postitem)
+            if text != '':
+                content.append(
+                    self.enclose(
+                        class_,
+                        text))
+                newline()
+
+        content = []
+        thread_link = self.print_postitem_threadlink(postitem)
+
+        enclose('author', self.print_postitem_author)
+        enclose('subject', self.print_postitem_subject)
+
+        threadlink = self.print_postitem_threadlink(postitem)
+        if threadlink != '':
+            content.append(threadlink)
+            newline()
+
+        enclose('tags', self.print_postitem_tags)
+        enclose('index', self.print_postitem_heapid)
+        enclose('parent', self.print_postitem_parent_heapid)
+        enclose('date', self.print_postitem_date)
+        enclose('meta-info', self.print_postitem_meta_info)
+
+        body = self.print_postitem_body(postitem)
+        if body is not None:
+            content.append(
+                self.enclose(
+                    'body',
+                    body,
+                    tag='div',
+                    newlines=True))
+
+        heapid = postitem.post.heapid()
+        return self.enclose(
+                   class_='postsummary',
+                   id=('post_', heapid),
+                   newlines=True,
+                   content=content,
+                   closing_comment=True)
+
     def calc(self):
 
         # These are the threads and posts that are interesting for us
