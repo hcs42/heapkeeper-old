@@ -28,38 +28,40 @@ import time
 
 import hkutils
 import hklib
+import hkgen
 import hkcustomlib
 import hkshell
 
+import issue_tracker
 
-def overquoted(post):
-    all = 0
-    quoted = 0
-    for line in post.body().splitlines():
-        all += 1
-        if re.search('^\s*\>', line):
-            quoted += 1
-    return 100 * quoted / all > 70
+def main():
+    hkshell.options.callbacks.gen_indices = gen_indices
+    #hkshell.options.callbacks.gen_posts = gen_posts
+    hkshell.on('save')
 
-def date_fun(post, options):
-    root = post._postdb.root(post)
-    if hasattr(options, 'section'):
-        section = options.section
-        if section.is_flat or \
-           root == post:
-            return format_date(post)
-    if post.date() != '' and root.date() != '':
-        diff = read_date(post) - read_date(root)
-        if diff.days > 0:
-            return '(+%d days)' % diff.days
-        elif diff.seconds > 3600:
-            return '(+%d hours)' % (diff.seconds / 3600)
-        elif diff.seconds > 60:
-            return '(+%d minutes)' % (diff.seconds / 60)
-        else:
-            return None
-    else:
-        return "(nincs dátum!)"
+def gen_indices(postdb):
+    g = MyGenerator(postdb)
+    g.write_all()
+    g = issue_tracker.Generator(postdb)
+    g.write_all()
+
+class MyGenerator(hkgen.Generator):
+
+    def print_main_index_page(self):
+        output = []
+        postdb = self._postdb
+        n = 0
+        for title, posts, is_flat in sections(postdb):
+            if is_flat:
+                postitems = [hklib.PostItem(pos='flat', post=post, level=0)
+                             for post in posts]
+            else:
+                postitems = self.walk_exp_posts(posts)
+            postitems = self.walk_postitems(postitems)
+            content = self.print_postitems(postitems)
+            n += 1
+            output.append(self.section(n - 1, title, content, flat=is_flat))
+        return output
 
 def sections(postdb):
     exp = False
@@ -125,129 +127,25 @@ def sections(postdb):
     if eliminate:
         ps_all -= ps_pol
 
-    res = [ hklib.Section("Nyitott javaslatok", ps_attention, {'flat': True}),
-            hklib.Section("Takarítani", ps_tidy, {'flat': True}),
-            hklib.Section("Tennivalók", ps_todo, {'flat': True}),
-            hklib.Section("Cipősdoboz", ps_singles, {'flat': True}),
-            hklib.Section("Heap", ps_heap),
-            hklib.Section("Programozás", ps_prog),
-            hklib.Section("C és C++", ps_ccpp),
-            hklib.Section("Python", ps_py),
-            hklib.Section("Egyéb", ps_all)]
-    # monthly = do_monthly(postdb)
-    # if monthly != None:
-    #     res.extend(monthly)
+    res = [ ("Nyitott javaslatok", ps_attention, True),
+            ("Takarítani", ps_tidy, True),
+            ("Tennivalók", ps_todo, True),
+            ("Cipősdoboz", ps_singles, True),
+            ("Heap", ps_heap, False),
+            ("Programozás", ps_prog, False),
+            ("C és C++", ps_ccpp, False),
+            ("Python", ps_py, False),
+            ("Egyéb", ps_all, False)]
     return res
 
-def get_date_limits(postdb):
-    "Gets the datetime of the earliest and newest posts in postdb."
-    start_date, end_date = None, None
-    for post in postdb.roots():
-        if start_date == None:
-            start_date = read_date(post)
-        if end_date == None:
-            end_date = read_date(post)
-        else:
-            if start_date > read_date(post):
-                start_date = read_date(post)
-            if end_date < read_date(post):
-                end_date = read_date(post)
-    return (start_date, end_date)
-
-def get_month(year, month):
-    months = ['január', 'február', 'március', 'április', 'május', 'június',
-              'július', 'augusztus', 'szeptember', 'október', 'november',
-              'december']
-    return "%d %s" % (year, months[month - 1])
-
-def get_posts_in_month(postdb, year, month):
-    next_month = month + 1
-    next_year = year
-    if next_month == 13:
-        next_year += 1
-        next_month = 1
-    return postdb.postset([post._heapid for post in postdb.roots() \
-        if post.date() != '' \
-            and read_date(post) > datetime.datetime(year, month, 1) \
-            and read_date(post) < datetime.datetime(next_year, next_month, 1)])
-
-def do_monthly(postdb):
-    start_date, end_date = get_date_limits(postdb)
-    curr_year, curr_month = start_date.year, start_date.month
-    monthlist = []
-    while datetime.datetime(curr_year, curr_month,1) < end_date:
-        monthlist.append((get_month(curr_year, curr_month), \
-            get_posts_in_month(postdb, curr_year, curr_month)))
-        curr_month += 1
-        if curr_month == 13:
-            curr_year += 1
-            curr_month = 1
-    return [hklib.Section(*month) for month in monthlist]
-
-def format_date(post):
-    "post -> str"
-    if post.date() == '':
-        return "(no date)"
-    else:
-        d = time.localtime(hkutils.calc_timestamp(post.date()))
-        return "(" + time.strftime('%Y.%m.%d.', d) + ')'
-
-def read_date(post):
-    "post_date -> datetime.datetime"
-    if post.date():
-        return datetime.datetime.fromtimestamp(
-                hkutils.calc_timestamp(post.date())
-            )
-    else:
-        return None
-
-def gen_indices(postdb):
-
-    # Date options
-    #date_options = hkcustomlib.date_defopts()
-    #date_options.update({'postdb': postdb,
-    #                     'timedelta': datetime.timedelta(days=0)})
-    #date_fun = hkcustomlib.create_date_fun(date_options)
-
-    # Generator options
-    genopts = hklib.GeneratorOptions()
-    genopts.postdb = postdb
-    #    genopts.indices = [hklib.Index(sections(postdb)),
-    #                       hklib.Index(do_monthly(postdb),"monthly.html")]
-    # new idea is:
-    # - add static main index,
-    # - do_montly() and store its results,
-    # - iterate on months, add one new index per month, one section per index
-
-    genopts.indices = [hklib.Index(sections(postdb))]
-    #months = do_monthly(postdb)
-    #for n in range(0, len(months)):
-    #    genopts.indices.append(hklib.Index([months[n]],
-    #                           "month_" + str(n + 1) + ".html"))
-
-    genopts.write_toc = True
-    genopts.shortsubject = True
-    genopts.shorttags = True
-    genopts.date_fun = date_fun
-
-    # Generating the index
-    hklib.Generator(postdb).gen_indices(genopts)
-
-def gen_posts(postdb, posts):
-    # Generator options
-    date_options = hkcustomlib.date_defopts()
-    date_options.update({'postdb': postdb,
-                         'timedelta': datetime.timedelta(days=0)})
-    date_fun = hkcustomlib.create_date_fun(date_options)
-
-    genopts = hklib.GeneratorOptions()
-    genopts.postdb = postdb
-    genopts.write_toc = True
-    genopts.print_thread_of_post = True
-    genopts.date_fun = date_fun
-
-    # Generating the posts
-    hklib.Generator(postdb).gen_posts(genopts, posts)
+def overquoted(post):
+    all = 0
+    quoted = 0
+    for line in post.body().splitlines():
+        all += 1
+        if re.search('^\s*\>', line):
+            quoted += 1
+    return 100 * quoted / all > 70
 
 @hkshell.hkshell_cmd()
 def et(pps):
@@ -265,6 +163,107 @@ def lsr(heapid):
     """Print a whole thread, ie. recursive ls."""
     hkshell.ls(hkshell.ps(heapid).exp())
 
-hkshell.options.callbacks.gen_indices = gen_indices
-hkshell.options.callbacks.gen_posts = gen_posts
-hkshell.on('save')
+main()
+
+# ----------- DEAD CODE ---------------
+# No code beyond this point. The commented lines were obsoleted by the
+# Generator overhaul (and the creation of hkgen). Functionality
+# implemented here (custom date_fun, monthly indices) should eventually
+# find their way to the new customized generator, MyGenerator.
+
+#def date_fun(post, options):
+#    root = post._postdb.root(post)
+#    if hasattr(options, 'section'):
+#        section = options.section
+#        if section.is_flat or \
+#           root == post:
+#            return format_date(post)
+#    if post.date() != '' and root.date() != '':
+#        diff = read_date(post) - read_date(root)
+#        if diff.days > 0:
+#            return '(+%d days)' % diff.days
+#        elif diff.seconds > 3600:
+#            return '(+%d hours)' % (diff.seconds / 3600)
+#        elif diff.seconds > 60:
+#            return '(+%d minutes)' % (diff.seconds / 60)
+#        else:
+#            return None
+#    else:
+#        return "(nincs dátum!)"
+#def get_date_limits(postdb):
+#    "Gets the datetime of the earliest and newest posts in postdb."
+#    start_date, end_date = None, None
+#    for post in postdb.roots():
+#        if start_date == None:
+#            start_date = read_date(post)
+#        if end_date == None:
+#            end_date = read_date(post)
+#        else:
+#            if start_date > read_date(post):
+#                start_date = read_date(post)
+#            if end_date < read_date(post):
+#                end_date = read_date(post)
+#    return (start_date, end_date)
+#
+#def get_month(year, month):
+#    months = ['január', 'február', 'március', 'április', 'május', 'június',
+#              'július', 'augusztus', 'szeptember', 'október', 'november',
+#              'december']
+#    return "%d %s" % (year, months[month - 1])
+#
+#def get_posts_in_month(postdb, year, month):
+#    next_month = month + 1
+#    next_year = year
+#    if next_month == 13:
+#        next_year += 1
+#        next_month = 1
+#    return postdb.postset([post._heapid for post in postdb.roots() \
+#        if post.date() != '' \
+#            and read_date(post) > datetime.datetime(year, month, 1) \
+#            and read_date(post) < datetime.datetime(next_year, next_month, 1)])
+#
+#def do_monthly(postdb):
+#    start_date, end_date = get_date_limits(postdb)
+#    curr_year, curr_month = start_date.year, start_date.month
+#    monthlist = []
+#    while datetime.datetime(curr_year, curr_month,1) < end_date:
+#        monthlist.append((get_month(curr_year, curr_month), \
+#            get_posts_in_month(postdb, curr_year, curr_month)))
+#        curr_month += 1
+#        if curr_month == 13:
+#            curr_year += 1
+#            curr_month = 1
+#    return [hklib.Section(*month) for month in monthlist]
+#
+#def format_date(post):
+#    "post -> str"
+#    if post.date() == '':
+#        return "(no date)"
+#    else:
+#        d = time.localtime(hkutils.calc_timestamp(post.date()))
+#        return "(" + time.strftime('%Y.%m.%d.', d) + ')'
+#
+#def read_date(post):
+#    "post_date -> datetime.datetime"
+#    if post.date():
+#        return datetime.datetime.fromtimestamp(
+#                hkutils.calc_timestamp(post.date())
+#            )
+#    else:
+#        return None
+#
+#def gen_posts(postdb, posts):
+#    # Generator options
+#    date_options = hkcustomlib.date_defopts()
+#    date_options.update({'postdb': postdb,
+#                         'timedelta': datetime.timedelta(days=0)})
+#    date_fun = hkcustomlib.create_date_fun(date_options)
+#
+#    genopts = hklib.GeneratorOptions()
+#    genopts.postdb = postdb
+#    genopts.write_toc = True
+#    genopts.print_thread_of_post = True
+#    genopts.date_fun = date_fun
+#
+#    # Generating the posts
+#    hklib.Generator(postdb).gen_posts(genopts, posts)
