@@ -26,6 +26,7 @@ import re
 import hklib
 import hkgen
 import hkshell
+import hkweb
 
 import issue_tracker
 
@@ -33,6 +34,7 @@ def main():
     hkshell.options.callbacks.gen_indices = gen_indices
     #hkshell.options.callbacks.gen_posts = gen_posts
     hkshell.on('save')
+    web = hkweb.start()
 
 def gen_indices(postdb):
     g = MyGenerator(postdb)
@@ -263,3 +265,4 @@ main()
 #
 #    # Generating the posts
 #    hklib.Generator(postdb).gen_posts(genopts, posts)
+

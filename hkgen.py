@@ -96,6 +96,7 @@ class Generator(object):
         self.options.shortsubject = True
         self.options.shorttags = True
         self.options.localtime_fun = time.localtime
+        self.options.html_body_attributes = ''
 
     # Printing general HTML
 
@@ -178,7 +179,7 @@ class Generator(object):
     # TODO test: comment and closing_comment args
     def enclose(self, content, tag='span', class_=None, newlines=False,
                 id=None, comment=None, closing_comment=False, title=None,
-                skip_empty=False):
+                skip_empty=False, attributes=''):
         """Encloses the given content into a tag.
 
         **Arguments:**
@@ -245,7 +246,7 @@ class Generator(object):
         else:
             closing_comment_str = ''
 
-        return ('<', tag, classstr, idstr, title_str, '>',
+        return ('<', tag, classstr, idstr, title_str, attributes, '>',
                 comment_str, newline,
                 content,
                 '</', tag, '>', comment_str, closing_comment_str, newline)
@@ -1248,7 +1249,7 @@ class Generator(object):
 
         content.append(
             ('  </head>\n'
-             '  <body>\n'
+             '  <body ' + self.options.html_body_attributes + '>\n'
              '    <h1 id="header">', header_title, '</h1>\n\n'))
 
         return content
