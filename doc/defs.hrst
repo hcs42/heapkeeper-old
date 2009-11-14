@@ -47,6 +47,8 @@
 .. |PostDB.walk_thread| replace:: :func:`PostDB.walk_thread <hklib.PostDB.walk_thread>`
 .. |PostDB| replace:: :class:`PostDB <hklib.PostDB>`
 .. |postdb| replace:: :func:`postdb <hkshell.postdb>`
+.. |PostItemModifierFun| replace:: :ref:`PostItemModifierFun <hkgen_PostItemModifierFun>`
+.. |PostItemPrinterFun| replace:: :ref:`PostItemPrinterFun <hkgen_PostItemPrinterFun>`
 .. |PostItem| replace:: :class:`PostItem <hklib.PostItem>`
 .. |PostPageListener| replace:: :class:`PostPageListener <hkshell.PostPageListener>`
 .. |PostSet| replace:: :class:`PostSet <hklib.PostSet>`
@@ -61,7 +63,6 @@
 .. |rT| replace:: :func:`rT <hkshell.rT>`
 .. |Section| replace:: :class:`Section <hklib.Section>`
 .. |ShouldPrintDateFun| replace:: :ref:`ShouldPrintDateFun <hkcustomlib_ShouldPrintDateFun>`
-.. |PostItemModifierFun| replace:: :ref:`PostItemModifierFun <hkgen_PostItemModifierFun>`
 .. |sSr| replace:: :func:`sSr <hkshell.sSr>`
 .. |sS| replace:: :func:`sS <hkshell.sS>`
 .. |s| replace:: :func:`s <hkshell.s>`

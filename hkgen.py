@@ -33,6 +33,13 @@ types in the documentation so we can talk about them easily.
   post item. Usually it modifies how the post item is printed.
 
   Real type: fun(|PostItem|) -> |PostItem|
+
+.. _hkgen_PostItemPrinterFun:
+
+- **PostItemPrinterFun(postitem)** -- A function that prints something based on
+  a post item. (E.g. its author.)
+
+  Real type: fun(|PostItem|) -> |HtmlText|
 """
 
 
@@ -40,6 +47,7 @@ from __future__ import with_statement
 
 import datetime
 import itertools
+import logging
 import os
 import re
 import shutil
@@ -221,7 +229,9 @@ class Generator(object):
             </span><!-- Chapter 10 --><!-- chapter -->
         """
 
-        assert(hkutils.is_textstruct(content))
+        assert hkutils.is_textstruct(content), \
+               'Parameter is not a valid text structure:\n%s\n' % (content,)
+
         if skip_empty and (content == [] or content == ''):
             return ''
 
@@ -338,8 +348,8 @@ class Generator(object):
                 getter() == parent_getter())
 
     # TODO: test
-    def print_postitem_author(self, postitem):
-        """Prints the author of the post item.
+    def print_postitem_author_core(self, postitem):
+        """Prints the core of the author of the post item.
 
         **Argument:**
 
@@ -351,8 +361,24 @@ class Generator(object):
         return self.escape(postitem.post.author())
 
     # TODO: test
-    def print_postitem_subject(self, postitem):
-        """Prints the subject of the post item.
+    def print_postitem_author(self, postitem):
+        """Prints the author of the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_author_core(postitem),
+                   class_='author',
+                   skip_empty=True)
+
+    # TODO: test
+    def print_postitem_subject_core(self, postitem):
+        """Prints the core of the subject of the post item.
 
         **Argument:**
 
@@ -370,8 +396,24 @@ class Generator(object):
             return subject
 
     # TODO: test
-    def print_postitem_tags(self, postitem):
-        """Prints the tags of the post item.
+    def print_postitem_subject(self, postitem):
+        """Prints the subject of the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_subject_core(postitem),
+                   class_='subject',
+                   skip_empty=True)
+
+    # TODO: test
+    def print_postitem_tags_core(self, postitem):
+        """Prints the core of the tags of the post item.
 
         **Argument:**
 
@@ -398,8 +440,24 @@ class Generator(object):
             return '[%s]' % (', '.join(tags),)
 
     # TODO: test
-    def print_postitem_threadlink(self, postitem):
-        """Prints the thread link of the post item.
+    def print_postitem_tags(self, postitem):
+        """Prints the tags of the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_tags_core(postitem),
+                   class_='tags',
+                   skip_empty=True)
+
+    # TODO: test
+    def print_postitem_threadlink_core(self, postitem):
+        """Prints the core of the thread link of the post item.
 
         **Argument:**
 
@@ -410,17 +468,31 @@ class Generator(object):
 
         post = postitem.post
         if self._postdb.parent(post) is None:
-            return self.enclose(
-                       self.print_link(
-                           post.htmlthreadbasename(),
-                           '<img src="thread.png" />'),
-                       class_='button')
+            return self.print_link(
+                       post.htmlthreadbasename(),
+                       '<img src="thread.png" />'),
         else:
             return ''
 
     # TODO: test
-    def print_postitem_heapid(self, postitem):
-        """Prints the heapid of the post item.
+    def print_postitem_threadlink(self, postitem):
+        """Prints the thread link of the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_threadlink_core(postitem),
+                   class_='button',
+                   skip_empty=True)
+
+    # TODO: test
+    def print_postitem_heapid_core(self, postitem):
+        """Prints the core of the heapid of the post item.
 
         **Argument:**
 
@@ -435,8 +507,24 @@ class Generator(object):
                 self.escape('<%s>' % (postitem.post.heapid(),)))
 
     # TODO: test
-    def print_postitem_parent_heapid(self, postitem):
-        """Prints the heapid of the parent of the post.
+    def print_postitem_heapid(self, postitem):
+        """Prints the heapid of the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_heapid_core(postitem),
+                   class_='index',
+                   skip_empty=True)
+
+    # TODO: test
+    def print_postitem_parent_heapid_core(self, postitem):
+        """Prints the core of the heapid of the parent of the post.
 
         **Argument:**
 
@@ -462,6 +550,22 @@ class Generator(object):
         else:
             return ''
 
+    # TODO: test
+    def print_postitem_parent_heapid(self, postitem):
+        """Prints the heapid of the parent of the post.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_parent_heapid_core(postitem),
+                   class_='parent',
+                   skip_empty=True)
+
     # TODO test
     def format_timestamp(self, timestamp):
         """Formats the date of the given post.
@@ -477,8 +581,8 @@ class Generator(object):
                              self.options.localtime_fun(timestamp))
 
     # TODO: test
-    def print_postitem_date(self, postitem):
-        """Prints the date the post item.
+    def print_postitem_date_core(self, postitem):
+        """Prints the core of the date of the post item.
 
         **Argument:**
 
@@ -493,15 +597,31 @@ class Generator(object):
         else:
             return self.format_timestamp(timestamp)
 
-    # TODO test
-    def print_postitem_body(self, postitem):
-        """Prints the body the post item.
+    # TODO: test
+    def print_postitem_date(self, postitem):
+        """Prints the date the post item.
 
         **Argument:**
 
         - `postitem` (|PostItem|)
 
-        **Returns:** |HtmlText| | ``None``
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_date_core(postitem),
+                   class_='date',
+                   skip_empty=True)
+
+    # TODO test
+    def print_postitem_body_core(self, postitem):
+        """Prints the core of the body the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
         """
 
         if hasattr(postitem, 'print_post_body') and postitem.print_post_body:
@@ -509,7 +629,25 @@ class Generator(object):
                                 'pre',
                                 'postbody')
         else:
-            return None
+            return ''
+
+    # TODO: test
+    def print_postitem_body(self, postitem):
+        """Prints the body the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_body_core(postitem),
+                   'div',
+                   'body',
+                   skip_empty=True,
+                   newlines=True)
 
     # TODO: test
     def print_postitem_link(self, postitem):
@@ -561,6 +699,48 @@ class Generator(object):
         return ('</div>',
                 self.print_comment('postbox for post ' + heapid), '\n')
 
+    # TODO test
+    def get_postsummary_fields_main(self, postitem):
+        """Returns the fields of the post summary when the pos position is
+        ``"main"``.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** iterable(|PostItemPrinterFun|)
+        """
+
+        return (
+            self.print_postitem_author,
+            self.print_postitem_subject,
+            self.print_postitem_threadlink,
+            self.print_postitem_tags,
+            self.print_postitem_heapid,
+            self.print_postitem_parent_heapid,
+            self.print_postitem_date,
+        )
+
+    # TODO test
+    def get_postsummary_fields_flat(self, postitem):
+        """Returns the fields of the post summary when the pos position is
+        ``"flat"``.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** iterable(|PostItemPrinterFun|)
+        """
+
+        return (
+            self.print_postitem_author,
+            self.print_postitem_subject,
+            self.print_postitem_tags,
+            self.print_postitem_heapid,
+            self.print_postitem_date,
+        )
+
     def print_postitem_main(self, postitem):
         """Prints a ``'main'`` post item.
 
@@ -571,46 +751,23 @@ class Generator(object):
         **Returns:** |HtmlText|
         """
 
-        def newline():
-            content.append('\n')
+        # This function appends a newline to the HTML text when it is not
+        # empty. The condition could be written more nicely if we had a
+        # hkutils.is_textstruct_empty function.
+        def append_newline(s):
+            if s == '' or s == []:
+                return s
+            else:
+                return (s, '\n')
 
-        def enclose(class_, fun):
-            text = fun(postitem)
-            if text != '':
-                content.append(
-                    self.enclose(
-                        text,
-                        class_=class_))
-                newline()
-
-        content = []
-        thread_link = self.print_postitem_threadlink(postitem)
-
-        enclose('author', self.print_postitem_author)
-        enclose('subject', self.print_postitem_subject)
-
-        threadlink = self.print_postitem_threadlink(postitem)
-        if threadlink != '':
-            content.append(threadlink)
-            newline()
-
-        enclose('tags', self.print_postitem_tags)
-        enclose('index', self.print_postitem_heapid)
-        enclose('parent', self.print_postitem_parent_heapid)
-        enclose('date', self.print_postitem_date)
+        post_summary_fields = \
+            [append_newline(fun(postitem))
+             for fun in self.get_postsummary_fields_main(postitem)]
 
         body = self.print_postitem_body(postitem)
-        if body is not None:
-            content.append(
-                self.enclose(
-                    body,
-                    'div',
-                    'body',
-                    newlines=True))
-
         heapid = postitem.post.heapid()
         return self.enclose(
-                   content,
+                   (post_summary_fields, body),
                    class_='postsummary',
                    id=('post_', heapid),
                    newlines=True,
@@ -626,38 +783,36 @@ class Generator(object):
         **Returns:** |HtmlText|
         """
 
-        def newline():
-            content.append('\n')
+        def td(s):
+            return (self.enclose(s, 'td'), '\n')
 
-        def enclose(class_, fun):
-            text = fun(postitem)
-            content.append(
-                self.enclose(text, 'td', class_))
-            newline()
+        post_summary_fields = \
+            [td(fun(postitem))
+             for fun in self.get_postsummary_fields_flat(postitem)]
 
-        content = []
-        thread_link = self.print_postitem_threadlink(postitem)
-
-        enclose('author', self.print_postitem_author)
-        enclose('subject', self.print_postitem_subject)
-        enclose('tags', self.print_postitem_tags)
-        enclose('index', self.print_postitem_heapid)
-        enclose('date', self.print_postitem_date)
+        post_summary_str = \
+            self.enclose(
+                post_summary_fields,
+                'tr',
+                newlines=True)
 
         body = self.print_postitem_body(postitem)
-        if body is not None:
-            content.append(
+        if body is '':
+            body_str = ''
+        else:
+            body_str = \
                 self.enclose(
                     self.enclose(
                         body,
                         'td colspan=5',
-                        'body',
                         newlines=True),
                     'tr',
-                    'body',
-                    newlines=True))
+                    newlines=True)
 
-        return self.enclose(content, 'tr', 'postsummary', newlines=True)
+        return self.enclose(
+                   (post_summary_str, body_str),
+                   class_='postsummary',
+                   newlines=True)
 
     # TODO: test
     def print_postitem(self, postitem):

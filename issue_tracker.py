@@ -84,7 +84,7 @@ class Generator(hkgen.Generator):
         self.options.cssfiles.append('issues.css')
         self.options.files_to_copy.append('issues.css')
 
-    def print_postitem_tags(self, postitem):
+    def print_postitem_tags_core(self, postitem):
         post = postitem.post
         parent = self._postdb.parent(post)
         post_tags = set(post.tags())
@@ -134,7 +134,7 @@ class Generator(hkgen.Generator):
                 openness -= 1
         return openness > 0
 
-    def print_postitem_meta_info(self, postitem):
+    def print_postitem_meta_info_core(self, postitem):
         """Prints issue-related meta information about the post.
 
         If the post contains meta information about the effort, version,
@@ -174,61 +174,24 @@ class Generator(hkgen.Generator):
         item('assigned')
         return hkutils.insert_sep(items, ', ')
 
-    def print_postitem_main(self, postitem):
-        """Prints a ``'main'`` post item.
-
-        **Argument:**
-
-        - `postitem` (|PostItem|)
-
-        **Returns:** |HtmlText|
-        """
-
-        def newline():
-            content.append('\n')
-
-        def enclose(class_, fun):
-            text = fun(postitem)
-            if text != '':
-                content.append(
-                    self.enclose(
-                        text,
-                        class_=class_))
-                newline()
-
-        content = []
-        thread_link = self.print_postitem_threadlink(postitem)
-
-        enclose('author', self.print_postitem_author)
-        enclose('subject', self.print_postitem_subject)
-
-        threadlink = self.print_postitem_threadlink(postitem)
-        if threadlink != '':
-            content.append(threadlink)
-            newline()
-
-        enclose('tags', self.print_postitem_tags)
-        enclose('index', self.print_postitem_heapid)
-        enclose('parent', self.print_postitem_parent_heapid)
-        enclose('date', self.print_postitem_date)
-        enclose('meta-info', self.print_postitem_meta_info)
-
-        body = self.print_postitem_body(postitem)
-        if body is not None:
-            content.append(
-                self.enclose(
-                    body,
-                    'div',
-                    'body',
-                    newlines=True))
-
-        heapid = postitem.post.heapid()
+    # TODO docs
+    def print_postitem_meta_info(self, postitem):
         return self.enclose(
-                   content,
-                   class_='postsummary',
-                   id=('post_', heapid),
-                   newlines=True,
-                   closing_comment=True)
+                   self.print_postitem_meta_info_core(postitem),
+                   class_='meta-info',
+                   skip_empty=True)
+
+    def get_postsummary_fields_main(self, postitem):
+        return (
+            self.print_postitem_author,
+            self.print_postitem_subject,
+            self.print_postitem_threadlink,
+            self.print_postitem_tags,
+            self.print_postitem_heapid,
+            self.print_postitem_parent_heapid,
+            self.print_postitem_date,
+            self.print_postitem_meta_info,
+        )
 
     def calc(self):
 

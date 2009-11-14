@@ -337,29 +337,34 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         """Tests :func:`hkgen.Generator.print_postitem_flat`."""
 
         postdb, g, p = self.init()
-        def enc(class_, content, tag):
-            return g.enclose(content, class_=class_, tag=tag)
+        def enctd(class_, content, tag):
+            return \
+                g.enclose(
+                    g.enclose(content, class_=class_),
+                    'td')
 
         # Without post body
 
-        postitem = hklib.PostItem('begin', p(0), 0)
+        postitem = hklib.PostItem('flat', p(0), 0)
         postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
         post_link = g.print_link('thread_0.html#post_0', '&lt;0&gt;')
         expected_header = \
-            [enc('author', 'author0', 'td'), '\n',
-             enc('subject', 'subject0', 'td'), '\n',
-             enc('tags', '[tag1, tag2]', 'td'), '\n',
-             enc('index', post_link, 'td'), '\n',
-             enc('date', '(2008-08-20)', 'td'), '\n']
+            g.enclose(
+                (enctd('author', 'author0', 'td'), '\n',
+                 enctd('subject', 'subject0', 'td'), '\n',
+                 enctd('tags', '[tag1, tag2]', 'td'), '\n',
+                 enctd('index', post_link, 'td'), '\n',
+                 enctd('date', '(2008-08-20)', 'td'), '\n'),
+                'tr',
+                newlines=True)
 
         self.assertTextStructsAreEqual(
             g.print_postitem_flat(postitem),
             g.enclose(
                 expected_header,
-                'tr',
-                'postsummary',
+                class_='postsummary',
                 newlines=True))
 
         # With post body
@@ -367,14 +372,16 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose(
                 g.enclose(
                     g.enclose(
-                        'body0\n',
-                        'pre',
-                        'postbody'),
+                        g.enclose(
+                            'body0\n',
+                            'pre',
+                            'postbody'),
+                        'div',
+                        'body',
+                        newlines=True),
                     'td colspan=5',
-                    'body',
                     newlines=True),
                 'tr',
-                'body',
                 newlines=True)
 
         postitem.print_post_body = True
@@ -382,7 +389,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.print_postitem_flat(postitem),
             g.enclose(
                 (expected_header, expected_body),
-                'tr',
+                'span',
                 'postsummary',
                 newlines=True))
 
@@ -398,18 +405,20 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         post_link = g.print_link('thread_0.html#post_0', '&lt;0&gt;')
         expected_header = \
-            [enc('author', 'author0', 'td'), '\n',
-             enc('subject', 'subject0', 'td'), '\n',
-             enc('tags', '[tag1, tag2]', 'td'), '\n',
-             enc('index', post_link, 'td'), '\n',
-             enc('date', '', 'td'), '\n']
+            [enctd('author', 'author0', 'td'), '\n',
+             enctd('subject', 'subject0', 'td'), '\n',
+             enctd('tags', '[tag1, tag2]', 'td'), '\n',
+             enctd('index', post_link, 'td'), '\n',
+             g.enclose('', 'td'), '\n']
 
         self.assertTextStructsAreEqual(
             g.print_postitem_flat(postitem),
             g.enclose(
-                expected_header,
-                'tr',
-                'postsummary',
+                g.enclose(
+                    expected_header,
+                    'tr',
+                    newlines=True),
+                class_='postsummary',
                 newlines=True))
 
     def test_walk_postitems(self):

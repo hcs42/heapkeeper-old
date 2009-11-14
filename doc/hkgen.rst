@@ -22,14 +22,22 @@ Generator
     .. automethod:: section_end
     .. automethod:: section
     .. automethod:: postitem_is_star_needed
+    .. automethod:: print_postitem_author_core
     .. automethod:: print_postitem_author
+    .. automethod:: print_postitem_subject_core
     .. automethod:: print_postitem_subject
+    .. automethod:: print_postitem_tags_core
     .. automethod:: print_postitem_tags
+    .. automethod:: print_postitem_threadlink_core
     .. automethod:: print_postitem_threadlink
+    .. automethod:: print_postitem_heapid_core
     .. automethod:: print_postitem_heapid
+    .. automethod:: print_postitem_parent_heapid_core
     .. automethod:: print_postitem_parent_heapid
     .. automethod:: format_timestamp
+    .. automethod:: print_postitem_date_core
     .. automethod:: print_postitem_date
+    .. automethod:: print_postitem_body_core
     .. automethod:: print_postitem_body
     .. automethod:: print_postitem_link
     .. automethod:: print_postitem_begin
