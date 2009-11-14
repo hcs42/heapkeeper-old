@@ -26,7 +26,6 @@ It can be used to run a specific test:
     $ python test.py test_hklib TestPostDB2 testThreadstructCycle1
 """
 
-
 import sys
 import unittest
 

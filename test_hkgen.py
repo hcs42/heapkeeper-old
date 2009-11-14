@@ -146,54 +146,59 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         postdb, g, p = self.init()
 
-        # Just the two mandatory parameters
+        # Just the one mandatory parameter
         self.assertTextStructsAreEqual(
-            g.enclose('myclass', 'mystuff'),
-            '<span class="myclass">mystuff</span>')
-
-        # The `class` parameter is None
-        self.assertTextStructsAreEqual(
-            g.enclose(None, 'mystuff'),
+            g.enclose('mystuff'),
             '<span>mystuff</span>')
 
         # Testing the `tag` parameter
         self.assertTextStructsAreEqual(
-            g.enclose('myclass', 'mystuff', tag='mytag'),
-            '<mytag class="myclass">mystuff</mytag>')
+            g.enclose('mystuff', tag='mytag'),
+            '<mytag>mystuff</mytag>')
+
+        # Testint the `class` parameter
+        self.assertTextStructsAreEqual(
+            g.enclose('mystuff', class_='myclass'),
+            '<span class="myclass">mystuff</span>')
 
         # Testing the `newlines` parameter
         self.assertTextStructsAreEqual(
-            g.enclose('myclass', 'mystuff\n', newlines=True),
-            '<span class="myclass">\nmystuff\n</span>\n')
+            g.enclose('mystuff\n', newlines=True),
+            '<span>\nmystuff\n</span>\n')
 
         # Testing the `myid` parameter
         self.assertTextStructsAreEqual(
-            g.enclose('myclass', 'mystuff', id='myid'),
-            '<span class="myclass" id="myid">mystuff</span>')
+            g.enclose('mystuff', id='myid'),
+            '<span id="myid">mystuff</span>')
 
         # Testing the `comment` parameter
         self.assertTextStructsAreEqual(
-            g.enclose('myclass', 'mystuff', comment='my comment'),
-            ('<span class="myclass"><!-- my comment -->'
+            g.enclose('mystuff', comment='my comment'),
+            ('<span><!-- my comment -->'
              'mystuff'
              '</span><!-- my comment -->'))
 
-        # Testing the `closing_comment` parameter
+        # Testing the `closing_comment` parameter when having a class
         self.assertTextStructsAreEqual(
-            g.enclose('myclass', 'mystuff', closing_comment=True),
+            g.enclose('mystuff', class_='myclass', closing_comment=True),
             ('<span class="myclass">mystuff</span>'
              '<!-- myclass -->'))
 
+        # Testing the `closing_comment` parameter when not having a class
+        self.assertTextStructsAreEqual(
+            g.enclose('mystuff', closing_comment=True),
+            '<span>mystuff</span>')
+
         # Testing the `title` parameter
         self.assertTextStructsAreEqual(
-            g.enclose('myclass', 'mystuff', title='mytitle'),
-            '<span class="myclass" title="mytitle">mystuff</span>')
+            g.enclose('mystuff', title='mytitle'),
+            '<span title="mytitle">mystuff</span>')
 
         # All parameters have a value
         self.assertTextStructsAreEqual(
-            g.enclose('myclass', 'mystuff\n', tag='mytag', newlines=True,
-                      id='myid', comment='my comment', closing_comment=True,
-                      title='mytitle'),
+            g.enclose('mystuff\n', class_='myclass', tag='mytag',
+                      newlines=True, id='myid', comment='my comment',
+                      closing_comment=True, title='mytitle'),
             ('<mytag class="myclass" id="myid" title="mytitle">'
              '<!-- my comment -->\n'
              'mystuff\n'
@@ -250,14 +255,15 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertTextStructsAreEqual(
             g.section('mysecid', 'mysectitle', 'myhtmltext', flat=True),
             (g.section_begin('section_mysecid', 'mysectitle'),
-             g.enclose('flatlist', 'myhtmltext', tag='table', newlines=True),
+             g.enclose('myhtmltext', 'table', 'flatlist', newlines=True),
              g.section_end()))
 
     def test_print_postitem_main(self):
         """Tests :func:`hkgen.Generator.print_postitem_main`."""
 
         postdb, g, p = self.init()
-        enc = g.enclose
+        def enc(class_, content):
+            return g.enclose(content, class_=class_)
 
         # Without post body
 
@@ -279,35 +285,40 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertTextStructsAreEqual(
             g.print_postitem_main(postitem),
             g.enclose(
+                expected_header,
                 class_='postsummary',
                 id='post_0',
                 newlines=True,
-                content=expected_header,
                 closing_comment=True))
 
         # With post body
 
         postitem.print_post_body = True
         expected_body = \
-            enc(class_='body',
-                tag='div',
-                newlines=True,
-                content=enc('postbody', 'body0\n', 'pre'))
+            g.enclose(
+                g.enclose(
+                    'body0\n',
+                    'pre',
+                    'postbody'),
+                'div',
+                'body',
+                newlines=True)
 
         self.assertTextStructsAreEqual(
             g.print_postitem_main(postitem),
             g.enclose(
+                (expected_header, expected_body),
                 class_='postsummary',
                 id='post_0',
                 newlines=True,
-                content=[expected_header, expected_body],
                 closing_comment=True))
 
     def test_print_postitem_flat(self):
         """Tests :func:`hkgen.Generator.print_postitem_flat`."""
 
         postdb, g, p = self.init()
-        enc = g.enclose
+        def enc(class_, content, tag):
+            return g.enclose(content, class_=class_, tag=tag)
 
         # Without post body
 
@@ -325,32 +336,35 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         self.assertTextStructsAreEqual(
             g.print_postitem_flat(postitem),
-            (g.enclose(
-                 class_='postsummary',
-                 tag='tr',
-                 newlines=True,
-                 content=expected_header)))
+            g.enclose(
+                expected_header,
+                'tr',
+                'postsummary',
+                newlines=True))
 
         # With post body
         expected_body = \
-            enc(class_='body',
-                tag='tr',
-                newlines=True,
-                content=
-                    enc(class_='body',
-                        tag='td colspan=5',
-                        newlines=True,
-                        content=
-                            enc('postbody', 'body0\n', 'pre')))
+            g.enclose(
+                g.enclose(
+                    g.enclose(
+                        'body0\n',
+                        'pre',
+                        'postbody'),
+                    'td colspan=5',
+                    'body',
+                    newlines=True),
+                'tr',
+                'body',
+                newlines=True)
 
         postitem.print_post_body = True
         self.assertTextStructsAreEqual(
             g.print_postitem_flat(postitem),
-            (g.enclose(
-                 class_='postsummary',
-                 tag='tr',
-                 newlines=True,
-                 content=[expected_header,expected_body])))
+            g.enclose(
+                (expected_header, expected_body),
+                'tr',
+                'postsummary',
+                newlines=True))
 
         # Without post body and some other fields
 
@@ -372,11 +386,11 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         self.assertTextStructsAreEqual(
             g.print_postitem_flat(postitem),
-            (g.enclose(
-                 class_='postsummary',
-                 tag='tr',
-                 newlines=True,
-                 content=expected_header)))
+            g.enclose(
+                expected_header,
+                'tr',
+                'postsummary',
+                newlines=True))
 
     def test_walk_postitems(self):
         """Tests the following functions:

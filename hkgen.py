@@ -169,17 +169,17 @@ class Generator(object):
         return ('<!-- ', content, ' -->')
 
     # TODO test: comment and closing_comment args
-    def enclose(self, class_, content, tag='span', newlines=False, id=None,
-                comment=None, closing_comment=False, title=None):
+    def enclose(self, content, tag='span', class_=None, newlines=False,
+                id=None, comment=None, closing_comment=False, title=None):
         """Encloses the given content into a tag.
 
         **Arguments:**
 
-        - `class_` (|HtmlText| | ``None``) -- The ``class`` of the tag. If
-          ``None``, the tag will not have a ``class`` attribute.
         - `content` (|HtmlText|) -- The content to be placed between the
           opening and closing tags.
         - `tag` (|HtmlText|) -- The name of the tag to be printed.
+        - `class_` (|HtmlText| | ``None``) -- The ``class`` of the tag. If
+          ``None``, the tag will not have a ``class`` attribute.
         - `newlines` (bool) -- If ``True``, a newline character will be placed
           after both the opening and the tags.
         - `id` (|HtmlText| | ``None``) -- The ``id`` of the tag. If ``None``,
@@ -197,13 +197,13 @@ class Generator(object):
 
             >>> generator = hkgen.Generator(postdb())
 
-            >>> text = generator.enclose('chapter', 'mycontent', 'div')
+            >>> text = generator.enclose('mycontent', 'div', 'chapter')
             >>> print hkutils.textstruct_to_str(text)
             <div class="chapter">mycontent</div>
 
             >>> text = generator.enclose(
-            ...            'chapter',
             ...            'mycontent\\n',
+            ...            class_='chapter',
             ...            newlines=True,
             ...            id="chap-10",
             ...            comment="Chapter 10",
@@ -284,7 +284,7 @@ class Generator(object):
 
         if flat:
             content = \
-                self.enclose('flatlist', content, tag='table', newlines=True)
+                self.enclose(content, 'table', 'flatlist', newlines=True)
         return (self.section_begin('section_%s' % (id,), title),
                 content,
                 self.section_end())
@@ -356,7 +356,7 @@ class Generator(object):
         parent = self._postdb.parent(post)
         subject = post.subject()
         if self.postitem_is_star_needed(postitem, 'subject'):
-            return self.enclose('star',  '&mdash;')
+            return self.enclose('&mdash;', class_='star')
         else:
             return subject
 
@@ -402,10 +402,10 @@ class Generator(object):
         post = postitem.post
         if self._postdb.parent(post) is None:
             return self.enclose(
-                       'button',
                        self.print_link(
                            post.htmlthreadbasename(),
-                           '<img src="thread.png" />'))
+                           '<img src="thread.png" />'),
+                       class_='button')
         else:
             return ''
 
@@ -496,9 +496,9 @@ class Generator(object):
         """
 
         if hasattr(postitem, 'print_post_body') and postitem.print_post_body:
-            return self.enclose('postbody',
-                                self.escape(postitem.post.body()),
-                                tag='pre')
+            return self.enclose(self.escape(postitem.post.body()),
+                                'pre',
+                                'postbody')
         else:
             return None
 
@@ -570,8 +570,8 @@ class Generator(object):
             if text != '':
                 content.append(
                     self.enclose(
-                        class_,
-                        text))
+                        text,
+                        class_=class_))
                 newline()
 
         content = []
@@ -594,17 +594,17 @@ class Generator(object):
         if body is not None:
             content.append(
                 self.enclose(
-                    'body',
                     body,
-                    tag='div',
+                    'div',
+                    'body',
                     newlines=True))
 
         heapid = postitem.post.heapid()
         return self.enclose(
+                   content,
                    class_='postsummary',
                    id=('post_', heapid),
                    newlines=True,
-                   content=content,
                    closing_comment=True)
 
     def print_postitem_flat(self, postitem):
@@ -623,10 +623,7 @@ class Generator(object):
         def enclose(class_, fun):
             text = fun(postitem)
             content.append(
-                self.enclose(
-                    class_,
-                    text,
-                    tag='td'))
+                self.enclose(text, 'td', class_))
             newline()
 
         content = []
@@ -642,17 +639,16 @@ class Generator(object):
         if body is not None:
             content.append(
                 self.enclose(
-                    tag='tr',
-                    class_='body',
-                    newlines=True,
-                    content=
-                        self.enclose(
-                            tag=('td colspan=5'),
-                            class_='body',
-                            newlines=True,
-                            content=body))),
+                    self.enclose(
+                        body,
+                        'td colspan=5',
+                        'body',
+                        newlines=True),
+                    'tr',
+                    'body',
+                    newlines=True))
 
-        return self.enclose('postsummary', content, tag='tr', newlines=True)
+        return self.enclose(content, 'tr', 'postsummary', newlines=True)
 
     # TODO: test
     def print_postitem(self, postitem):
@@ -762,8 +758,8 @@ class Generator(object):
                 if (postitem.post not in posts and
                     postitem.pos in ['main', 'flat']):
                     def enclose_inactive(postitem):
-                        return self.enclose('post_inactive',
-                                            print_fun(postitem),
+                        return self.enclose(print_fun(postitem),
+                                            class_='post_inactive',
                                             newlines=True,
                                             closing_comment=True)
                     postitem.print_fun = enclose_inactive
@@ -878,8 +874,8 @@ class Generator(object):
                     postitem.print_fun = \
                         lambda postitem:\
                             self.enclose(
-                                class_,
                                 old_print_fun(postitem),
+                                class_=class_,
                                 newlines=True,
                                 comment=('post ', heapid),
                                 closing_comment=True)

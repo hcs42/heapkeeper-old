@@ -165,7 +165,7 @@ class Generator(hkgen.Generator):
             value = meta_dict.get(key)
             if value is not None:
                 html_text = (prefix, self.escape(value))
-                html_text = self.enclose(key, html_text, title=key)
+                html_text = self.enclose(html_text, class_=key, title=key)
                 items.append(html_text)
 
         item('effort')
@@ -192,8 +192,8 @@ class Generator(hkgen.Generator):
             if text != '':
                 content.append(
                     self.enclose(
-                        class_,
-                        text))
+                        text,
+                        class_=class_))
                 newline()
 
         content = []
@@ -217,17 +217,17 @@ class Generator(hkgen.Generator):
         if body is not None:
             content.append(
                 self.enclose(
-                    'body',
                     body,
-                    tag='div',
+                    'div',
+                    'body',
                     newlines=True))
 
         heapid = postitem.post.heapid()
         return self.enclose(
+                   content,
                    class_='postsummary',
                    id=('post_', heapid),
                    newlines=True,
-                   content=content,
                    closing_comment=True)
 
     def calc(self):
