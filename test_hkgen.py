@@ -194,6 +194,26 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose('mystuff', title='mytitle'),
             '<span title="mytitle">mystuff</span>')
 
+        # Testing the `skip_empty` parameter with empty string
+        self.assertTextStructsAreEqual(
+            g.enclose('', skip_empty=True),
+            '')
+
+        # Testing the `skip_empty` parameter with empty list
+        self.assertTextStructsAreEqual(
+            g.enclose('', skip_empty=True),
+            [])
+
+        # Testing the `skip_empty` parameter with non-empty string
+        self.assertTextStructsAreEqual(
+            g.enclose('x', skip_empty=True),
+            '<span>x</span>')
+
+        # Testing the `skip_empty` parameter turned off with empty string
+        self.assertTextStructsAreEqual(
+            g.enclose('', skip_empty=False),
+            '<span></span>')
+
         # All parameters have a value
         self.assertTextStructsAreEqual(
             g.enclose('mystuff\n', class_='myclass', tag='mytag',

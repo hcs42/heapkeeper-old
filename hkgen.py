@@ -170,7 +170,8 @@ class Generator(object):
 
     # TODO test: comment and closing_comment args
     def enclose(self, content, tag='span', class_=None, newlines=False,
-                id=None, comment=None, closing_comment=False, title=None):
+                id=None, comment=None, closing_comment=False, title=None,
+                skip_empty=False):
         """Encloses the given content into a tag.
 
         **Arguments:**
@@ -190,6 +191,12 @@ class Generator(object):
           the closing tag about the class of the matching tag.
         - `title` (|HtmlText| | ``None``) -- Text for the ``title`` attribute
           of the tag.
+        - `skip_empty` (bool) -- If ``True`` and ``content `` is an empty
+          string or list, the function returns an empty string.
+          (Note: ``content`` may be empty without being an empty string or
+          list: e.g. the ``[[], []]`` text structure will be converted to an
+          empty string, but this function will not consider it as empty. This
+          is due to efficiency reasons.)
 
         **Returns:** |HtmlText|
 
@@ -215,6 +222,8 @@ class Generator(object):
         """
 
         assert(hkutils.is_textstruct(content))
+        if skip_empty and (content == [] or content == ''):
+            return ''
 
         newline = '\n' if newlines else ''
         classstr = (' class="', class_, '"') if class_ != None else ''
