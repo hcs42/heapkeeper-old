@@ -10,3 +10,4 @@ releases
 hkrc.py
 *.cfg
 *.pyc
+*.pyo
