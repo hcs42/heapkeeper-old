@@ -375,8 +375,13 @@ class Test_Post__1(unittest.TestCase):
 
         # meta with value
         self.assertEquals(
-            Post.from_str('\n\n[key:value]').meta_dict(),
+            Post.from_str('\n\n[key value]').meta_dict(),
             {'key': 'value'})
+
+        # meta with value with whitespace
+        self.assertEquals(
+            Post.from_str('\n\n[key this is a long value]').meta_dict(),
+            {'key': 'this is a long value'})
 
         # meta without value
         self.assertEquals(
@@ -385,25 +390,25 @@ class Test_Post__1(unittest.TestCase):
 
         # no meta because it is no alone in the line
         self.assertEquals(
-            Post.from_str('\n\nx[key: value]').meta_dict(),
+            Post.from_str('\n\nx[key value]').meta_dict(),
             {})
         self.assertEquals(
-            Post.from_str('\n\n[key: value]x').meta_dict(),
+            Post.from_str('\n\n[key value]x').meta_dict(),
             {})
 
         # whitespace
         self.assertEquals(
-            Post.from_str('\n\n [ key : value ] ').meta_dict(),
+            Post.from_str('\n\n [ key  value ] ').meta_dict(),
             {'key': 'value'})
 
         # two metas
         self.assertEquals(
-            Post.from_str('\n\n[key]\n[key2: value2]').meta_dict(),
+            Post.from_str('\n\n[key]\n[key2 value2]').meta_dict(),
             {'key': None, 'key2': 'value2'})
 
         # same meta key twice
         self.assertEquals(
-            Post.from_str('\n\n[key: value]\n[key: value2]').meta_dict(),
+            Post.from_str('\n\n[key value]\n[key value2]').meta_dict(),
             {'key': 'value2'})
 
     def test__body_stripping(self):

@@ -665,7 +665,7 @@ class Post(object):
 
         **Examples of meta text:** ::
 
-            [priority: low]
+            [priority low]
             [important]
         """
 
@@ -677,7 +677,7 @@ class Post(object):
         if self._meta_dict is None:
             self._meta_dict = {}
             for line in self.body().split('\n'):
-                match = re.match(r'\[([^:]*)(:(.*))?\]$', line)
+                match = re.match(r'\[ *([^ ]*)( (.*))?\]$', line)
                 if match:
                     key = match.group(1).strip()
                     value = match.group(3)
