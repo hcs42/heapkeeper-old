@@ -503,6 +503,23 @@ class Test_Post__1(unittest.TestCase):
         self.assertEquals(p.subject(), 'subject')
         self.assertEquals(p.tags(), ['t3', 't1', 't2'])
 
+    def test__sort(self):
+        d1 = Post.from_str('Date: Thu, 16 Oct 2008 18:56:36 +0200', '3')
+        d2 = Post.from_str('Date: Fri, 17 Oct 2008 18:56:36 +0200', '2')
+        d3 = Post.from_str('Date: Sat, 18 Oct 2008 18:56:36 +0200', '1')
+        n1 = Post.from_str('', '6')
+        n2 = Post.from_str('', '5')
+        n3 = Post.from_str('', '4')
+        l1 = [d3, d2, d1]
+        l2 = [n1, n2, n3]
+        l3 = [d1, n1, d2, n2, d3, n3]
+        l1.sort()
+        l2.sort()
+        l3.sort()
+        self.assertEquals(l1, [d1, d2, d3])
+        self.assertEquals(l2, [n3, n2, n1])
+        self.assertEquals(l3, [d1, d2, d3, n3, n2, n1])
+
 
 class Test_Post__2(unittest.TestCase):
 

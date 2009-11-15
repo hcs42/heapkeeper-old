@@ -908,6 +908,29 @@ class Post(object):
         else:
             return False
 
+    def __lt__(self, other):
+        """Determines the order of posts.
+
+        The following method should be used to decide whether post1 or post2
+        is greater:
+        - If both of them have a timestamp and these are not equal, the post
+         with the later timestamp is greater.
+        - Otherwise the post with the greater heapid is the greater.
+
+        **Arguments:**
+
+        - *other* (:class:`Post`) - the post to compare this to
+
+        **Returns:** ``bool``
+        """
+        assert(isinstance(other, Post))
+        this_dt = self.datetime()
+        other_dt = other.datetime()
+        if this_dt and other_dt:
+            return this_dt < other_dt
+        else:
+            return self.heapid() < other.heapid()
+
     def __repr__(self):
         return "<post '" + self._heapid + "'>"
 
