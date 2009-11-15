@@ -172,7 +172,7 @@ class Generator(hkgen.Generator):
         item('effort')
         item('version', prefix='v')
         item('priority')
-        item('assigned')
+        item('assign')
         return hkutils.insert_sep(items, ', ')
 
     # TODO docs
