@@ -117,7 +117,8 @@ class Generator(hkgen.Generator):
         return False
 
     def is_post_wanted(self, post):
-        return (post.has_tag('hh') and not post.has_tag('post syntax'))
+        return (post.has_tag('hh') and not post.has_tag('post syntax') and
+                not post.has_tag('meta'))
 
     def is_review_needed(self, post):
         return not post.has_tag('reviewed')
