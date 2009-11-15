@@ -71,6 +71,22 @@ class MyGenerator(hkgen.Generator):
             return self.print_postitems(normal_postitems)
 
 
+class MyIssueTrackerGenerator(issue_tracker.Generator):
+
+    def __init__(self, postdb):
+        """Constructor.
+
+        **Arguments:**
+
+        - `postdb` (|PostDB|)
+        """
+
+        super(MyIssueTrackerGenerator, self).__init__(postdb)
+
+        # My CSS files that modifies the stuff in the default issues.css file.
+        # It is located in my HTML directory.
+        self.options.cssfiles.append('issues_hcs.css')
+
 class MyTestGenerator(MyGenerator):
 
     def __init__(self, postdb):
@@ -125,13 +141,13 @@ class MyTestGenerator(MyGenerator):
 
 
 def gen_indices(postdb):
-    g = issue_tracker.Generator(postdb)
+    g = MyIssueTrackerGenerator(postdb)
     g.write_all()
     g = MyGenerator(postdb)
     g.write_all()
 
 def gen_indices_fast(postdb):
-    g = issue_tracker.Generator(postdb)
+    g = MyIssueTrackerGenerator(postdb)
     g.calc()
     g.write_issues_sorted_page()
     g = MyGenerator(postdb)
