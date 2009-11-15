@@ -1800,12 +1800,14 @@ class PostSet(set):
         return self.expb().expf()
 
     def sorted_list(self):
-        """Returns the list of posts contains by the postset sorted by their
-        date."""
+        """Returns the sorted list of posts contained in the postset.
+        
+        **Returns:** ``[Post]`` - the sorted list
+        """
 
-        posts = [ (post.timestamp(), post.heapid(), post) for post in self ]
+        posts = list(self)
         posts.sort()
-        return [ post for timestamp, heapid, post in posts]
+        return posts
 
     # Overriding set's methods
 
