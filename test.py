@@ -40,7 +40,7 @@ testmodules = ['test_hkutils',
 
 def main(args):
     hklib.set_log(False)
-    if args in [['-h'], '--help']:
+    if len(args) > 0 and args[0] in ['-h', '--help']:
         sys.stdout.write(__doc__)
     elif args == []:
         suites = \
