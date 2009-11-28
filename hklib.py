@@ -1108,7 +1108,6 @@ class PostDB(object):
 
         self.heapid_to_post = {}
         self.messid_to_heapid = {}
-        heapids = []
 
         for file in os.listdir(self._postfile_dir):
             if file.endswith('.post'):
@@ -1127,11 +1126,6 @@ class PostDB(object):
                 else:
                     post.load(silent=True)
                 self._add_post_to_dicts(post)
-
-                try:
-                    heapids.append(int(heapid))
-                except ValueError:
-                    pass
 
         self._next_heapid = {}
         self.touch()
