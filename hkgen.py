@@ -299,7 +299,8 @@ class Generator(object):
         **Returns:** |HtmlText|
         """
 
-        assert(hkutils.is_textstruct(content))
+        assert hkutils.is_textstruct(content), \
+               'Parameter is not a valid text structure:\n%s\n' % (content,)
 
         if flat:
             content = \
