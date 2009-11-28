@@ -22,6 +22,7 @@
 
 
 import datetime
+import itertools
 import os
 import subprocess
 import time
@@ -86,6 +87,28 @@ class MyIssueTrackerGenerator(issue_tracker.Generator):
         # My CSS files that modifies the stuff in the default issues.css file.
         # It is located in my HTML directory.
         self.options.cssfiles.append('issues_hcs.css')
+
+    def is_thread_open_idea(self, root):
+        return root.has_tag('idea')
+
+    def calc(self):
+        issue_tracker.Generator.calc(self)
+        open_idea_threads = \
+            self.issue_threads.collect(self.is_thread_open_idea)
+        self.open_idea_threads = open_idea_threads
+
+    def enclose_issue_posts_core(self, posts):
+        xpostitems = \
+            issue_tracker.Generator.enclose_issue_posts_core(self, posts)
+
+        # We add 'open' spans around the threads that are open
+        xpostitems = itertools.imap(
+                         self.enclose_threads(
+                            'open-idea',
+                            self.open_idea_threads),
+                         xpostitems)
+        return xpostitems
+
 
 class MyTestGenerator(MyGenerator):
 

@@ -225,7 +225,7 @@ class Generator(hkgen.Generator):
         self.review_needed_section = review_needed_section
         self.closed_section = closed_section
 
-    def enclose_issue_posts(self, posts):
+    def enclose_issue_posts_core(self, posts):
         """Walks the given post set and encloses the issue posts that posts
         that need review/are open into ``'review_needed'`` and ``'open-issue'``
         spans.
@@ -263,7 +263,10 @@ class Generator(hkgen.Generator):
                             'open-issue',
                             self.open_threads),
                          xpostitems)
+        return xpostitems
 
+    def enclose_issue_posts(self, posts):
+        xpostitems = self.enclose_issue_posts_core(posts)
         return self.print_postitems(xpostitems)
 
     def print_issues_all_page(self):
