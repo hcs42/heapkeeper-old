@@ -17,8 +17,6 @@ Generating pages
 ----------------
 
 .. autofunction:: gen_indices
-.. autofunction:: gen_threads
-.. autofunction:: gen_posts
 
 Miscellaneous
 -------------

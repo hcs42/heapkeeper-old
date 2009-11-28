@@ -151,19 +151,6 @@ types in the documentation so we can talk about them easily.
 
   Real type: fun(|PostDB|))
 
-.. _hkshell_GenThreadsFun:
-
-- **GenThreadsFun(postdb)** -- Function that generates thread pages.
-
-  Real type: fun(|PostDB|))
-
-.. _hkshell_GenPostsFun:
-
-- **GenPostsFun(postdb, postset)** -- Function that generates post pages.
-  `postset` is the set of posts for which pages should be generated.
-
-  Real type: fun(|PostDB|, |PostSet|))
-
 .. _hkshell_EditFileFun:
 
 - **EditFileFun(filename)** -- Function that opens an editor with the given
@@ -198,7 +185,6 @@ Features
 --------
 
 gen_indices        - automatically regenerates the index pages
-gen_posts          - automatically regenerates the post pages after
 save               - automatically saves the post database after commands
 timer              - times the commands
 touched_post_printer - prints touched posts
@@ -212,10 +198,7 @@ hh()               - print help about the commands
 s()                - save
 x()                - save and exit
 rl()               - reload the database (changes will be lost!)
-gi()               - generate index pages
-gt()               - generate thread pages
-gp()               - generate post pages
-ga()               - generate all pages
+g()                - generate HTML pages
 gen_page(pps)      - generates a page that contains the posts
 p(pp)              - get a post
 ps(pps)            - create a postset
@@ -284,18 +267,12 @@ class Callbacks(object):
 
     - `gen_indices` (|GenIndicesFun|) -- Function to be used for generating
       index pages. Default value: :func:`hkcustomlib.gen_indices`.
-    - `gen_threads` (|GenThreadsFun|) -- Function to be used for generating
-      thread pages. Default value: :func:`hkcustomlib.gen_threads`.
-    - `gen_posts` (|GenPostsFun|) -- Function to be used for generating post
-      pages. Default value: :func:`hkcustomlib.gen_posts`.
     - `edit_files` (|EditFileFun|) -- Function to be used for editing posts.
       Default value: :func:`hkcustomlib.edit_files`.
     """
 
     def __init__(self,
                  gen_indices=hkcustomlib.gen_indices,
-                 gen_threads=hkcustomlib.gen_threads,
-                 gen_posts=hkcustomlib.gen_posts,
                  edit_files=hkcustomlib.edit_files):
 
         super(Callbacks, self).__init__()
@@ -766,26 +743,6 @@ def gen_indices_listener(e):
     if (e.type == 'after' and len(modification_listener.touched_posts()) > 0):
         gen_indices()
 
-def gen_threads_listener(e):
-    """Regenerates the thread pages after commands that changed the posts.
-
-    **Type:** |Listener|
-    """
-
-    if (e.type == 'after' and len(modification_listener.touched_posts()) > 0):
-        gen_threads()
-
-def gen_posts_listener(e):
-    """Regenerates the post pages for the changed posts after commands.
-
-    **Type:** |Listener|
-    """
-
-    if e.type == 'after':
-        touched_posts = modification_listener.touched_posts()
-        if len(touched_posts) > 0:
-            gen_posts()
-
 def save_listener(e):
     """Saves the database after commands that changed it.
 
@@ -925,10 +882,6 @@ def set_feature(state, feature):
 
     if feature in ['gi', 'gen_indices']:
         set_listener_feature(gen_indices_listener, state)
-    elif feature in ['gt', 'gen_threads']:
-        set_listener_feature(gen_threads_listener, state)
-    elif feature in ['gp', 'gen_posts']:
-        set_listener_feature(gen_posts_listener, state)
     elif feature in ['s', 'save']:
         set_listener_feature(save_listener, state)
     elif feature in ['t', 'timer']:
@@ -953,7 +906,6 @@ def features():
 
     g = get_listener_feature
     return {'gen_indices': g(gen_indices_listener),
-            'gen_posts': g(gen_posts_listener),
             'save': g(save_listener),
             'timer': g(timer_listener),
             'touched_post_printer': g(touched_post_printer_listener)}
@@ -996,21 +948,6 @@ def write(s):
 def gen_indices():
     """Generates index pages."""
     options.callbacks.gen_indices(postdb())
-
-def gen_threads():
-    """Generates thread pages."""
-    options.callbacks.gen_threads(postdb())
-
-def gen_posts():
-    """Generates post pages for the modified posts."""
-    posts = postpage_listener.outdated_post_pages()
-    posts = posts.collect(lambda p: not p.is_deleted())
-    options.callbacks.gen_posts(postdb(), posts)
-
-    # It is necessary to iterate over `posts.copy()` instead of just `posts`,
-    # because `posts` will change as a result of the events.
-    for post in posts.copy():
-        event('post_page_created', post=post)
 
 def tagset(tags):
     """Converts the argument to a set that contains the given tags.
@@ -1114,30 +1051,19 @@ def rl():
 @hkshell_cmd(add_events=True)
 def gi():
     """Generates the index pages."""
+    hklib.log('WARNING: using hkshell.gi() is deprecated. Use g() instead.')
     gen_indices()
-
-@hkshell_cmd(add_events=True)
-def gt():
-    """Generates the thread pages."""
-    gen_threads()
-
-@hkshell_cmd(add_events=True)
-def gp():
-    """Generates the post pages."""
-    gen_posts()
 
 @hkshell_cmd(add_events=True)
 def g():
-    """Generates the index and post pages."""
-    hklib.log('WARNING: using hkshell.g() is deprecated.')
-    ga()
+    """Generates the index pages."""
+    gen_indices()
 
 @hkshell_cmd(add_events=True)
 def ga():
-    """Generates the index, the thread and the post pages."""
+    """Generates the index pages."""
+    hklib.log('WARNING: using hkshell.gi() is deprecated. Use g() instead.')
     gen_indices()
-    gen_threads()
-    gen_posts()
 
 @hkshell_cmd()
 def gen_page(pps=None):

@@ -80,8 +80,6 @@ Concrete listeners
     .. automethod:: outdated_post_pages
 
 .. autofunction:: gen_indices_listener
-.. autofunction:: gen_threads_listener
-.. autofunction:: gen_posts_listener
 .. autofunction:: save_listener
 .. autofunction:: timer_listener
 .. autofunction:: event_printer_listener
@@ -119,8 +117,6 @@ following:
 
 - *gi*, *gen_indices* -- If ``on``: after executing a command that changed at
   least one post, Heapkeeper automatically regenerates the index pages.
-- *gp*, *gen_posts* -- If ``on``: after executing a command, Heapkeeper
-  automatically regenerates the post pages of the modified posts.
 - *s*, *save* -- If ``on``: automatically saves the post database after the execution of
   commands.
 - *t*, *timer* -- If ``on``: times the commands: the execution time of each
@@ -141,8 +137,6 @@ Generic functionality
 
 .. autofunction:: write
 .. autofunction:: gen_indices
-.. autofunction:: gen_threads
-.. autofunction:: gen_posts
 .. autofunction:: tagset
 
 .. _hkshell_commands:
@@ -161,9 +155,8 @@ General commands
 .. autofunction:: s()
 .. autofunction:: x()
 .. autofunction:: rl()
+.. autofunction:: g()
 .. autofunction:: gi()
-.. autofunction:: gt()
-.. autofunction:: gp()
 .. autofunction:: ga()
 .. autofunction:: gen_page(pps)
 .. autofunction:: opp()

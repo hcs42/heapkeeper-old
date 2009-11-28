@@ -102,17 +102,3 @@ Generator
 ---------
 
 .. class:: GeneratorOptions
-
-.. autoclass:: Generator
-
-    **Methods:**
-
-    .. automethod:: __init__
-    .. automethod:: post
-    .. automethod:: index_toc
-    .. automethod:: post_summary
-    .. automethod:: post_summary_end
-    .. automethod:: thread
-    .. automethod:: section
-    .. automethod:: gen_indices
-    .. automethod:: gen_posts

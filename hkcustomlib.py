@@ -69,6 +69,7 @@ import time
 
 import hkutils
 import hklib
+import hkgen
 
 
 ##### Date #####
@@ -169,38 +170,8 @@ def gen_indices(postdb):
     **Type:** |GenIndicesFun|
     """
 
-    date_options = date_defopts({'postdb': postdb})
-    date_fun = create_date_fun(date_options)
-    genopts = hklib.GeneratorOptions()
-    genopts.postdb = postdb
-    section = hklib.Section('', postdb.all())
-    genopts.indices = [hklib.Index([section])]
-    hklib.Generator(postdb).gen_indices(genopts)
-
-def gen_threads(postdb):
-    """Generates thread pages using the default options.
-
-    **Type:** |GenThreadsFun|
-    """
-
-    date_options = date_defopts({'postdb': postdb})
-    date_fun = create_date_fun(date_options)
-    genopts = hklib.GeneratorOptions()
-    genopts.postdb = postdb
-    genopts.print_thread_of_post = True
-    hklib.Generator(postdb).gen_threads(genopts)
-
-def gen_posts(postdb, posts):
-    """Generates post pages using the default options.
-
-    **Type:** |GenPostsFun|
-    """
-
-    date_options = date_defopts({'postdb': postdb})
-    date_fun = create_date_fun(date_options)
-    genopts = hklib.GeneratorOptions()
-    genopts.postdb = postdb
-    hklib.Generator(postdb).gen_posts(genopts, posts.exp())
+    g = hkgen.Generator(postdb)
+    g.write_all()
 
 ##### Misc #####
 

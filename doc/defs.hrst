@@ -26,8 +26,6 @@
 .. |GeneratorOptions| replace:: :class:`GeneratorOptions <hklib.GeneratorOptions>`
 .. |Generator| replace:: :class:`Generator <hklib.Generator>`
 .. |GenIndicesFun| replace:: :ref:`GenIndicesFun <hkshell_GenIndicesFun>`
-.. |GenPostsFun| replace:: :ref:`GenPostsFun <hkshell_GenPostsFun>`
-.. |GenThreadsFun| replace:: :ref:`GenThreadsFun <hkshell_GenThreadsFun>`
 .. |Heapid| replace:: :ref:`Heapid <hklib_Heapid>`
 .. |hkcustomlib| replace:: :mod:`hkcustomlib`
 .. |hkgen| replace:: :mod:`hkgen`
