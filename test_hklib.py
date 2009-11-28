@@ -211,6 +211,44 @@ class Test_Post__1(unittest.TestCase):
 
     """Tests the Post class."""
 
+    def test_assert_is_post_id(self):
+
+        # post index is a string
+        self.assertTrue(hklib.is_post_id(('myheap', 'mypost')))
+
+        # post index is an integer
+        self.assertEquals(hklib.is_post_id(('myheap', 0)))
+
+        # heap id is not a string
+        self.assertFalse(hklib.is_post_id((0, 1)))
+
+        # post index is not a string nor an integer
+        self.assertFalse(hklib.is_post_id(('myheap', [])))
+
+        # too long tuple
+        self.assertFalse(hklib.is_post_id(('myheap', 'mypost', 1)))
+
+        # too short tuple
+        self.assertFalse(hklib.is_post_id(('myheap')))
+
+        # not a tuple
+        self.assertFalse(hklib.is_post_id(['myheap', 'mypost']))
+
+        # not a tuple; this test case may pass in the future
+        self.assertFalse(hklib.is_post_id('myheap/mypost'))
+
+    def test_assert_is_post_id(self):
+
+        # assertion passes
+        self.assertEquals(
+            hklib.assert_is_post_id(('myheap', 'mypost')),
+            None)
+
+        # assertion fails
+        self.assertRaises(
+            AssertionError,
+            lambda: hklib.assert_is_post_id((0, 1)))
+
     def test__parsing(self):
 
         sio = StringIO.StringIO(post1_text)

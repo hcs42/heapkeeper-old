@@ -151,6 +151,16 @@ def log(*args):
 # This variable should be put into hklib.Options, but we don't have that yet.
 localtime_fun = time.localtime
 
+def is_post_id(post_id):
+    return (type(post_id) == tuple and
+            len(post_id) == 2 and
+            type(post_id[0]) == str and
+            type(post_id[1]) in (str, int))
+
+def assert_is_post_id(post_id):
+    assert is_post_id(post_id), \
+           'The following object is not a post id: %s' % (post_id,)
+
 
 class Post(object):
 
