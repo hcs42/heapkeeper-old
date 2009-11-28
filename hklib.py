@@ -1221,10 +1221,10 @@ class PostDB(object):
                     numbers.append(int(number_str))
                 except ValueError:
                     pass
-            try:
-                next_number = max(numbers) + 1
-            except ValueError:
+            if numbers == []:
                 next_number = 1
+            else:
+                next_number = max(numbers) + 1
             cache[prefix] = next_number + 1
             return prefix + str(next_number)
 
