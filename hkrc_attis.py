@@ -220,7 +220,8 @@ main()
 #    return postdb.postset([post._heapid for post in postdb.roots() \
 #        if post.date() != '' \
 #            and read_date(post) > datetime.datetime(year, month, 1) \
-#            and read_date(post) < datetime.datetime(next_year, next_month, 1)])
+#            and read_date(post) < \
+#                datetime.datetime(next_year, next_month, 1)])
 #
 #def do_monthly(postdb):
 #    start_date, end_date = get_date_limits(postdb)

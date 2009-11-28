@@ -1801,7 +1801,7 @@ class PostSet(set):
 
     def sorted_list(self):
         """Returns the sorted list of posts contained in the postset.
-        
+
         **Returns:** ``[Post]`` - the sorted list
         """
 
