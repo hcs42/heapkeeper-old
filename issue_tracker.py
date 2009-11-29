@@ -60,18 +60,6 @@ import hkshell
 
 ##### Utilities #####
 
-def red(s):
-    return hklib.Html.enclose('important', s)
-
-def mod_set(tagset):
-    def capitalize(tag):
-        if tag in tagset:
-            tagset.remove(tag)
-            tagset.add(red(tag.upper()))
-    capitalize('prop')
-    capitalize('issue')
-    capitalize('feature')
-    capitalize('bug')
 
 ##### Index page generation #####
 
@@ -84,24 +72,37 @@ class Generator(hkgen.Generator):
         self.options.cssfiles.append('issues.css')
         self.options.files_to_copy.append('issues.css')
 
+    def red(self, s):
+        return hkutils.textstruct_to_str(self.enclose(s, class_='important'))
+
+    def mod_set(self, tagset):
+        def capitalize(tag):
+            if tag in tagset:
+                tagset.remove(tag)
+                tagset.add(self.red(tag.upper()))
+        capitalize('prop')
+        capitalize('issue')
+        capitalize('feature')
+        capitalize('bug')
+
     def print_postitem_tags_core(self, postitem):
         post = postitem.post
         parent = self._postdb.parent(post)
         post_tags = set(post.tags())
-        mod_set(post_tags)
+        self.mod_set(post_tags)
         if parent is None or postitem.pos == 'flat':
             tags = post_tags
         else:
             parent_tags = set(parent.tags())
-            mod_set(parent_tags)
+            self.mod_set(parent_tags)
             tags = \
                 set([ '-' + tag for tag in parent_tags - post_tags]).union( \
                 set([ '+' + tag for tag in post_tags - parent_tags]))
 
         if 'close' in post.meta_dict():
-            tags.add(red('CLOSE'))
+            tags.add(self.red('CLOSE'))
         if 'open' in post.meta_dict():
-            tags.add(red('OPEN'))
+            tags.add(self.red('OPEN'))
         if len(tags) == 0:
             return ''
         else:
