@@ -248,8 +248,8 @@ def editor_to_editor_list(editor):
         ['vim', 'arg1', 'arg2']
         >>> editor_to_editor_list('vim long\\ argument')
         ['vim', 'long argument']
-        >>> editor_to_editor_list('vim argument\\\\with\\\\backspace')
-        ['vim', 'argument\\with\\backspace']
+        >>> editor_to_editor_list('vim argument\\\\with\\\\backslash')
+        ['vim', 'argument\\with\\backslash']
     """
 
     editor_list = []
