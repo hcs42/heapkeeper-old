@@ -913,16 +913,18 @@ class Post(object):
 
         The following method should be used to decide whether post1 or post2
         is greater:
+
         - If both of them have a timestamp and these are not equal, the post
-         with the later timestamp is greater.
+          with the later timestamp is greater.
         - Otherwise the post with the greater heapid is the greater.
 
         **Arguments:**
 
-        - *other* (:class:`Post`) - the post to compare this to
+        - `other` (|Post|) -- The post to compare this to
 
-        **Returns:** ``bool``
+        **Returns:** bool
         """
+
         assert(isinstance(other, Post))
         this_dt = self.datetime()
         other_dt = other.datetime()
