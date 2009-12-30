@@ -1420,3 +1420,57 @@ class Generator(object):
         self.write_main_index_page()
         self.write_thread_pages()
         self.write_post_pages()
+
+
+class GivenPostsGenerator(Generator):
+    """Creates a page that shows the given posts.
+
+    The page will contain the given posts, embedded in their thread structure.
+    The posts that are not given but are thread mates of a given post will be
+    shown as inactive.
+    """
+
+    # TODO: test
+    def __init__(self, postdb):
+        """Constructor.
+
+        **Arguments:**
+
+        - `postdb` (|PostDB|)
+        """
+
+        super(GivenPostsGenerator, self).__init__(postdb)
+        self.posts = postdb.postset([])
+        self.html_filename = 'given_posts.html'
+        self.options.html_title = 'GivenPostsGenerator'
+
+    # TODO: test
+    def print_given_posts_page(self):
+        """Prints the page that contains the given posts.
+
+        **Returns:** |HtmlText|
+        """
+
+        # Getting the posts in the interesting threads
+        xpostitems = self.walk_exp_posts(self.posts)
+
+        # Reversing the thread order
+        xpostitems = self.reverse_threads(xpostitems)
+
+        # Printing the page
+        return self.print_postitems(xpostitems)
+
+    # TODO: test
+    def write_given_posts_page(self):
+        """Writes the "given post" page."""
+        hklib.log('Generating %s...' % (self.html_filename,))
+        self.write_page(
+            self.html_filename,
+            self.print_given_posts_page())
+
+    # TODO: test
+    def write_all(self):
+        """Writes the "given post" page."""
+
+        self.write_given_posts_page()
+

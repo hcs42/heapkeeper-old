@@ -70,3 +70,15 @@ Generator
     .. automethod:: write_thread_pages
     .. automethod:: write_post_pages
     .. automethod:: write_all
+
+GivenPostsGenerator
+-------------------
+
+.. autoclass:: GivenPostsGenerator
+
+    **Methods:**
+
+    .. automethod:: __init__
+    .. automethod:: print_given_posts_page
+    .. automethod:: write_given_posts_page
+    .. automethod:: write_all
