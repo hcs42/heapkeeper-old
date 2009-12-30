@@ -165,6 +165,7 @@ General commands
 .. autofunction:: gt()
 .. autofunction:: gp()
 .. autofunction:: ga()
+.. autofunction:: gen_page(pps)
 .. autofunction:: opp()
 .. autofunction:: ls(pps=None, show_author=True, show_tags=False, show_date=True, indent=2)
 .. autofunction:: cat(pps)
@@ -196,6 +197,11 @@ Subject manipulator commands
 .. autofunction:: capitalize_subject
 .. autofunction:: cS(pps)
 .. autofunction:: cSr(pps)
+
+Search commands
+^^^^^^^^^^^^^^^
+
+.. autofunction:: grep(pattern, pps=None)
 
 .. _starting_hkshell:
 

@@ -216,6 +216,7 @@ gi()               - generate index pages
 gt()               - generate thread pages
 gp()               - generate post pages
 ga()               - generate all pages
+gen_page(pps)      - generates a page that contains the posts
 p(pp)              - get a post
 ps(pps)            - create a postset
 ls(ps)             - get a summary of a postset
@@ -242,6 +243,7 @@ eR(pps)            - edit posts as files recursively
 enew()             - creates and edits a new post as a file
 enew_str(str)      - creates a new post from a string
 dl()               - download new mail
+grep(pattern[, pps]) - searches in the post database
 
 postdb()           - the post database object
 c()                - shorthand for postdb().all().collect
@@ -258,6 +260,7 @@ import ConfigParser
 import functools
 import optparse
 import os
+import re
 import sys
 import tempfile
 import time
@@ -265,6 +268,7 @@ import time
 import hkutils
 import hklib
 import hkcustomlib
+import hkgen
 
 
 ##### Callbacks #####
@@ -1135,6 +1139,24 @@ def ga():
     gen_threads()
     gen_posts()
 
+@hkshell_cmd()
+def gen_page(pps=None):
+    """Generetes a post page from the posts in `pps`.
+
+    See more information in the documentation of
+    :class:`hkgen.GivenPostsGenerator`.
+
+    **Argument:**
+
+    - `pps` (|PrePostSet|)
+    """
+
+    ps = postdb().postset(pps)
+    g = hkgen.GivenPostsGenerator(postdb())
+    g.posts = ps
+    g.html_filename = 'gen_page.html'
+    g.write_all()
+
 @hkshell_cmd(add_events=True)
 def opp():
     """Returns the posts whose post pages are outdated.
@@ -1586,6 +1608,60 @@ def cSr(posts):
     """
 
     posts.expf().forall(capitalize_subject)
+
+##### Commands / search #####
+
+@hkshell_cmd()
+def grep(pattern, pps=None):
+    """Searches for `pattern` in `pps`.
+
+    **Arguments:**
+
+    - `pattern` (str) -- Regular expression.
+    - `pps` (|PrePostSet|)
+
+    **Returns:**
+
+    - `pps` (|PrePostSet|)
+
+    **Examples:**
+
+    Posts that contain ``"hh"``:
+
+        >>> grep("master branch")
+        PostSet([<post '3059'>, <post '2622'>])
+
+    Posts that contain ``"hh"`` and ``"master branch"``:
+
+        >>> grep("master branch", grep("hh"))
+        PostSet([<post '3059'>])
+
+    :func:`grep` can be used together with :func:`gen_page`:
+
+        >>> gen_page(grep("master branch", grep("hh")))
+    """
+
+    if pps == None:
+        ps = postdb().all()
+    else:
+        ps = postdb().postset(pps)
+
+    r = re.compile(pattern)
+    def has_pattern(post):
+        if (r.search(post.author()) or
+            r.search(post.subject()) or
+            r.search(post.messid()) or
+            r.search(post.date_str()) or
+            r.search(post.parent()) or
+            r.search(post.heapid()) or
+            r.search(post.body())):
+            return True
+        for tag in post.tags():
+            if r.search(tag):
+                return True
+        return False
+
+    return ps.collect(has_pattern)
 
 
 ##### Starting hkshell #####
