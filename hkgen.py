@@ -899,7 +899,7 @@ class Generator(object):
         This function walks the expanded post set (``posts.exp()``), but
         prints the posts that are present in the original post set differently
         from those that are present only in the expanded post set. Those that
-        ae present only in the expanded set (``posts.exp() - posts``) will be
+        are present only in the expanded set (``posts.exp() - posts``) will be
         enclosed in ``'post_inactive'`` span. Other than this, the
         :func:`Generator.print_postitem` method will be used to print both type
         of posts.
@@ -913,8 +913,13 @@ class Generator(object):
 
         assert(isinstance(posts, hklib.PostSet))
 
-        roots = posts.collect.is_root()
+        # roots: roots of posts in `posts`; these threads have to be walked
+        roots = posts.expb().collect.is_root()
         roots_list = roots.sorted_list()
+
+        # posts_exp: thread mates of posts in `posts`; these posts have to be
+        # printed. The posts in posts_exp that are present also in `posts` will
+        # be active, the others will be inactive.
         posts_exp = roots.expf()
         print_fun = self.print_postitem
 
