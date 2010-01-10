@@ -29,6 +29,7 @@ Usage:
 from __future__ import with_statement
 
 import ConfigParser
+import itertools
 import os
 import os.path
 import re
@@ -510,15 +511,10 @@ class Test_Post__1(unittest.TestCase):
         n1 = Post.from_str('', '6')
         n2 = Post.from_str('', '5')
         n3 = Post.from_str('', '4')
-        l1 = [d3, d2, d1]
-        l2 = [n1, n2, n3]
-        l3 = [d1, n1, d2, n2, d3, n3]
-        l1.sort()
-        l2.sort()
-        l3.sort()
-        self.assertEquals(l1, [d1, d2, d3])
-        self.assertEquals(l2, [n3, n2, n1])
-        self.assertEquals(l3, [d1, d2, d3, n3, n2, n1])
+
+        for p1, p2 in itertools.combinations([d1, d2, d3, n3, n2, n1], 2):
+            self.assertTrue(p1 < p2)
+            self.assertFalse(p2 < p1)
 
 
 class Test_Post__2(unittest.TestCase):
