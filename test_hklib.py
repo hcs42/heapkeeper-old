@@ -511,8 +511,11 @@ class Test_Post__1(unittest.TestCase):
         n1 = Post.from_str('', '6')
         n2 = Post.from_str('', '5')
         n3 = Post.from_str('', '4')
+        d4 = Post.from_str('Date: Sun, 19 Oct 2008 18:56:36 +0200', '7')
+        d5 = Post.from_str('Date: Sun, 19 Oct 2008 18:56:36 +0200', '8')
 
-        for p1, p2 in itertools.combinations([d1, d2, d3, n3, n2, n1], 2):
+        order = [d1, d2, d3, n3, n2, n1, d4, d5]
+        for p1, p2 in itertools.combinations(order, 2):
             self.assertTrue(p1 < p2)
             self.assertFalse(p2 < p1)
 

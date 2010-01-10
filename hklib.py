@@ -929,9 +929,11 @@ class Post(object):
         this_dt = self.datetime()
         other_dt = other.datetime()
         if this_dt and other_dt:
-            return this_dt < other_dt
-        else:
-            return self.heapid() < other.heapid()
+            if this_dt < other_dt:
+                return True
+            elif this_dt > other_dt:
+                return False
+        return self.heapid() < other.heapid()
 
     def __repr__(self):
         return "<post '" + self._heapid + "'>"
