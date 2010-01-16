@@ -2252,43 +2252,6 @@ class EmailDownloader(object):
         return PostSet(self._postdb, new_posts)
 
 
-##### Section #####
-
-class Section(object):
-    """Represents a set of posts that should be printed with a title
-    according to the specified options.
-
-    This class follows the Options pattern.
-
-    Data attributes:
-    title --- The title of the section.
-        Type: str
-    posts --- The posts that are in the section. If it is a list, the order of
-        the posts can matter. (E.g. when printed flatly, the posts will be
-        printed in the same order as they are in the list.) If it is the
-        CYCLES constant, the posts that are in a cycle in the database will be
-        printed.
-        Type: [Post] | PostSet | hklib.CYCLES
-    is_flat --- If true, the section should be printed flatly, otherwise in a
-        threaded structure.
-        Type: bool
-        Default value: False
-    count --- If True, the number of posts in the section is displayed
-        after the title.
-        Type: bool
-        Default value: False
-    """
-
-    def __init__(self,
-                 title=hkutils.NOT_SET,
-                 posts=hkutils.NOT_SET,
-                 is_flat=False,
-                 count=False):
-
-        super(Section, self).__init__()
-        hkutils.set_dict_items(self, locals())
-
-
 ##### GeneratorOptions #####
 
 class GeneratorOptions(object):
