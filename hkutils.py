@@ -81,9 +81,9 @@ def int_time(next_action = ''):
 
 def print_time(next_action = ''):
     """Calls :func:`int_time` and prints the result."""
-    pm_action, t = int_time(next_action)
-    if pm_action != '':
-        print '%.6f %s' % (t, pm_action)
+    old_pm_action, t = int_time(next_action)
+    if old_pm_action != '':
+        print '%.6f %s' % (t, old_pm_action)
     else:
         print '%.6f' % (t)
 
@@ -101,6 +101,7 @@ class HkException(Exception):
 
         - `value` (object) -- The reason of the error.
         """
+        Exception.__init__(self)
         self.value = value
 
     def __str__(self):
@@ -124,7 +125,7 @@ def arginfo(fun):
     **Returns:** ([str], {str: object})
     """
 
-    args, varargs, varkw, defaults = inspect.getargspec(fun)
+    args, _varargs, _varkw, defaults = inspect.getargspec(fun)
     args_without_default = args[:-len(defaults)]
     argnames_with_default = args[-len(defaults):]
     d = {}
@@ -167,7 +168,7 @@ def set_defaultoptions(options, fun, excluded):
 
 ##### Option handling #####
 
-def set_dict_items(object, dict):
+def set_dict_items(obj, d):
     """Sets the items in the dictionary as attributes of the given object.
 
     If ``'self'`` is included in the dictionary as a key, it will be ignored.
@@ -176,15 +177,15 @@ def set_dict_items(object, dict):
 
     **Arguments:**
 
-    - `object` (object)
-    - `dict` (dict)
+    - `obj` (object)
+    - `d` (dict)
     """
 
-    for var, value in dict.items():
+    for var, value in d.items():
         if var != 'self' and value != NOT_SET:
-            setattr(object, var, value)
+            setattr(obj, var, value)
 
-def check(object, attributes):
+def check(obj, attributes):
     """Checks that the object does have all the given attributes.
 
     It throws `AttributeError` if the object does not have one of the
@@ -192,14 +193,14 @@ def check(object, attributes):
 
     **Arguments:**
 
-    - `object` (object)
+    - `obj` (object)
     - `attributes` ([str])
 
     **Returns:** ``True``
     """
 
     for attr in attributes:
-        getattr(object, attr)
+        getattr(obj, attr)
     return True
 
 
@@ -259,7 +260,7 @@ def is_textstruct(text):
                 if not is_textstruct(item):
                     return False
             return True
-        except:
+        except: # pylint: disable-msg=W0702
             return False
 
 
@@ -353,7 +354,7 @@ def copy_wo(src, dst):
         return True
     return False
 
-def plural(n, singular='', plural='s'):
+def plural(n, singular='', plural_ending='s'):
     """Give the appropriate (singular or plural) noun ending for a number.
 
     Minus one is singular. This decision is based on
@@ -372,7 +373,7 @@ def plural(n, singular='', plural='s'):
 
     - `n` (int) -- The number for which we find the matching ending.
     - `singular` (str) -- The singular ending.
-    - `plural` (str) -- The plural ending.
+    - `plural_ending` (str) -- The plural ending.
 
     **Returns**: str
     """
@@ -380,7 +381,7 @@ def plural(n, singular='', plural='s'):
     if n == 1 or n == -1:
         return singular
     else:
-        return plural
+        return plural_ending
 
 def add_method(obj, methodname, fun):
     """Adds a new method to the given object.
@@ -431,6 +432,8 @@ def insert_sep(seq, separator):
 ##### Constants #####
 
 class NOT_SET:
+    # "Class has no __init__ method" # pylint: disable-msg=W0232
+    # "Too few public methods" # pylint: disable-msg=R0903
     """A totally empty class that is used only as a constant.
 
     If the value of an option is ``NOT_SET``, is represents that the option is
