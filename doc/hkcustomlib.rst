@@ -5,14 +5,6 @@
 
 .. automodule:: hkcustomlib
 
-Date
-----
-
-.. autofunction:: format_date
-.. autofunction:: create_should_print_date_fun
-.. autofunction:: create_date_fun
-.. autofunction:: date_defopts
-
 Generating pages
 ----------------
 

@@ -89,15 +89,6 @@ Section, Index
 
 .. class:: Index
 
-Html
-----
-
-.. autoclass:: Html
-
-    **Methods:**
-
-    .. automethod:: enclose
-
 Generator
 ---------
 
