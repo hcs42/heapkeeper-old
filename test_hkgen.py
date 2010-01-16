@@ -29,6 +29,7 @@ Usage:
 from __future__ import with_statement
 
 import os
+import time
 import unittest
 
 import hkutils
@@ -277,6 +278,15 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             (g.section_begin('section_mysecid', 'mysectitle'),
              g.enclose('myhtmltext', 'table', 'flatlist', newlines=True),
              g.section_end()))
+
+    def test_format_timestamp(self):
+        """Tests :func:`hkgen.Generator.format_timestamp`."""
+
+        postdb, g, p = self.init()
+        g.options.localtime_fun = time.gmtime
+        self.assertEquals(
+            g.format_timestamp(p(0).timestamp()),
+            '(2008-08-20)')
 
     def test_print_postitem_main(self):
         """Tests :func:`hkgen.Generator.print_postitem_main`."""
