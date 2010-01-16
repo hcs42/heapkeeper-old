@@ -2033,6 +2033,12 @@ class EmailDownloader(object):
         Type: ConfigParser
     _server -- The object that represents the IMAP server.
         Type: imaplib.IMAP4_SSL | NoneType
+
+    **Reading:**
+
+    - RFC2822 - Internet Message Format
+    - RFC3501 - INTERNET MESSAGE ACCESS PROTOCOL - VERSION 4rev1
+    - http://en.wikipedia.org/wiki/MIME#Multipart_messages
     """
 
     def __init__(self, postdb, config):
@@ -2067,11 +2073,10 @@ class EmailDownloader(object):
         self._server.close()
         self._server = None
 
-    def parse_email(self, header, text):
-        """Create a Post from an already downloaded email header and
+    @staticmethod
+    def parse_email(header, text):
+        """Creates strings from an already downloaded email header and
         body part.
-
-        Known issue: some (all?) multipart messages are parsed incorrectly.
 
         Arguments:
         header -- The header of the email.
@@ -2100,17 +2105,60 @@ class EmailDownloader(object):
                 value = re.sub(r'\r\n',r'\n',value)
                 headers[attr] = value
 
+        # We find the first leaf of the "message tree", where the multipart
+        # messages are the branches and the non-multipart messages are the
+        # leaves. This leaf should has the content type text/plain. When the
+        # loop is finished, the `message` variable will point to the leaf that
+        # is interesting to Heapkeeper.
+        #
+        # See also http://en.wikipedia.org/wiki/MIME#Multipart_messages
+        while True:
+            content_type = message.get_content_type()
+            if message.is_multipart():
+                if (content_type not in
+                    ('multipart/mixed', 'multipart/alternative')):
+                    log('WARNING: unknown type of multipart message: %s\n%s' %
+                        (content_type, header + text))
+                message = message.get_payload(0)
+            else:
+                if content_type != 'text/plain':
+                    log('WARNING: content type is not text/plain: %s\n%s' %
+                        (content_type, header + text))
+                break
+
         # encoding
         encoding = message['Content-Transfer-Encoding']
+        text = message.get_payload()
+        if type(text) is not str:
+            raise hkutils.HkException(
+                '`text` is not a string but the following object: %s\n' %
+                (str(text),))
         if encoding != None:
             if encoding.lower() == 'base64':
                 text = base64.b64decode(text)
             elif encoding.lower() == 'quoted-printable':
                 text = quopri.decodestring(text)
+            else:
+                log('WARNING: Unknown encoding, skipping decoding: %s\n'
+                    'text:\n%s\n' % (encoding, text))
         charset = message.get_content_charset()
         text = hkutils.utf8(text, charset)
-
         text = re.sub(r'\r\n',r'\n',text)
+
+        return headers, text
+
+    def create_post_from_email(self, header, text):
+        """Create a Post from an already downloaded email header and
+        body part.
+
+        Arguments:
+        header -- The header of the email.
+            Type: string
+        text -- The body of the email.
+            Type: string
+        """
+
+        headers, text = self.parse_email(header, text)
         post = Post.create_empty()
         post.set_author(headers.get('From', ''))
         post.set_subject(headers.get('Subject', ''))
@@ -2191,7 +2239,7 @@ class EmailDownloader(object):
         for i in range(num_new):
             text = result[i * 3][1]
             header = result[i * 3 + 1][1]
-            post = self.parse_email(header, text)
+            post = self.create_post_from_email(header, text)
             self._postdb.add_new_post(post)
             new_posts.append(post)
             if detailed_log:
