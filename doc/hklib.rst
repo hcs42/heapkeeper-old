@@ -82,13 +82,6 @@ EmailDownloader
 
 .. class:: EmailDownloader
 
-Section, Index
---------------
-
-.. class:: Section
-
-.. class:: Index
-
 Generator
 ---------
 

@@ -2289,48 +2289,18 @@ class Section(object):
         hkutils.set_dict_items(self, locals())
 
 
-##### Index #####
-
-class Index(object):
-    """Represents a list of sections that should be printed into an HTML file
-    according to the specified options.
-
-    This class follows the Options pattern.
-
-    Data attributes:
-    sections --- The sections that are contained by the index.
-        Type: [Section]
-    filename --- The name of the HTML file where the index should be printed.
-        It is either an absolute path or it is relative to the HTML dir of the
-        post database.
-        Type: str
-        Default: 'index.html'
-    """
-
-    def __init__(self,
-                 sections=hkutils.NOT_SET,
-                 filename='index.html'):
-
-        super(Index, self).__init__()
-        hkutils.set_dict_items(self, locals())
-
-
 ##### GeneratorOptions #####
 
 class GeneratorOptions(object):
 
-    """Options that are used by the Generator.
+    """Options that are used by |Generator|.
 
     This class follows the Options pattern.
 
     TODO: standardize underscore usage.
 
-    Data attributes:
-    indices --- The indices to print.
-        Type: [Index]
-    write_toc --- If True, the index will contain a Table of Contents.
-        Type: bool
-        Default: False
+    **Data attributes:**
+
     shortsubject --- If True, the posts that have the same subject as
         their parent will show a dash instead of their subject.
         Type: bool
@@ -2339,20 +2309,6 @@ class GeneratorOptions(object):
         their parent will show a dash instead of their tags.
         Type: bool
         Default: False
-    locallinks --- If True, the thread representation will contain
-        local links that point to sections within the current page.
-        This is useful for thread pages.
-        Type: bool
-        Default: False
-    always_active --- If True, the thread representation will mark all
-        posts as active (ie. not grayed). Also useful for thread
-        pages.
-        Type: bool
-        Default: False
-    date_fun --- Function that specifies how to print the dates of the
-        posts.
-        Type: DateFun
-        Default: (lambda post, options: None)
     html_title --- The string to print as the <title> of the HTML file.
         Type: str
         Default: 'Heap index'
@@ -2361,43 +2317,19 @@ class GeneratorOptions(object):
         Default: 'Heap index'
     cssfiles --- The name of the CSS files that should be referenced.
         Type: str
-    trycopyfiles --- Copy the CSS file, images and other files into the
-        HTML directory if it does not exist. If `cssfiles` are given with
-        absolute paths, trycopyfiles should be False.
-        Type: bool
-        Default: True
     files_to_copy --- List of files that should be copied from the heap's
         directory or from the current directory to the HTML directory.
         Type: [str]
         Default: []
-    print_thread_of_post --- The thread of the post will be printed into the
-        post HTML.
-        Type: bool
-        Default: False
-    section --- The section that is printed at the moment. It is normally not
-        set by the user of this module.
-        Type: Section
-    index --- The index that is printed at the moment. It is normally not
-        set by the user of this module.
-        Type: Index
     """
 
     def __init__(self,
-                 indices=hkutils.NOT_SET,
-                 write_toc=False,
                  shortsubject=False,
                  shorttags=False,
-                 locallinks=False,
-                 always_active=False,
-                 date_fun=lambda post, options: None,
                  html_title='Heap index',
                  html_h1='Heap index',
                  cssfiles=['heapindex.css'],
-                 trycopyfiles=True,
-                 files_to_copy=['heapindex.css'],
-                 print_thread_of_post=False,
-                 section=hkutils.NOT_SET,
-                 index=hkutils.NOT_SET):
+                 files_to_copy=['heapindex.css']):
 
         super(GeneratorOptions, self).__init__()
         hkutils.set_dict_items(self, locals())
