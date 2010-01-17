@@ -64,14 +64,6 @@ types in the documentation so we can talk about them easily.
 
   Subtype of |TextStruct|.
 
-.. _hklib_DateFun:
-
-- **DateFun(post, genopts)** -- A function that specifies how to print the
-  dates of the posts. It will be called for each post summary that is written
-  into an index page. When it returns ``None``, no date will be printed.
-
-  Real type: fun(|Post|, |GeneratorOptions|), returns (str | ``None``)
-
 .. _hklib_LogFun:
 
 - **LogFun(*args)** -- A function that logs the given strings.
@@ -152,13 +144,6 @@ def log(*args):
     """
 
     log_fun(*args)
-
-
-##### Constants #####
-
-STAR = 0
-NORMAL = 1
-CYCLES = 2
 
 
 ##### Post #####

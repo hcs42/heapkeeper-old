@@ -16,50 +16,7 @@
 # Copyright (C) 2009 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
-"""|hkcustomlib| is a module that can be used to customize Heapkeeper.
-
-Pseudo-types
-''''''''''''
-
-|hkcustomlib| has pseudo-types that are not real Python types, but we use them
-as types in the documentation so we can talk about them easily.
-
-.. _hkcustomlib_ShouldPrintDateFun:
-
-- **ShouldPrintDateFun(post, genopts)** -- A function that specifies when to
-  print the date of a post in the post summary.
-
-  Real type: fun(|Post|, |GeneratorOptions|) -> bool
-
-.. _hkcustomlib_LocaltimeFun:
-
-- **LocaltimeFun(timestamp)** -- A function that calculates the `tm` structure
-  based on a timestamp. This means that it converts global time to local time.
-
-  Real type: fun(int), returns time.tm
-
-.. _hkcustomlib_DateOptions:
-
-- **DateOptions** -- Options on how to handle and show dates.
-
-  Real type: {str: object}
-
-  DateOptions keys:
-
-  - `date_format` (str) -- The format of the date as given to `time.strftime`.
-  - `postdb` (|PostDB|) -- The post database to work on.
-  - `should_print_date_fun` (|ShouldPrintDateFun|) -- The function that
-    specifies when to print-the date of a post in the post summary.
-  - `timedelta` (datetime.timedelta) -- A date for the post summary will be
-    printed if the time between the post and its parent is less then timedelta.
-    (If the post has no parent or the date is not specified in each posts, the
-    date is printed.)
-  - `localtime_fun` (|LocaltimeFun|) -- A function to be used for calculating
-    local time when displaying dates.
-
-  Note: this type should be made into a real class, according to the
-  :ref:`Options pattern <options_pattern>`.
-"""
+"""|hkcustomlib| is a module that can be used to customize Heapkeeper."""
 
 
 import datetime

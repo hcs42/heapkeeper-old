@@ -10,8 +10,6 @@
 .. |Callbacks| replace:: :class:`Callbacks <hkshell.Callbacks>`
 .. |cat| replace:: :func:`cat <hkshell.cat>`
 .. |collect| replace:: :class:`collect <hklib.PostSetCollectDelegate>`
-.. |DateFun| replace:: :ref:`DateFun <hklib_DateFun>`
-.. |DateOptions| replace:: :ref:`DateOptions <hkcustomlib_DateOptions>`
 .. |dl| replace:: :func:`dl <hkshell.dl>`
 .. |d| replace:: :func:`d <hkshell.d>`
 .. |EditFileFun| replace:: :ref:`EditFileFun <hkshell_EditFileFun>`
@@ -37,7 +35,6 @@
 .. |Index| replace:: :class:`Index <hklib.Index>`
 .. |j| replace:: :func:`j <hkshell.j>`
 .. |Listener| replace:: :ref:`Listener <hkshell_Listener>`
-.. |LocaltimeFun| replace:: :ref:`LocaltimeFun <hkcustomlib_LocaltimeFun>`
 .. |LogFun| replace:: :ref:`LogFun <hklib_LogFun>`
 .. |ls| replace:: :func:`ls <hkshell.ls>`
 .. |Messageid| replace:: :ref:`Messageid <hklib_Messageid>`
@@ -60,7 +57,6 @@
 .. |rTr| replace:: :func:`rTr <hkshell.rTr>`
 .. |rT| replace:: :func:`rT <hkshell.rT>`
 .. |Section| replace:: :class:`Section <hklib.Section>`
-.. |ShouldPrintDateFun| replace:: :ref:`ShouldPrintDateFun <hkcustomlib_ShouldPrintDateFun>`
 .. |sSr| replace:: :func:`sSr <hkshell.sSr>`
 .. |sS| replace:: :func:`sS <hkshell.sS>`
 .. |s| replace:: :func:`s <hkshell.s>`
