@@ -47,7 +47,6 @@ from __future__ import with_statement
 
 import datetime
 import itertools
-import logging
 import os
 import re
 import shutil
@@ -1188,7 +1187,7 @@ class Generator(object):
                     '    <title>', self.options.html_title, '</title>\n')]
 
         for css in self.options.cssfiles:
-             content.append(
+            content.append(
                 '    <link rel=stylesheet href="%s" type="text/css">\n' %
                 (css,))
 

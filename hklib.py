@@ -142,8 +142,6 @@ import os
 import os.path
 import quopri
 import re
-import shutil
-import string
 import StringIO
 import sys
 import time
@@ -1594,7 +1592,7 @@ class PostDB(object):
 
         heap_dir = self._heaps[heap_id]
         if not os.path.isdir(heap_dir):
-            raise HkException('Directory %s not found.' % (heap_dir,))
+            raise hkutils.HkException('Directory %s not found.' % (heap_dir,))
 
         for file in os.listdir(heap_dir):
 
@@ -2453,7 +2451,7 @@ class PostItem(object):
         del attrs['level']
 
         for attr, value in attrs.items():
-             s += ', %s=%s' % (attr, value)
+            s += ', %s=%s' % (attr, value)
 
         s += '>'
         return s
@@ -2989,7 +2987,7 @@ class EmailDownloader(object):
                     else:
                         value += ' '
                     value += hkutils.utf8(v[0], v[1])
-                value = re.sub(r'\r\n',r'\n',value)
+                value = re.sub(r'\r\n', r'\n', value)
                 headers[attr] = value
 
         # We find the first leaf of the "message tree", where the multipart
@@ -3032,7 +3030,7 @@ class EmailDownloader(object):
                     'text:\n%s\n' % (encoding, text))
         charset = message.get_content_charset()
         text = hkutils.utf8(text, charset)
-        text = re.sub(r'\r\n',r'\n',text)
+        text = re.sub(r'\r\n', r'\n', text)
 
         return headers, text
 

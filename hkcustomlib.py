@@ -19,10 +19,8 @@
 """|hkcustomlib| is a module that can be used to customize Heapkeeper."""
 
 
-import datetime
 import os
 import subprocess
-import time
 
 import hkutils
 import hklib

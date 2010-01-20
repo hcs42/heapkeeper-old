@@ -23,15 +23,8 @@
 
 import datetime
 import itertools
-import os
-import re
-import subprocess
-import time
 
-import hkutils
-import hklib
 import hkgen
-import hkcustomlib
 import hkshell
 import issue_tracker
 
