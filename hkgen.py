@@ -87,7 +87,7 @@ class Generator(object):
         self._postdb = postdb
         self.options = hklib.GeneratorOptions()
 
-        self.options.cssfiles = ['heapindex.css']
+        self.options.cssfiles = ['../heapindex.css']
         self.options.files_to_copy = ['heapindex.css', 'thread.png']
 
         # html_h1 is the same as html_title by default
@@ -469,8 +469,8 @@ class Generator(object):
         post = postitem.post
         if self._postdb.parent(post) is None:
             return self.print_link(
-                       post.htmlthreadbasename(),
-                       '<img src="thread.png" />'),
+                       ('../', post.htmlthreadbasename()),
+                       '<img src="../thread.png" />'),
         else:
             return ''
 
@@ -663,9 +663,9 @@ class Generator(object):
         post = postitem.post
         root = self._postdb.root(post)
         if root is None:
-            return post.htmlfilebasename()
+            return ('../', post.htmlfilebasename())
         else:
-            return (self._postdb.root(post).htmlthreadbasename(),
+            return (('../', self._postdb.root(post).htmlthreadbasename()),
                     '#post_',
                     post.post_id_str())
 
@@ -1383,7 +1383,7 @@ class Generator(object):
         hklib.log('Generating index.html...')
         self.options.html_title = 'Main index'
         self.write_page(
-            'index.html',
+            'index/index.html',
             self.print_main_index_page())
 
     # TODO better test

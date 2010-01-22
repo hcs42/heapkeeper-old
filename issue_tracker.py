@@ -69,7 +69,7 @@ class Generator(hkgen.Generator):
         super(Generator, self).__init__(postdb)
         self.options.html_title = 'Heapkeeper issue tracker'
         self.options.html_h1 = 'Heapkeeper issue tracker'
-        self.options.cssfiles.append('issues.css')
+        self.options.cssfiles.append('../issues.css')
         self.options.files_to_copy.append('issues.css')
 
     def red(self, s):
@@ -299,7 +299,7 @@ class Generator(hkgen.Generator):
         hklib.log('Generating issues_all.html...')
         self.options.html_title = 'All issues'
         self.write_page(
-            'issues_all.html',
+            'index/issues_all.html',
             self.print_issues_all_page())
 
     def write_issues_sorted_page(self):
@@ -308,7 +308,7 @@ class Generator(hkgen.Generator):
         hklib.log('Generating issues_sorted.html...')
         self.options.html_title = 'Sorted issues'
         self.write_page(
-             'issues_sorted.html',
+             'index/issues_sorted.html',
              self.print_issues_sorted_page())
 
     def write_all(self):

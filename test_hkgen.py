@@ -286,10 +286,10 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
-        post_link = g.print_link('my_heap/thread_0.html#post_my_heap/0',
+        post_link = g.print_link('../my_heap/thread_0.html#post_my_heap/0',
                                  '&lt;my_heap/0&gt;')
-        thread_link = g.print_link('my_heap/thread_0.html',
-                                   '<img src="thread.png" />')
+        thread_link = g.print_link('../my_heap/thread_0.html',
+                                   '<img src="../thread.png" />')
         expected_header = \
             [enc('author', 'author0'), '\n',
              enc('subject', 'subject0'), '\n',
@@ -344,7 +344,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
-        post_link = g.print_link('my_heap/thread_0.html#post_my_heap/0',
+        post_link = g.print_link('../my_heap/thread_0.html#post_my_heap/0',
                                  '&lt;my_heap/0&gt;')
         expected_header = \
             g.enclose(
@@ -399,7 +399,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         hkutils.add_method(g, 'print_postitem_date', print_postitem_date)
 
-        post_link = g.print_link('my_heap/thread_0.html#post_my_heap/0',
+        post_link = g.print_link('../my_heap/thread_0.html#post_my_heap/0',
                                  '&lt;my_heap/0&gt;')
         expected_header = \
             [enctd('author', 'author0', 'td'), '\n',
@@ -466,7 +466,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         g.write_main_index_page()
         self.assertTextStructsAreEqual(
-            self.file_content('index.html'),
+            self.file_content('index/index.html'),
             [g.print_html_header(),
              g.print_postitems(g.walk_thread(None)),
              g.print_html_footer()])
@@ -477,7 +477,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         g.write_main_index_page()
         self.assertTextStructsAreEqual(
-            self.file_content('index.html'),
+            self.file_content('index/index.html'),
             [g.print_html_header(),
              g.section( # section of posts in cycles
                  '0', 'Posts in cycles',
