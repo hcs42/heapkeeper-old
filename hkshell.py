@@ -1690,7 +1690,17 @@ def import_module(modname):
     except ImportError:
         hklib.log('Module not found: "%s"' % (modname,))
 
-def parse_args():
+def parse_args(args=None):
+    """Parses the given command line options.
+
+    **Argument:**
+
+    - `args` ([str] | ``None``) -- Arguments to be processed. If ``None``,
+      ``sys.argv[1:]`` is used.
+
+    **Returns:** (optparse.Values, [str])
+    """
+
     # Parsing the command line options
 
     parser = optparse.OptionParser()
@@ -1710,10 +1720,13 @@ def parse_args():
     parser.add_option('--configfile', dest='configfile',
                       help='Configfile to use',
                       action='store', default='hk.cfg')
+    parser.add_option('--noshell', dest='no_shell',
+                      help='No shell',
+                      action='store_true', default=False)
     parser.add_option('--version', dest='version',
                       help='Prints heapkeeper version and exits',
                       action='store_true', default=False)
-    (cmdl_options, args) = parser.parse_args()
+    (cmdl_options, args) = parser.parse_args(args)
     return cmdl_options, args
 
 def main(cmdl_options, args):
@@ -1729,8 +1742,11 @@ def main(cmdl_options, args):
 
     **Arguments:**
 
-    - `cmdl_options` ({str: [str]}): Command line options.
-    - `args` ([str]): Command line arguments.
+    - `cmdl_options` (object) -- Command line options as returned by
+      optparse.OptionParser.parse_args. The attributes of the object are the
+      command line arguments. The values of these arguments are strings or list
+      of strings that contain the values of the command line arguments.
+    - `args` ([str]) -- Command line arguments.
     """
 
     # Processing the command line options
@@ -1758,6 +1774,9 @@ def main(cmdl_options, args):
 
     # Executing "after" commands
     exec_commands(cmdl_options.after_command)
+
+    if cmdl_options.no_shell:
+        return
 
     while True:
 

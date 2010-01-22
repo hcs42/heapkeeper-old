@@ -633,6 +633,41 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         hkshell.cSr(0)
         self.assertEquals(self.subjects(), ['Su','Su','Su','Su',''])
 
+
+class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
+
+    def setUp(self):
+        self.setUpDirs()
+        self._orig_workingdir = os.getcwd()
+        os.chdir(self._dir)
+
+    def tearDown(self):
+        os.chdir(self._orig_workingdir)
+        self.tearDownDirs()
+
+    def test__1(self):
+
+        # Empty heap
+        config_file = os.path.join(self._dir, 'test.cfg')
+        config_str = \
+            ("[paths]\n"
+             "heaps=my_heap:my_heap_dir\n"
+             "html=my_html_dir\n")
+        hkutils.string_to_file(config_str, config_file)
+
+        cmdl_options, args = \
+            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell'])
+        hkshell.main(cmdl_options, args)
+
+        self.assertEquals(
+            self.pop_log(),
+            'Warning: post directory does not exists: "my_heap_dir"\n'
+            'Post directory has been created.\n'
+            'Warning: HTML directory does not exists: "my_html_dir"\n'
+            'HTML directory has been created.\n'
+            'Importing hkrc...\n'
+            'Module not found: "hkrc"')
+
 if __name__ == '__main__':
     hklib.set_log(False)
     unittest.main()
