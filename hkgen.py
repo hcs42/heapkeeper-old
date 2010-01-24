@@ -715,7 +715,6 @@ class Generator(object):
         return (
             self.print_postitem_author,
             self.print_postitem_subject,
-            self.print_postitem_threadlink,
             self.print_postitem_tags,
             self.print_postitem_heapid,
             self.print_postitem_parent_heapid,

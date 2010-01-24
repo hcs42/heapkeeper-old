@@ -306,8 +306,6 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         expected_header = \
             [enc('author', 'author0'), '\n',
              enc('subject', 'subject0'), '\n',
-             enc('button', thread_link),
-             '\n',
              enc('tags', '[tag1, tag2]'), '\n',
              enc('index', post_link), '\n',
              enc('date', '(2008-08-20)'), '\n']
