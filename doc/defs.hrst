@@ -19,7 +19,7 @@
 .. |expf| replace:: :func:`expf <hklib.PostSet.expf>`
 .. |FeatureState| replace:: :ref:`FeatureState <hkshell_FeatureState>`
 .. |forall| replace:: :class:`forall <hklib.PostSetForallDelegate>`
-.. |ga| replace:: :func:`ga <hkshell.ga>`
+.. |g| replace:: :func:`g <hkshell.g>`
 .. |Generator2| replace:: :class:`Generator <hkgen.Generator>`
 .. |GeneratorOptions| replace:: :class:`GeneratorOptions <hklib.GeneratorOptions>`
 .. |Generator| replace:: :class:`Generator <hklib.Generator>`

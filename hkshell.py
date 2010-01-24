@@ -1050,7 +1050,11 @@ def rl():
 
 @hkshell_cmd(add_events=True)
 def gi():
-    """Generates the index pages."""
+    """Generates the index pages.
+
+    Deprecated. Use |g| instead.
+    """
+
     hklib.log('WARNING: using hkshell.gi() is deprecated. Use g() instead.')
     gen_indices()
 
@@ -1061,7 +1065,11 @@ def g():
 
 @hkshell_cmd(add_events=True)
 def ga():
-    """Generates the index pages."""
+    """Generates the index pages.
+
+    Deprecated. Use |g| instead.
+    """
+
     hklib.log('WARNING: using hkshell.gi() is deprecated. Use g() instead.')
     gen_indices()
 
