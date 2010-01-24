@@ -1419,7 +1419,6 @@ class Generator(object):
 
         self.write_main_index_page()
         self.write_thread_pages()
-        self.write_post_pages()
 
 
 class GivenPostsGenerator(Generator):
