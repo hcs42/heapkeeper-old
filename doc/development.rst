@@ -106,13 +106,14 @@ Content of the repository
 The main directories and files in Heapkeeper's repository:
 
 ``README``
-  Usual README file.
+    Usual README file.
 ``doc``
-  Documentation files. The ``rst`` files are text files with wiki-like syntax,
-  and Sphinx can be used to generate HTML or other output from them.
+    Documentation files. The ``rst`` files are text files with wiki-like
+    syntax, and Sphinx can be used to generate HTML or other output from them.
 ``doc/todo.rst``
-   Our feature and bug tracking "system". Will be replaced by the Heapkeeper heap.
+    Our feature and bug tracking "system". Will be replaced by the Heapkeeper
+    heap.
 ``*.py``
-   Python source files -- Heapkeeper itself
+    Python source files -- Heapkeeper itself
 ``heapindex.css``
-   A CSS file for the generated HTML files.
+    A CSS file for the generated HTML files.

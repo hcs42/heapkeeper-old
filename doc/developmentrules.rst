@@ -45,12 +45,12 @@ Example:
 
 .. code-block:: none
 
-   Doc: improved docstrings
+    Doc: improved docstrings
 
-   A class and a method have been documented with docstrings. The current
-   format shall be used in all docstrings.
+    A class and a method have been documented with docstrings. The current
+    format shall be used in all docstrings.
 
-   The modified class is MyClass, the modified function is `is`.
+    The modified class is MyClass, the modified function is `is`.
 
 Creating a release
 ------------------

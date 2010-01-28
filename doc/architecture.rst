@@ -17,16 +17,16 @@ Heapkeeper consists of several Python modules. Each module is implemented in
 the file ``<module>.py``.
 
 :mod:`hkutils`
-   Contains general library classes and functions.
+    Contains general library classes and functions.
 :mod:`hklib`
-   The database and business logic of Heapkeeper. Its classes can
-   download, store, and modify posts and generate HTML from them.
+    The database and business logic of Heapkeeper. Its classes can
+    download, store, and modify posts and generate HTML from them.
 :mod:`hkshell`
-   The interactive interface of Heapkeeper.
+    The interactive interface of Heapkeeper.
 :mod:`hkcustomlib`
-   Contains functions and classes that are useful for the parametrization of
-   functions in other modules (especially functions of :mod:`hklib` and
-   :mod:`hkshell`).
+    Contains functions and classes that are useful for the parametrization of
+    functions in other modules (especially functions of :mod:`hklib` and
+    :mod:`hkshell`).
 
 The central modules are :mod:`hklib` and :mod:`hkshell`. The former contains
 the core functionality of Heapkeeper, while the latter provides the primary
@@ -101,11 +101,11 @@ in the heap.
 
     There are different relations between the posts: the most basic one is when
     a post is the child of another post. It usually means that the latter one
-    is a reply to the former one. This information is stored in the ``In-Reply-To``
-    attribute of the header of the child post: this attribute contains the
-    heapid or message id of the parent of the post. If there is no post with
-    such heapid or message id, or it is ``None``, the post does not have a
-    parent. For more information about the relations, see
+    is a reply to the former one. This information is stored in the
+    ``In-Reply-To`` attribute of the header of the child post: this attribute
+    contains the heapid or message id of the parent of the post. If there is no
+    post with such heapid or message id, or it is ``None``, the post does not
+    have a parent. For more information about the relations, see
     :ref:`post_relations`.
 
     A post may have *tags*, which tell us information about the topic of the
@@ -150,7 +150,8 @@ in the heap.
     :ref:`parent-child relations <post_relations>` between them. (Forest is a
     tree-like structure where having a root node it not necessary). The roots
     of the forest are the posts without parents. There may be posts that are
-    excluded from the thread structure because they are in :ref:`cycles <cycle>`.
+    excluded from the thread structure because they are in :ref:`cycles
+    <cycle>`.
 
     The users of the post database can use the dictionary that describes the
     thread structure directly in order to get thread information. There are
