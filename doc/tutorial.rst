@@ -49,16 +49,16 @@ Then download the latest version of Heapkeeper (either in `tar.gz`__ or in
 
 .. code-block:: sh
 
-    $ wget http://heapkeeper.org/releases/heapkeeper-0.3.tar.gz
+    $ wget http://heapkeeper.org/releases/heapkeeper-0.4.tar.gz
 
-__ http://heapkeeper.org/releases/heapkeeper-0.3.tar.gz
-__ http://heapkeeper.org/releases/heapkeeper-0.3.zip
+__ http://heapkeeper.org/releases/heapkeeper-0.4.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.4.zip
 
 Unzip the tar.gz or zip file. For Unix users:
 
 .. code-block:: sh
 
-    $ tar xzf heapkeeper-0.3.tar.gz
+    $ tar xzf heapkeeper-0.4.tar.gz
 
 Make Heapkeeper's directory the current one. Heapkeeper's shell (|hkshell|) can
 be started from here without any installation procedure. You can ask for
@@ -66,9 +66,9 @@ version information for example:
 
 .. code-block:: sh
 
-    $ cd heapkeeper-0.3
+    $ cd heapkeeper-0.4
     $ python hk.py --version
-    Heapkeeper version 0.3
+    Heapkeeper version 0.4
 
 Or you can execute the automatic test:
 

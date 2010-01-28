@@ -23,6 +23,8 @@ Packaged releases
 | version  | date       | source      | HTML documentation |
 |          |            |             |                    |
 +==========+============+=============+====================+
+| `0.4`_   | 2010-02-19 | tgz__ zip__ | tgz__ zip__        |
++----------+------------+-------------+--------------------+
 | `0.3`_   | 2009-10-11 | tgz__ zip__ | tgz__ zip__        |
 +----------+------------+-------------+--------------------+
 | `0.2`_   | 2009-02-17 | tgz__ zip__ |  --                |
@@ -30,6 +32,10 @@ Packaged releases
 | `0.1`_   | 2008-10-16 | tgz__ zip__ |  --                |
 +----------+------------+-------------+--------------------+
 
+__ http://heapkeeper.org/releases/heapkeeper-0.4.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.4.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.4.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.4.zip
 __ http://heapkeeper.org/releases/heapkeeper-0.3.tar.gz
 __ http://heapkeeper.org/releases/heapkeeper-0.3.zip
 __ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.3.tar.gz
@@ -38,6 +44,38 @@ __ http://github.com/hcs42/heapkeeper/tarball/v0.2
 __ http://github.com/hcs42/heapkeeper/zipball/v0.2
 __ http://github.com/hcs42/heapkeeper/tarball/v0.1
 __ http://github.com/hcs42/heapkeeper/zipball/v0.1
+
+.. _`0.4`:
+
+Version 0.4
+^^^^^^^^^^^
+
+- **date:** 2010-02-19
+- **download:** tgz__, zip__
+- **download HTML documentation:** tgz__, zip__
+
+__ http://heapkeeper.org/releases/heapkeeper-0.4.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.4.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.4.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.4.zip
+
+The main improvement if this release is the new Generator.
+
+Major new features:
+
+- New generator (:mod:`hkgen.Generator`). The new generator is much more
+  flexible than the old one, and has a different model of customization. It
+  has many small methods, and the generator's behavior can be customized by
+  overriding those that should behave differently.
+- Heapids with prefixes are calculated automatically.
+- Posts may have references (to other posts).
+- The post file format is now "forward compaible", i.e. an older version of
+  Heapkeeper will be able to handle a post file created by a newer version of
+  Heapkeeper without damaging it.
+- :mod:`hkshell.e` can edit several files.
+- :mod:`hkshell.enew` has *author* and *parent* parameters.
+- The meta texts are parsed in posts.
+- A basic search functionality was added to :mod:`hkshell`.
 
 .. _`0.3`:
 
