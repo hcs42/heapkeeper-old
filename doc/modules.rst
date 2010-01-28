@@ -4,8 +4,8 @@ Module documentation
 .. toctree::
 
    hkutils
-   hkcustomlib
    hklib
    hkgen
+   hkcustomlib
    hkshell
    hk

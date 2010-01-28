@@ -7,8 +7,8 @@ few sentences. Then the tasks of the most important classes and functions are
 explained. Finally it talks about the dependencies between the modules.
 
 This section does not contain a detailed descriptions of the modules, classes
-and functions: these descriptions can be found in the user documentation and
-developer documentation of the modules.
+and functions: these descriptions can be found in the documentation of the
+modules.
 
 Module structure
 ----------------
@@ -20,21 +20,37 @@ the file ``<module>.py``.
     Contains general library classes and functions.
 :mod:`hklib`
     The database and business logic of Heapkeeper. Its classes can
-    download, store, and modify posts and generate HTML from them.
+    download, store, and modify posts.
+:mod:`hkgen`
+    It generates HTML output from the posts on the heaps.
 :mod:`hkshell`
     The interactive interface of Heapkeeper.
+:mod:`hk`
+    A small module whose only task is to invoke :mod:`hkshell`.
 :mod:`hkcustomlib`
     Contains functions and classes that are useful for the parametrization of
     functions in other modules (especially functions of :mod:`hklib` and
     :mod:`hkshell`).
+:mod:`issue_tracker`
+    Generates HTML output that is like an issue tracker.
+:mod:`hkrc_*`
+    Initialization files of the developers. These module are not really part of
+    Heapkeeper, but are kept in the Heapkeeper repository so that developers
+    and users can learn from them, and developers can test if they break each
+    other's hkrc.
 
 The central modules are :mod:`hklib` and :mod:`hkshell`. The former contains
 the core functionality of Heapkeeper, while the latter provides the primary
-user interface. The general library functions that are not related to the
-concepts of Heapkeeper are collected in :mod:`hkutils`. Heapkeeper is a very
-customizable tool: it can be customized primarily by writing Python functions.
-The functions and classes of :mod:`hkcustomlib` help to implement these
-custom functions.
+user interface. :mod:`hkgen` is also an important module, it generates HTML
+pages from the post database. The general library functions that are not
+related to the concepts of Heapkeeper are collected in :mod:`hkutils`.
+
+Heapkeeper is a very customizable tool. :mod:`hkshell` can be customized
+primarily by writing Python functions. The functions and classes of
+:mod:`hkcustomlib` help to implement these custom functions. :mod:`hkgen` can
+be customized by deriving own generator classes from the one in :mod:`hkgen`
+and overriding some of its method. The :mod:`issue_tracker` is an example of
+such a derived generator.
 
 We use unit tests to test Heapkeeper's code, using the standard ``unittest``
 module. Each module has a corresponding module that tests it.
@@ -53,15 +69,12 @@ module. Each module has a corresponding module that tests it.
 Module contents
 ---------------
 
-Some objects will be renamed. The proposed new name of these objects is
-written after their name in parens.
-
 :mod:`hklib`
 ^^^^^^^^^^^^
 
 The main concept of Heapkeeper is the *heap*. The heap is an abstract data
-structure that consists of *posts*. The heap data structure and its
-visualization in HTML is implemented in the :mod:`hklib` module.
+structure that consists of *posts*. The heap data structure is implemented in
+the :mod:`hklib` module.
 
 Classes that implement and manipulate the heap
 """"""""""""""""""""""""""""""""""""""""""""""
@@ -187,66 +200,6 @@ that implements a relational database, e.g. MySQL:
 | :class:`PostSet <hklib.PostSet>` | result of a query       |
 +----------------------------------+-------------------------+
 
-Classes that visualize the heap
-"""""""""""""""""""""""""""""""
-
-The content of the heap can be visualized by converting it to HTML pages.
-(The word *page* means HTML page in this context.) Heapkeeper can create two
-kinds of pages:
-
-* A *post page* displays one post. It usually contains a *post summary* and the
-  post's body. The post summary consists of a few important details of the
-  post, e.g. author, subject and date. Posts may have different summaries at
-  different places, and different summaries may include different details.
-* An *index page* displays many posts. It does not show the body of the
-  posts, it only shows a post summary for each post, which is a link to the
-  *post page* of that post. An index page is created from an *index* (an
-  :class:`Index <hklib.Index>` object), which descibres which posts should
-  be printed on the index page and how. An index contains the posts indirectly:
-  it contains sections, and the sections contain posts. A *section* (a
-  :class:`Section <hklib.Section>` object) is a list of posts that should
-  be printed as one section of the page, and a few options on how they should
-  be printed. An index page contains sections generated from the sections of
-  the index.
-
-:class:`hklib.Html`
-
-    The :class:`Html <hklib.Html>` class is rather a namespace than a
-    class: it contains only static methods. :class:`Html <hklib.Html>`
-    objects are never created.
-
-:class:`hklib.Section`
-
-    A :class:`Section <hklib.Section>` is a list of posts. The
-    :class:`hklib.Generator` class can generate HTML from a section by
-    printing the summaries of its posts in either a threaded or a non-threaded
-    (*flat*) structure.
-
-:class:`hklib.Index`
-
-    todo
-
-:class:`hklib.GeneratorOptions`
-
-    todo
-
-:class:`hklib.Generator`
-
-    A :class:`Generator <hklib.Generator>` object generates HTML strings
-    and HTML pages.
-
-    Most of its methods generate an HTML string that represents something,
-    which is usually shown in the name of the method. E.g. the
-    :func:`Generator.post <hklib.Generator.post>` method generates HTML
-    string from a post, while the :func:`Generator.section
-    <hklib.Generator.section>` method generates HTML string from a section.
-
-    The minority of the :class:`Generator <hklib.Generator>` methods print
-    the HTML they generate into files. These methods start with the ``gen_``
-    prefix. E.g. the :func:`Generator.gen_indices
-    <hklib.Generator.gen_indices>` method prints the index pages into index
-    files.
-
 :mod:`hkshell`
 ^^^^^^^^^^^^^^
 
@@ -265,11 +218,13 @@ The module dependencies are shown in the following picture:
 .. image:: images/module_deps.png
 
 Since :mod:`hkutils` contains general library functions, it does not use any
-other modules of Heapkeeper, but all the other modules may use it. Both
-:mod:`hkshell` and :mod:`hkcustomlib` use :mod:`hklib`, since
+other modules of Heapkeeper, but all the other modules may use it.
+:mod:`hkshell`, :mod:`hkgen` and :mod:`hkcustomlib` all use :mod:`hklib`, since
 :mod:`hklib` implements the data types that make the heap. :mod:`hkshell`
 uses :mod:`hkcustomlib` only for setting sensible default values for certain
-callback functions.
+callback functions. :mod:`hkcustomlib` implements a callback function to
+generate posts that invokes :mod:`hkgen`, but sometimes :mod:`hkshell` calls
+into :mod:`hkgen` directly.
 
 .. _testing:
 
@@ -278,7 +233,8 @@ Testing
 
 We use unit tests to test Heapkeeper's code, using the standard ``unittest``
 module. Each module has a corresponding module that tests it. Our aim is to
-reach almost 100% line coverage. (Currently we are far from that.)
+reach almost 100% statement coverage. (Currently we have 74%, measured with
+``coverage.py``.)
 
 All tests can be executed using the :mod:`test` module:
 

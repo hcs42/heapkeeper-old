@@ -48,7 +48,7 @@ An index page of a heap:
 .. image:: images/1.png
       :align: center
 
-HTML page of a post:
+HTML page of a thread:
 
 .. image:: images/2.png
       :align: center
