@@ -236,13 +236,13 @@ def js_obfuscated_text(text):
                 (c<="Z"?90:122)>=(c=c.charCodeAt(0)+13)?c:c-26);}));
                 </script>""" % rot_13_encrypt(text)
 
-def js_obfuscated_mailto(email, displayname=None):
+def js_obfuscated_link(email, displayname=None):
     """ROT 13 encryption within an Anchor tag w/ a mailto: attribute
 
     """
     if not displayname:
         displayname = email
-    return js_obfuscated_text("""<a href="mailto:%s">%s</a>""" % (
+    return js_obfuscated_text("""<a href="%s">%s</a>""" % (
         email, displayname
     ))
 
@@ -266,7 +266,7 @@ def email_role(typ, rawtext, text, lineno, inliner, options={}, content=[]):
         name = text
         email = name
 
-    obfuscated = js_obfuscated_mailto(email, displayname=name)
+    obfuscated = js_obfuscated_link(email, displayname=name)
     node = docutils.nodes.raw('', obfuscated, format='html')
     return [node], []
 

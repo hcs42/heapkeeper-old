@@ -67,8 +67,8 @@ Quick information
   development; look at the `commit history`__ or the `impact graph`__ of the
   repository.
 * **Contact**:
-  :email:`Csaba Hoch, <csaba.hoch@gmail.com>`
-  :email:`Attila Nagy <nagy.attila.1984@gmail.com>`
+  :email:`Csaba Hoch, <http://hcs42.github.com>`
+  :email:`Attila Nagy <mailto:nagy.attila.1984@gmail.com>`
 
 .. _GPLv3: http://gplv3.fsf.org/
 .. _`Git`: http://git-scm.com/
