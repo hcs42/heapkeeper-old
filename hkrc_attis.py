@@ -54,7 +54,7 @@ class MyGenerator(hkgen.Generator):
         for title, posts, is_flat in sections(postdb):
             if is_flat:
                 postitems = [hklib.PostItem(pos='flat', post=post, level=0)
-                             for post in posts]
+                             for post in posts.sorted_list()]
             else:
                 postitems = self.walk_exp_posts(posts)
             postitems = self.walk_postitems(postitems)
