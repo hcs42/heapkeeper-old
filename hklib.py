@@ -2119,7 +2119,9 @@ class EmailDownloader(object):
                 '`text` is not a string but the following object: %s\n' %
                 (str(text),))
         if encoding != None:
-            if encoding.lower() == 'base64':
+            if encoding.lower() == '7bit':
+                pass # no conversion needed
+            elif encoding.lower() == 'base64':
                 text = base64.b64decode(text)
             elif encoding.lower() == 'quoted-printable':
                 text = quopri.decodestring(text)
