@@ -941,6 +941,22 @@ class Post(object):
         self.set_body(footer_re.sub('', self.body()))
         self.set_body(self.body().strip() + '\n')
 
+    def remove_newlines_from_subject(self):
+        """Removes newlines from the subject.
+
+        The newline characters are removed together with the whitspace
+        characters surrounding them, and they are replaced with one space.
+        """
+
+        r = re.compile(r'\n', re.MULTILINE)
+        match = r.search(self.subject())
+        if match is None:
+            return # not a multiline subject
+        else:
+            r = re.compile(r'\s*\n\s*', re.MULTILINE)
+            new_subject = r.sub(' ', self.subject())
+            self.set_subject(new_subject)
+
     @staticmethod
     def parse_subject(subject):
         """Parses the subject.
@@ -2163,6 +2179,7 @@ class EmailDownloader(object):
         post.set_date(headers.get('Date', ''))
         post.set_body(text)
         post.remove_google_stuff()
+        post.remove_newlines_from_subject()
         post.normalize_subject()
 
         if self._config.has_section('nicknames'):
