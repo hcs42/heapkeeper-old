@@ -926,11 +926,20 @@ class Post(object):
     # Misc
 
     def remove_google_stuff(self):
+        # old footer
         r = re.compile(r'--~--~---------~--~----~------------~-------~--~' + \
                        r'----~\n.*?\n' + \
                        r'-~----------~----~----~----~------~----~------~-' + \
                        r'-~---\n', re.DOTALL)
         self.set_body(r.sub('', self.body()))
+
+        # new footer (since November 2009)
+        footer_str = \
+            (r'^--\s*'
+              '^You received this message because you are subscribed to.*')
+        footer_re = re.compile(footer_str, re.DOTALL | re.MULTILINE)
+        self.set_body(footer_re.sub('', self.body()))
+        self.set_body(self.body().strip() + '\n')
 
     @staticmethod
     def parse_subject(subject):
