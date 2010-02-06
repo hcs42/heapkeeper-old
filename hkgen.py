@@ -1171,6 +1171,17 @@ class Generator(object):
         return (self.print_comment(info), '\n')
 
     # TODO: test
+    def print_html_head_content(self):
+        """Prints the content in the HTML header.
+
+        **Returns:** |HtmlText|
+        """
+
+        return \
+            ['    <link rel=stylesheet href="%s" type="text/css">\n' % (css,)
+             for css in self.options.cssfiles]
+
+    # TODO: test
     def print_html_header(self):
         """Prints the HTML header.
 
@@ -1186,10 +1197,7 @@ class Generator(object):
                     '    ', meta_stuff, '\n',
                     '    <title>', self.options.html_title, '</title>\n')]
 
-        for css in self.options.cssfiles:
-            content.append(
-                '    <link rel=stylesheet href="%s" type="text/css">\n' %
-                (css,))
+        content.append(self.print_html_head_content())
 
         if self.options.html_h1 is None:
             header_title = self.options.html_title
