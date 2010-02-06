@@ -81,6 +81,10 @@ class MyGenerator(hkgen.Generator):
         else:
             return self.print_postitems(normal_postitems)
 
+    def print_html_head_content(self):
+        return (hkgen.Generator.print_html_head_content(self),
+                '    <link rel="shortcut icon" href="%s">\n' % (self._favicon))
+
     def enclose_my_posts_core(self, xpostitems):
 
         # Get the post items for the expanded post set
@@ -105,33 +109,34 @@ class MyGenerator(hkgen.Generator):
 
         return xpostitems
 
+    def print_stat(self, posts):
+        return (
+            'Number of posts: ', str(len(posts)),
+        )
+
     def print_ums_page(self):
         xpostitems = self.enclose_my_posts_core(self.ums_posts)
-        return \
-            (self.section(
-                'all',
-                'All',
-                self.print_postitems(xpostitems)))
+        return (self.print_stat(self.ums_posts),
+                self.print_postitems(xpostitems))
 
     def print_hh_page(self):
         xpostitems = self.enclose_my_posts_core(self.hh_posts)
-        return \
-            (self.section(
-                'all',
-                'All',
-                self.print_postitems(xpostitems)))
+        return (self.print_stat(self.hh_posts),
+                self.print_postitems(xpostitems))
 
     def write_my_pages(self):
         # Call self.calc before you call this function
 
         hklib.log('Generating ums.html...')
         self.options.html_title = 'UMS heap'
+        self._favicon = "http://hcs42.github.com/favicons/ums.png"
         self.write_page(
             'index/ums.html',
             self.print_ums_page())
 
         hklib.log('Generating hh.html...')
         self.options.html_title = 'Heapkeeper heap'
+        self._favicon = "http://hcs42.github.com/favicons/hh.png"
         self.write_page(
             'index/hh.html',
             self.print_hh_page())
@@ -139,6 +144,7 @@ class MyGenerator(hkgen.Generator):
     def write_all(self):
         """Writes the main index page, the thread pages and the post pages."""
 
+        self._favicon = "http://hcs42.github.com/favicons/heap.png"
         self.write_main_index_page()
         self.write_thread_pages()
         self.write_my_pages()
@@ -159,6 +165,11 @@ class MyIssueTrackerGenerator(issue_tracker.Generator):
         # My CSS files that modifies the stuff in the default issues.css file.
         # It is located in my HTML directory.
         self.options.cssfiles.append('../issues_hcs.css')
+
+    def print_html_head_content(self):
+        return (hkgen.Generator.print_html_head_content(self),
+                '    <link rel="shortcut icon" href='
+                '"http://hcs42.github.com/favicons/it.png"> ')
 
     def is_thread_open_idea(self, root):
         return root.has_tag('idea')
