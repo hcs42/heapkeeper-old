@@ -24,6 +24,7 @@
 import datetime
 import itertools
 
+import hklib
 import hkgen
 import hkshell
 import issue_tracker
@@ -42,6 +43,21 @@ class MyGenerator(hkgen.Generator):
         super(MyGenerator, self).__init__(postdb)
         self.options.shortsubject = True
         self.options.shorttags = True
+        self.options.cssfiles.append('../issues.css')
+        self.options.files_to_copy.append('issues.css')
+
+    def calc(self):
+
+        postdb = self._postdb
+        all = postdb.all()
+        self.hh_posts = all.collect.has_tag('hh')
+        self.ums_posts = all - self.hh_posts
+        self.review_needed_posts = all.collect(self.is_review_needed)
+        self.review_needed_threads = \
+            self.review_needed_posts.expb().collect.is_root()
+
+    def is_review_needed(self, post):
+        return not post.has_tag('reviewed')
 
     def print_main_index_page(self):
         """Prints the main index page.
@@ -65,6 +81,68 @@ class MyGenerator(hkgen.Generator):
         else:
             return self.print_postitems(normal_postitems)
 
+    def enclose_my_posts_core(self, xpostitems):
+
+        # Get the post items for the expanded post set
+        xpostitems = self.walk_exp_posts(xpostitems)
+
+        # Reverse the post items
+        xpostitems = self.reverse_threads(xpostitems)
+
+        # We add 'review-needed' spans around the posts that need review
+        xpostitems = itertools.imap(
+                        self.enclose_posts(
+                            'review-needed-post',
+                            self.review_needed_posts),
+                        xpostitems)
+
+        # We add 'review-needed' spans around the threads that need review
+        xpostitems = itertools.imap(
+                         self.enclose_threads(
+                            'review-needed-thread',
+                            self.review_needed_threads),
+                         xpostitems)
+
+        return xpostitems
+
+    def print_ums_page(self):
+        xpostitems = self.enclose_my_posts_core(self.ums_posts)
+        return \
+            (self.section(
+                'all',
+                'All',
+                self.print_postitems(xpostitems)))
+
+    def print_hh_page(self):
+        xpostitems = self.enclose_my_posts_core(self.hh_posts)
+        return \
+            (self.section(
+                'all',
+                'All',
+                self.print_postitems(xpostitems)))
+
+    def write_my_pages(self):
+        # Call self.calc before you call this function
+
+        hklib.log('Generating ums.html...')
+        self.options.html_title = 'UMS heap'
+        self.write_page(
+            'index/ums.html',
+            self.print_ums_page())
+
+        hklib.log('Generating hh.html...')
+        self.options.html_title = 'Heapkeeper heap'
+        self.write_page(
+            'index/hh.html',
+            self.print_hh_page())
+
+    def write_all(self):
+        """Writes the main index page, the thread pages and the post pages."""
+
+        self.write_main_index_page()
+        self.write_thread_pages()
+        self.write_my_pages()
+
 
 class MyIssueTrackerGenerator(issue_tracker.Generator):
 
@@ -80,7 +158,7 @@ class MyIssueTrackerGenerator(issue_tracker.Generator):
 
         # My CSS files that modifies the stuff in the default issues.css file.
         # It is located in my HTML directory.
-        self.options.cssfiles.append('issues_hcs.css')
+        self.options.cssfiles.append('../issues_hcs.css')
 
     def is_thread_open_idea(self, root):
         return root.has_tag('idea')
@@ -161,6 +239,7 @@ def gen_indices(postdb):
     g = MyIssueTrackerGenerator(postdb)
     g.write_all()
     g = MyGenerator(postdb)
+    g.calc()
     g.write_all()
 
 def gen_indices_fast(postdb):
