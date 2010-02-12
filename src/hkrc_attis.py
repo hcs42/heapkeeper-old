@@ -160,6 +160,154 @@ def lsr(pps):
     """Print a whole thread, ie. recursive ls."""
     hkshell.ls(hkshell.ps(pps).exp())
 
+def review_status(root):
+    """Returns the review status of a thread specified by its root."""
+    ps = hkshell.ps(root).expf()
+    has_reviewed = False
+    has_unreviewed = False
+    for p in ps:
+        if p.has_tag('reviewed'):
+            has_reviewed = True
+        else:
+            has_unreviewed = True
+        if has_reviewed and has_unreviewed:
+            return 'some'
+    assert has_reviewed or has_unreviewed
+    if not has_reviewed:
+        return 'no'
+    else:
+        return 'all'
+
+def get_heap_time_bounds(base=None):
+    """Returns the timestamps of the first and last post in the heap
+    or a post set as a tuple of two `datetime.datetime` objects."""
+    if base is None:
+        base = hkshell.postdb().all()
+    assert isinstance(base, hklib.PostSet)
+
+    lall = list(base.collect(lambda x: x.datetime() is not None))
+    lall.sort()
+    first = lall[0].datetime()
+    last = lall[-1].datetime()
+    return (first, last)
+
+def get_heap_timeunits(unit='month'):
+    """Yields tuples of lower and upper timestamps for time units of
+    a given length covering.
+
+    Time units may be 'day's, 'month's, 'year's.
+
+    TODO: Support 'week's."""
+
+    def next_day(dt):
+        assert isinstance(dt, datetime.datetime)
+        n_dt = dt + datetime.timedelta(days=1)
+        return datetime.datetime(n_dt.year, n_dt.month, n_dt.day)
+
+    def next_year(dt):
+        assert isinstance(dt, datetime.datetime)
+        return datetime.datetime(dt.year+1, 1, 1)
+
+    def next_month(dt):
+        # months are slightly more tricky
+        assert isinstance(dt, datetime.datetime)
+        month = dt.month + 1
+        year = dt.year
+        while month > 12:
+            month -= 12
+            year += 1
+        return datetime.datetime(year, month, 1)
+
+    next_unit_dict = {
+            'day': next_day,
+            'month': next_month,
+            'year': next_year
+        }
+    next_unit = next_unit_dict[unit]
+
+    first, last = get_heap_time_bounds()
+    lower_bound = first
+    upper_bound = next_unit(first)
+    if upper_bound > last:
+        # the whole interval fits into one unit!
+        yield (first, last)
+    else:
+        while upper_bound < last:
+            yield (lower_bound, upper_bound)
+            lower_bound = upper_bound
+            upper_bound = next_unit(upper_bound)
+            if upper_bound > last:
+                yield (lower_bound, last)
+
+@hkshell.hkshell_cmd()
+def size(post, pure=True):
+    counter = 0
+    lines = post.body().split('\n')
+    for line in lines:
+        if pure:
+            if len(line) == 0 or line[0] == '>':
+                continue
+        counter += len(line.decode('utf-8'))
+    return counter
+
+@hkshell.hkshell_cmd()
+def statcontrib(base=None):
+    """Prints some statistics on contribution to the Heap."""
+    if base is None:
+        base = hkshell.postdb().all()
+    assert isinstance(base, hklib.PostSet)
+
+    n_posts = len(base)
+    first, last = get_heap_time_bounds(base)
+    n_days = (last - first).days
+
+    print 'Number of posts: %d' % (n_posts,)
+    print 'Time elapsed: %d days' % (n_days,)
+    avg_ppd = float(n_posts) / n_days
+    print 'Average posts per day: %0.3f\n' % (avg_ppd,)
+
+    names = ('Csabi', 'Josh', 'Attis')
+    for name in names:
+        posts = base.collect(lambda p: p.author() == name)
+        count = len(posts)
+        ratio = float(count) / n_posts * 100
+        avg_ppd = float(count) / n_days
+        print 'Posts by %s: %d (%0.2f %%, %0.3f posts per day)' \
+            % (name, count, ratio, avg_ppd)
+
+        size_pure = 0
+        size_full = 0
+        for p in posts:
+            size_pure += size(p,pure=True)
+            size_full += size(p,pure=False)
+        avg_cpp = float(size_pure) / count
+        avg_cpd = float(size_pure) / n_days
+        percent_quote = float(size_full - size_pure) / size_pure * 100
+        print 'Characters in all posts: %d' % (size_full,)
+        print 'Pure characters (excl. quotes): %d' % (size_pure,)
+        print 'Average pure characters per post: %0.2f' % (avg_cpp,)
+        print 'Average pure characters per day: %0.2f' % (avg_cpd,)
+        print 'Percent of quotes: %0.2f %%\n' % (percent_quote,)
+
+@hkshell.hkshell_cmd()
+def statmill(base=None):
+    """Prints statistics on contribution to the Heap.
+
+    In the past, I have done similar statistics. I plan to do this
+    every time the number of posts mod 1000 becomes 0."""
+
+    # note: soon these should be separate heaps
+    all = hkshell.postdb().all()
+    heap = all.collect.has_tag_from(('hh', 'heap', 'hk'))
+    nonheap = all - heap
+
+    print '== Statistics for the whole Heap ==\n'
+    statcontrib(all)
+    print '== Statistics for the Heapkeeper Heap ==\n'
+    statcontrib(heap)
+    print '== Statistics for the UMS Heap ==\n'
+    statcontrib(nonheap)
+
 main()
 
 # ----------- DEAD CODE ---------------
