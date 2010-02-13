@@ -62,35 +62,62 @@ class MyGenerator(hkgen.Generator):
 
 def sections(postdb):
     exp = False
-    eliminate = False
+    eliminate = True
 
-    # ps_all = összes levél
+    # ps_all = all mail
     ps_all = postdb.all().copy()
+    # ps_heap = Heap-related (scheduled to go to Hh)
+    ps_heap = ps_all.collect.has_tag_from(('heap', 'hh', 'hk'))
+    ps_nonheap = ps_all - ps_heap
 
-    # ps_attention = unanswered proposals
-    # ps_singles = all other mail w/o answers
+    # ps_singles = all mail w/o answers
     ps_singles = postdb.roots()
     for post in postdb.all():
         ps_singles -= hklib.PostSet(postdb, [postdb.parent(post)])
-    ps_attention = ps_singles.collect.has_tag('prop')
-    ps_singles -= ps_attention
 
     # tidy
+    # we agreed that I (Attis) would primarily tidy UMS posts
+    # (that means anything that has no Heap-related tags)
     # posts that belong here either:
     # * contain quote introduction (like "xyz wrote:")
-    # * contain more quote lines than non-quote
+    # * contain more quote lines than non-quote (may be OK)
+    # * signed (no need for them, esp. quoted signatures)
+    # * contain quoted lines, but have no parent or reference
+    # * subject starts with lowercase letter (may be OK)
+    # * contain obsolete metas
+    # * of course we ignore posts already marked as reviewed
+
     regexp = '\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>'
-    ps_tidy = ps_all.collect.body_contains(regexp)
-    ps_tidy |= ps_all.collect.body_contains('wrote:')
-    ps_tidy |= [post for post in postdb.all() if overquoted(post)]
+    ps_tidy = ps_nonheap.collect.body_contains(regexp)
+    ps_tidy |= ps_nonheap.collect.body_contains('wrote:\s*$')
+    ps_tidy |= ps_nonheap.collect.body_contains('írta:\s*$')
+    ps_tidy |= ps_nonheap.collect(overquoted)
+    ps_tidy |= ps_nonheap.collect.body_contains('^\s*Csabi\s*$')
+    ps_tidy |= ps_nonheap.collect.body_contains('^\s*Attis\s*$')
+    ps_tidy |= ps_nonheap.collect.body_contains('^\s*Josh\s*$')
+    ps_unheaded = ps_nonheap.collect(lambda p: not p.parent())
+    ps_tidy |= ps_unheaded.collect.body_contains('^>')
+    ps_tidy |= ps_nonheap.collect(
+        lambda p: p.subject().decode('utf-8')[0] in
+            u'abcdefghijklmnopqrstuvwxyzöüóőúéáűí')
+    ps_tidy |= ps_nonheap.collect.body_contains('<<<')
     ps_tidy -= ps_all.collect.has_tag('reviewed')
+    print '%d posts are problematic.' \
+        % len(ps_tidy)
+
+    # we agreed that it would be illegal to reply to an UMS post on Hh
+    # so we are looking for Hh posts with non-Hh parents
+    ps_illegal = ps_heap.collect(
+        lambda p: postdb.parent(p) in ps_nonheap)
+    print '%d posts break the UMS—Hh relationship rule.' \
+        % len(ps_illegal)
 
     # todo
     ps_todo = ps_all.collect.has_tag('todo')
     ps_todo |= ps_all.collect.body_contains("^<<<\!*todo")
+    ps_todo |= ps_all.collect.body_contains("^\[\!*todo")
 
     # heap
-    ps_heap = ps_all.collect.has_tag('heap')
     if exp:
         ps_heap = ps_heap.exp()
     if eliminate:
@@ -124,7 +151,8 @@ def sections(postdb):
     if eliminate:
         ps_all -= ps_pol
 
-    res = [ ("Nyitott javaslatok", ps_attention, True),
+    res = [
+            ("Illegális Hh—UMS-viszony", ps_illegal, True),
             ("Takarítani", ps_tidy, True),
             ("Tennivalók", ps_todo, True),
             ("Cipősdoboz", ps_singles, True),
@@ -132,7 +160,8 @@ def sections(postdb):
             ("Programozás", ps_prog, False),
             ("C és C++", ps_ccpp, False),
             ("Python", ps_py, False),
-            ("Egyéb", ps_all, False)]
+            ("Egyéb", ps_all, False)
+        ]
     return res
 
 def overquoted(post):
@@ -153,7 +182,7 @@ def et(pps):
     for root in roots:
         for post in hkshell.postdb().iter_thread(root):
             hkshell.e(post.post_id())
-    hkshell.ga()
+    hkshell.g()
 
 @hkshell.hkshell_cmd()
 def lsr(pps):
