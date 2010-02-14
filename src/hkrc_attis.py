@@ -207,6 +207,32 @@ def review_status(root):
     else:
         return 'all'
 
+@hkshell.hkshell_cmd()
+def statrev(base=None):
+    """Prints some statistics on the review status of the Heap."""
+    if base is None:
+        base = hkshell.postdb().all()
+    assert isinstance(base, hklib.PostSet)
+
+    threads = base.expb().collect.is_root()
+    n_threads = len(threads)
+    n_posts = len(base)
+    n_reviewed = len(base.collect.has_tag('reviewed'))
+    p_reviewed = float(n_reviewed) / n_posts * 100
+    counter = {'all': 0, 'some': 0, 'no': 0}
+
+    for thread in threads:
+        counter[review_status(thread)] += 1
+
+    print 'Number of threads: %d' % (n_threads,)
+    for status in counter.keys():
+        n = counter[status]
+        p = float(n) / n_threads * 100
+        print 'Threads with %s posts reviewed: %d (%0.2f %%)' % \
+            (status, n, p)
+    print '\nNumber of posts: %d' % (n_posts,)
+    print 'Reviewed posts: %d (%0.2f %%)' % (n_reviewed, p_reviewed)
+
 def get_heap_time_bounds(base=None):
     """Returns the timestamps of the first and last post in the heap
     or a post set as a tuple of two `datetime.datetime` objects."""
@@ -295,9 +321,12 @@ def statcontrib(base=None):
     avg_ppd = float(n_posts) / n_days
     print 'Average posts per day: %0.3f\n' % (avg_ppd,)
 
-    names = ('Csabi', 'Josh', 'Attis')
+    names = ('anyone', 'Csabi', 'Josh', 'Attis')
     for name in names:
-        posts = base.collect(lambda p: p.author() == name)
+        if name == 'anyone':
+            posts = base
+        else:
+            posts = base.collect(lambda p: p.author() == name)
         count = len(posts)
         ratio = float(count) / n_posts * 100
         avg_ppd = float(count) / n_days
