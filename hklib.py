@@ -284,17 +284,21 @@ class Post(object):
 
     # Modifications
 
-    def touch(self):
+    def touch(self, touch_postdb=True):
         """Should be called each time after the post is modified.
 
         See also the :ref:`lazy_data_calculation_pattern` pattern.
+
+        **Arguments:**
+
+        - `touch_postdb` (bool) -- Touch the post database.
         """
 
         self._modified = True
         self._datetime = hkutils.NOT_SET
-        if self._postdb != None:
-            self._postdb.touch(self)
         self._meta_dict = None
+        if self._postdb is not None and touch_postdb:
+            self._postdb.touch(self)
 
     def is_modified(self):
         """Returns whether the post is modified.
@@ -844,11 +848,15 @@ class Post(object):
         silent --- Do not call postdb.touch.
         """
 
+        # Parsing the post file and returning if it is the same as the post
+        # object
         with open(self.postfilename(), 'r') as f:
-            self._header, self._body = Post.parse(f)
-        self._modified = False
-        if not silent:
-            self._postdb.touch(self)
+            header, body = Post.parse(f)
+        if header == self._header and body == self._body:
+            return
+
+        self._header, self._body = header, body
+        self.touch(touch_postdb=(not silent))
 
     # Filenames
 
