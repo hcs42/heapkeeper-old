@@ -331,7 +331,7 @@ stands for "generate")::
     Generating index.html...
     Generating thread pages...
 
-Open ``html/index/index.html`` in a browser. You will see something like this:
+Open ``html/index.html`` in a browser. You will see something like this:
 
 .. image:: images/1.png
       :align: center
