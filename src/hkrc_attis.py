@@ -187,7 +187,7 @@ def et(pps):
 @hkshell.hkshell_cmd()
 def lsr(pps):
     """Print a whole thread, ie. recursive ls."""
-    hkshell.ls(hkshell.ps(pps).exp())
+    hkshell.ls(hkshell.ps(pps).exp(), show_tags=True)
 
 def review_status(root):
     """Returns the review status of a thread specified by its root."""
