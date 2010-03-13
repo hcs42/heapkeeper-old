@@ -12,7 +12,6 @@ conventions.
 .. toctree::
 
     development
-    developmentrules
     codingconventions
 
 Concepts

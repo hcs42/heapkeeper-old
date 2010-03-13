@@ -92,7 +92,6 @@ Documentation
 * :doc:`developersguide`
 
   * :doc:`development`
-  * :doc:`developmentrules`
   * :doc:`codingconventions`
   * :doc:`keyprinciples`
   * :doc:`patterns`
