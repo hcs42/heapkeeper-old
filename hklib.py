@@ -1919,6 +1919,8 @@ class PostDB(object):
           is not found. If raise_exception is ``False``, ``None`` will be
           returned, otherwise a |PostNotFoundError| exception will be raised.
 
+        **Returns:** |Post| | ``None``
+
         **Raises:**
 
         - |PostNotFoundError| -- The post was not found and `raise_exception`
