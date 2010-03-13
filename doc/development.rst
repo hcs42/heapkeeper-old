@@ -127,7 +127,16 @@ Heapkeeper, it is something like ``0.3``.
 
     Heapkeeper v<version> released.
 
+    [v<version>]
+
     <List of changes copied from download.rst>.
+
+#. Execute the package maker script and push the package to the homepage::
+
+    $ scripts/make_package
+    $ scripts/pushrelease hcs@heapkeeper.org
+
+#. Download the uploaded package and perform the steps in the :doc:`tutorial`.
 
 #. Push the changes to the GitHub repository::
 
@@ -145,11 +154,9 @@ Heapkeeper, it is something like ``0.3``.
     $ git push origin master
     $ git push origin :_v<version>
 
-#. Execute the documentation pusher and package maker scripts::
+#. Push the new documentation to the home page::
 
     $ scripts/pushdoc hcs@heapkeeper.org
-    $ scripts/make_package
-    $ scripts/pushrelease hcs@heapkeeper.org
 
 #. Make an announcement on Freshmeat__
 
@@ -159,5 +166,11 @@ Heapkeeper, it is something like ``0.3``.
    - ``README``
    - ``hklib.py``
    - ``doc/conf.py``
+
+   Use the following commit message::
+
+    Heapkeeper v<version>+ first commit
+
+    [v<version>]
 
 __ http://freshmeat.net/
