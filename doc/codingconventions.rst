@@ -119,6 +119,40 @@ Classes
             self.re = re
             self.im = im
 
+Header levels
+^^^^^^^^^^^^^
+
+Use the following underline types in ``*.rst`` files:
+
+.. code-block:: none
+
+    Page title
+    ==========
+
+    Section
+    -------
+
+    Subsection
+    ^^^^^^^^^^
+
+    Subsubsection
+    """""""""""""
+
+    Paragraph
+    '''''''''
+
+    Subparagraph
+    ::::::::::::
+
+Use the following underline types in ``*.py`` files:
+
+.. code-block:: none
+
+    Paragraph
+    '''''''''
+
+    Subparagraph
+    ::::::::::::
 
 Python code
 -----------
