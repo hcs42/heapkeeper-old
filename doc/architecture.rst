@@ -22,9 +22,6 @@ __ http://github.com/hcs42/heapkeeper/
 ``doc``
     Documentation files. The ``rst`` files are text files with wiki-like
     syntax, and Sphinx can be used to generate HTML or other output from them.
-``doc/todo.rst``
-    Our feature and bug tracking "system". Will be replaced by the Heapkeeper
-    heap.
 ``*.py``
     Python source files -- Heapkeeper itself
 ``heapindex.css``

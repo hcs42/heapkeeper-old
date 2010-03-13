@@ -80,9 +80,6 @@ we feel that Heapkeeper is in a stage to support maintaining a public heap.
 Until then, you can contact us via email as described on the
 :doc:`index page <index-main>`.
 
-The :doc:`todo` file is our "bug and feature tracking" system that we use to
-track the bugs we find and features that we want to implement.
-
 Using the version control system
 --------------------------------
 

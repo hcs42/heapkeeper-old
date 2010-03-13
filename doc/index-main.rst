@@ -97,4 +97,3 @@ Documentation
   * :doc:`patterns`
   * :doc:`architecture`
   * :doc:`modules`
-  * :doc:`todo`
