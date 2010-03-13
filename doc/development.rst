@@ -23,13 +23,13 @@ Development tools
 All the development tools we use are free and open source programs.
 
 The following programs should be installed on a developer's computer: Python_,
-Git_, Sphinx_ and reStructuredText_.
+Git_ and Sphinx_.
 
 Python
 ^^^^^^
 
 Python_ is the interpreter that executes Heapkeeper. Heapkeeper needs Python
-2.5 or 2.6.
+2.5, 2.6 or 2.7.
 
 .. _`Python`: http://www.python.org/
 
@@ -75,10 +75,9 @@ that are worth to have a look at:
 Communication
 -------------
 
-We use a heap to communicate. The development heap will become public when
-we feel that Heapkeeper is in a stage to support maintaining a public heap.
-Until then, you can contact us via email as described on the
-:doc:`index page <index-main>`.
+We use a heap to communicate. It is called the Heapkeeper heap. It will become
+public when we Heapkeeper supports handling several heaps. Until then, you
+can contact us via email as described on the :doc:`index page <index-main>`.
 
 Using the version control system
 --------------------------------
