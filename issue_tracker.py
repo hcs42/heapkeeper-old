@@ -108,9 +108,12 @@ class Generator(hkgen.Generator):
         else:
             return '[%s]' % (', '.join(tags),)
 
+    def is_hh_post(self, post):
+        return post.heap_id() == 'hh' or post.has_tag('hh')
+
     def is_thread_issue(self, root):
         for post in self._postdb.postset(root).expf():
-            if (post.has_tag('hh') and
+            if (self.is_hh_post(post) and
                 not post.has_tag('post syntax') and
                 (post.has_tag('prop') or post.has_tag('issue') or
                  post.has_tag('bug') or post.has_tag('feature'))):
@@ -118,7 +121,7 @@ class Generator(hkgen.Generator):
         return False
 
     def is_post_wanted(self, post):
-        return (post.has_tag('hh') and not post.has_tag('post syntax') and
+        return (self.is_hh_post(post) and not post.has_tag('post syntax') and
                 not post.has_tag('meta'))
 
     def is_review_needed(self, post):

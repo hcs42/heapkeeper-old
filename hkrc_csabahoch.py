@@ -50,7 +50,9 @@ class MyGenerator(hkgen.Generator):
 
         postdb = self._postdb
         all = postdb.all()
-        self.hh_posts = all.collect.has_tag('hh')
+        def is_hh_post(post):
+            return post.heap_id() == 'hh' or post.has_tag('hh')
+        self.hh_posts = all.collect(is_hh_post)
         self.ums_posts = all - self.hh_posts
         self.review_needed_posts = all.collect(self.is_review_needed)
         self.review_needed_threads = \
@@ -302,6 +304,40 @@ def check_heap_links():
                     s = 'Broken link in %s to "%s"' % (post, target_pre)
                     hkshell.options.output.write(s + '\n')
     return broken_posts
+
+@hkshell.hkshell_cmd()
+def posts_without_date():
+
+    postdb = hkshell.postdb()
+    def has_no_date(post):
+        return post.date() == ''
+    posts = postdb.all().collect(has_no_date)
+    for post in posts:
+        old_post_id = post.post_id()
+        print post, postdb.parent(post)
+        post.set_date(postdb.parent(post).date())
+    hkshell.s()
+
+@hkshell.hkshell_cmd()
+def separate_heaps():
+
+    postdb = hkshell.postdb()
+    all = postdb.all()
+    def is_hh_post(post):
+        return post.heap_id() == 'hh' or post.has_tag('hh')
+
+    hh_posts = all.collect(is_hh_post)
+    ums_posts = all - hh_posts
+
+    for i, post in enumerate(hh_posts.sorted_list()):
+        postdb.move(post, ('hh', i + 1), placeholder=True)
+        post.remove_tag('hh')
+        if post.author() == 'Csabi':
+            post.set_author('Csaba Hoch')
+        elif post.author() == 'Attis':
+            post.set_author('Attila Nagy')
+        else:
+            print 'Unknown author:', post.author()
 
 @hkshell.hkshell_cmd()
 def R(pps):
