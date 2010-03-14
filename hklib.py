@@ -1573,6 +1573,7 @@ class PostDB(object):
                     (post_id, messid, messid_user_post))
             else:
                 self.messid_to_post_id[messid] = post_id
+        self.touch()
 
     def remove_post_from_dicts(self, post):
         """Removed the post from the `heapid_to_post` and `messid_to_heapid`
@@ -1591,6 +1592,7 @@ class PostDB(object):
             # is stored as the owner of that messid
             if self.messid_to_post_id.get(messid) == post_id:
                 del self.messid_to_post_id[post.messid()]
+        self.touch()
 
     def load_heap(self, heap_id):
         """Loading a heap from the disk.
