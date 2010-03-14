@@ -5,6 +5,7 @@ Module documentation
 
    hkutils
    hklib
+   hkbodyparser
    hkgen
    hkcustomlib
    hkshell

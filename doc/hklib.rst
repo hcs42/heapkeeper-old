@@ -155,6 +155,7 @@ PostDB
     .. automethod:: _recalc_roots
     .. automethod:: threads
     .. automethod:: _recalc_threads
+    .. automethod:: move
     .. automethod:: postfile_name
     .. automethod:: html_dir
 

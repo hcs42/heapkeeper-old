@@ -34,6 +34,7 @@ import hklib
 
 testmodules = ['test_hkutils',
                'test_hklib',
+               'test_hkbodyparser',
                'test_hkgen',
                'test_hkshell',
                'test_hkcustomlib']

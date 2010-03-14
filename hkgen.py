@@ -625,7 +625,47 @@ class Generator(object):
         """
 
         if hasattr(postitem, 'print_post_body') and postitem.print_post_body:
-            return self.enclose(self.escape(postitem.post.body()),
+
+            body_html = []
+            for segment in postitem.post.body_object().segments:
+                s = self.escape(segment.text)
+                if segment.type == 'meta':
+                    s = self.enclose(s, class_='meta-text')
+                elif segment.type == 'link' and segment.protocol == 'http':
+                    s = self.print_link(segment.text, s)
+                elif segment.type == 'heap_link':
+                    heap_id = postitem.post.heap_id()
+                    target_post = \
+                        self._postdb.post(segment.get_prepost_id_str(),
+                                          heap_id)
+                    if target_post is not None:
+                        target_postitem = \
+                            hklib.PostItem(pos='main', post=target_post)
+                        s = self.print_link(
+                                self.print_postitem_link(target_postitem),
+                                s)
+                if segment.quote_level != 0:
+
+                    # The following code prints the name of the author before
+                    # each quote.
+                    #
+                    # if len(segment.text) > 0 and segment.text[0] == '>':
+                    #     ql = segment.quote_level
+                    #     p = postitem.post
+                    #     while ql != 0 and p is not None:
+                    #         p = self._postdb.parent(p)
+                    #         ql -= 1
+                    #     if p is not None:
+                    #         s = p.author() + ':\n' + s
+                    #     else:
+                    #         author = ''
+
+                    class_ = 'quote-%s' % (segment.quote_level,)
+                    s = self.enclose(s, class_=class_)
+                    s = self.enclose(s, class_='quote')
+
+                body_html.append(s)
+            return self.enclose(body_html,
                                 'pre',
                                 'postbody')
         else:

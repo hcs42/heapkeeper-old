@@ -147,6 +147,7 @@ import sys
 import time
 
 import hkutils
+import hkbodyparser
 
 
 heapkeeper_version = '0.4'
@@ -263,6 +264,7 @@ class Post(object):
       the post has been modified since the last synchronization.
     - `_meta_dict` ({str: (str | ``None``)}) -- Dictionary that contains meta
       text from the body.
+    - `_body_object` (|Body|) -- The parsed body.
 
     The `_header` attribute is a dictonary that contains attributes of the post
     such as the subject. The `_header` always contains all the following items:
@@ -455,6 +457,7 @@ class Post(object):
             self._datetime = hkutils.NOT_SET
             self._modified = not self.postfile_exists()
             self._meta_dict = None
+            self._body_object = None
         except Exception, e:
             raise hkutils.HkException, \
                   ('Error parsing post "%s"\n%s' %
@@ -528,6 +531,7 @@ class Post(object):
         self._modified = True
         self._datetime = hkutils.NOT_SET
         self._meta_dict = None
+        self._body_object = None
         if self._postdb is not None and touch_postdb:
             self._postdb.touch(self)
 
@@ -1010,6 +1014,22 @@ class Post(object):
                     if value is not None:
                         value = value.strip()
                     self._meta_dict[key] = value
+
+    # body object
+    def body_object(self):
+        """Returns the parsed body object.
+
+        **Returns:** |Body|
+        """
+
+        self._recalc_body_object()
+        return self._body_object
+
+    def _recalc_body_object(self):
+        """Recalculates the parsed body object."""
+
+        if self._body_object is None:
+            self._body_object = hkbodyparser.parse(self._body)
 
     # body
 
@@ -2361,6 +2381,108 @@ class PostDB(object):
             self._threads = {}
             for root in self.roots():
                 self._threads[root] = self.postset(root).expf()
+
+    def move(self, post, new_post_id):
+        """Moves a post by changing its post id.
+
+        This method should be used with care.
+
+        **Arguments:**
+
+        - `post` (|Post|)
+        - `new_post_id` (|PrePostId|) -- The new post id of the post.
+        """
+
+        Post.assert_is_post_id(new_post_id)
+        new_post_id = Post.unify_post_id(new_post_id)
+        new_heap_id, new_post_index = new_post_id
+
+        if self.post(new_post_id) is not None:
+            raise hkutils.HkException, \
+                  ('The given post id is already occupied: %s' %
+                   (new_post_id,))
+
+        if not self.has_heap_id(new_heap_id):
+            raise hkutils.HkException, \
+                  ('No such heap: %s' % (new_heap_id,))
+
+        old_post_id = post.post_id()
+
+        def new_reference(source_post, old_post_ref, old_post_id, new_post_id):
+            """Returns how a post reference should change when a post's id is
+            renamed.
+
+            **Arguments:**
+
+            - `source_post` (|Post|) -- The post that contains the post
+              reference.
+            - `old_post_ref` (str) -- The post reference whose modification is
+              in question.
+            - `old_post_id` (|PostId|) -- The old post id of the post to be
+              renamed.
+            - `new_post_id` (|PostId|) -- The new post id of the post to be
+              renamed.
+
+            **Returns:** str | ``None`` -- If ``None`` is returned, the post
+            reference should not be changed. If a string is returned, it is the
+            new post reference that will be correct after the post was moved.
+            It is a prepost id; it has one of the following forms: either
+            ``"<post index>"`` or ``"<heap id>/<post index>"``.
+            """
+
+            old_heap_id, old_post_index = old_post_id
+            old_post_id_str = '%s/%s' % old_post_id
+            new_heap_id, new_post_index = new_post_id
+            new_post_id_str = '%s/%s' % new_post_id
+
+            # The reference is a full post id to the moving post
+            if old_post_ref == old_post_id_str:
+                return new_post_id_str
+
+            # The reference if a post index to the moving post
+            elif (old_post_ref == old_post_index and
+                  source_post.heap_id() == old_heap_id):
+
+                # The target post stays in the heap
+                if new_heap_id == old_heap_id:
+                    return new_post_index
+
+                # The target post moves to another heap, so we need to set the
+                # full post id
+                else:
+                    return new_post_id_str
+
+
+        for curr_post in self.posts():
+
+            # Modifying the Parent header item if necessary
+            new_ref = new_reference(curr_post, curr_post.parent(),
+                                    old_post_id, new_post_id)
+            if new_ref is not None:
+                curr_post.set_parent(new_ref)
+
+            # Modifying the heap links if necessary
+            body_object = curr_post.body_object()
+            modified = False
+            for segment in body_object.segments:
+                if segment.type == 'heap_link':
+                    new_ref = \
+                        new_reference(curr_post, segment.get_prepost_id_str(),
+                                      old_post_id, new_post_id)
+                    if new_ref is not None:
+                        segment.set_prepost_id_str(new_ref)
+                        modified = True
+
+            if modified:
+                body_str = body_object.body_str()
+                curr_post.set_body(body_str)
+
+        self.remove_post_from_dicts(post)
+        post._post_id = new_post_id
+        post.touch()
+        self.add_post_to_dicts(post)
+
+        self.touch()
 
     # Filenames
 

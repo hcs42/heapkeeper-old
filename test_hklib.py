@@ -744,6 +744,23 @@ class Test_Post(unittest.TestCase, PostDBHandler):
             hklib.Post.from_str('\n\n[key value]\n[key value2]').meta_dict(),
             {'key': 'value2'})
 
+    def test_body_object(self):
+        """Tests the following functions:
+
+        - :func:`hklib.Post.body_object`
+        - :func:`hklib.Post._recalc_body_object`
+        """
+
+        # empty post
+        self.assertEquals(
+            str(hklib.Post.from_str('').body_object()),
+            '<normal, text=%s>\n' % (repr('\n',)))
+
+        # non-empty post
+        self.assertEquals(
+            str(hklib.Post.from_str('\nbody\n').body_object()),
+            '<normal, text=%s>\n' % (repr('body\n',)))
+
     def test__subject(self):
         """Tests issues related to the subject."""
 
@@ -2124,6 +2141,108 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
             {p(0): postdb.postset([p(0), p(1), p(2), p(3)]),
              po(0): postdb.postset([po(0)]),
              p(4): postdb.postset([p(4)])})
+
+    def test_move(self):
+        """Tests :func:`hklib.PostDB.move`."""
+
+        postdb = self._postdb
+        p = self.p
+        po = self.po
+
+        # We won't be able to refer to p(0) as `p(0)` because its post id will
+        # change
+        p0 = self.p(0)
+
+        p(1).set_body('heap://0 heap://my_heap/0')
+        p(2).set_body('heap://1 heap://my_heap/1')
+        p(3).set_parent('0')
+        p(4).set_parent('my_heap/0')
+        po(0).set_body('heap://my_heap/0 heap://my_other_heap/0')
+
+        ## Moving within a heap
+
+        postdb.move(p0, 'my_heap/moved')
+
+        # The parent reference of post 1 is unchanged (it references to post 0
+        # by its message id) but that of post 3 and 4 is modified (they
+        # reference to post 0 by its post id)
+
+        self.assertEquals(
+            p(1).parent(),
+            '0@')
+
+        self.assertEquals(
+            p(3).parent(),
+            'moved')
+
+        self.assertEquals(
+            p(4).parent(),
+            'my_heap/moved')
+
+        # References in bodies were modified
+
+        self.assertEquals(
+            p(1).body(),
+            'heap://moved heap://my_heap/moved\n')
+
+        self.assertEquals(
+            p(2).body(),
+            'heap://1 heap://my_heap/1\n')
+
+        self.assertEquals(
+            po(0).body(),
+            'heap://my_heap/moved heap://my_other_heap/0\n')
+
+        ## Moving across heaps
+
+        postdb.move(p0, 'my_other_heap/moved2')
+
+        # The parent reference of post 1 is unchanged (it references to post 0
+        # by its message id) but that of post 3 and 4 is modified (they
+        # reference to post 0 by its post id)
+
+        self.assertEquals(
+            p(1).parent(),
+            '0@')
+
+        self.assertEquals(
+            p(3).parent(),
+            'my_other_heap/moved2')
+
+        self.assertEquals(
+            p(4).parent(),
+            'my_other_heap/moved2')
+
+        # References in bodies were modified
+
+        self.assertEquals(
+            p(1).body(),
+            ('heap://my_other_heap/moved2 '
+             'heap://my_other_heap/moved2\n'))
+
+        self.assertEquals(
+            p(2).body(),
+            'heap://1 heap://my_heap/1\n')
+
+        self.assertEquals(
+            po(0).body(),
+            'heap://my_other_heap/moved2 heap://my_other_heap/0\n')
+
+        ## Error: post id already occupied
+
+        self.assertRaises(
+            hkutils.HkException,
+            lambda: postdb.move(p0, 'my_heap/1'))
+
+        self.assertRaises(
+            hkutils.HkException,
+            lambda: postdb.move(p(1), 'my_heap/1'))
+
+        ## Error: non-existing heap
+
+        self.assertRaises(
+            hkutils.HkException,
+            lambda: postdb.move(p0, 'my_new_heap/moved'))
 
 
 class Test_PostItem(unittest.TestCase):

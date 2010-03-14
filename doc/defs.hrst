@@ -7,6 +7,7 @@
 
 .. |aTr| replace:: :func:`aTr <hkshell.aTr>`
 .. |aT| replace:: :func:`aT <hkshell.aT>`
+.. |Body| replace:: :class:`Body <hkbodyparser.Body>`
 .. |Callbacks| replace:: :class:`Callbacks <hkshell.Callbacks>`
 .. |cat| replace:: :func:`cat <hkshell.cat>`
 .. |collect| replace:: :class:`collect <hklib.PostSetCollectDelegate>`
@@ -19,12 +20,13 @@
 .. |expf| replace:: :func:`expf <hklib.PostSet.expf>`
 .. |FeatureState| replace:: :ref:`FeatureState <hkshell_FeatureState>`
 .. |forall| replace:: :class:`forall <hklib.PostSetForallDelegate>`
-.. |g| replace:: :func:`g <hkshell.g>`
 .. |Generator2| replace:: :class:`Generator <hkgen.Generator>`
 .. |GeneratorOptions| replace:: :class:`GeneratorOptions <hklib.GeneratorOptions>`
 .. |Generator| replace:: :class:`Generator <hklib.Generator>`
 .. |GenIndicesFun| replace:: :ref:`GenIndicesFun <hkshell_GenIndicesFun>`
+.. |g| replace:: :func:`g <hkshell.g>`
 .. |HeapId| replace:: :ref:`HeapId <hklib_HeapId>`
+.. |hkbodyparser| replace:: :mod:`hkbodyparser`
 .. |hkcustomlib| replace:: :mod:`hkcustomlib`
 .. |hkgen| replace:: :mod:`hkgen`
 .. |hklib| replace:: :mod:`hklib`
@@ -39,6 +41,7 @@
 .. |ls| replace:: :func:`ls <hkshell.ls>`
 .. |Messageid| replace:: :ref:`Messageid <hklib_Messageid>`
 .. |ModificationListener| replace:: :class:`ModificationListener <hkshell.ModificationListener>`
+.. |Parser| replace:: :class:`Parser <hkbodyparser.Parser>`
 .. |PostDB.walk_thread| replace:: :func:`PostDB.walk_thread <hklib.PostDB.walk_thread>`
 .. |PostDBEventListener| replace:: :ref:`PostDBEventListener <hklib_PostDBEventListener>`
 .. |PostDBEvent| replace:: :class:`PostDBEvent <hklib.PostDBEvent>`
@@ -64,6 +67,7 @@
 .. |rTr| replace:: :func:`rTr <hkshell.rTr>`
 .. |rT| replace:: :func:`rT <hkshell.rT>`
 .. |Section| replace:: :class:`Section <hklib.Section>`
+.. |Segment| replace:: :class:`Segment <hkbodyparser.Segment>`
 .. |sSr| replace:: :func:`sSr <hkshell.sSr>`
 .. |sS| replace:: :func:`sS <hkshell.sS>`
 .. |s| replace:: :func:`s <hkshell.s>`

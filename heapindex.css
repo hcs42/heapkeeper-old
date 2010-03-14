@@ -101,7 +101,6 @@ a
 
 span, td
 {
-    font-family: Arial, sans-serif;
 }
 
 td
@@ -206,6 +205,26 @@ pre
     padding-top: 0.5em;
     padding-right: 0.5em;
     padding-bottom: 0.5em;
+}
+
+.postbody .meta-text
+{
+    color: #f00;
+}
+
+.postbody .quote-2, .quote-4, .quote-6, .quote-8
+{
+    color: #088;
+}
+
+.postbody .quote-1, .quote-3, .quote-5, .quote-7, .quote-9
+{
+    color: #00f;
+}
+
+.postbody a
+{
+    text-decoration: underline;
 }
 
 .author, .subject, .button, .tags, .index, .parent, .date
