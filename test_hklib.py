@@ -392,7 +392,6 @@ class Test_Post(unittest.TestCase, PostDBHandler):
              'Date': '',
              'Message-Id': '',
              'Subject': '',
-             'Reference': [],
              'Nosuchattr': ['1', '2']})
         self.assertEqual(
             self.pop_log(),
@@ -423,8 +422,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
              'Parent': '',
              'Date': 'Wed, 20 Aug 2008 17:41:30 +0200',
              'Flag': ['flag1', 'flag2'],
-             'Tag': [],
-             'Reference': []}
+             'Tag': []}
 
         p1 = hklib.Post.from_str(s)
         p2 = hklib.Post.from_str(s + '\n')
@@ -600,10 +598,6 @@ class Test_Post(unittest.TestCase, PostDBHandler):
 
         p0.set_flags(['myflag1', 'myflag2'])
         self.assertEqual(p0.flags(), ['myflag1', 'myflag2'])
-        check_modified()
-
-        p0.set_refs(['1', '2'])
-        self.assertEqual(p0.refs(), ['1', '2'])
         check_modified()
 
         p0.set_body('newbody')

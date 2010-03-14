@@ -69,8 +69,6 @@ Post
     .. automethod:: has_tag_from
     .. automethod:: flags
     .. automethod:: set_flags
-    .. automethod:: refs
-    .. automethod:: set_refs
     .. automethod:: is_deleted
     .. automethod:: delete
     .. automethod:: meta_dict

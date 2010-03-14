@@ -408,7 +408,6 @@ class Post(object):
         copy_one('Parent', 'In-Reply-To')
         copy_one('Date')
         copy_list('Flag')
-        copy_list('Reference')
         h['Tag'].sort()
         h['Flag'].sort()
 
@@ -921,30 +920,6 @@ class Post(object):
         self._header['Flag'] = sorted(flags)
         self.touch()
 
-    # reference field
-
-    def refs(self):
-        """Returns the references of the post.
-
-        The returned object should not be modified.
-
-        **Returns:** [str]
-        """
-
-        return self._header['Reference']
-
-    def set_refs(self, refs):
-        """Sets the references of the post.
-
-        **Argument:**
-
-        - `refs` ([str])
-        """
-
-        assert(isinstance(refs, list))
-        self._header['Reference'] = refs
-        self.touch()
-
     # deletion
 
     def is_deleted(self):
@@ -1103,7 +1078,6 @@ class Post(object):
         write_list('Tag')
         write_str('Message-Id')
         write_str('Parent')
-        write_list('Reference')
         write_str('Date')
         write_list('Flag')
 
