@@ -47,9 +47,9 @@ class Test__OptionHandling(unittest.TestCase):
 
         def f(a, b, c=1, d=2):
             pass
-        self.assertEquals(hkutils.arginfo(f), (['a', 'b'], {'c':1, 'd':2}))
+        self.assertEqual(hkutils.arginfo(f), (['a', 'b'], {'c':1, 'd':2}))
         f2 = Test__OptionHandling.f
-        self.assertEquals(hkutils.arginfo(f2), (['a', 'b'], {'c':1, 'd':2}))
+        self.assertEqual(hkutils.arginfo(f2), (['a', 'b'], {'c':1, 'd':2}))
 
     def test_set_defaultoptions(self):
 
@@ -60,7 +60,7 @@ class Test__OptionHandling(unittest.TestCase):
 
         options = {'a':0, 'b': 1}
         hkutils.set_defaultoptions(options, f, ['other1', 'other2'])
-        self.assertEquals(options, {'a':0, 'b':1, 'c':2})
+        self.assertEqual(options, {'a':0, 'b':1, 'c':2})
 
         options = {'b': 1}
         def try_():
@@ -81,7 +81,7 @@ class Test__OptionHandling(unittest.TestCase):
         a = A()
         d = {'self': 0, 'something': 1, 'notset': hkutils.NOT_SET}
         hkutils.set_dict_items(a, d)
-        self.assertEquals(a.something, 1)
+        self.assertEqual(a.something, 1)
 
         def f():
             a.self
@@ -102,10 +102,10 @@ class Test__OptionHandling(unittest.TestCase):
                 hkutils.set_dict_items(self, locals())
 
         a = A(x1=1, x3=1)
-        self.assertEquals(a.x1, 1)
+        self.assertEqual(a.x1, 1)
         self.assertFalse(hasattr(a, 'x2'))
-        self.assertEquals(a.x3, 1)
-        self.assertEquals(a.x4, 0)
+        self.assertEqual(a.x3, 1)
+        self.assertEqual(a.x4, 0)
 
     def test_check(self):
 
@@ -128,12 +128,12 @@ class Test__TextStruct(unittest.TestCase):
         """Tests :func:`hkutils.textstruct_to_str`."""
 
         # Converting a string
-        self.assertEquals(
+        self.assertEqual(
             hkutils.textstruct_to_str('text'),
             'text')
 
         # Converting a structure that contains both lists and tuples
-        self.assertEquals(
+        self.assertEqual(
             hkutils.textstruct_to_str(['text1', ('2', ['3']), '4']),
             'text1234')
 
@@ -149,12 +149,12 @@ class Test__TextStruct(unittest.TestCase):
         # Writing a string
         sio = StringIO.StringIO()
         hkutils.write_textstruct(sio, 'text')
-        self.assertEquals(sio.getvalue(), 'text')
+        self.assertEqual(sio.getvalue(), 'text')
 
         # Writing a structure that contains both lists and tuples
         sio = StringIO.StringIO()
         hkutils.write_textstruct(sio, ['text1', ('2', ['3']), '4'])
-        self.assertEquals(sio.getvalue(), 'text1234')
+        self.assertEqual(sio.getvalue(), 'text1234')
 
         # Trying to writing something that is not a TextStruct
         sio = StringIO.StringIO()
@@ -184,7 +184,7 @@ class Test__Misc(unittest.TestCase):
         """Tests :func:`hkutils.calc_timestamp`."""
 
         ts = hkutils.calc_timestamp('Wed, 20 Aug 2008 17:41:30 +0200')
-        self.assertEquals(ts, 1219246890.0)
+        self.assertEqual(ts, 1219246890.0)
 
     def test_HkException(self):
 
@@ -197,20 +197,20 @@ class Test__Misc(unittest.TestCase):
         try:
             raise hkutils.HkException, 'description'
         except hkutils.HkException, h:
-            self.assertEquals(h.value, 'description')
-            self.assertEquals(str(h), "'description'")
+            self.assertEqual(h.value, 'description')
+            self.assertEqual(str(h), "'description'")
 
     def test_plural(self):
 
         """Tests :func:`hkutils.plural`."""
 
         for i in (-1, 1):
-            self.assertEquals(hkutils.plural(i), '')
-            self.assertEquals(hkutils.plural(i, 'ox', 'oxen'), 'ox')
+            self.assertEqual(hkutils.plural(i), '')
+            self.assertEqual(hkutils.plural(i, 'ox', 'oxen'), 'ox')
 
         for i in (-2, 0, 2):
-            self.assertEquals(hkutils.plural(i), 's')
-            self.assertEquals(hkutils.plural(i, 'ox', 'oxen'), 'oxen')
+            self.assertEqual(hkutils.plural(i), 's')
+            self.assertEqual(hkutils.plural(i, 'ox', 'oxen'), 'oxen')
 
     def test_add_method(self):
 
@@ -225,28 +225,28 @@ class Test__Misc(unittest.TestCase):
         a = A()
         a.num = 1
         hkutils.add_method(a, 'add', add_method)
-        self.assertEquals(a.add(2), 3)
+        self.assertEqual(a.add(2), 3)
 
     def test_insert_sep(self):
         """Tests :func:`hkutils.insert_sep`."""
 
         # Normal case
-        self.assertEquals(
+        self.assertEqual(
             hkutils.insert_sep([1, 2, 3], 0),
             [1, 0, 2, 0, 3])
 
         # List with one element
-        self.assertEquals(
+        self.assertEqual(
             hkutils.insert_sep([1], 0),
             [1])
 
         # Empty list
-        self.assertEquals(
+        self.assertEqual(
             hkutils.insert_sep([], 0),
             [])
 
         # Tuple as `seq`
-        self.assertEquals(
+        self.assertEqual(
             hkutils.insert_sep((1, 2, 3), 0),
             [1, 0, 2, 0, 3])
 

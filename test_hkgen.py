@@ -87,7 +87,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         - `text2` (|TextStruct|)
         """
 
-        self.assertEquals(
+        self.assertEqual(
             hkutils.textstruct_to_str(text1),
             hkutils.textstruct_to_str(text2))
 
@@ -269,7 +269,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postdb, g, p = self.get_ouv()
 
         g.options.localtime_fun = time.gmtime
-        self.assertEquals(
+        self.assertEqual(
             g.format_timestamp(p(0).timestamp()),
             '(2008-08-20)')
 
@@ -432,12 +432,12 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         self.assert_(postitems[0] is not self.postitems[0])
 
         # We check that every field was of the post item copied
-        self.assertEquals(postitems[0].pos, self.postitems[0].pos)
-        self.assertEquals(postitems[0].post, self.postitems[0].post)
-        self.assertEquals(postitems[0].level, self.postitems[0].level)
+        self.assertEqual(postitems[0].pos, self.postitems[0].pos)
+        self.assertEqual(postitems[0].post, self.postitems[0].post)
+        self.assertEqual(postitems[0].level, self.postitems[0].level)
 
         # We check that the `print_fun` field was added
-        self.assertEquals(postitems[0].print_fun, g.print_postitem)
+        self.assertEqual(postitems[0].print_fun, g.print_postitem)
 
     def test_print_postitems(self):
         """Tests :func:`hkgen.Generator.print_postitem`."""
@@ -490,7 +490,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                   g.print_postitems(g.walk_thread(None))),
              g.print_html_footer()])
 
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             ('Generating index.html...\n'
              'Generating index.html...'))
@@ -529,7 +529,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
               g.print_postitem(pi_end)],
              g.print_postitems(g.walk_postitems(postitems)))
 
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             ('Generating post pages...\n'
              'Generating post pages...'))

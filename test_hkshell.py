@@ -62,7 +62,7 @@ class Test__1(unittest.TestCase):
         hkshell.event(3)
         hkshell.listeners.remove(listener)
         hkshell.event(4)
-        self.assertEquals(event_list, [1, 2, 2, 3])
+        self.assertEqual(event_list, [1, 2, 2, 3])
 
         ## Testing the `append_listener` and `remove_listener` functions
 
@@ -84,7 +84,7 @@ class Test__1(unittest.TestCase):
             lambda: hkshell.remove_listener(listener))
 
         hkshell.event(2)
-        self.assertEquals(event_list, [1])
+        self.assertEqual(event_list, [1])
 
         ## Testing instance variables of Event
 
@@ -97,10 +97,10 @@ class Test__1(unittest.TestCase):
         hkshell.event(type='mytype', command='mycommand')
         hkshell.remove_listener(listener2)
 
-        self.assertEquals(event_list[0].type, 'mytype')
-        self.assertEquals(event_list[0].command, None)
-        self.assertEquals(event_list[1].type, 'mytype')
-        self.assertEquals(event_list[1].command, 'mycommand')
+        self.assertEqual(event_list[0].type, 'mytype')
+        self.assertEqual(event_list[0].command, None)
+        self.assertEqual(event_list[1].type, 'mytype')
+        self.assertEqual(event_list[1].command, 'mycommand')
 
     def test_hkshell_events(self):
 
@@ -118,13 +118,13 @@ class Test__1(unittest.TestCase):
         event_list = []
         result = f()
 
-        self.assertEquals(result, 1)
-        self.assertEquals(event_list[0].type, 'before')
-        self.assertEquals(event_list[0].command, 'f')
-        self.assertEquals(event_list[1].type, 'f_body')
-        self.assertEquals(event_list[1].command, 'f')
-        self.assertEquals(event_list[2].type, 'after')
-        self.assertEquals(event_list[2].command, 'f')
+        self.assertEqual(result, 1)
+        self.assertEqual(event_list[0].type, 'before')
+        self.assertEqual(event_list[0].command, 'f')
+        self.assertEqual(event_list[1].type, 'f_body')
+        self.assertEqual(event_list[1].command, 'f')
+        self.assertEqual(event_list[2].type, 'after')
+        self.assertEqual(event_list[2].command, 'f')
 
         # Specified name for the `command` attribute
 
@@ -136,13 +136,13 @@ class Test__1(unittest.TestCase):
         event_list = []
         result = f()
 
-        self.assertEquals(result, 1)
-        self.assertEquals(event_list[0].type, 'before')
-        self.assertEquals(event_list[0].command, 'f_cmd1')
-        self.assertEquals(event_list[1].type, 'f_body')
-        self.assertEquals(event_list[1].command, 'f_cmd2')
-        self.assertEquals(event_list[2].type, 'after')
-        self.assertEquals(event_list[2].command, 'f_cmd1')
+        self.assertEqual(result, 1)
+        self.assertEqual(event_list[0].type, 'before')
+        self.assertEqual(event_list[0].command, 'f_cmd1')
+        self.assertEqual(event_list[1].type, 'f_body')
+        self.assertEqual(event_list[1].command, 'f_cmd2')
+        self.assertEqual(event_list[2].type, 'after')
+        self.assertEqual(event_list[2].command, 'f_cmd1')
 
 
 class Test__2(unittest.TestCase, test_hklib.PostDBHandler):
@@ -174,7 +174,7 @@ class Test__2(unittest.TestCase, test_hklib.PostDBHandler):
 
         # Adding the listener
         mod_listener = hkshell.ModificationListener(postdb)
-        self.assertEquals(postdb.listeners, [mod_listener])
+        self.assertEqual(postdb.listeners, [mod_listener])
         hkshell.append_listener(mod_listener)
 
         # Using the listener
@@ -196,7 +196,7 @@ class Test__2(unittest.TestCase, test_hklib.PostDBHandler):
         # Removing the listener
         hkshell.remove_listener(mod_listener)
         mod_listener.close()
-        self.assertEquals(postdb.listeners, [])
+        self.assertEqual(postdb.listeners, [])
 
 
 class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
@@ -231,7 +231,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.tearDownDirs()
 
     def ae(self, x, y):
-        self.assertEquals(x, y)
+        self.assertEqual(x, y)
 
     def init_hkshell(self):
         hkshell.init()
@@ -260,7 +260,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
         def gen_indices(postdb):
             call_count[0] += 1
-            self.assertEquals(postdb, self._postdb)
+            self.assertEqual(postdb, self._postdb)
 
         # Initializing hkshell
         hkshell.options.callbacks.gen_indices = gen_indices
@@ -268,17 +268,17 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
         # Before turning it on
         self.my_cmd(lambda: self.p(0).touch())
-        self.assertEquals(call_count, [0])
+        self.assertEqual(call_count, [0])
 
         # Testing
         on()
         self.my_cmd(lambda: self.p(0).touch())
-        self.assertEquals(call_count, [1])
+        self.assertEqual(call_count, [1])
         off()
 
         # After turning it off
         self.my_cmd(lambda: self.p(0).touch())
-        self.assertEquals(call_count, [1])
+        self.assertEqual(call_count, [1])
 
     def test_gen_indices_listener(self):
         self._test_gen_indices(
@@ -287,13 +287,13 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
     def test_gen_indices__feature(self):
         def on_fun():
-            self.assertEquals(hkshell.features()['gen_indices'], 'off')
+            self.assertEqual(hkshell.features()['gen_indices'], 'off')
             hkshell.on('gen_indices')
-            self.assertEquals(hkshell.features()['gen_indices'], 'on')
+            self.assertEqual(hkshell.features()['gen_indices'], 'on')
         def off_fun():
-            self.assertEquals(hkshell.features()['gen_indices'], 'on')
+            self.assertEqual(hkshell.features()['gen_indices'], 'on')
             hkshell.off('gen_indices')
-            self.assertEquals(hkshell.features()['gen_indices'], 'off')
+            self.assertEqual(hkshell.features()['gen_indices'], 'off')
         self._test_gen_indices(on=on_fun, off=off_fun)
 
     def _test_save(self, on, off):
@@ -309,14 +309,14 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # Auto-save works
         self.my_cmd(lambda: self.p(0).set_subject('newsubject1'))
         post0 = hklib.Post.from_file(self.p(0).postfilename())
-        self.assertEquals(post0.subject(), 'newsubject1')
+        self.assertEqual(post0.subject(), 'newsubject1')
 
         off()
 
         # After turning it off
         self.my_cmd(lambda: self.p(0).set_subject('newsubject2'))
         post0 = hklib.Post.from_file(self.p(0).postfilename())
-        self.assertEquals(post0.subject(), 'newsubject1')
+        self.assertEqual(post0.subject(), 'newsubject1')
 
     def test_save_listener(self):
         self._test_save(
@@ -345,21 +345,21 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # No output should be printed
         output_list = []
         self.my_cmd(lambda: None)
-        self.assertEquals(
+        self.assertEqual(
             output_list,
             [])
 
         # No post touched
         output_list = []
         self.touch_posts_cmd([])
-        self.assertEquals(
+        self.assertEqual(
             output_list,
             ['No post has been touched.\n'])
 
         # One post touched
         output_list = []
         self.touch_posts_cmd([1])
-        self.assertEquals(
+        self.assertEqual(
             output_list,
             ['1 post has been touched:\n',
              "['my_heap/1']\n"])
@@ -367,7 +367,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # More than one posts touched
         output_list = []
         self.touch_posts_cmd([1, 2])
-        self.assertEquals(
+        self.assertEqual(
             output_list,
             ['2 posts have been touched:\n',
              "['my_heap/1', 'my_heap/2']\n"])
@@ -383,26 +383,26 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
     def test_TouchedPostPrinter__feature(self):
         def on_fun():
-            self.assertEquals(
+            self.assertEqual(
                 hkshell.features()['touched_post_printer'],
                 'off')
             hkshell.on('touched_post_printer')
-            self.assertEquals(
+            self.assertEqual(
                 hkshell.features()['touched_post_printer'],
                 'on')
         def off_fun():
-            self.assertEquals(
+            self.assertEqual(
                 hkshell.features()['touched_post_printer'],
                 'on')
             hkshell.off('touched_post_printer')
-            self.assertEquals(
+            self.assertEqual(
                 hkshell.features()['touched_post_printer'],
                 'off')
         self._test_TouchedPostPrinter(on=on_fun, off=off_fun)
 
     def test_tagset(self):
         def test(pretagset, tagset):
-            self.assertEquals(hkshell.tagset(pretagset), tagset)
+            self.assertEqual(hkshell.tagset(pretagset), tagset)
         test('t', set(['t']))
         test('t1', set(['t1']))
         test(['t'], set(['t']))
@@ -427,8 +427,8 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
     def test_self(self):
         self.init_hkshell()
         self.clear_subjects()
-        self.assertEquals(self.subjects(), ['','','','',''])
-        self.assertEquals(self.tags(), [[],[],[],[],[]])
+        self.assertEqual(self.subjects(), ['','','','',''])
+        self.assertEqual(self.tags(), [[],[],[],[],[]])
 
     def test_p(self):
         """Tests :func:`hkshell.p`."""
@@ -439,19 +439,19 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # hkshell.heap_id_hint_var == None
 
         hkshell.set_heap_id_hint(None)
-        self.assertEquals(hkshell.p('my_heap/0'), p0)
-        self.assertEquals(hkshell.p(('my_heap', '0')), p0)
+        self.assertEqual(hkshell.p('my_heap/0'), p0)
+        self.assertEqual(hkshell.p(('my_heap', '0')), p0)
         self.assertRaises(hklib.PostNotFoundError, lambda: hkshell.p(0))
 
         # hkshell.heap_id_hint_var can be used
 
         hkshell.set_heap_id_hint('my_heap')
-        self.assertEquals(hkshell.p('my_heap/0'), p0)
-        self.assertEquals(hkshell.p(0), p0)
+        self.assertEqual(hkshell.p('my_heap/0'), p0)
+        self.assertEqual(hkshell.p(0), p0)
 
         hkshell.set_heap_id_hint('my_other_heap')
-        self.assertEquals(hkshell.p('my_heap/0'), p0)
-        self.assertEquals(hkshell.p(0), self.po(0))
+        self.assertEqual(hkshell.p('my_heap/0'), p0)
+        self.assertEqual(hkshell.p(0), self.po(0))
 
         # hkshell.heap_id_hint_var is not None, but cannot be used
 
@@ -474,7 +474,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # ls with default parameters
         output_list = []
         hkshell.ls()
-        self.assertEquals(
+        self.assertEqual(
             output_list,
             ['<my_heap/0> subject0  author0 (2008.08.20. 15:41)\n',
              '  <my_heap/1> subject1  author1 (2008.08.20. 15:41)\n',
@@ -489,7 +489,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         hkshell.ls(hkshell.ps([1,2,4]),
                    show_author=False, show_tags=True,
                    show_date=False, indent=4)
-        self.assertEquals(
+        self.assertEqual(
             output_list,
             ['    <my_heap/1> subject1  [mytag1,mytag2]\n',
              '        <my_heap/2> subject2  [mytag1,mytag2]\n',
@@ -504,14 +504,14 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         post = hkshell.enew()
         self.assert_(
             hkshell.modification_listener.touched_posts().is_set([post]))
-        self.assertEquals(self.pop_log(), 'Post created.')
+        self.assertEqual(self.pop_log(), 'Post created.')
 
         # If we don't edit it, no new post is created.
         hkshell.options.callbacks.edit_files = \
             lambda files: set() # As if nothing were edited
         post = hkshell.enew()
-        self.assertEquals(self.pop_log(), 'No change in the data base.')
-        self.assertEquals(post, None)
+        self.assertEqual(self.pop_log(), 'No change in the data base.')
+        self.assertEqual(post, None)
         self.assert_(hkshell.modification_listener.touched_posts().is_set([]))
 
         def check_content(expected_content):
@@ -521,7 +521,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
             def editor(files):
                 [file] = files
                 real_content = hkutils.file_to_string(file)
-                self.assertEquals(expected_content, real_content)
+                self.assertEqual(expected_content, real_content)
                 return [file]
             return editor
 
@@ -529,13 +529,13 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         hkshell.options.callbacks.edit_files = \
             check_content('Author: \nSubject: \n\n\n')
         post = hkshell.enew()
-        self.assertEquals(self.pop_log(), 'Post created.')
+        self.assertEqual(self.pop_log(), 'Post created.')
 
         # Testing the `author` argument
         hkshell.options.callbacks.edit_files = \
             check_content('Author: author\nSubject: \n\n\n')
         post = hkshell.enew(author='author')
-        self.assertEquals(self.pop_log(), 'Post created.')
+        self.assertEqual(self.pop_log(), 'Post created.')
 
         # Testing the `parent` argument
         parent = self.p(0)
@@ -547,27 +547,27 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
                 'Author: \nSubject: subject0\n'
                 'Tag: tag1\nTag: tag2\nParent: my_heap/0\n\n\n')
         post = hkshell.enew(parent=self.p(0))
-        self.assertEquals(self.pop_log(), 'Post created.')
+        self.assertEqual(self.pop_log(), 'Post created.')
 
         # Testing the `prefix` argument
         hkshell.options.callbacks.edit_files = lambda files: set(files)
         post = hkshell.enew(prefix='myprefix')
         self.assert_(post.post_index().startswith('myprefix'))
-        self.assertEquals(self.pop_log(), 'Post created.')
+        self.assertEqual(self.pop_log(), 'Post created.')
 
     def test_pT__1(self):
         self.init_hkshell()
         hkshell.aT(1, 't')
-        self.assertEquals(self.tags(), [[],['t'],[],[],[]])
+        self.assertEqual(self.tags(), [[],['t'],[],[],[]])
         hkshell.pT(1)
-        self.assertEquals(self.tags(), [[],['t'],['t'],[],[]])
+        self.assertEqual(self.tags(), [[],['t'],['t'],[],[]])
 
     def test_pT__2(self):
         self.init_hkshell()
         hkshell.aT(0, 't1')
         hkshell.aT(1, 't2')
         hkshell.pT(0)
-        self.assertEquals(self.tags(), [['t1'],['t1','t2'],['t1'],['t1'],[]])
+        self.assertEqual(self.tags(), [['t1'],['t1','t2'],['t1'],['t1'],[]])
 
     def test_pT__3(self):
         self.init_hkshell()
@@ -575,21 +575,21 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         hkshell.aT(0, 't2')
         hkshell.pT(0)
         t = ['t1', 't2']
-        self.assertEquals(self.tags(), [t, t, t, t, []])
+        self.assertEqual(self.tags(), [t, t, t, t, []])
 
     def test_aT(self):
         self.init_hkshell()
         hkshell.aT(1, 't')
-        self.assertEquals(self.tags(), [[],['t'],[],[],[]])
+        self.assertEqual(self.tags(), [[],['t'],[],[],[]])
         hkshell.aT(1, ['t', 'u'])
-        self.assertEquals(self.tags(), [[],['t','u'],[],[],[]])
+        self.assertEqual(self.tags(), [[],['t','u'],[],[],[]])
 
     def test_aTr(self):
         self.init_hkshell()
         hkshell.aTr(1, 't')
-        self.assertEquals(self.tags(), [[],['t'],['t'],[],[]])
+        self.assertEqual(self.tags(), [[],['t'],['t'],[],[]])
         hkshell.aTr(1, ['t', 'u'])
-        self.assertEquals(self.tags(), [[],['t','u'],['t','u'],[],[]])
+        self.assertEqual(self.tags(), [[],['t','u'],['t','u'],[],[]])
 
     def test_rT_AND_rTr(self):
         self.init_hkshell()
@@ -613,25 +613,25 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.init_hkshell()
         self.clear_subjects()
         hkshell.sS(1, 's')
-        self.assertEquals(self.subjects(), ['','s','','',''])
+        self.assertEqual(self.subjects(), ['','s','','',''])
         hkshell.pS(1)
-        self.assertEquals(self.subjects(), ['','s','s','',''])
+        self.assertEqual(self.subjects(), ['','s','s','',''])
 
     def test_sSr(self):
         self.init_hkshell()
         self.clear_subjects()
         hkshell.sSr(1, 's')
-        self.assertEquals(self.subjects(), ['','s','s','',''])
+        self.assertEqual(self.subjects(), ['','s','s','',''])
 
     def test_cS_AND_cSr(self):
         self.init_hkshell()
         self.clear_subjects()
         hkshell.sSr(0, 'su')
-        self.assertEquals(self.subjects(), ['su','su','su','su',''])
+        self.assertEqual(self.subjects(), ['su','su','su','su',''])
         hkshell.cS(2)
-        self.assertEquals(self.subjects(), ['su','su','Su','su',''])
+        self.assertEqual(self.subjects(), ['su','su','Su','su',''])
         hkshell.cSr(0)
-        self.assertEquals(self.subjects(), ['Su','Su','Su','Su',''])
+        self.assertEqual(self.subjects(), ['Su','Su','Su','Su',''])
 
 
 class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
@@ -659,7 +659,7 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
             hkshell.parse_args(['--configfile', 'test.cfg', '--noshell'])
         hkshell.main(cmdl_options, args)
 
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             'Warning: post directory does not exists: "my_heap_dir"\n'
             'Post directory has been created.\n'

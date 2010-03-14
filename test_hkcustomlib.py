@@ -50,7 +50,7 @@ class Test__1(unittest.TestCase, test_hklib.PostDBHandler):
         """Tests :func:`hkcustomlib.editor_to_editor_list`."""
 
         def check(input, output):
-            self.assertEquals(
+            self.assertEqual(
                 hkcustomlib.editor_to_editor_list(input),
                 output)
 

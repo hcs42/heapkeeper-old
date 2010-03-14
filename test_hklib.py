@@ -64,7 +64,7 @@ class Test__logging(unittest.TestCase):
         log = []
         hklib.log('first line', 'second line')
         hklib.log('third line')
-        self.assertEquals(
+        self.assertEqual(
             log,
             [['first line', 'second line'],
              ['third line']])
@@ -125,7 +125,7 @@ class PostDBHandler(object):
         shutil.rmtree(self._dir)
 
         # Setting the original logging function back
-        self.assertEquals(self._log, [])
+        self.assertEqual(self._log, [])
         hklib.set_log(self._old_log_fun)
 
     def create_postdb(self):
@@ -161,7 +161,7 @@ class PostDBHandler(object):
         # this function, but it is done so that here we can check that the
         # caller knows what will be the post index of the post created.
         post_index = self._postdb.next_post_index(heap_id)
-        self.assertEquals(str(index), post_index)
+        self.assertEqual(str(index), post_index)
 
         if messid == None:
             messid = index
@@ -314,7 +314,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         """Tests :func:`hklib.Post.assert_is_post_id`."""
 
         # assertion passes
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.assert_is_post_id(('myheap', 'mypost')),
             None)
 
@@ -327,17 +327,17 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         """Tests :func:`hklib.Post.unify_post_id`."""
 
         # None
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.unify_post_id(None),
             None)
 
         # post index is a string
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.unify_post_id(('myheap', 'mypost')),
             ('myheap', 'mypost'))
 
         # post index is an integer
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.unify_post_id(('myheap', 0)),
             ('myheap', '0'))
 
@@ -357,7 +357,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
                   'Flag: flag2\n'
                   'Date: Wed, 20 Aug 2008 17:41:30 +0200\n')
 
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.parse_header(sio),
             {'Author': ['author'],
              'Subject': ['subject'],
@@ -381,7 +381,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         #
         # The 'Nosuchattr' attribute is not known to `create_header`, so we
         # should get a warning.
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.create_header(
                 {'Author': ['someone'],
                  'Nosuchattr': ['1', '2']}),
@@ -394,7 +394,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
              'Subject': '',
              'Reference': [],
              'Nosuchattr': ['1', '2']})
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             'WARNING: Additional attribute in post: "Nosuchattr"')
 
@@ -435,23 +435,23 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         p7 = hklib.Post.from_str(s + '\n\nHi\n\nHi')
 
         # Checking the post header
-        self.assertEquals(p1._header, d)
+        self.assertEqual(p1._header, d)
 
         # checking the bodies of the posts
-        self.assertEquals(p1.body(), '\n')
-        self.assertEquals(p2.body(), '\n')
-        self.assertEquals(p3.body(), '\n')
-        self.assertEquals(p4.body(), 'Hi\n')
-        self.assertEquals(p5.body(), 'Hi\n')
-        self.assertEquals(p6.body(), 'Hi\n')
-        self.assertEquals(p7.body(), 'Hi\n\nHi\n')
+        self.assertEqual(p1.body(), '\n')
+        self.assertEqual(p2.body(), '\n')
+        self.assertEqual(p3.body(), '\n')
+        self.assertEqual(p4.body(), 'Hi\n')
+        self.assertEqual(p5.body(), 'Hi\n')
+        self.assertEqual(p6.body(), 'Hi\n')
+        self.assertEqual(p7.body(), 'Hi\n\nHi\n')
 
         # p1 == p2 == p3 != p4 == p5 == p6
-        self.assertEquals(p1, p2)
-        self.assertEquals(p1, p3)
+        self.assertEqual(p1, p2)
+        self.assertEqual(p1, p3)
         self.assertNotEquals(p1, p4)
-        self.assertEquals(p4, p5)
-        self.assertEquals(p4, p6)
+        self.assertEqual(p4, p5)
+        self.assertEqual(p4, p6)
 
         p8 = hklib.Post.from_str(s, ('my_heap', 0))
         p9 = hklib.Post.from_str(s, ('my_heap', 0))
@@ -459,7 +459,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         p11 = hklib.Post.from_str(s, ('my_other_heap', 0))
 
         # p8 == p9 != p10 != p11
-        self.assertEquals(p8, p9)
+        self.assertEqual(p8, p9)
         for post1, post2 in itertools.combinations([p8, p10, p11], 2):
             self.assertNotEquals(post1, post2)
             self.assertNotEquals(post2, post1)
@@ -478,39 +478,39 @@ class Test_Post(unittest.TestCase, PostDBHandler):
 
         # Empty post
         post = hklib.Post.from_str('')
-        self.assertEquals(post.post_id(), None)
+        self.assertEqual(post.post_id(), None)
         self.assertRaises(hkutils.HkException, lambda: post.heap_id())
         self.assertRaises(hkutils.HkException, lambda: post.post_index())
-        self.assertEquals(post.author(), '')
-        self.assertEquals(post.subject(), '')
-        self.assertEquals(post.messid(), '')
-        self.assertEquals(post.parent(), '')
-        self.assertEquals(post.date(), '')
-        self.assertEquals(post.is_deleted(), False)
-        self.assertEquals(post.is_modified(), True)
-        self.assertEquals(post.body(), '\n')
+        self.assertEqual(post.author(), '')
+        self.assertEqual(post.subject(), '')
+        self.assertEqual(post.messid(), '')
+        self.assertEqual(post.parent(), '')
+        self.assertEqual(post.date(), '')
+        self.assertEqual(post.is_deleted(), False)
+        self.assertEqual(post.is_modified(), True)
+        self.assertEqual(post.body(), '\n')
 
         p2 = hklib.Post.create_empty()
-        self.assertEquals(post, p2)
+        self.assertEqual(post, p2)
 
         # Normal post without parent
         p0 = self.p(0)
-        self.assertEquals(p0.post_id(), ('my_heap', '0'))
-        self.assertEquals(p0.heap_id(), 'my_heap')
-        self.assertEquals(p0.post_index(), '0')
-        self.assertEquals(p0.post_id_str(), 'my_heap/0')
-        self.assertEquals(p0.author(), 'author0')
-        self.assertEquals(p0.subject(), 'subject0')
-        self.assertEquals(p0.messid(), '0@')
-        self.assertEquals(p0.parent(), '')
-        self.assertEquals(p0.date(), 'Wed, 20 Aug 2008 17:41:00 +0200')
-        self.assertEquals(p0.is_deleted(), False)
-        self.assertEquals(p0.is_modified(), True)
-        self.assertEquals(p0.body(), 'body0\n')
+        self.assertEqual(p0.post_id(), ('my_heap', '0'))
+        self.assertEqual(p0.heap_id(), 'my_heap')
+        self.assertEqual(p0.post_index(), '0')
+        self.assertEqual(p0.post_id_str(), 'my_heap/0')
+        self.assertEqual(p0.author(), 'author0')
+        self.assertEqual(p0.subject(), 'subject0')
+        self.assertEqual(p0.messid(), '0@')
+        self.assertEqual(p0.parent(), '')
+        self.assertEqual(p0.date(), 'Wed, 20 Aug 2008 17:41:00 +0200')
+        self.assertEqual(p0.is_deleted(), False)
+        self.assertEqual(p0.is_modified(), True)
+        self.assertEqual(p0.body(), 'body0\n')
 
         # Normal post with parent
         p1 = self.p(1)
-        self.assertEquals(p1.parent(), '0@')
+        self.assertEqual(p1.parent(), '0@')
 
     def test_from_file(self):
         """Tests :func:`hklib.Post.from_file`."""
@@ -519,15 +519,15 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         hkutils.string_to_file(self.p(0).postfile_str(), fname)
         p = hklib.Post.from_file(fname)
 
-        self.assertEquals(p.post_id(), None)
-        self.assertEquals(p.author(), 'author0')
-        self.assertEquals(p.subject(), 'subject0')
-        self.assertEquals(p.messid(), '0@')
-        self.assertEquals(p.parent(), '')
-        self.assertEquals(p.date(), 'Wed, 20 Aug 2008 17:41:00 +0200')
-        self.assertEquals(p.is_deleted(), False)
-        self.assertEquals(p.is_modified(), True)
-        self.assertEquals(p.body(), 'body0\n')
+        self.assertEqual(p.post_id(), None)
+        self.assertEqual(p.author(), 'author0')
+        self.assertEqual(p.subject(), 'subject0')
+        self.assertEqual(p.messid(), '0@')
+        self.assertEqual(p.parent(), '')
+        self.assertEqual(p.date(), 'Wed, 20 Aug 2008 17:41:00 +0200')
+        self.assertEqual(p.is_deleted(), False)
+        self.assertEqual(p.is_modified(), True)
+        self.assertEqual(p.body(), 'body0\n')
 
     def test__modifications(self):
         """Tests the basic functionality of the following functions, by putting
@@ -557,15 +557,15 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         # Setting is_modified to False by saving the post database
         self._postdb.save()
         p0 = self.p(0)
-        self.assertEquals(p0.is_modified(), False)
+        self.assertEqual(p0.is_modified(), False)
 
         # If we touch it, it becomes True
         p0.touch()
-        self.assertEquals(p0.is_modified(), True)
+        self.assertEqual(p0.is_modified(), True)
 
         # If we save it, it becomes False again
         p0.save()
-        self.assertEquals(p0.is_modified(), False)
+        self.assertEqual(p0.is_modified(), False)
 
         ## Testing concrete modifications
 
@@ -574,56 +574,56 @@ class Test_Post(unittest.TestCase, PostDBHandler):
             p0._modified = False
 
         p0.set_author('author2')
-        self.assertEquals(p0.author(), 'author2')
+        self.assertEqual(p0.author(), 'author2')
         check_modified()
 
         p0.set_subject('subject2')
-        self.assertEquals(p0.subject(), 'subject2')
-        self.assertEquals(p0.real_subject(), 'subject2')
+        self.assertEqual(p0.subject(), 'subject2')
+        self.assertEqual(p0.real_subject(), 'subject2')
         check_modified()
 
         p0.set_messid('@')
-        self.assertEquals(p0.messid(), '@')
+        self.assertEqual(p0.messid(), '@')
         check_modified()
 
         p0.set_parent('@@')
-        self.assertEquals(p0.parent(), '@@')
+        self.assertEqual(p0.parent(), '@@')
         check_modified()
 
         p0.set_date('Wed, 20 Aug 2008 17:41:31 +0200')
-        self.assertEquals(p0.date(), 'Wed, 20 Aug 2008 17:41:31 +0200')
+        self.assertEqual(p0.date(), 'Wed, 20 Aug 2008 17:41:31 +0200')
         check_modified()
 
         p0.set_tags(['mytag1', 'mytag2'])
-        self.assertEquals(p0.tags(), ['mytag1', 'mytag2'])
+        self.assertEqual(p0.tags(), ['mytag1', 'mytag2'])
         check_modified()
 
         p0.set_flags(['myflag1', 'myflag2'])
-        self.assertEquals(p0.flags(), ['myflag1', 'myflag2'])
+        self.assertEqual(p0.flags(), ['myflag1', 'myflag2'])
         check_modified()
 
         p0.set_refs(['1', '2'])
-        self.assertEquals(p0.refs(), ['1', '2'])
+        self.assertEqual(p0.refs(), ['1', '2'])
         check_modified()
 
         p0.set_body('newbody')
-        self.assertEquals(p0.body(), 'newbody\n')
+        self.assertEqual(p0.body(), 'newbody\n')
         check_modified()
 
         p0.set_body('\n newbody \n \n')
-        self.assertEquals(p0.body(), 'newbody\n')
+        self.assertEqual(p0.body(), 'newbody\n')
         check_modified()
 
         p0.delete()
-        self.assertEquals(p0.is_deleted(), True)
-        self.assertEquals(p0.post_id(), ('my_heap', '0'))
-        self.assertEquals(p0.author(), '')
-        self.assertEquals(p0.subject(), '')
-        self.assertEquals(p0.messid(), '@')
-        self.assertEquals(p0.parent(), '')
-        self.assertEquals(p0.date(), '')
-        self.assertEquals(p0.is_modified(), True)
-        self.assertEquals(p0.body(), '')
+        self.assertEqual(p0.is_deleted(), True)
+        self.assertEqual(p0.post_id(), ('my_heap', '0'))
+        self.assertEqual(p0.author(), '')
+        self.assertEqual(p0.subject(), '')
+        self.assertEqual(p0.messid(), '@')
+        self.assertEqual(p0.parent(), '')
+        self.assertEqual(p0.date(), '')
+        self.assertEqual(p0.is_modified(), True)
+        self.assertEqual(p0.body(), '')
 
     def test_write(self):
         """Tests :func:`hklib.Post.write`.
@@ -636,7 +636,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
             p = hklib.Post.from_str(input)
             sio = StringIO.StringIO()
             p.write(sio)
-            self.assertEquals(sio.getvalue(), output)
+            self.assertEqual(sio.getvalue(), output)
             sio.close()
 
         # Testing empty post
@@ -672,7 +672,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
              'Nosuchattr2: something 2\n'
              'Nosuchattr2: something 3\n\n\n'))
 
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             ('WARNING: Additional attribute in post: "Nosuchattr"\n'
              'WARNING: Additional attribute in post: "Nosuchattr2"'))
@@ -681,19 +681,19 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         """Tests :func:`hklib.Post.postfile_str`."""
 
         # Basic test
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('Author: me').postfile_str(),
             'Author: me\n\n\n')
 
         # Testing empty post
         post_str = ''
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('').postfile_str(),
             '\n\n')
 
         # Testing when force_set is not empty
         post_str = ''
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str(post_str).\
                 postfile_str(force_print=set(['Author'])),
             'Author: \n\n\n')
@@ -702,45 +702,45 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         """Tests :func:`hklib.Post.meta_dict`."""
 
         # empty post
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('\n\n').meta_dict(),
             {})
 
         # meta with value
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('\n\n[key value]').meta_dict(),
             {'key': 'value'})
 
         # meta with value with whitespace
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('\n\n[key this is a long value]').meta_dict(),
             {'key': 'this is a long value'})
 
         # meta without value
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('\n\n[key]').meta_dict(),
             {'key': None})
 
         # no meta because it is no alone in the line
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('\n\nx[key value]').meta_dict(),
             {})
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('\n\n[key value]x').meta_dict(),
             {})
 
         # whitespace
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('\n\n [ key  value ] ').meta_dict(),
             {'key': 'value'})
 
         # two metas
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('\n\n[key]\n[key2 value2]').meta_dict(),
             {'key': None, 'key2': 'value2'})
 
         # same meta key twice
-        self.assertEquals(
+        self.assertEqual(
             hklib.Post.from_str('\n\n[key value]\n[key value2]').meta_dict(),
             {'key': 'value2'})
 
@@ -752,12 +752,12 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         """
 
         # empty post
-        self.assertEquals(
+        self.assertEqual(
             str(hklib.Post.from_str('').body_object()),
             '<normal, text=%s>\n' % (repr('\n',)))
 
         # non-empty post
-        self.assertEquals(
+        self.assertEqual(
             str(hklib.Post.from_str('\nbody\n').body_object()),
             '<normal, text=%s>\n' % (repr('body\n',)))
 
@@ -769,10 +769,10 @@ class Test_Post(unittest.TestCase, PostDBHandler):
             return hklib.Post.from_str('Subject: ' + subject)
 
         # testing whitespace handling
-        self.assertEquals(post_ws('subject').real_subject(), 'subject')
-        self.assertEquals(post_ws(' subject ').real_subject(), ' subject ')
-        self.assertEquals(post_ws('1\n 2').real_subject(), '1\n2')
-        self.assertEquals(post_ws(' 1 \n  2 ').real_subject(), ' 1 \n 2 ')
+        self.assertEqual(post_ws('subject').real_subject(), 'subject')
+        self.assertEqual(post_ws(' subject ').real_subject(), ' subject ')
+        self.assertEqual(post_ws('1\n 2').real_subject(), '1\n2')
+        self.assertEqual(post_ws(' 1 \n  2 ').real_subject(), ' 1 \n 2 ')
 
         # testing removing the "Re:" prefix
         l = [post_ws('subject'),
@@ -782,42 +782,42 @@ class Test_Post(unittest.TestCase, PostDBHandler):
              post_ws('Re:subject'),
              post_ws('re:subject')]
         for p in l:
-            self.assertEquals(p.subject(), 'subject')
+            self.assertEqual(p.subject(), 'subject')
 
     def test__tags_flags(self):
         """Tests issues related to tags and flags."""
 
         p = hklib.Post.from_str('Flag: f1\nFlag: f2\nTag: t1\nTag: t2')
-        self.assertEquals(p.flags(), ['f1', 'f2'])
-        self.assertEquals(p.tags(), ['t1', 't2'])
-        self.assertEquals(p.has_tag('t1'), True)
-        self.assertEquals(p.has_tag('t2'), True)
+        self.assertEqual(p.flags(), ['f1', 'f2'])
+        self.assertEqual(p.tags(), ['t1', 't2'])
+        self.assertEqual(p.has_tag('t1'), True)
+        self.assertEqual(p.has_tag('t2'), True)
 
         # They cannot be modified via the get methods
         #p.flags()[0] = ''
         #p.tags()[0] = ''
-        #self.assertEquals(p.flags(), ['f1', 'f2'])
-        #self.assertEquals(p.tags(), ['t1', 't2'])
+        #self.assertEqual(p.flags(), ['f1', 'f2'])
+        #self.assertEqual(p.tags(), ['t1', 't2'])
 
         # Iterator
         l = []
         for tag in p.tags():
             l.append(tag)
-        self.assertEquals(l, ['t1', 't2'])
+        self.assertEqual(l, ['t1', 't2'])
 
         # Set methods
         p.set_flags(['f'])
-        self.assertEquals(p.flags(), ['f'])
+        self.assertEqual(p.flags(), ['f'])
         p.set_tags(['t'])
-        self.assertEquals(p.tags(), ['t'])
-        self.assertEquals(p.has_tag('t'), True)
-        self.assertEquals(p.has_tag('t1'), False)
-        self.assertEquals(p.has_tag('t2'), False)
+        self.assertEqual(p.tags(), ['t'])
+        self.assertEqual(p.has_tag('t'), True)
+        self.assertEqual(p.has_tag('t1'), False)
+        self.assertEqual(p.has_tag('t2'), False)
 
         # Sorting
         p = hklib.Post.from_str('Flag: f2\nFlag: f1\nTag: t2\nTag: t1')
-        self.assertEquals(p.flags(), ['f1', 'f2']) # flags are sorted
-        self.assertEquals(p.tags(), ['t1', 't2'])  # tags are sorted
+        self.assertEqual(p.flags(), ['f1', 'f2']) # flags are sorted
+        self.assertEqual(p.tags(), ['t1', 't2'])  # tags are sorted
 
     def test__parse_tags_in_subject(self):
         """Tests the following functions:
@@ -827,7 +827,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         """
 
         def test(subject1, subject2, tags):
-            self.assertEquals(
+            self.assertEqual(
                 (subject2, tags),
                 hklib.Post.parse_subject(subject1))
 
@@ -845,8 +845,8 @@ class Test_Post(unittest.TestCase, PostDBHandler):
 
         p = hklib.Post.from_str('Subject: [t1][t2] subject\nTag: t3')
         p.normalize_subject()
-        self.assertEquals(p.subject(), 'subject')
-        self.assertEquals(p.tags(), ['t3', 't1', 't2'])
+        self.assertEqual(p.subject(), 'subject')
+        self.assertEqual(p.tags(), ['t3', 't1', 't2'])
 
     def test__sort(self):
         """Tests the following functions:
@@ -894,19 +894,19 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         - :func:`hklib.Post.htmlthreadfilename`
         """
 
-        self.assertEquals(
+        self.assertEqual(
             self.p(0).postfilename(),
             os.path.join(self._myheap_dir, '0.post'))
 
-        self.assertEquals(
+        self.assertEqual(
             self.p(0).htmlfilebasename(),
             os.path.join('my_heap', '0.html'))
 
-        self.assertEquals(
+        self.assertEqual(
             self.p(0).htmlfilename(),
             os.path.join(self._html_dir, 'my_heap', '0.html'))
 
-        self.assertEquals(
+        self.assertEqual(
             self.p(0).htmlthreadbasename(),
             os.path.join('my_heap', 'thread_0.html'))
 
@@ -915,7 +915,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
             AssertionError,
             lambda: self.p(1).htmlthreadbasename())
 
-        self.assertEquals(
+        self.assertEqual(
             self.p(0).htmlthreadfilename(),
             os.path.join(self._html_dir, 'my_heap', 'thread_0.html'))
 
@@ -927,11 +927,11 @@ class Test_Post(unittest.TestCase, PostDBHandler):
     def test_repr(self):
         """Tests :func:`hklib.Post.__repr__`."""
 
-        self.assertEquals(
+        self.assertEqual(
             str(self.p(0)),
             '<post my_heap/0>')
 
-        self.assertEquals(
+        self.assertEqual(
             str(hklib.Post.from_str('')),
             '<post object without post id>')
 
@@ -958,25 +958,25 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         postdb = self._postdb
 
-        self.assertEquals(postdb.html_dir(), self._html_dir)
+        self.assertEqual(postdb.html_dir(), self._html_dir)
 
         # Checking the data attributes
 
-        self.assertEquals(
+        self.assertEqual(
             postdb._heaps,
             {'my_heap': self._myheap_dir,
              'my_other_heap': self._myotherheap_dir})
 
-        self.assertEquals(
+        self.assertEqual(
             postdb._html_dir,
             self._html_dir)
 
-        self.assertEquals(
+        self.assertEqual(
             postdb._next_post_index,
             {('my_heap', ''): 5,
              ('my_other_heap', ''): 1})
 
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_id_to_post,
             {self.i(0): self.p(0),
              self.i(1): self.p(1),
@@ -985,7 +985,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
              self.i(4): self.p(4),
              self.io(0): self.po(0)})
 
-        self.assertEquals(
+        self.assertEqual(
             postdb.messid_to_post_id,
             {'0@': self.i(0),
              '1@': self.i(1),
@@ -994,7 +994,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
              '4@': self.i(4),
              'other0@': self.io(0)})
 
-        self.assertEquals(
+        self.assertEqual(
             postdb.listeners,
             [])
 
@@ -1011,10 +1011,10 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         expected_messid_to_postid = postdb.messid_to_post_id.copy()
 
         postdb.add_post_to_dicts(p)
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_id_to_post,
             expected_postid_to_post)
-        self.assertEquals(
+        self.assertEqual(
             postdb.messid_to_post_id,
             expected_messid_to_postid)
 
@@ -1027,10 +1027,10 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         expected_messid_to_postid.update({'11@': ('my_heap', '11')})
 
         postdb.add_post_to_dicts(p)
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_id_to_post,
             expected_postid_to_post)
-        self.assertEquals(
+        self.assertEqual(
             postdb.messid_to_post_id,
             expected_messid_to_postid)
 
@@ -1042,14 +1042,14 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         expected_messid_to_postid = postdb.messid_to_post_id.copy()
 
         postdb.add_post_to_dicts(p)
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_id_to_post,
             expected_postid_to_post)
-        self.assertEquals(
+        self.assertEqual(
             postdb.messid_to_post_id,
             expected_messid_to_postid)
 
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             ("Warning: post ('my_heap', '12') has message id 0@, but that "
              "message id is already used by post ('my_heap', '0')."))
@@ -1068,10 +1068,10 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         del expected_messid_to_postid['0@']
 
         postdb.remove_post_from_dicts(p0)
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_id_to_post,
             expected_postid_to_post)
-        self.assertEquals(
+        self.assertEqual(
             postdb.messid_to_post_id,
             expected_messid_to_postid)
 
@@ -1084,7 +1084,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         p1_other = hklib.Post.from_str('Message-Id: 1@', ('my_heap', 'other1'))
         postdb.add_post_to_dicts(p1_other)
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             ("Warning: post ('my_heap', 'other1') has message id 1@, but that "
              "message id is already used by post ('my_heap', '1')."))
@@ -1099,10 +1099,10 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         del expected_messid_to_postid['1@']
 
         postdb.remove_post_from_dicts(p1)
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_id_to_post,
             expected_postid_to_post)
-        self.assertEquals(
+        self.assertEqual(
             postdb.messid_to_post_id,
             expected_messid_to_postid)
 
@@ -1114,10 +1114,10 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         expected_messid_to_postid = postdb.messid_to_post_id.copy()
 
         postdb.remove_post_from_dicts(p1_other)
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_id_to_post,
             expected_postid_to_post)
-        self.assertEquals(
+        self.assertEqual(
             postdb.messid_to_post_id,
             expected_messid_to_postid)
 
@@ -1130,7 +1130,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         p2_other = hklib.Post.from_str('Message-Id: 2@', ('my_heap', 'other2'))
         postdb.add_post_to_dicts(p2_other)
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             ("Warning: post ('my_heap', 'other2') has message id 2@, but that "
              "message id is already used by post ('my_heap', '2')."))
@@ -1144,10 +1144,10 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         expected_messid_to_postid = postdb.messid_to_post_id.copy()
 
         postdb.remove_post_from_dicts(p2_other)
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_id_to_post,
             expected_postid_to_post)
-        self.assertEquals(
+        self.assertEqual(
             postdb.messid_to_post_id,
             expected_messid_to_postid)
 
@@ -1160,10 +1160,10 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         del expected_messid_to_postid['2@']
 
         postdb.remove_post_from_dicts(p2)
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_id_to_post,
             expected_postid_to_post)
-        self.assertEquals(
+        self.assertEqual(
             postdb.messid_to_post_id,
             expected_messid_to_postid)
 
@@ -1189,13 +1189,13 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         hkutils.string_to_file('Subject: s3', post_path('3post'))
         postdb.load_heap('my_heap')
 
-        self.assertEquals(
+        self.assertEqual(
             set(postdb.post_id_to_post.keys()),
             set([('my_heap', '1'),
                  ('my_heap', 'xy'),
                  ('my_other_heap', '0')]))
 
-        self.assertEquals(
+        self.assertEqual(
             postdb.next_post_index('my_heap'),
             '2')
 
@@ -1217,7 +1217,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         postdb._heaps['my_new_heap'] = heap_dir
         postdb.load_heap('my_new_heap')
 
-        self.assertEquals(
+        self.assertEqual(
             set(postdb.post_id_to_post.keys()),
             set([('my_heap', '1'),
                  ('my_heap', 'xy'),
@@ -1225,7 +1225,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
                  ('my_new_heap', '1'),
                  ('my_new_heap', 'ab')]))
 
-        self.assertEquals(
+        self.assertEqual(
             postdb.next_post_index('my_new_heap'),
             '2')
 
@@ -1238,23 +1238,23 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         heap_dir_1 = os.path.join(self._dir, 'my_new_heap_dir_1')
         postdb.add_heap('my_new_heap_1', heap_dir_1)
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             ('Warning: post directory does not exists: "%s"\n'
              'Post directory has been created.'
              % (heap_dir_1,)))
 
-        self.assertEquals(
+        self.assertEqual(
             postdb._heaps,
             {'my_other_heap': self._myotherheap_dir,
              'my_heap': self._myheap_dir,
              'my_new_heap_1': heap_dir_1})
 
-        self.assertEquals(
+        self.assertEqual(
             len(postdb.post_id_to_post.keys()),
             6)
 
-        self.assertEquals(
+        self.assertEqual(
             postdb.next_post_index('my_new_heap_1'),
             '1')
 
@@ -1265,11 +1265,11 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         hkutils.string_to_file('Subject: s1', os.path.join(heap_dir_2, '1.post'))
         postdb.add_heap('my_new_heap_2', heap_dir_2)
 
-        self.assertEquals(
+        self.assertEqual(
             len(postdb.post_id_to_post.keys()),
             7)
 
-        self.assertEquals(
+        self.assertEqual(
             postdb.next_post_index('my_new_heap_2'),
             '2')
 
@@ -1282,10 +1282,10 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         html_dir_1 = os.path.join(self._dir, 'html_dir_1')
         postdb.set_html_dir(html_dir_1)
-        self.assertEquals(
+        self.assertEqual(
             postdb._html_dir,
             html_dir_1)
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             ('Warning: HTML directory does not exists: "%s"\n'
              'HTML directory has been created.'
@@ -1296,7 +1296,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         html_dir_2 = os.path.join(self._dir, 'html_dir_2')
         os.mkdir(html_dir_2)
         postdb.set_html_dir(html_dir_2)
-        self.assertEquals(
+        self.assertEqual(
             postdb._html_dir,
             html_dir_2)
 
@@ -1311,7 +1311,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
                    'my_heap1:my_heap_dir_1;my_heap2:my_heap_dir_2')
 
         heaps = hklib.PostDB.get_heaps_from_config(config)
-        self.assertEquals(
+        self.assertEqual(
             heaps,
             {'my_heap1': 'my_heap_dir_1',
              'my_heap2': 'my_heap_dir_2'})
@@ -1324,7 +1324,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
                    ' my_heap1 : my_heap_dir_1 ; my_heap2 : my_heap_dir_2 ')
 
         heaps = hklib.PostDB.get_heaps_from_config(config)
-        self.assertEquals(
+        self.assertEqual(
             heaps,
             {'my_heap1': 'my_heap_dir_1',
              'my_heap2': 'my_heap_dir_2'})
@@ -1336,10 +1336,10 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         config.set('paths', 'mail', 'my_heap_dir')
 
         heaps = hklib.PostDB.get_heaps_from_config(config)
-        self.assertEquals(
+        self.assertEqual(
             heaps,
             {'': 'my_heap_dir'})
-        self.assertEquals(
+        self.assertEqual(
             self.pop_log(),
             ('Config file contains a "paths/mail" option that should be '
              'replaced by "paths/heaps". See the documentation for more '
@@ -1374,7 +1374,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # The new heap goes next to the other heaps. Currently the heaps that
         # are not present in the configuration are not touched by read_config.
-        self.assertEquals(
+        self.assertEqual(
             postdb._heaps,
             {'my_heap': self._myheap_dir,
              'my_other_heap': self._myotherheap_dir,
@@ -1384,7 +1384,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         self.assert_(postdb.post('new_heap/1') != None)
 
         # The html_dir was set
-        self.assertEquals(postdb.html_dir(), html_dir)
+        self.assertEqual(postdb.html_dir(), html_dir)
 
     def test__get_methods(self):
         """Tests the following functions:
@@ -1409,36 +1409,36 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         self.assertFalse(postdb.has_heap_id('nosuchheap'))
 
         # Testing next_post_index
-        self.assertEquals(postdb.next_post_index('my_heap'), '5')
+        self.assertEqual(postdb.next_post_index('my_heap'), '5')
 
         # Testing postset
-        self.assertEquals(
+        self.assertEqual(
             postdb.postset(['my_heap/0']),
             hklib.PostSet(postdb, self.p(0)))
 
         # Testing post_by_post_id
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_by_post_id('my_heap/0'),
             self.p(0))
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_by_post_id('my_heap/111'),
             None)
 
         # Testing post_by_messid
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_by_messid('0@'),
             self.p(0))
-        self.assertEquals(
+        self.assertEqual(
             postdb.post_by_messid('111@'),
             None)
 
         # Testing postfile_name
-        self.assertEquals(
+        self.assertEqual(
             postdb.postfile_name(self.p(0)),
             os.path.join(self._myheap_dir, '0.post'))
 
         # Testing html_dir
-        self.assertEquals(
+        self.assertEqual(
             postdb.html_dir(),
             os.path.join(self._html_dir))
 
@@ -1447,17 +1447,17 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         postdb = self._postdb
 
         # Basic test
-        self.assertEquals(postdb.next_post_index('my_heap'), '5')
-        self.assertEquals(postdb.next_post_index('my_heap'), '6')
+        self.assertEqual(postdb.next_post_index('my_heap'), '5')
+        self.assertEqual(postdb.next_post_index('my_heap'), '6')
 
         # We don't fill in the holes
         postdb.invalidate_next_post_index_cache()
         postdb.add_new_post(hklib.Post.create_empty(), 'my_heap', '9')
-        self.assertEquals(postdb.next_post_index('my_heap'), '10')
+        self.assertEqual(postdb.next_post_index('my_heap'), '10')
 
         # Testing prefixed
-        self.assertEquals(postdb.next_post_index('my_heap', 'a_'), 'a_1')
-        self.assertEquals(postdb.next_post_index('my_heap', 'a_'), 'a_2')
+        self.assertEqual(postdb.next_post_index('my_heap', 'a_'), 'a_1')
+        self.assertEqual(postdb.next_post_index('my_heap', 'a_'), 'a_2')
 
     def test__modifications(self):
         """Tests the following functions:
@@ -1483,22 +1483,22 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # Modifying and saving a post
         p1.set_subject('subject')
-        self.assertEquals('Message-Id: mess1',
+        self.assertEqual('Message-Id: mess1',
                           hkutils.file_to_string(postfile1))
-        self.assertEquals('Message-Id: mess2',
+        self.assertEqual('Message-Id: mess2',
                           hkutils.file_to_string(postfile2))
         postdb.save()
         postfile1_str = 'Subject: subject\nMessage-Id: mess1\n\n\n'
-        self.assertEquals(postfile1_str,
+        self.assertEqual(postfile1_str,
                           hkutils.file_to_string(postfile1))
-        self.assertEquals('Message-Id: mess2',
+        self.assertEqual('Message-Id: mess2',
                           hkutils.file_to_string(postfile2))
 
         # Adding a new post
         postfile3 = os.path.join(new_heap_dir, '3.post')
         p3 = hklib.Post.from_str('Subject: subject3')
         postdb.add_new_post(p3, 'new_heap')
-        self.assertEquals(
+        self.assertEqual(
             set(postdb.post_id_to_post.keys()),
             set([('new_heap', '1'),
                  ('new_heap', '2'),
@@ -1508,11 +1508,11 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         self.assert_(os.path.exists(postfile3))
 
         # Deleting a post
-        self.assertEquals(set([p1, p2, p3]), set(postdb.posts()))
-        self.assertEquals(set([p1, p2, p3]), set(postdb.real_posts()))
+        self.assertEqual(set([p1, p2, p3]), set(postdb.posts()))
+        self.assertEqual(set([p1, p2, p3]), set(postdb.real_posts()))
         p1.delete()
-        self.assertEquals(set([p2, p3]), set(postdb.posts()))
-        self.assertEquals(set([p1, p2, p3]), set(postdb.real_posts()))
+        self.assertEqual(set([p2, p3]), set(postdb.posts()))
+        self.assertEqual(set([p1, p2, p3]), set(postdb.real_posts()))
 
     def test_post(self):
         """Tests :func:`hklib.PostDB.post`."""
@@ -1522,31 +1522,31 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # Specifying the post
 
-        self.assertEquals(postdb.post(p0), p0)
+        self.assertEqual(postdb.post(p0), p0)
 
         # Specifying the post id
 
-        self.assertEquals(postdb.post('my_heap/0'), p0)
-        self.assertEquals(postdb.post(('my_heap', '0')), p0)
-        self.assertEquals(postdb.post(('my_heap', 0)), p0)
+        self.assertEqual(postdb.post('my_heap/0'), p0)
+        self.assertEqual(postdb.post(('my_heap', '0')), p0)
+        self.assertEqual(postdb.post(('my_heap', 0)), p0)
 
         # Specifying the post index
 
-        self.assertEquals(postdb.post('0', heap_id_hint='my_heap'), p0)
-        self.assertEquals(postdb.post(0, heap_id_hint='my_heap'), p0)
-        self.assertEquals(postdb.post('0'), None) # no hint -> post not found
-        self.assertEquals(postdb.post(0), None) # no hint -> post not found
+        self.assertEqual(postdb.post('0', heap_id_hint='my_heap'), p0)
+        self.assertEqual(postdb.post(0, heap_id_hint='my_heap'), p0)
+        self.assertEqual(postdb.post('0'), None) # no hint -> post not found
+        self.assertEqual(postdb.post(0), None) # no hint -> post not found
 
         # bad hint -> post not found
-        self.assertEquals(postdb.post('1', heap_id_hint='my_other_heap'), None)
+        self.assertEqual(postdb.post('1', heap_id_hint='my_other_heap'), None)
 
         # Specifying the message id
 
-        self.assertEquals(postdb.post('0@'), p0)
+        self.assertEqual(postdb.post('0@'), p0)
 
         # Testing the `raise_exception` parameter
 
-        self.assertEquals(postdb.post('nosuchpost'), None)
+        self.assertEqual(postdb.post('nosuchpost'), None)
         self.assertRaises(
             hklib.PostNotFoundError,
             lambda: postdb.post('nosuchpost', raise_exception=True))
@@ -1578,12 +1578,12 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         postdb.save()
 
         # The subject of p1 is unchanged, x.mail is loaded
-        self.assertEquals(p1.subject(), 'sub1')
+        self.assertEqual(p1.subject(), 'sub1')
         self.assert_(postdb.post('my_heap/11') is p1)
-        self.assertEquals(
+        self.assertEqual(
             hkutils.file_to_string(p1.postfilename()),
             'Subject: sub1\n\n\n')
-        self.assertEquals(postdb.post('my_heap/x').subject(), 'sub_new')
+        self.assertEqual(postdb.post('my_heap/x').subject(), 'sub_new')
 
     def test_add_new_post(self):
         """Tests :func:`hklib.PostDB.add_new_post`."""
@@ -1636,7 +1636,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         all_1 = postdb.all()
         all_2 = postdb.all()
         self.assert_(all_1 is all_2)
-        self.assertEquals(all_posts_1, all_1)
+        self.assertEqual(all_posts_1, all_1)
 
         # If we modify the post database, `all` should return a different
         # object then previously and the previously returned object should be
@@ -1645,9 +1645,9 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         p5 = self.add_post(5)
         all_posts_2 = all_posts_1 | p5
         all_3 = postdb.all()
-        self.assertEquals(all_posts_2, all_3)
+        self.assertEqual(all_posts_2, all_3)
         # `all_1` was not modified:
-        self.assertEquals(all_posts_1, all_1)
+        self.assertEqual(all_posts_1, all_1)
 
     def test_threadstruct(self):
         """Tests the following functions:
@@ -1669,7 +1669,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         ts1 = postdb.threadstruct()
         ts2 = postdb.threadstruct()
         self.assert_(ts1 is ts2)
-        self.assertEquals(ts1, expected_ts_1)
+        self.assertEqual(ts1, expected_ts_1)
 
         # If we modify the post database, `threadstruct` should return a
         # different object then previously and the previously returned object
@@ -1681,9 +1681,9 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
              self.i(0): [self.i(1), self.i(3), self.i(5)],
              self.i(1): [self.i(2)]}
         ts3 = postdb.threadstruct()
-        self.assertEquals(ts3, expected_ts_2)
+        self.assertEqual(ts3, expected_ts_2)
         # `ts1` was not modified:
-        self.assertEquals(ts1, expected_ts_1)
+        self.assertEqual(ts1, expected_ts_1)
 
         # Deleting posts
 
@@ -1691,12 +1691,12 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         expected_ts = \
             {None: [self.i(0), self.io(0), self.i(2), self.i(4)],
              self.i(0): [self.i(3), self.i(5)]}
-        self.assertEquals(postdb.threadstruct(), expected_ts)
+        self.assertEqual(postdb.threadstruct(), expected_ts)
 
         self.p(0).delete()
         expected_ts = \
             {None: [self.io(0), self.i(2), self.i(3), self.i(4), self.i(5)]}
-        self.assertEquals(postdb.threadstruct(), expected_ts)
+        self.assertEqual(postdb.threadstruct(), expected_ts)
 
         self.p(2).delete()
         self.p(3).delete()
@@ -1704,7 +1704,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         self.p(5).delete()
         self.po(0).delete()
         expected_ts = {None: []}
-        self.assertEquals(postdb.threadstruct(), expected_ts)
+        self.assertEqual(postdb.threadstruct(), expected_ts)
 
         # Testing that the thread structure also works when the Parent is
         # defined by a heapid.
@@ -1722,19 +1722,19 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
                      ('new_heap', '4')],
               ('new_heap', '1'): [('new_heap', '2')],
               ('new_heap', '4'): [('new_heap', '5')]}
-        self.assertEquals(postdb.threadstruct(), ts)
+        self.assertEqual(postdb.threadstruct(), ts)
 
     def test_parent(self):
         """Tests :func:`hklib.PostDB.parent`."""
 
         postdb = self._postdb
 
-        self.assertEquals(postdb.parent(self.p(0)), None)
-        self.assertEquals(postdb.parent(self.p(1)), self.p(0))
-        self.assertEquals(postdb.parent(self.p(2)), self.p(1))
-        self.assertEquals(postdb.parent(self.p(3)), self.p(0))
-        self.assertEquals(postdb.parent(self.p(4)), None)
-        self.assertEquals(postdb.parent(self.po(0)), None)
+        self.assertEqual(postdb.parent(self.p(0)), None)
+        self.assertEqual(postdb.parent(self.p(1)), self.p(0))
+        self.assertEqual(postdb.parent(self.p(2)), self.p(1))
+        self.assertEqual(postdb.parent(self.p(3)), self.p(0))
+        self.assertEqual(postdb.parent(self.p(4)), None)
+        self.assertEqual(postdb.parent(self.po(0)), None)
 
     def test_root(self):
         """Tests :func:`hklib.PostDB.parent`."""
@@ -1743,53 +1743,53 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         ## Testing when there is no cycle
 
-        self.assertEquals(postdb.root(self.p(0)), self.p(0))
-        self.assertEquals(postdb.root(self.p(1)), self.p(0))
-        self.assertEquals(postdb.root(self.p(2)), self.p(0))
-        self.assertEquals(postdb.root(self.p(3)), self.p(0))
-        self.assertEquals(postdb.root(self.p(4)), self.p(4))
-        self.assertEquals(postdb.root(self.po(0)), self.po(0))
+        self.assertEqual(postdb.root(self.p(0)), self.p(0))
+        self.assertEqual(postdb.root(self.p(1)), self.p(0))
+        self.assertEqual(postdb.root(self.p(2)), self.p(0))
+        self.assertEqual(postdb.root(self.p(3)), self.p(0))
+        self.assertEqual(postdb.root(self.p(4)), self.p(4))
+        self.assertEqual(postdb.root(self.po(0)), self.po(0))
 
         ## Testing cycles
 
         self.introduce_cycle()
 
         # Normal posts:
-        self.assertEquals(postdb.root(self.p(0)), self.p(0))
-        self.assertEquals(postdb.root(self.p(1)), self.p(0))
-        self.assertEquals(postdb.root(self.p(2)), self.p(0))
-        self.assertEquals(postdb.root(self.p(4)), self.p(4))
-        self.assertEquals(postdb.root(self.po(0)), self.po(0))
+        self.assertEqual(postdb.root(self.p(0)), self.p(0))
+        self.assertEqual(postdb.root(self.p(1)), self.p(0))
+        self.assertEqual(postdb.root(self.p(2)), self.p(0))
+        self.assertEqual(postdb.root(self.p(4)), self.p(4))
+        self.assertEqual(postdb.root(self.po(0)), self.po(0))
 
 
         # Posts in cycle:
-        self.assertEquals(postdb.root(self.p(3)), None)
-        self.assertEquals(postdb.root(self.p(5)), None)
-        self.assertEquals(postdb.root(self.p(6)), None)
-        self.assertEquals(postdb.root(self.p(7)), None)
+        self.assertEqual(postdb.root(self.p(3)), None)
+        self.assertEqual(postdb.root(self.p(5)), None)
+        self.assertEqual(postdb.root(self.p(6)), None)
+        self.assertEqual(postdb.root(self.p(7)), None)
 
     def test_children(self):
         """Tests :func:`hklib.PostDB.children`."""
 
         postdb = self._postdb
 
-        self.assertEquals(
+        self.assertEqual(
             postdb.children(None),
             [self.p(0), self.po(0), self.p(4)])
-        self.assertEquals(postdb.children(self.p(0)), [self.p(1), self.p(3)])
-        self.assertEquals(postdb.children(self.p(1)), [self.p(2)])
-        self.assertEquals(postdb.children(self.p(2)), [])
-        self.assertEquals(postdb.children(self.p(3)), [])
-        self.assertEquals(postdb.children(self.p(4)), [])
-        self.assertEquals(postdb.children(self.po(0)), [])
+        self.assertEqual(postdb.children(self.p(0)), [self.p(1), self.p(3)])
+        self.assertEqual(postdb.children(self.p(1)), [self.p(2)])
+        self.assertEqual(postdb.children(self.p(2)), [])
+        self.assertEqual(postdb.children(self.p(3)), [])
+        self.assertEqual(postdb.children(self.p(4)), [])
+        self.assertEqual(postdb.children(self.po(0)), [])
 
         # Testing the `threadstruct` parameter
 
         ts = {('my_heap', '0'): [self.p(1)]}
-        self.assertEquals(
+        self.assertEqual(
             postdb.children(self.p(0), ts),
             [self.p(1)])
-        self.assertEquals(
+        self.assertEqual(
             postdb.children(self.p(1), ts),
             [])
 
@@ -1807,17 +1807,17 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         p = self.p
         po = self.po
 
-        self.assertEquals(
+        self.assertEqual(
             list(postdb.iter_thread(None)),
             [p(0), p(1), p(2), p(3), po(0), p(4)])
-        self.assertEquals(
+        self.assertEqual(
             list(postdb.iter_thread(p(0))),
             [p(0), p(1), p(2), p(3)])
-        self.assertEquals(list(postdb.iter_thread(p(1))), [p(1), p(2)])
-        self.assertEquals(list(postdb.iter_thread(p(2))), [p(2)])
-        self.assertEquals(list(postdb.iter_thread(p(3))), [p(3)])
-        self.assertEquals(list(postdb.iter_thread(p(4))), [p(4)])
-        self.assertEquals(list(postdb.iter_thread(po(0))), [po(0)])
+        self.assertEqual(list(postdb.iter_thread(p(1))), [p(1), p(2)])
+        self.assertEqual(list(postdb.iter_thread(p(2))), [p(2)])
+        self.assertEqual(list(postdb.iter_thread(p(3))), [p(3)])
+        self.assertEqual(list(postdb.iter_thread(p(4))), [p(4)])
+        self.assertEqual(list(postdb.iter_thread(po(0))), [po(0)])
 
         # If the post is not in the postdb, AssertionError will be raised
         self.assertRaises(
@@ -1826,7 +1826,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # Testing the `threadstruct` parameter
         ts = {('my_heap', '0'): [self.p(1)]}
-        self.assertEquals(
+        self.assertEqual(
             list(postdb.iter_thread(p(0), ts)),
             [p(0), p(1)])
 
@@ -1842,7 +1842,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
             postitem_strings = [str(postitem) + '\n'
                                 for postitem in postdb.walk_thread(root)]
             postitem_strings = ''.join(postitem_strings)
-            self.assertEquals(postitem_strings, expected_result)
+            self.assertEqual(postitem_strings, expected_result)
 
         # The indentation in the following expressions reflects the thread
         # structure of the posts.
@@ -1889,7 +1889,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         # Testing the `threadstruct` parameter
 
         ts = {('my_heap', '0'): [self.p(1)]}
-        self.assertEquals(
+        self.assertEqual(
             ''.join([str(postitem) + '\n'
                      for postitem in postdb.walk_thread(self.p(0), ts)]),
              ("<PostItem: pos=begin, post_id=my_heap/0, level=0>\n"
@@ -1907,7 +1907,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
                 [ str(postitem) + '\n'
                   for postitem in postdb.walk_thread(root, yield_main=True) ]
             postitem_strings = ''.join(postitem_strings)
-            self.assertEquals(postitem_strings, expected_result)
+            self.assertEqual(postitem_strings, expected_result)
 
         test(None,
              ("<PostItem: pos=begin, post_id=my_heap/0, level=0>\n"
@@ -1946,13 +1946,13 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         postdb = self._postdb
 
         # Testing when there are no cycles
-        self.assertEquals(postdb.has_cycle(), False)
-        self.assertEquals(postdb.cycles(), postdb.postset([]))
+        self.assertEqual(postdb.has_cycle(), False)
+        self.assertEqual(postdb.cycles(), postdb.postset([]))
 
         # Testing cycles
         self.introduce_cycle()
-        self.assertEquals(postdb.has_cycle(), True)
-        self.assertEquals(
+        self.assertEqual(postdb.has_cycle(), True)
+        self.assertEqual(
             postdb.cycles(),
             postdb.postset([self.p(3), self.p(5), self.p(6), self.p(7)]))
 
@@ -1960,13 +1960,13 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         """Tests :func:`hklib.PostDB.walk_cycles`."""
 
         # Testing when there are no cycles
-        self.assertEquals(
+        self.assertEqual(
             [pi for pi in self._postdb.walk_cycles()],
             [])
 
         # Testing cycles
         self.introduce_cycle()
-        self.assertEquals(
+        self.assertEqual(
             [ pi for pi in self._postdb.walk_cycles() ],
             [hklib.PostItem(pos='flat', post=self.p(3), level=0),
              hklib.PostItem(pos='flat', post=self.p(5), level=0),
@@ -1994,7 +1994,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         postdb = self._postdb
         for child, parent in parents.items():
             postdb.post(child).set_parent(parent)
-        self.assertEquals(postdb.threadstruct(), threadstruct)
+        self.assertEqual(postdb.threadstruct(), threadstruct)
         self.assert_(postdb.cycles().is_set(cycles))
         if cycles == []:
             self.assertFalse(postdb.has_cycle())
@@ -2088,7 +2088,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         roots1 = postdb.roots()
         roots2 = postdb.roots()
         self.assert_(roots1 is roots2)
-        self.assertEquals(roots1, [p(0), po(0), p(4)])
+        self.assertEqual(roots1, [p(0), po(0), p(4)])
 
         # If we modify the post database, `root` should return a different
         # object then previously and the previously returned object should be
@@ -2096,9 +2096,9 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         self.add_post(5, None)
         roots3 = postdb.roots()
-        self.assertEquals(roots3, [p(0), po(0), p(4), p(5)])
+        self.assertEqual(roots3, [p(0), po(0), p(4), p(5)])
         # `root1` was not modified:
-        self.assertEquals(roots1, [p(0), po(0), p(4)])
+        self.assertEqual(roots1, [p(0), po(0), p(4)])
 
     def test_threads(self):
         """Tests the following functions:
@@ -2117,7 +2117,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         threads1 = postdb.threads()
         threads2 = postdb.threads()
         self.assert_(threads1 is threads2)
-        self.assertEquals(
+        self.assertEqual(
             threads1,
             {p(0): postdb.postset([p(0), p(1), p(2), p(3)]),
              po(0): postdb.postset([po(0)]),
@@ -2129,14 +2129,14 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         self.add_post(5, None)
         threads3 = postdb.threads()
-        self.assertEquals(
+        self.assertEqual(
             threads3,
             {p(0): postdb.postset([p(0), p(1), p(2), p(3)]),
              po(0): postdb.postset([po(0)]),
              p(4): postdb.postset([p(4)]),
              p(5): postdb.postset([p(5)])})
         # `threads1` was not modified:
-        self.assertEquals(
+        self.assertEqual(
             threads1,
             {p(0): postdb.postset([p(0), p(1), p(2), p(3)]),
              po(0): postdb.postset([po(0)]),
@@ -2167,29 +2167,29 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         # by its message id) but that of post 3 and 4 is modified (they
         # reference to post 0 by its post id)
 
-        self.assertEquals(
+        self.assertEqual(
             p(1).parent(),
             '0@')
 
-        self.assertEquals(
+        self.assertEqual(
             p(3).parent(),
             'moved')
 
-        self.assertEquals(
+        self.assertEqual(
             p(4).parent(),
             'my_heap/moved')
 
         # References in bodies were modified
 
-        self.assertEquals(
+        self.assertEqual(
             p(1).body(),
             'heap://moved heap://my_heap/moved\n')
 
-        self.assertEquals(
+        self.assertEqual(
             p(2).body(),
             'heap://1 heap://my_heap/1\n')
 
-        self.assertEquals(
+        self.assertEqual(
             po(0).body(),
             'heap://my_heap/moved heap://my_other_heap/0\n')
 
@@ -2201,30 +2201,30 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         # by its message id) but that of post 3 and 4 is modified (they
         # reference to post 0 by its post id)
 
-        self.assertEquals(
+        self.assertEqual(
             p(1).parent(),
             '0@')
 
-        self.assertEquals(
+        self.assertEqual(
             p(3).parent(),
             'my_other_heap/moved2')
 
-        self.assertEquals(
+        self.assertEqual(
             p(4).parent(),
             'my_other_heap/moved2')
 
         # References in bodies were modified
 
-        self.assertEquals(
+        self.assertEqual(
             p(1).body(),
             ('heap://my_other_heap/moved2 '
              'heap://my_other_heap/moved2\n'))
 
-        self.assertEquals(
+        self.assertEqual(
             p(2).body(),
             'heap://1 heap://my_heap/1\n')
 
-        self.assertEquals(
+        self.assertEqual(
             po(0).body(),
             'heap://my_other_heap/moved2 heap://my_other_heap/0\n')
 
@@ -2255,14 +2255,14 @@ class Test_PostItem(unittest.TestCase):
         # hklib.Post with heapid
         post = hklib.Post.from_str('', post_id=('my_heap', 42))
         postitem = hklib.PostItem(pos='begin', post=post, level=0)
-        self.assertEquals(
+        self.assertEqual(
             str(postitem),
             "<PostItem: pos=begin, post_id=my_heap/42, level=0>")
 
         # hklib.Post without heapid
         post = hklib.Post.from_str('')
         postitem = hklib.PostItem(pos='begin', post=post, level=0)
-        self.assertEquals(
+        self.assertEqual(
             str(postitem),
             "<PostItem: pos=begin, post_id=None, level=0>")
 
@@ -2282,7 +2282,7 @@ class Test_PostItem(unittest.TestCase):
 
         # ... and check that the data attributes of the copied postitem have
         # not changed
-        self.assertEquals(
+        self.assertEqual(
             str(postitem2),
             "<PostItem: pos=begin, post_id=my_heap/42, level=0>")
 
@@ -2296,7 +2296,7 @@ class Test_PostItem(unittest.TestCase):
         postitem4 = postitem1.copy()
         postitem4.new_attr = 'something'
 
-        self.assertEquals(postitem1, postitem2)
+        self.assertEqual(postitem1, postitem2)
         self.assertNotEquals(postitem1, postitem3)
         self.assertNotEquals(postitem1, postitem4)
 
@@ -2324,7 +2324,7 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         self.assertFalse(ps1 == set())
         self.assert_(ps1.is_set(set()))
 
-        self.assertEquals(ps1, hklib.PostSet(postdb, []))
+        self.assertEqual(ps1, hklib.PostSet(postdb, []))
         self.assert_(ps1 == hklib.PostSet(postdb, []))
         self.assertFalse(ps1 != hklib.PostSet(postdb, []))
 
@@ -2410,16 +2410,16 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         ps8 = hklib.PostSet(postdb, ('my_heap', '1'))
         ps9 = hklib.PostSet(postdb, ('my_heap', 1))
         ps10 = hklib.PostSet(postdb, 'my_heap/1')
-        self.assertEquals(ps0, ps1)
-        self.assertEquals(ps0, ps2)
-        self.assertEquals(ps0, ps3)
-        self.assertEquals(ps0, ps4)
-        self.assertEquals(ps0, ps5)
-        self.assertEquals(ps0, ps6)
-        self.assertEquals(ps0, ps7)
-        self.assertEquals(ps0, ps8)
-        self.assertEquals(ps0, ps9)
-        self.assertEquals(ps0, ps10)
+        self.assertEqual(ps0, ps1)
+        self.assertEqual(ps0, ps2)
+        self.assertEqual(ps0, ps3)
+        self.assertEqual(ps0, ps4)
+        self.assertEqual(ps0, ps5)
+        self.assertEqual(ps0, ps6)
+        self.assertEqual(ps0, ps7)
+        self.assertEqual(ps0, ps8)
+        self.assertEqual(ps0, ps9)
+        self.assertEqual(ps0, ps10)
 
         self.assertRaises(
             hklib.PostNotFoundError,
@@ -2557,9 +2557,9 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
 
         ps_all = hklib.PostSet(postdb, [p(0), p(1), p(2), p(3), p(4), po(0)])
         ps2 = hklib.PostSet(postdb, set([p(0), p(2), p(3), p(4), po(0)]))
-        self.assertEquals(ps_all, postdb.all())
+        self.assertEqual(ps_all, postdb.all())
         p1.delete()
-        self.assertEquals(ps2, postdb.all())
+        self.assertEqual(ps2, postdb.all())
 
         ## Testing `clear` and `update`
 
@@ -2581,9 +2581,9 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         :class:`hklib.PostSetForallDelegate`."""
 
         def testSubjects(s1, s2, s3):
-            self.assertEquals(s1, p1.subject())
-            self.assertEquals(s2, p2.subject())
-            self.assertEquals(s3, p3.subject())
+            self.assertEqual(s1, p1.subject())
+            self.assertEqual(s2, p2.subject())
+            self.assertEqual(s3, p3.subject())
 
         postdb = self._postdb
         p1 = self.p(1)
@@ -2819,7 +2819,7 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         p = self.p
         po = self.po
         postdb = self._postdb
-        self.assertEquals(
+        self.assertEqual(
             postdb.all().sorted_list(),
             [p(0), po(0), p(1), p(2), p(3), p(4)])
 
