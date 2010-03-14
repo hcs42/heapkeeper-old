@@ -218,58 +218,58 @@ See the conventions about commit messages :ref:`here
 Developing code and committing it to the local repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Write the code (``*.py``) and the unit test (in ``test_*.py``) in parallel.
-* Execute :ref:`pylint` to find problems::
+#. Write the code (``*.py``) and the unit test (in ``test_*.py``) in parallel.
+#. Execute :ref:`pylint` to find problems::
 
     $ hk-dev-utils/hk_pylint modifiedmodule1.py modifiedmodule2.py
 
-* Execute the unit test suite including the test you just wrote::
+#. Execute the unit test suite including the test you just wrote::
 
     $ ./test.py
 
-* Try out the Generator::
+#. Try out the Generator::
 
     $ ./hk.py --noshell 'g()'
 
-* Document your modifications by writing docstrings.
-* Check that the docstrings are correct by generating the HTML documentation
-  and viewing it in a browser::
+#. Document your modifications by writing docstrings.
+#. Check that the docstrings are correct by generating the HTML documentation
+   and viewing it in a browser::
 
     $ cd doc
     $ make html
     $ <your browser of choice> _build/html/modules.html
 
-* Check that your modifications does not include anything you don't want::
+#. Check that your modifications does not include anything you don't want::
 
     $ git diff
 
-* Commit your modifications::
+#. Commit your modifications::
 
     $ git commit -av
 
 Pushing to your GitHub repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Fetch commits of other developers, e.g.::
+#. Fetch commits of other developers, e.g.::
 
     git remote prune other_repo
     git fetch other_repo
 
-* Rebase your branch if needed.
-* Run through the commits to be pushed using :ref:`margitka`.
-* Run the unit test suite once again on all commits to be pushed::
+#. Rebase your branch if needed.
+#. Run through the commits to be pushed using :ref:`margitka`.
+#. Run the unit test suite once again on all commits to be pushed::
 
     $ hk-dev-utils/test_commits [COMMIT_1] [COMMIT_2] ...
 
-* Check that the generated HTML pages were not modified using
-  ``hk-dev-utils/testhtml``. Probably you should write a wrapper around it as I
-  did. I invoke my wrapper this way::
+#. Check that the generated HTML pages were not modified using
+   ``hk-dev-utils/testhtml``. Probably you should write a wrapper around it as I
+   did. I invoke my wrapper this way::
 
     $ hcs/testhtml [COMMIT_1] [COMMIT_2] ...
 
-* Check that post downloading works.
+#. Check that post downloading works.
 
-* Push the changes::
+#. Push the changes::
 
     $ git push origin <branch>
 
