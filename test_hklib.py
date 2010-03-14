@@ -2222,6 +2222,15 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
             po(0).body(),
             'heap://my_other_heap/moved2 heap://my_other_heap/0\n')
 
+        ## Using a placeholder
+
+        postdb.move(p0, 'my_other_heap/moved3', placeholder=True)
+
+        # Checking the placeholder post
+        self.assertEquals(
+            postdb.postset(postdb.real_posts()).collect.is_deleted(),
+            postdb.postset('my_other_heap/moved2'))
+
         ## Error: post id already occupied
 
         self.assertRaises(

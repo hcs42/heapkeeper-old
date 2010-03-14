@@ -2358,7 +2358,7 @@ class PostDB(object):
             for root in self.roots():
                 self._threads[root] = self.postset(root).expf()
 
-    def move(self, post, new_post_id):
+    def move(self, post, new_post_id, placeholder=False):
         """Moves a post by changing its post id.
 
         This method should be used with care.
@@ -2367,6 +2367,9 @@ class PostDB(object):
 
         - `post` (|Post|)
         - `new_post_id` (|PrePostId|) -- The new post id of the post.
+        - `placeholder` (bool) -- If ``True``, a placeholder post will be
+          created with the original post id of `post`. The placeholder post
+          will be marked as deleted.
         """
 
         Post.assert_is_post_id(new_post_id)
@@ -2457,6 +2460,11 @@ class PostDB(object):
         post._post_id = new_post_id
         post.touch()
         self.add_post_to_dicts(post)
+
+        if placeholder:
+            placeholder_post = Post.create_empty(old_post_id, self)
+            placeholder_post.delete()
+            self.add_post_to_dicts(placeholder_post)
 
         self.touch()
 
