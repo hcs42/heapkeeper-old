@@ -24,7 +24,7 @@
 .. |GeneratorOptions| replace:: :class:`GeneratorOptions <hklib.GeneratorOptions>`
 .. |Generator| replace:: :class:`Generator <hklib.Generator>`
 .. |GenIndicesFun| replace:: :ref:`GenIndicesFun <hkshell_GenIndicesFun>`
-.. |Heapid| replace:: :ref:`Heapid <hklib_Heapid>`
+.. |HeapId| replace:: :ref:`HeapId <hklib_HeapId>`
 .. |hkcustomlib| replace:: :mod:`hkcustomlib`
 .. |hkgen| replace:: :mod:`hkgen`
 .. |hklib| replace:: :mod:`hklib`
@@ -40,14 +40,21 @@
 .. |Messageid| replace:: :ref:`Messageid <hklib_Messageid>`
 .. |ModificationListener| replace:: :class:`ModificationListener <hkshell.ModificationListener>`
 .. |PostDB.walk_thread| replace:: :func:`PostDB.walk_thread <hklib.PostDB.walk_thread>`
+.. |PostDBEventListener| replace:: :ref:`PostDBEventListener <hklib_PostDBEventListener>`
+.. |PostDBEvent| replace:: :class:`PostDBEvent <hklib.PostDBEvent>`
 .. |PostDB| replace:: :class:`PostDB <hklib.PostDB>`
 .. |postdb| replace:: :func:`postdb <hkshell.postdb>`
+.. |PostIdStr| replace:: :ref:`PostIdStr <hklib_PostIdStr>`
+.. |PostId| replace:: :ref:`PostId <hklib_PostId>`
+.. |PostIndex| replace:: :ref:`PostIndex <hklib_PostIndex>`
 .. |PostItemModifierFun| replace:: :ref:`PostItemModifierFun <hkgen_PostItemModifierFun>`
 .. |PostItemPrinterFun| replace:: :ref:`PostItemPrinterFun <hkgen_PostItemPrinterFun>`
 .. |PostItem| replace:: :class:`PostItem <hklib.PostItem>`
+.. |PostNotFoundError| replace:: :class:`PostNotFoundError <hklib.PostNotFoundError>`
 .. |PostPageListener| replace:: :class:`PostPageListener <hkshell.PostPageListener>`
 .. |PostSet| replace:: :class:`PostSet <hklib.PostSet>`
 .. |Post| replace:: :class:`Post <hklib.Post>`
+.. |PrePostId| replace:: :ref:`PrePostId <hklib_PostIdStr>`
 .. |PrePostSet| replace:: :ref:`PrePostSet <hklib_PrePostSet>`
 .. |PrePost| replace:: :ref:`PrePost <hklib_PrePost>`
 .. |PreTagSet| replace:: :ref:`PreTagSet <hkshell_PreTagSet>`
@@ -62,6 +69,7 @@
 .. |s| replace:: :func:`s <hkshell.s>`
 .. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
 .. |TextStruct| replace:: :ref:`TextStruct <hkutils_TextStruct>`
+.. |ThreadStruct| replace:: :ref:`ThreadStruct <hklib_ThreadStruct>`
 .. |TouchedPostPrinterListener| replace:: :class:`TouchedPostPrinterListener <hkshell.TouchedPostPrinterListener>`
 .. |UserDoc| replace:: :doc:`user documentation of hkshell <hkshell>`
 .. |Writable| replace:: :ref:`Writable <hkshell_Writable>`

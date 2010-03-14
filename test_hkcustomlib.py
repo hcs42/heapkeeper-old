@@ -39,7 +39,7 @@ class Test__1(unittest.TestCase, test_hklib.PostDBHandler):
 
     def setUp(self):
         self.setUpDirs()
-        self._postdb = self.createPostDB()
+        self.create_postdb()
         self.create_threadst()
 
     def tearDown(self):

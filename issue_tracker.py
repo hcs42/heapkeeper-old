@@ -189,8 +189,8 @@ class Generator(hkgen.Generator):
             self.print_postitem_subject,
             self.print_postitem_threadlink,
             self.print_postitem_tags,
-            self.print_postitem_heapid,
-            self.print_postitem_parent_heapid,
+            self.print_postitem_post_id,
+            self.print_postitem_parent_post_id,
             self.print_postitem_date,
             self.print_postitem_meta_info,
         )

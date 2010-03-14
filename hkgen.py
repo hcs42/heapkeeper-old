@@ -492,8 +492,8 @@ class Generator(object):
                    skip_empty=True)
 
     # TODO: test
-    def print_postitem_heapid_core(self, postitem):
-        """Prints the core of the heapid of the post item.
+    def print_postitem_post_id_core(self, postitem):
+        """Prints the core of the post id of the post item.
 
         **Argument:**
 
@@ -505,11 +505,11 @@ class Generator(object):
         return \
             self.print_link(
                 self.print_postitem_link(postitem),
-                self.escape('<%s>' % (postitem.post.heapid(),)))
+                self.escape('<%s>' % (postitem.post.post_id_str(),)))
 
     # TODO: test
-    def print_postitem_heapid(self, postitem):
-        """Prints the heapid of the post item.
+    def print_postitem_post_id(self, postitem):
+        """Prints the post id of the post item.
 
         **Argument:**
 
@@ -519,13 +519,13 @@ class Generator(object):
         """
 
         return self.enclose(
-                   self.print_postitem_heapid_core(postitem),
+                   self.print_postitem_post_id_core(postitem),
                    class_='index',
                    skip_empty=True)
 
     # TODO: test
-    def print_postitem_parent_heapid_core(self, postitem):
-        """Prints the core of the heapid of the parent of the post.
+    def print_postitem_parent_post_id_core(self, postitem):
+        """Prints the core of the post id of the parent of the post.
 
         **Argument:**
 
@@ -534,8 +534,8 @@ class Generator(object):
         **Returns:** |HtmlText|
         """
 
-        if (hasattr(postitem, 'print_parent_heapid') and
-            postitem.print_parent_heapid):
+        if (hasattr(postitem, 'print_parent_post_id') and
+            postitem.print_parent_post_id):
 
             parent = self._postdb.parent(postitem.post)
             if parent is not None:
@@ -544,7 +544,7 @@ class Generator(object):
                     self.print_link(
                         self.print_postitem_link(parent_postitem),
                         ('&lt;&uarr;',
-                         self.escape(parent.heapid()),
+                         self.escape(parent.post_id_str()),
                          '&gt;'))
             else:
                 return self.escape('<root>')
@@ -552,8 +552,8 @@ class Generator(object):
             return ''
 
     # TODO: test
-    def print_postitem_parent_heapid(self, postitem):
-        """Prints the heapid of the parent of the post.
+    def print_postitem_parent_post_id(self, postitem):
+        """Prints the post id of the parent of the post.
 
         **Argument:**
 
@@ -563,7 +563,7 @@ class Generator(object):
         """
 
         return self.enclose(
-                   self.print_postitem_parent_heapid_core(postitem),
+                   self.print_postitem_parent_post_id_core(postitem),
                    class_='parent',
                    skip_empty=True)
 
@@ -668,7 +668,7 @@ class Generator(object):
         else:
             return (self._postdb.root(post).htmlthreadbasename(),
                     '#post_',
-                    post.heapid())
+                    post.post_id_str())
 
     # TODO: test
     def print_postitem_begin(self, postitem):
@@ -681,9 +681,9 @@ class Generator(object):
         **Returns:** |HtmlText|
         """
 
-        heapid = postitem.post.heapid()
+        post_id_str = postitem.post.post_id_str()
         return ('\n<div class="postbox">',
-                self.print_comment('post ' + heapid), '\n')
+                self.print_comment('post ' + post_id_str), '\n')
 
     # TODO: test
     def print_postitem_end(self, postitem):
@@ -696,9 +696,9 @@ class Generator(object):
         **Returns:** |HtmlText|
         """
 
-        heapid = postitem.post.heapid()
+        post_id_str = postitem.post.post_id_str()
         return ('</div>',
-                self.print_comment('postbox for post ' + heapid), '\n')
+                self.print_comment('postbox for post ' + post_id_str), '\n')
 
     # TODO test
     def get_postsummary_fields_main(self, postitem):
@@ -716,8 +716,8 @@ class Generator(object):
             self.print_postitem_author,
             self.print_postitem_subject,
             self.print_postitem_tags,
-            self.print_postitem_heapid,
-            self.print_postitem_parent_heapid,
+            self.print_postitem_post_id,
+            self.print_postitem_parent_post_id,
             self.print_postitem_date,
         )
 
@@ -737,7 +737,7 @@ class Generator(object):
             self.print_postitem_author,
             self.print_postitem_subject,
             self.print_postitem_tags,
-            self.print_postitem_heapid,
+            self.print_postitem_post_id,
             self.print_postitem_date,
         )
 
@@ -765,11 +765,11 @@ class Generator(object):
              for fun in self.get_postsummary_fields_main(postitem)]
 
         body = self.print_postitem_body(postitem)
-        heapid = postitem.post.heapid()
+        post_id_str = postitem.post.post_id_str()
         return self.enclose(
                    (post_summary_fields, body),
                    class_='postsummary',
-                   id=('post_', heapid),
+                   id=('post_', post_id_str),
                    newlines=True,
                    closing_comment=True)
 
@@ -880,7 +880,7 @@ class Generator(object):
 
         - `root` (|Post| | ``None``) -- The root of the thread to be walked. If
           ``None``, the whole thread structure is walked.
-        - `threadstruct` ({(``None`` | |Heapid|): |Heapid|} | ``None``) -- The
+        - `threadstruct` ({(``None`` | |PostId|): |PostId|} | ``None``) -- The
           thread structure to be used. If ``None``, the thread structure of the
           post database will be used.
 
@@ -982,29 +982,29 @@ class Generator(object):
 
         Input::
 
-            <PostItem: pos=begin, heapid='0', level=0>
-              <PostItem: pos=begin, heapid='1', level=1>
-                <PostItem: pos=begin, heapid='2', level=2>
-                <PostItem: pos=end, heapid='2', level=2>
-              <PostItem: pos=end, heapid='1', level=1>
-              <PostItem: pos=begin, heapid='3', level=1>
-              <PostItem: pos=end, heapid='3', level=1>
-            <PostItem: pos=end, heapid='0', level=0>
-            <PostItem: pos=begin, heapid='4', level=0>
-            <PostItem: pos=end, heapid='4', level=0>
+            <PostItem: pos=begin, post_id=my_heap/0, level=0>
+              <PostItem: pos=begin, post_id=my_heap/1, level=1>
+                <PostItem: pos=begin, post_id=my_heap/2, level=2>
+                <PostItem: pos=end, post_id=my_heap/2, level=2>
+              <PostItem: pos=end, post_id=my_heap/1, level=1>
+              <PostItem: pos=begin, post_id=my_heap/3, level=1>
+              <PostItem: pos=end, post_id=my_heap/3, level=1>
+            <PostItem: pos=end, post_id=my_heap/0, level=0>
+            <PostItem: pos=begin, post_id=my_heap/4, level=0>
+            <PostItem: pos=end, post_id=my_heap/4, level=0>
 
         Output::
 
-            <PostItem: pos=begin, heapid='4', level=0>
-            <PostItem: pos=end, heapid='4', level=0>
-            <PostItem: pos=begin, heapid='0', level=0>
-              <PostItem: pos=begin, heapid='1', level=1>
-                <PostItem: pos=begin, heapid='2', level=2>
-                <PostItem: pos=end, heapid='2', level=2>
-              <PostItem: pos=end, heapid='1', level=1>
-              <PostItem: pos=begin, heapid='3', level=1>
-              <PostItem: pos=end, heapid='3', level=1>
-            <PostItem: pos=end, heapid='0', level=0>
+            <PostItem: pos=begin, post_id=my_heap/4, level=0>
+            <PostItem: pos=end, post_id=my_heap/4, level=0>
+            <PostItem: pos=begin, post_id=my_heap/0, level=0>
+              <PostItem: pos=begin, post_id=my_heap/1, level=1>
+                <PostItem: pos=begin, post_id=my_heap/2, level=2>
+                <PostItem: pos=end, post_id=my_heap/2, level=2>
+              <PostItem: pos=end, post_id=my_heap/1, level=1>
+              <PostItem: pos=begin, post_id=my_heap/3, level=1>
+              <PostItem: pos=end, post_id=my_heap/3, level=1>
+            <PostItem: pos=end, post_id=my_heap/0, level=0>
         """
 
         threads = [] # type: [[PostItem]]
@@ -1037,7 +1037,7 @@ class Generator(object):
         def enclose(postitem):
             post = postitem.post
             if post in posts:
-                heapid = post.heapid()
+                post_id_str = post.post_id_str()
                 old_print_fun = postitem.print_fun
                 if postitem.pos == 'main':
                     postitem.print_fun = \
@@ -1046,7 +1046,7 @@ class Generator(object):
                                 old_print_fun(postitem),
                                 class_=class_,
                                 newlines=True,
-                                comment=('post ', heapid),
+                                comment=('post ', post_id_str),
                                 closing_comment=True)
             return postitem
         return enclose
@@ -1067,20 +1067,21 @@ class Generator(object):
         def enclose(postitem):
             post = postitem.post
             if post in posts:
-                heapid = post.heapid()
+                post_id_str = post.post_id_str()
                 old_print_fun = postitem.print_fun
                 if postitem.pos == 'begin':
                     postitem.print_fun = \
                         lambda postitem:\
                             ('<span class="', class_, '">',
-                             '<!-- post ', heapid, ' -->\n',
+                             '<!-- post ', post_id_str, ' -->\n',
                             old_print_fun(postitem))
                 elif postitem.pos == 'end':
                     postitem.print_fun = \
                         lambda postitem: \
                             (old_print_fun(postitem),
                             '</span>',
-                            '<!-- "', class_, '" of post ', heapid, ' -->\n')
+                            '<!-- "', class_, '" of post ',
+                            post_id_str, ' -->\n')
             return postitem
         return enclose
 
@@ -1124,7 +1125,7 @@ class Generator(object):
                 xpostitems)
         xpostitems = \
             itertools.imap(
-                self.set_postitem_attr('print_parent_heapid'),
+                self.set_postitem_attr('print_parent_post_id'),
                 xpostitems)
         return self.print_postitems(xpostitems)
 
@@ -1139,7 +1140,7 @@ class Generator(object):
         """
 
         # We create a thread structure that contains only out post.
-        threadst = {None: [post.heapid()]}
+        threadst = {None: [post.post_id()]}
 
         xpostitems = self.walk_thread(threadstruct=threadst)
         xpostitems = \
@@ -1237,14 +1238,31 @@ class Generator(object):
 
         for file in self.options.files_to_copy:
 
-            heap_file = os.path.join(self._postdb.postfile_dir(), file)
             target_file = os.path.join(self._postdb.html_dir(), file)
 
-            if os.path.exists(heap_file):
-                # copy from the heap
-                shutil.copyfile(heap_file, target_file)
+            # We try to copy the file from one of the heaps used by the post
+            # database
+
+            # We have not found the file yet
+            file_found = False
+
+            # We iterate the heaps in alphabetical order (to make the algorithm
+            # deterministic)
+            heaps = sorted(self._postdb._heaps.items())
+
+            # We iterate the heaps and look for the file
+            for heap_id, heap_dir in heaps:
+                heap_file = os.path.join(heap_dir, file)
+                if os.path.exists(heap_file):
+                    shutil.copyfile(heap_file, target_file)
+                    file_found = True
+                    break
+
+            if file_found:
+                # File already found and copied
+                pass
             elif os.path.exists(file):
-                # copy from the current directory
+                # Copy from the current directory
                 shutil.copyfile(file, target_file)
             else:
                 hklib.log('WARNING: file "%s" not found' % (file,))
@@ -1257,6 +1275,11 @@ class Generator(object):
         # if the path is relative, put it into html_dir
         if os.path.abspath(filename) != filename:
             filename = os.path.join(self._postdb.html_dir(), filename)
+
+        # creating the directory
+        dir = os.path.dirname(filename)
+        if not os.path.exists(dir):
+            os.mkdir(dir)
 
         with open(filename, 'w') as f:
             html_page = self.print_html_page(html_body)
@@ -1366,7 +1389,8 @@ class Generator(object):
 
     # TODO better test
     def write_thread_pages(self, write_all=False):
-        """Writes the thread pages into ``'thread_<root_heapid>.html'``.
+        """Writes the thread pages into
+        ``'<root_heap_id>/thread_<root_post_index>.html'``.
 
         **Argument:**
 
@@ -1382,14 +1406,14 @@ class Generator(object):
             posts = self.outdated_thread_pages()
 
         for post in posts:
-            self.options.html_title = 'Thread ' + post.heapid()
+            self.options.html_title = 'Thread ' + post.post_id_str()
             self.write_page(
                 filename=post.htmlthreadbasename(),
                 html_body=self.print_thread_page(post))
 
     # TODO: better test
     def write_post_pages(self, write_all=False):
-        """Writes the post pages into ``'<heapid>.html'``.
+        """Writes the post pages into ``'<heap_id>/<post_index>.html'``.
 
         **Argument:**
 
@@ -1407,7 +1431,7 @@ class Generator(object):
             posts = self.outdated_post_pages(posts_in_cycles)
 
         for post in posts:
-            self.options.html_title = 'Post ' + post.heapid()
+            self.options.html_title = 'Post ' + post.post_id_str()
             self.write_page(
                 filename=post.htmlfilebasename(),
                 html_body=self.print_post_page(post))

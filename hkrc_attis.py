@@ -155,13 +155,13 @@ def et(pps):
         roots.append(hkshell.postdb().root(post))
     for root in roots:
         for post in hkshell.postdb().iter_thread(root):
-            hkshell.e(post.heapid())
+            hkshell.e(post.post_id())
     hkshell.ga()
 
 @hkshell.hkshell_cmd()
-def lsr(heapid):
+def lsr(pps):
     """Print a whole thread, ie. recursive ls."""
-    hkshell.ls(hkshell.ps(heapid).exp())
+    hkshell.ls(hkshell.ps(pps).exp())
 
 main()
 

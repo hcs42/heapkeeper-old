@@ -817,8 +817,8 @@ class TouchedPostPrinterListener(object):
                 else:
                     write('%s posts have been touched:\n' %
                           (len(touched_posts),))
-                write('%s\n' %
-                      sorted([ post.heapid() for post in touched_posts]))
+                post_ids = sorted([post.post_id() for post in touched_posts])
+                write('%s\n' % ([ '%s/%s' % post_id for post_id in post_ids]))
 
 # Commands after which the touched_post_printer should print the touched posts.
 # The preferred way to add a command to the list is use the
@@ -976,9 +976,25 @@ def h():
     """Prints the console help."""
     write(console_help)
 
+heap_id_hint_var = None
+
+@hkshell_cmd()
+def get_heap_id_hint():
+    """Gets the heap id hint."""
+    return heap_id_hint_var
+
+@hkshell_cmd()
+def set_heap_id_hint(heap_id_hint):
+    """Sets the heap id hint."""
+    global heap_id_hint_var
+    heap_id_hint_var = heap_id_hint
+
 @hkshell_cmd()
 def p(pp):
-    """Returns a post by its heapid.
+    """Returns the post specified by its post id or message id or post
+    index.
+
+    See :func:`hklib.PostDB.post` for more information.
 
     **Argument:**
 
@@ -988,7 +1004,7 @@ def p(pp):
     """
 
     # PostSet is better in making post from a prepost...
-    postset = postdb().postset(pp)
+    postset = postdb().postset(pp, heap_id_hint_var)
     return postset.pop()
 
 @hkshell_cmd()
@@ -1002,7 +1018,7 @@ def ps(pps):
     **Returns:** |PrePost|
     """
 
-    return postdb().postset(pps)
+    return postdb().postset(pps, heap_id_hint_var)
 
 @hkshell_cmd()
 def postdb():
@@ -1141,8 +1157,8 @@ def ls(pps=None, show_author=True, show_tags=False, show_date=True, indent=2):
             # indentation
             line = ' ' * (postitem.level * indent)
 
-            # heapid
-            line += '<%s>' % (post.heapid(),)
+            # post id
+            line += '<%s>' % (post.post_id_str(),)
 
             # subject
             if len(post.subject()) < 40:
@@ -1171,8 +1187,8 @@ def cat(pps):
     The printout contains the contatenation of the posts exactly as they are
     in the post files, with two differences:
 
-    - There is an additional attribute called ``Heapid``, which shows the
-      heapid of the post.
+    - There is an additional attribute called ``Post-id``, which shows the
+      post id of the post.
     - There are separators between posts. Separators are lines that consist of
       hyphens.
 
@@ -1181,18 +1197,18 @@ def cat(pps):
     - `pps` (|PrePostSet|)
     """
 
-    # We want to iterate on the posts in the order of their heapids, so we
-    # collect the heapids and iterate over their sorted list.
-    heapids = sorted([post.heapid() for post in ps(pps)])
+    # We want to iterate on the posts in the order of their post ids, so we
+    # collect the post ids and iterate over their sorted list.
+    post_ids = sorted([post.post_id() for post in ps(pps)])
 
     first = True
-    for heapid in heapids:
+    for post_id in post_ids:
         if first:
             first = False
         else:
             write('\n' + ('-' * 60) + '\n\n')
-        post = postdb().post(heapid)
-        write('Heapid: %s\n' % (heapid,))
+        post = postdb().post(post_id)
+        write('Post-id: %s\n' % (post.post_id_str(),))
         post.write(options.output)
 
 @hkshell_cmd(postset_operation=True, touching_command=True)
@@ -1231,7 +1247,7 @@ def j(pp1, pp2):
     p2 = postdb().post(pp2)
     event('postset_calculated', 'j')
     if p1 != None and p2 != None:
-        p2.set_parent(p1.heapid())
+        p2.set_parent(p1.post_id_str())
 
 
 def edit_posts(pps):
@@ -1262,9 +1278,9 @@ def edit_posts(pps):
             post = postfilename_to_post[filename]
             if filename in changed_files:
                 post.load()
-                hklib.log('Post "%s" reloaded.' % (post.heapid(),))
+                hklib.log('Post "%s" reloaded.' % (post.post_id_str(),))
             else:
-                hklib.log('Post "%s" left unchanged.' % (post.heapid(),))
+                hklib.log('Post "%s" left unchanged.' % (post.post_id_str(),))
 
 @hkshell_cmd(postset_operation=True)
 def e(pps):
@@ -1289,7 +1305,7 @@ def eR(pps):
     edit_posts(pps.expf())
 
 @hkshell_cmd(add_events=True, touching_command=True)
-def enew(prefix='', author='', parent=None):
+def enew(prefix='', author='', parent=None, heap_id=None):
     """Creates and edits a post.
 
     A temporary file with a post stub will be created and an editor will be
@@ -1313,7 +1329,7 @@ def enew(prefix='', author='', parent=None):
         post.set_author(author)
         if parent != None:
             parent = p(parent)
-            post.set_parent(parent.heapid())
+            post.set_parent(parent.post_id_str())
             post.set_subject(parent.subject())
             post.set_tags(parent.tags())
         post_str = post.postfile_str(force_print=set(['Author', 'Subject']))
@@ -1322,7 +1338,13 @@ def enew(prefix='', author='', parent=None):
         changed_files = options.callbacks.edit_files([tmp_file_name])
         if len(changed_files) > 0:
             post = hklib.Post.from_file(tmp_file_name)
-            postdb().add_new_post(post, prefix=prefix)
+            if heap_id is None:
+                if heap_id_hint_var is None:
+                    hklib.log('Post cannot be created: no heap specified.')
+                    return None
+                else:
+                    heap_id = heap_id_hint_var
+            postdb().add_new_post(post, heap_id, prefix=prefix)
             hklib.log('Post created.')
             return post
         else:
@@ -1361,9 +1383,16 @@ def dl(from_=0, detailed_log=False, ps=False):
     if `ps` is ``True``; ``None`` otherwise.
     """
 
+    if heap_id_hint_var is None:
+        hklib.log('Posts cannot be downloaded: no heap specified.')
+        return
+    else:
+        heap_id = heap_id_hint_var
+
     email_downloader = hklib.EmailDownloader(postdb(), options.config)
     email_downloader.connect()
-    new_posts = email_downloader.download_new(int(from_), bool(detailed_log))
+    new_posts = \
+        email_downloader.download_new(heap_id, int(from_), bool(detailed_log))
     email_downloader.close()
     if ps:
         return new_posts
@@ -1587,7 +1616,7 @@ def grep(pattern, pps=None):
             r.search(post.messid()) or
             r.search(post.date_str()) or
             r.search(post.parent()) or
-            r.search(post.heapid()) or
+            r.search(post.post_id_str()) or
             r.search(post.body())):
             return True
         for tag in post.tags():
@@ -1629,7 +1658,9 @@ def read_postdb(configfile):
     except IOError:
         hklib.log('Config file not found: "%s"' % (configfile,))
         sys.exit(1)
-    return config, hklib.PostDB.from_config(config)
+    postdb = hklib.PostDB()
+    postdb.read_config(config)
+    return config, postdb
 
 def init():
     """Sets the default event handlers."""

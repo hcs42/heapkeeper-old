@@ -45,6 +45,8 @@ Functions
 
         **Returns:** int
 
+        **Raises:** TypeError
+
         **Example:** ::
 
             >>> add(1, 2)
@@ -207,7 +209,7 @@ Long argument list
 Yes::
 
    my_function(one_long_argument, another_long_argument,
-                a_third_long_argument_that_does_not_fit_into_the_prev_line)
+               a_third_long_argument_that_does_not_fit_into_the_prev_line)
 
 Yes::
 

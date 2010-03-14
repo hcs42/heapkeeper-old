@@ -33,150 +33,13 @@ import itertools
 import os
 import os.path
 import re
+import shutil
 import StringIO
 import tempfile
 import unittest
 
+import hkutils
 import hklib
-
-# The following line should be removed and calls that require this should be
-# modified.
-from hklib import *
-
-
-class PostDBHandler(object):
-
-    """A class that helps implementing the tester classes by containing
-    functions commonly used by them."""
-
-    # Creating an ordered array of dates.
-    dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200\n' % i \
-              for i in range(10) ]
-
-    def setUpDirs(self):
-        self._dir = tempfile.mkdtemp()
-        self._postfile_dir = os.path.join(self._dir, 'mail')
-        self._html_dir = os.path.join(self._dir, 'html')
-        os.mkdir(self._postfile_dir)
-        os.mkdir(self._html_dir)
-
-    def tearDownDirs(self):
-        shutil.rmtree(self._dir)
-
-    def createPostDB(self):
-        return PostDB(self._postfile_dir, self._html_dir)
-
-    def postFileName(self, fname):
-        return os.path.join(self._postfile_dir, fname)
-
-    def add_post(self, index, parent=None):
-        """Adds a new post to postdb.
-
-        The attributes of the post will be created as follows:
-        - The author will be 'author'+index.
-        - The subject will be 'subject'+index.
-        - The message id will be index+'@'.
-        - The parent will be `parent`, if specified.
-        - If self._skipdates is False, the post with a newer index will
-          have a newer date; otherwise the post will not have a date.
-        - The body will be 'body'+index.
-        """
-
-        parent = str(parent) + '@' if parent != None else ''
-        s = ('Author: author%s\n' % (index,) +
-             'Subject: subject%s\n' % (index,) +
-             'Message-Id: %s@\n' % (index,) +
-             'Parent: %s\n' % (parent,))
-        if not self._skipdates:
-            s += PostDBHandler.dates[index] + '\n'
-        s += ('\n' +
-              'body%s' % (index,))
-        post = Post.from_str(s)
-        self._postdb.add_new_post(post)
-        return post
-
-    def create_threadst(self, skipdates=False):
-        """Adds a thread structure to the postdb with the following structure.
-
-        0 <- 1 <- 2
-          <- 3
-        4
-        """
-
-        self._skipdates = skipdates
-
-        # We changed the heapid numbering to start from 1 instead of 0. A
-        # large portion of the tests would have had to be rewritten as a
-        # result, so for the moment, we use this workaround.
-        self._postdb._next_heapid[''] = 0
-
-        self.add_post(0)
-        self.add_post(1, 0)
-        self.add_post(2, 1)
-        self.add_post(3, 0)
-        self.add_post(4)
-        self._posts = [ self._postdb.post(str(i)) for i in range(5) ]
-
-    def introduce_cycle(self):
-        """Introcudes a cycle in the thread structure."""
-
-        # New thread structure:
-        #
-        # 0 <- 1 <- 2
-        # 4
-        # 3 <- 5 <- 6 <- 7
-        #  \        ^
-        #   -------/
-        self._posts += [
-            self.add_post(5, 3),
-            self.add_post(6, 5),
-            self.add_post(7, 6),
-        ]
-        self._postdb.post('3').set_parent('7')
-
-
-# global strings for tests
-
-post1_text = '''\
-Author: author
-Subject: subject
-Flag: flag1
-Message-Id: <0@gmail.com>
-Flag: flag2
-Date: Wed, 20 Aug 2008 17:41:30 +0200'''
-
-post2_text = post1_text + '\n'
-post3_text = post1_text + '\n\n'
-post4_text = post1_text + '\n\nHi'
-post5_text = post1_text + '\n\nHi\n'
-post6_text = post1_text + '\n\nHi\n\n\n'
-
-post1_dict1 = {'Author': ['author'],
-               'Subject': ['subject'],
-               'Message-Id': ['<0@gmail.com>'],
-               'Date': ['Wed, 20 Aug 2008 17:41:30 +0200'],
-               'Flag': ['flag1', 'flag2']}
-
-post1_dict2 = {'Author': 'author',
-               'Subject': 'subject',
-               'Message-Id': '<0@gmail.com>',
-               'Parent': '',
-               'Date': 'Wed, 20 Aug 2008 17:41:30 +0200',
-               'Flag': ['flag1', 'flag2'],
-               'Tag': []}
-
-post_output = '''\
-Author: author
-Subject: subject
-Message-Id: <0@gmail.com>
-Date: Wed, 20 Aug 2008 17:41:30 +0200
-Flag: flag1
-Flag: flag2
-
-'''
-
-post1_output = post_output + '\n'
-post4_output = post_output + 'Hi\n'
 
 
 class Test__logging(unittest.TestCase):
@@ -185,14 +48,17 @@ class Test__logging(unittest.TestCase):
 
     def test__1(self):
 
-        # Used only because otherwise we could not refer to hklib.log_fun
-        import hklib
+        """Tests the following functions:
+
+        - :func:`hklib.set_log`
+        - :func:`hklib.log`
+        """
 
         # We use a custom log function
         old_log_fun = hklib.log_fun
         def log_fun(*args):
             log.append(list(args))
-        set_log(log_fun)
+        hklib.set_log(log_fun)
 
         # Test logging
         log = []
@@ -207,82 +73,316 @@ class Test__logging(unittest.TestCase):
         hklib.set_log(old_log_fun)
 
 
-class Test_Post__1(unittest.TestCase):
+class PostDBHandler(object):
 
-    """Tests the Post class."""
+    """Helps implementing the tester classes by containing functions commonly
+    used by them."""
 
-    def test_assert_is_post_id(self):
+    # Creating an ordered array of dates. (Increment the number after `range`
+    # if you need more posts.)
+    dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200\n' % i \
+              for i in range(10) ]
+
+    def setUpDirs(self):
+        """Sets up the following temporary directories:
+
+        - tempdir/heaps/my_heap
+        - tempdir/heaps/my_other_heap
+        - tempdir/html
+
+        Also, it redirects the logging into a variable.
+        """
+
+        self._dir = tempfile.mkdtemp()
+        self._heaps_dir = os.path.join(self._dir, 'heaps_dir')
+        self._myheap_dir = os.path.join(self._heaps_dir, 'my_heap_dir')
+        self._myotherheap_dir = \
+            os.path.join(self._heaps_dir, 'my_other_heap_dir')
+        self._html_dir = \
+            os.path.join(self._dir, 'html_dir')
+        self._html_myheap_dir = \
+            os.path.join(self._html_dir, 'my_heap_dir')
+        self._html_myotherheap_dir = \
+            os.path.join(self._html_dir, 'my_other_heap_dir')
+        os.mkdir(self._heaps_dir)
+        os.mkdir(self._myheap_dir)
+        os.mkdir(self._myotherheap_dir)
+        os.mkdir(self._html_dir)
+        os.mkdir(self._html_myheap_dir)
+        os.mkdir(self._html_myotherheap_dir)
+
+        # We use a custom log function
+        self._log = []
+        self._old_log_fun = hklib.log_fun
+        def log_fun(*args):
+            self._log.append(''.join(args))
+        hklib.set_log(log_fun)
+
+    def tearDownDirs(self):
+        """Removes the temporary directories and checks that no logs are
+        left."""
+
+        shutil.rmtree(self._dir)
+
+        # Setting the original logging function back
+        self.assertEquals(self._log, [])
+        hklib.set_log(self._old_log_fun)
+
+    def create_postdb(self):
+        """Creates a post database.
+
+        Two heaps will be added: ``'my_heap'`` and ``'my_other_heap'``.
+
+        **Returns:** |PostDB|
+        """
+
+        postdb = hklib.PostDB()
+        postdb.add_heap('my_heap', self._myheap_dir)
+        postdb.add_heap('my_other_heap', self._myotherheap_dir)
+        postdb.set_html_dir(self._html_dir)
+        self._postdb = postdb
+        return postdb
+
+    def add_post(self, index, parent=None, messid=None, heap_id='my_heap'):
+        """Adds a new post to the post database.
+
+        The attributes of the post will be created as follows:
+
+        - The author will be 'author'+index.
+        - The subject will be 'subject'+index.
+        - The message id will be index+'@'.
+        - The parent will be `parent`, if specified.
+        - If self._skipdates is False, the post with a newer index will
+          have a newer date; otherwise the post will not have a date.
+        - The body will be 'body'+index.
+        """
+
+        # Actually would not be necessary to specify the `index` parameter for
+        # this function, but it is done so that here we can check that the
+        # caller knows what will be the post index of the post created.
+        post_index = self._postdb.next_post_index(heap_id)
+        self.assertEquals(str(index), post_index)
+
+        if messid == None:
+            messid = index
+
+        parent = str(parent) + '@' if parent != None else ''
+        s = ('Author: author%s\n' % (index,) +
+             'Subject: subject%s\n' % (index,) +
+             'Message-Id: %s@\n' % (messid,) +
+             'Parent: %s\n' % (parent,))
+        if not self._skipdates:
+            s += PostDBHandler.dates[index] + '\n'
+        s += ('\n' +
+              'body%s' % (index,))
+        post = hklib.Post.from_str(s)
+        self._postdb.add_new_post(post, heap_id, post_index)
+        return post
+
+    def p(self, prepost):
+        """Returns the given post from ``'my_heap'``.
+
+        **Argument:**
+
+        - `prepost` (|PrePost|)
+
+        **Returns:** |Post|
+        """
+
+        return self._postdb.post(('my_heap', prepost))
+
+    def po(self, prepost):
+        """Returns the given post from ``'my_other_heap'``.
+
+        **Argument:**
+
+        - `prepost` (|PrePost|)
+
+        **Returns:** |Post|
+        """
+
+        return self._postdb.post(('my_other_heap', prepost))
+
+    def i(self, index):
+        return ('my_heap', str(index))
+
+    def io(self, index):
+        return ('my_other_heap', str(index))
+
+    def create_threadst(self, skipdates=False):
+        """Adds a posts to the postdb with the following thread structure.
+
+        my_heap::
+
+            0 <- 1 <- 2
+              <- 3
+            4
+
+        my_other_heap::
+
+            0
+        """
+
+        self._skipdates = skipdates
+
+        # We changed the heapid numbering to start from 1 instead of 0. A
+        # large portion of the tests would have had to be rewritten as a
+        # result, so for the moment, we use this workaround.
+        self._postdb._next_post_index[('my_heap', '')] = 0
+        self._postdb._next_post_index[('my_other_heap', '')] = 0
+
+        self.add_post(0)
+        self.add_post(1, 0)
+        self.add_post(2, 1)
+        self.add_post(3, 0)
+        self.add_post(4)
+
+        self.add_post(0, messid='other0', heap_id='my_other_heap')
+
+    def introduce_cycle(self):
+        """Introcudes a cycle in the thread structure."""
+
+        # New thread structure:
+        #
+        # 0 <- 1 <- 2
+        # 4
+        # 3 <- 5 <- 6 <- 7
+        #  \        ^
+        #   -------/
+        self.add_post(5, 3),
+        self.add_post(6, 5),
+        self.add_post(7, 6),
+        self.p(3).set_parent(7)
+
+    def pop_log(self):
+        """Set the log to empty but return the previous logs.
+
+        **Returns:** str
+        """
+
+        log = self._log
+        self._log = []
+        return '\n'.join(log)
+
+
+class Test_Post(unittest.TestCase, PostDBHandler):
+
+    """Tests :class:`hklib.Post`."""
+
+    def setUp(self):
+        self.setUpDirs()
+        self.create_postdb()
+        self.create_threadst()
+
+    def tearDown(self):
+        self.tearDownDirs()
+
+    def test_is_post_id(self):
+        """Tests :func:`hklib.Post.is_post_id`."""
 
         # post index is a string
-        self.assertTrue(hklib.is_post_id(('myheap', 'mypost')))
+        self.assertTrue(hklib.Post.is_post_id(('myheap', 'mypost')))
 
         # post index is an integer
-        self.assertEquals(hklib.is_post_id(('myheap', 0)))
+        self.assertTrue(hklib.Post.is_post_id(('myheap', 0)))
+
+        # post id is a string
+        self.assertTrue(hklib.Post.is_post_id('myheap/mypost'))
 
         # heap id is not a string
-        self.assertFalse(hklib.is_post_id((0, 1)))
+        self.assertFalse(hklib.Post.is_post_id((0, 1)))
 
         # post index is not a string nor an integer
-        self.assertFalse(hklib.is_post_id(('myheap', [])))
+        self.assertFalse(hklib.Post.is_post_id(('myheap', [])))
 
         # too long tuple
-        self.assertFalse(hklib.is_post_id(('myheap', 'mypost', 1)))
+        self.assertFalse(hklib.Post.is_post_id(('myheap', 'mypost', 1)))
 
         # too short tuple
-        self.assertFalse(hklib.is_post_id(('myheap')))
+        self.assertFalse(hklib.Post.is_post_id(('myheap')))
 
         # not a tuple
-        self.assertFalse(hklib.is_post_id(['myheap', 'mypost']))
+        self.assertFalse(hklib.Post.is_post_id(['myheap', 'mypost']))
 
-        # not a tuple; this test case may pass in the future
-        self.assertFalse(hklib.is_post_id('myheap/mypost'))
+        # post id is a string but not a correct one
+        self.assertFalse(hklib.Post.is_post_id('myheap'))
+
+        # post id is a string but not a correct one
+        self.assertFalse(hklib.Post.is_post_id('a/b/c'))
 
     def test_assert_is_post_id(self):
+        """Tests :func:`hklib.Post.assert_is_post_id`."""
 
         # assertion passes
         self.assertEquals(
-            hklib.assert_is_post_id(('myheap', 'mypost')),
+            hklib.Post.assert_is_post_id(('myheap', 'mypost')),
             None)
 
         # assertion fails
         self.assertRaises(
             AssertionError,
-            lambda: hklib.assert_is_post_id((0, 1)))
+            lambda: hklib.Post.assert_is_post_id((0, 1)))
 
-    def test__parsing(self):
+    def test_unify_post_id(self):
+        """Tests :func:`hklib.Post.unify_post_id`."""
 
-        sio = StringIO.StringIO(post1_text)
-        self.assertEquals(Post.parse_header(sio), post1_dict1)
-        sio.close()
+        # None
+        self.assertEquals(
+            hklib.Post.unify_post_id(None),
+            None)
 
-        sio = StringIO.StringIO(post2_text)
-        self.assertEquals(Post.parse_header(sio), post1_dict1)
+        # post index is a string
+        self.assertEquals(
+            hklib.Post.unify_post_id(('myheap', 'mypost')),
+            ('myheap', 'mypost'))
+
+        # post index is an integer
+        self.assertEquals(
+            hklib.Post.unify_post_id(('myheap', 0)),
+            ('myheap', '0'))
+
+        # post id is a string
+        self.assertTrue(
+            hklib.Post.unify_post_id('myheap/mypost'),
+            ('myheap', 'mypost'))
+
+    def test_parse_header(self):
+        """Tests :func:`hklib.Post.parse_header`."""
+
+        sio = StringIO.StringIO(
+                  'Author: author\n'
+                  'Subject: subject\n'
+                  'Flag: flag1\n'
+                  'Message-Id: <0@gmail.com>\n'
+                  'Flag: flag2\n'
+                  'Date: Wed, 20 Aug 2008 17:41:30 +0200\n')
+
+        self.assertEquals(
+            hklib.Post.parse_header(sio),
+            {'Author': ['author'],
+             'Subject': ['subject'],
+             'Message-Id': ['<0@gmail.com>'],
+             'Date': ['Wed, 20 Aug 2008 17:41:30 +0200'],
+             'Flag': ['flag1', 'flag2']})
         sio.close()
 
         self.assertRaises(
             hkutils.HkException,
-            lambda: Post.from_str('Malformatted post.'))
+            lambda: hklib.Post.from_str('Malformatted post.'))
 
     def test_create_header(self):
+        """Tests the following functions:
 
-        """Tests Post.create_header."""
-
-        # Used only because otherwise we could not refer to hklib.log_fun
-        import hklib
-
-        # We use a custom log function
-        old_log_fun = hklib.log_fun
-        def log_fun(*args):
-            log.append(''.join(args))
-        set_log(log_fun)
+        - :func:`hklib.Post.parse`
+        - :func:`hklib.Post.from_str`
+        """
 
         # Testing a normal post.
         #
         # The 'Nosuchattr' attribute is not known to `create_header`, so we
         # should get a warning.
-        log = []
         self.assertEquals(
-            Post.create_header(
+            hklib.Post.create_header(
                 {'Author': ['someone'],
                  'Nosuchattr': ['1', '2']}),
             {'Author': 'someone',
@@ -295,83 +395,271 @@ class Test_Post__1(unittest.TestCase):
              'Reference': [],
              'Nosuchattr': ['1', '2']})
         self.assertEquals(
-            log,
-            ['''WARNING: Additional keys: "{'Nosuchattr': ['1', '2']}".'''])
+            self.pop_log(),
+            'WARNING: Additional attribute in post: "Nosuchattr"')
 
         # Testing a malformatted post.
         self.assertRaises(
             hkutils.HkException,
-            lambda: Post.from_str('Malformatted post.'))
+            lambda: hklib.Post.from_str('Malformatted post.'))
 
-        # Setting the original logging function back
-        hklib.set_log(old_log_fun)
+    def test_parse(self):
+        """Tests the following functions:
 
-    def test__empty(self):
-        p = Post.from_str('')
-        self.assertEquals(p.heapid(), None)
-        self.assertEquals(p.author(), '')
-        self.assertEquals(p.subject(), '')
-        self.assertEquals(p.messid(), '')
+        - :func:`hklib.Post.create_header`
+        - :func:`hklib.Post.__eq__`
+        """
+
+        s = ('Author: author\n'
+             'Subject: subject\n'
+             'Flag: flag1\n'
+             'Message-Id: <0@gmail.com>\n'
+             'Flag: flag2\n'
+             'Date: Wed, 20 Aug 2008 17:41:30 +0200\n')
+
+        d = {'Author': 'author',
+             'Subject': 'subject',
+             'Message-Id': '<0@gmail.com>',
+             'Parent': '',
+             'Date': 'Wed, 20 Aug 2008 17:41:30 +0200',
+             'Flag': ['flag1', 'flag2'],
+             'Tag': [],
+             'Reference': []}
+
+        p1 = hklib.Post.from_str(s)
+        p2 = hklib.Post.from_str(s + '\n')
+        p3 = hklib.Post.from_str(s + '\n\n')
+        p4 = hklib.Post.from_str(s + '\n\nHi')
+        p5 = hklib.Post.from_str(s + '\n\nHi\n')
+        p6 = hklib.Post.from_str(s + '\n\nHi\n\n\n')
+        p7 = hklib.Post.from_str(s + '\n\nHi\n\nHi')
+
+        # Checking the post header
+        self.assertEquals(p1._header, d)
+
+        # checking the bodies of the posts
+        self.assertEquals(p1.body(), '\n')
+        self.assertEquals(p2.body(), '\n')
+        self.assertEquals(p3.body(), '\n')
+        self.assertEquals(p4.body(), 'Hi\n')
+        self.assertEquals(p5.body(), 'Hi\n')
+        self.assertEquals(p6.body(), 'Hi\n')
+        self.assertEquals(p7.body(), 'Hi\n\nHi\n')
+
+        # p1 == p2 == p3 != p4 == p5 == p6
+        self.assertEquals(p1, p2)
+        self.assertEquals(p1, p3)
+        self.assertNotEquals(p1, p4)
+        self.assertEquals(p4, p5)
+        self.assertEquals(p4, p6)
+
+        p8 = hklib.Post.from_str(s, ('my_heap', 0))
+        p9 = hklib.Post.from_str(s, ('my_heap', 0))
+        p10 = hklib.Post.from_str(s, ('my_heap', 1))
+        p11 = hklib.Post.from_str(s, ('my_other_heap', 0))
+
+        # p8 == p9 != p10 != p11
+        self.assertEquals(p8, p9)
+        for post1, post2 in itertools.combinations([p8, p10, p11], 2):
+            self.assertNotEquals(post1, post2)
+            self.assertNotEquals(post2, post1)
+
+    def test__init(self):
+        """Tests the following functions:
+
+        - :func:`hklib.Post.__init__`
+        - :func:`hklib.Post.from_str`
+        - :func:`hklib.Post.create_empty`
+        - :func:`hklib.Post.post_id`
+        - :func:`hklib.Post.heap_id`
+        - :func:`hklib.Post.post_index`
+        - :func:`hklib.Post.post_id_str`
+        """
+
+        # Empty post
+        post = hklib.Post.from_str('')
+        self.assertEquals(post.post_id(), None)
+        self.assertRaises(hkutils.HkException, lambda: post.heap_id())
+        self.assertRaises(hkutils.HkException, lambda: post.post_index())
+        self.assertEquals(post.author(), '')
+        self.assertEquals(post.subject(), '')
+        self.assertEquals(post.messid(), '')
+        self.assertEquals(post.parent(), '')
+        self.assertEquals(post.date(), '')
+        self.assertEquals(post.is_deleted(), False)
+        self.assertEquals(post.is_modified(), True)
+        self.assertEquals(post.body(), '\n')
+
+        p2 = hklib.Post.create_empty()
+        self.assertEquals(post, p2)
+
+        # Normal post without parent
+        p0 = self.p(0)
+        self.assertEquals(p0.post_id(), ('my_heap', '0'))
+        self.assertEquals(p0.heap_id(), 'my_heap')
+        self.assertEquals(p0.post_index(), '0')
+        self.assertEquals(p0.post_id_str(), 'my_heap/0')
+        self.assertEquals(p0.author(), 'author0')
+        self.assertEquals(p0.subject(), 'subject0')
+        self.assertEquals(p0.messid(), '0@')
+        self.assertEquals(p0.parent(), '')
+        self.assertEquals(p0.date(), 'Wed, 20 Aug 2008 17:41:00 +0200')
+        self.assertEquals(p0.is_deleted(), False)
+        self.assertEquals(p0.is_modified(), True)
+        self.assertEquals(p0.body(), 'body0\n')
+
+        # Normal post with parent
+        p1 = self.p(1)
+        self.assertEquals(p1.parent(), '0@')
+
+    def test_from_file(self):
+        """Tests :func:`hklib.Post.from_file`."""
+
+        fname = os.path.join(self._dir, 'postfile')
+        hkutils.string_to_file(self.p(0).postfile_str(), fname)
+        p = hklib.Post.from_file(fname)
+
+        self.assertEquals(p.post_id(), None)
+        self.assertEquals(p.author(), 'author0')
+        self.assertEquals(p.subject(), 'subject0')
+        self.assertEquals(p.messid(), '0@')
         self.assertEquals(p.parent(), '')
-        self.assertEquals(p.date(), '')
+        self.assertEquals(p.date(), 'Wed, 20 Aug 2008 17:41:00 +0200')
         self.assertEquals(p.is_deleted(), False)
         self.assertEquals(p.is_modified(), True)
-        self.assertEquals(p.body(), '\n')
-        p2 = Post.create_empty()
-        self.assertEquals(p, p2)
+        self.assertEquals(p.body(), 'body0\n')
 
-    def test_init(self):
-        p = Post.from_str(post4_text)
+    def test__modifications(self):
+        """Tests the basic functionality of the following functions, by putting
+        emphasis on the modification of the post:
 
-        # testing initialisation
-        self.assertEquals(p.heapid(), None)
-        self.assertEquals(p.author(), 'author')
-        self.assertEquals(p.subject(), 'subject')
-        self.assertEquals(p.messid(), '<0@gmail.com>')
-        self.assertEquals(p.parent(), '')
-        self.assertEquals(p.date(), 'Wed, 20 Aug 2008 17:41:30 +0200')
-        self.assertEquals(p.is_deleted(), False)
-        self.assertEquals(p.is_modified(), True)
-        self.assertEquals(p.body(), 'Hi\n')
+        - :func:`hklib.Post.touch`
+        - :func:`hklib.Post.is_modified`
+        - :func:`hklib.Post.author`
+        - :func:`hklib.Post.set_author`
+        - :func:`hklib.Post.real_subject`
+        - :func:`hklib.Post.subject`
+        - :func:`hklib.Post.set_subject`
+        - :func:`hklib.Post.messid`
+        - :func:`hklib.Post.set_messid`
+        - :func:`hklib.Post.parent`
+        - :func:`hklib.Post.set_parent`
+        - :func:`hklib.Post.date`
+        - :func:`hklib.Post.set_date`
+        - :func:`hklib.Post.tags`
+        - :func:`hklib.Post.set_tags`
+        - :func:`hklib.Post.body`
+        - :func:`hklib.Post.set_body`
+        """
 
-        # testing modification
-        p.set_author('author2')
-        self.assertEquals(p.author(), 'author2')
+        ## Testing the touch-system
 
-        p.set_subject('subject2')
-        self.assertEquals(p.subject(), 'subject2')
+        # Setting is_modified to False by saving the post database
+        self._postdb.save()
+        p0 = self.p(0)
+        self.assertEquals(p0.is_modified(), False)
 
-        p.set_messid('@')
-        self.assertEquals(p.messid(), '@')
+        # If we touch it, it becomes True
+        p0.touch()
+        self.assertEquals(p0.is_modified(), True)
 
-        p.set_parent('@@')
-        self.assertEquals(p.parent(), '@@')
+        # If we save it, it becomes False again
+        p0.save()
+        self.assertEquals(p0.is_modified(), False)
 
-        p.set_date('Wed, 20 Aug 2008 17:41:31 +0200')
-        self.assertEquals(p.date(), \
-                          'Wed, 20 Aug 2008 17:41:31 +0200')
+        ## Testing concrete modifications
 
-        p.set_body('newbody')
-        self.assertEquals(p.body(), 'newbody\n')
-        p.set_body('\n newbody \n \n')
-        self.assertEquals(p.body(), 'newbody\n')
+        def check_modified():
+            self.assertTrue(p0.is_modified())
+            p0._modified = False
 
-        p.delete()
-        self.assertEquals(p.is_deleted(), True)
+        p0.set_author('author2')
+        self.assertEquals(p0.author(), 'author2')
+        check_modified()
+
+        p0.set_subject('subject2')
+        self.assertEquals(p0.subject(), 'subject2')
+        self.assertEquals(p0.real_subject(), 'subject2')
+        check_modified()
+
+        p0.set_messid('@')
+        self.assertEquals(p0.messid(), '@')
+        check_modified()
+
+        p0.set_parent('@@')
+        self.assertEquals(p0.parent(), '@@')
+        check_modified()
+
+        p0.set_date('Wed, 20 Aug 2008 17:41:31 +0200')
+        self.assertEquals(p0.date(), 'Wed, 20 Aug 2008 17:41:31 +0200')
+        check_modified()
+
+        p0.set_tags(['mytag1', 'mytag2'])
+        self.assertEquals(p0.tags(), ['mytag1', 'mytag2'])
+        check_modified()
+
+        p0.set_flags(['myflag1', 'myflag2'])
+        self.assertEquals(p0.flags(), ['myflag1', 'myflag2'])
+        check_modified()
+
+        p0.set_refs(['1', '2'])
+        self.assertEquals(p0.refs(), ['1', '2'])
+        check_modified()
+
+        p0.set_body('newbody')
+        self.assertEquals(p0.body(), 'newbody\n')
+        check_modified()
+
+        p0.set_body('\n newbody \n \n')
+        self.assertEquals(p0.body(), 'newbody\n')
+        check_modified()
+
+        p0.delete()
+        self.assertEquals(p0.is_deleted(), True)
+        self.assertEquals(p0.post_id(), ('my_heap', '0'))
+        self.assertEquals(p0.author(), '')
+        self.assertEquals(p0.subject(), '')
+        self.assertEquals(p0.messid(), '@')
+        self.assertEquals(p0.parent(), '')
+        self.assertEquals(p0.date(), '')
+        self.assertEquals(p0.is_modified(), True)
+        self.assertEquals(p0.body(), '')
 
     def test_write(self):
+        """Tests :func:`hklib.Post.write`.
+
+        The `force_print` argument is tested in :func:`test_postfile_str`."""
 
         def check_write(input, output):
             """Checks that if a post is read from `input`, it will produce
             `output` when written."""
-            p = Post.from_str(input)
-            sio2 = StringIO.StringIO()
-            p.write(sio2)
-            self.assertEquals(sio2.getvalue(), output)
-            sio2.close()
+            p = hklib.Post.from_str(input)
+            sio = StringIO.StringIO()
+            p.write(sio)
+            self.assertEquals(sio.getvalue(), output)
+            sio.close()
 
-        check_write(post1_text, post1_output)
-        check_write(post4_text, post4_output)
+        # Testing empty post
+        check_write('', '\n\n')
+
+        # Testing that the attributes are reordered
+        check_write(
+            ('Subject: subject\n'
+             'Flag: flag1\n'
+             'Message-Id: <0@gmail.com>\n'
+             'Flag: flag2\n'
+             'Date: Wed, 20 Aug 2008 17:41:30 +0200\n'
+             'Author: author\n'
+             '\n'
+             'Body'),
+            ('Author: author\n'
+             'Subject: subject\n'
+             'Message-Id: <0@gmail.com>\n'
+             'Date: Wed, 20 Aug 2008 17:41:30 +0200\n'
+             'Flag: flag1\n'
+             'Flag: flag2\n'
+             '\n'
+             'Body\n'))
 
         # Testing when the post has attributes unknown to Hk
         check_write(
@@ -384,91 +672,84 @@ class Test_Post__1(unittest.TestCase):
              'Nosuchattr2: something 2\n'
              'Nosuchattr2: something 3\n\n\n'))
 
+        self.assertEquals(
+            self.pop_log(),
+            ('WARNING: Additional attribute in post: "Nosuchattr"\n'
+             'WARNING: Additional attribute in post: "Nosuchattr2"'))
+
     def test_postfile_str(self):
-        """Tests Post.postfile_str."""
+        """Tests :func:`hklib.Post.postfile_str`."""
 
         # Basic test
         self.assertEquals(
-            Post.from_str(post1_text).postfile_str(),
-            post1_output)
+            hklib.Post.from_str('Author: me').postfile_str(),
+            'Author: me\n\n\n')
 
         # Testing empty post
         post_str = ''
         self.assertEquals(
-            Post.from_str(post_str).postfile_str(),
+            hklib.Post.from_str('').postfile_str(),
             '\n\n')
 
         # Testing when force_set is not empty
         post_str = ''
         self.assertEquals(
-            Post.from_str(post_str).postfile_str(force_print=set(['Author'])),
+            hklib.Post.from_str(post_str).\
+                postfile_str(force_print=set(['Author'])),
             'Author: \n\n\n')
 
     def test_meta_dict(self):
-        """Tests :func:`Post.meta_dict`."""
+        """Tests :func:`hklib.Post.meta_dict`."""
 
         # empty post
         self.assertEquals(
-            Post.from_str('\n\n').meta_dict(),
+            hklib.Post.from_str('\n\n').meta_dict(),
             {})
 
         # meta with value
         self.assertEquals(
-            Post.from_str('\n\n[key value]').meta_dict(),
+            hklib.Post.from_str('\n\n[key value]').meta_dict(),
             {'key': 'value'})
 
         # meta with value with whitespace
         self.assertEquals(
-            Post.from_str('\n\n[key this is a long value]').meta_dict(),
+            hklib.Post.from_str('\n\n[key this is a long value]').meta_dict(),
             {'key': 'this is a long value'})
 
         # meta without value
         self.assertEquals(
-            Post.from_str('\n\n[key]').meta_dict(),
+            hklib.Post.from_str('\n\n[key]').meta_dict(),
             {'key': None})
 
         # no meta because it is no alone in the line
         self.assertEquals(
-            Post.from_str('\n\nx[key value]').meta_dict(),
+            hklib.Post.from_str('\n\nx[key value]').meta_dict(),
             {})
         self.assertEquals(
-            Post.from_str('\n\n[key value]x').meta_dict(),
+            hklib.Post.from_str('\n\n[key value]x').meta_dict(),
             {})
 
         # whitespace
         self.assertEquals(
-            Post.from_str('\n\n [ key  value ] ').meta_dict(),
+            hklib.Post.from_str('\n\n [ key  value ] ').meta_dict(),
             {'key': 'value'})
 
         # two metas
         self.assertEquals(
-            Post.from_str('\n\n[key]\n[key2 value2]').meta_dict(),
+            hklib.Post.from_str('\n\n[key]\n[key2 value2]').meta_dict(),
             {'key': None, 'key2': 'value2'})
 
         # same meta key twice
         self.assertEquals(
-            Post.from_str('\n\n[key value]\n[key value2]').meta_dict(),
+            hklib.Post.from_str('\n\n[key value]\n[key value2]').meta_dict(),
             {'key': 'value2'})
 
-    def test__body_stripping(self):
-        p1 = Post.from_str(post1_text)
-        p2 = Post.from_str(post2_text)
-        p3 = Post.from_str(post3_text)
-        p4 = Post.from_str(post4_text)
-        p5 = Post.from_str(post5_text)
-        p6 = Post.from_str(post6_text)
-
-        # p1 == p2 == p3 != p4 == p5 == p6
-        self.assertEquals(p1, p2)
-        self.assertEquals(p1, p3)
-        self.assertNotEquals(p1, p4)
-        self.assertEquals(p4, p5)
-        self.assertEquals(p4, p6)
-
     def test__subject(self):
+        """Tests issues related to the subject."""
+
         def post_ws(subject):
             """Creates a post with the given subject."""
-            return Post.from_str('Subject: ' + subject)
+            return hklib.Post.from_str('Subject: ' + subject)
 
         # testing whitespace handling
         self.assertEquals(post_ws('subject').real_subject(), 'subject')
@@ -487,8 +768,9 @@ class Test_Post__1(unittest.TestCase):
             self.assertEquals(p.subject(), 'subject')
 
     def test__tags_flags(self):
+        """Tests issues related to tags and flags."""
 
-        p = Post.from_str('Flag: f1\nFlag: f2\nTag: t1\nTag: t2')
+        p = hklib.Post.from_str('Flag: f1\nFlag: f2\nTag: t1\nTag: t2')
         self.assertEquals(p.flags(), ['f1', 'f2'])
         self.assertEquals(p.tags(), ['t1', 't2'])
         self.assertEquals(p.has_tag('t1'), True)
@@ -516,14 +798,21 @@ class Test_Post__1(unittest.TestCase):
         self.assertEquals(p.has_tag('t2'), False)
 
         # Sorting
-        p = Post.from_str('Flag: f2\nFlag: f1\nTag: t2\nTag: t1')
+        p = hklib.Post.from_str('Flag: f2\nFlag: f1\nTag: t2\nTag: t1')
         self.assertEquals(p.flags(), ['f1', 'f2']) # flags are sorted
         self.assertEquals(p.tags(), ['t1', 't2'])  # tags are sorted
 
     def test__parse_tags_in_subject(self):
+        """Tests the following functions:
+
+        - :func:`hklib.Post.parse_subject`
+        - :func:`hklib.Post.normalize_subject`
+        """
 
         def test(subject1, subject2, tags):
-            self.assertEquals((subject2, tags), Post.parse_subject(subject1))
+            self.assertEquals(
+                (subject2, tags),
+                hklib.Post.parse_subject(subject1))
 
         test('', '', [])
         test('Subject',              'Subject', [])
@@ -537,208 +826,643 @@ class Test_Post__1(unittest.TestCase):
         test('[a][b]Sub[c]ject',     'Sub[c]ject', ['a', 'b'])
         test(' [a] [b] Sub [c] ject','Sub [c] ject', ['a', 'b'])
 
-        p = Post.from_str('Subject: [t1][t2] subject\nTag: t3')
+        p = hklib.Post.from_str('Subject: [t1][t2] subject\nTag: t3')
         p.normalize_subject()
         self.assertEquals(p.subject(), 'subject')
         self.assertEquals(p.tags(), ['t3', 't1', 't2'])
 
     def test__sort(self):
-        d1 = Post.from_str('Date: Thu, 16 Oct 2008 18:56:36 +0200', '3')
-        d2 = Post.from_str('Date: Fri, 17 Oct 2008 18:56:36 +0200', '2')
-        d3 = Post.from_str('Date: Sat, 18 Oct 2008 18:56:36 +0200', '1')
-        n1 = Post.from_str('', '6')
-        n2 = Post.from_str('', '5')
-        n3 = Post.from_str('', '4')
-        d4 = Post.from_str('Date: Sun, 19 Oct 2008 18:56:36 +0200', '7')
-        d5 = Post.from_str('Date: Sun, 19 Oct 2008 18:56:36 +0200', '8')
+        """Tests the following functions:
+
+        - :func:`hklib.Post.__eq__`
+        - :func:`hklib.Post.__ne__`
+        - :func:`hklib.Post.__lt__`
+        - :func:`hklib.Post.__gt__`
+        - :func:`hklib.Post.__le__`
+        - :func:`hklib.Post.__ge__`
+        """
+
+        from_str = hklib.Post.from_str
+        d1 = from_str('Date: Thu, 16 Oct 2008 18:56:36 +0200', 'my_heap/3')
+        d2 = from_str('Date: Fri, 17 Oct 2008 18:56:36 +0200', 'my_heap/2')
+        d3 = from_str('Date: Sat, 18 Oct 2008 18:56:36 +0200', 'my_heap/1')
+        n1 = from_str('', 'my_heap/6')
+        n2 = from_str('', 'my_heap/5')
+        n3 = from_str('', 'my_heap/4')
+        d4 = from_str('Date: Sun, 19 Oct 2008 18:56:36 +0200', 'my_heap/7')
+        d5 = from_str('Date: Sun, 19 Oct 2008 18:56:36 +0200', 'my_heap/8')
 
         order = [d1, d2, d3, n3, n2, n1, d4, d5]
         for p1, p2 in itertools.combinations(order, 2):
             self.assertTrue(p1 < p2)
             self.assertFalse(p2 < p1)
+            self.assertFalse(p1 > p2)
+            self.assertTrue(p2 > p1)
+            self.assertTrue(p1 <= p2)
+            self.assertFalse(p2 <= p1)
+            self.assertFalse(p1 >= p2)
+            self.assertTrue(p2 >= p1)
+            self.assertTrue(p2 != p1)
+            self.assertTrue(p1 != p2)
+            self.assertFalse(p2 == p1)
+            self.assertFalse(p1 == p2)
+
+    def test__filenames(self):
+        """Tests the following functions:
+
+        - :func:`hklib.Post.postfilename`
+        - :func:`hklib.Post.htmlfilebasename`
+        - :func:`hklib.Post.htmlfilename`
+        - :func:`hklib.Post.htmlthreadbasename`
+        - :func:`hklib.Post.htmlthreadfilename`
+        """
+
+        self.assertEquals(
+            self.p(0).postfilename(),
+            os.path.join(self._myheap_dir, '0.post'))
+
+        self.assertEquals(
+            self.p(0).htmlfilebasename(),
+            os.path.join('my_heap', '0.html'))
+
+        self.assertEquals(
+            self.p(0).htmlfilename(),
+            os.path.join(self._html_dir, 'my_heap', '0.html'))
+
+        self.assertEquals(
+            self.p(0).htmlthreadbasename(),
+            os.path.join('my_heap', 'thread_0.html'))
+
+        # htmlthreadbasename shall be called only for root posts
+        self.assertRaises(
+            AssertionError,
+            lambda: self.p(1).htmlthreadbasename())
+
+        self.assertEquals(
+            self.p(0).htmlthreadfilename(),
+            os.path.join(self._html_dir, 'my_heap', 'thread_0.html'))
+
+        # htmlthreadfilename shall be called only for root posts
+        self.assertRaises(
+            AssertionError,
+            lambda: self.p(1).htmlthreadfilename())
+
+    def test_repr(self):
+        """Tests :func:`hklib.Post.__repr__`."""
+
+        self.assertEquals(
+            str(self.p(0)),
+            '<post my_heap/0>')
+
+        self.assertEquals(
+            str(hklib.Post.from_str('')),
+            '<post object without post id>')
 
 
-class Test_Post__2(unittest.TestCase):
+class Test_PostDB(unittest.TestCase, PostDBHandler):
 
-    """Tests the Post class.
-
-    The test functions in this class perform file operations."""
-
-    def setUp(self):
-        self._dir = tempfile.mkdtemp()
-
-    def tearDown(self):
-        shutil.rmtree(self._dir)
-
-    def test_from_file(self):
-        fname = os.path.join(self._dir, 'postfile')
-        hkutils.string_to_file(post1_text, fname)
-        p = Post.from_file(fname)
-
-        self.assertEquals(p.heapid(), None)
-        self.assertEquals(p.author(), 'author')
-        self.assertEquals(p.subject(), 'subject')
-        self.assertEquals(p.messid(), '<0@gmail.com>')
-        self.assertEquals(p.parent(), '')
-        self.assertEquals(p.date(), 'Wed, 20 Aug 2008 17:41:30 +0200')
-        self.assertEquals(p.is_deleted(), False)
-        self.assertEquals(p.is_modified(), True)
-        self.assertEquals(p.body(), '\n')
-
-
-class Test_Post__3(unittest.TestCase, PostDBHandler):
-
-    """Tests the Post class."""
+    """Tests :class:`hklib.PostDB` (and its cooperation with
+    :class:`hklib.Post`)."""
 
     def setUp(self):
         self.setUpDirs()
-
-        # 1 <- 2
-        #      3
-        postfile1 = self.postFileName('1.post')
-        postfile2 = self.postFileName('2.post')
-        postfile3 = self.postFileName('3.post')
-        hkutils.string_to_file('Message-Id: 1@', postfile1)
-        hkutils.string_to_file('Message-Id: 2@\nParent: 1@', postfile2)
-        hkutils.string_to_file('Message-Id: 3@\nParent: 1@', postfile3)
-        self._postdb = self.createPostDB()
+        self.create_postdb()
+        self.create_threadst()
 
     def tearDown(self):
         self.tearDownDirs()
 
-    def test__filenames(self):
-        p1 = self._postdb.post('1')
-        p2 = self._postdb.post('2')
+    def test__init(self):
+        """Tests the following functions:
 
-        self.assertEquals(
-            p1.postfilename(),
-            os.path.join(self._postfile_dir, '1.post'))
+        - :func:`hklib.PostDB.__init__`
+        - :func:`hklib.PostDB.html_dir`
+        """
 
-        self.assertEquals(
-            p1.htmlfilebasename(),
-            '1.html')
+        postdb = self._postdb
 
-        self.assertEquals(
-            p1.htmlfilename(),
-            os.path.join(self._html_dir, '1.html'))
-
-        self.assertEquals(
-            p1.htmlthreadbasename(),
-            'thread_1.html')
-
-        self.assertEquals(
-            p1.htmlthreadfilename(),
-            os.path.join(self._html_dir, 'thread_1.html'))
-
-        self.assertRaises(
-            AssertionError,
-            lambda: p2.htmlthreadbasename())
-
-        self.assertRaises(
-            AssertionError,
-            lambda: p2.htmlthreadfilename())
-
-
-class Test_PostDB__1(unittest.TestCase, PostDBHandler):
-
-    """Tests the PostDB class (and its cooperation with the Post class)."""
-
-    def setUp(self):
-        self._dir = tempfile.mkdtemp()
-        self._postfile_dir = os.path.join(self._dir, 'mail')
-        self._html_dir = os.path.join(self._dir, 'html')
-
-    def tearDown(self):
-        shutil.rmtree(self._dir)
-
-    def createDirs(self):
-        os.mkdir(self._postfile_dir)
-        os.mkdir(self._html_dir)
-
-    def postFileName(self, fname):
-        return os.path.join(self._postfile_dir, fname)
-
-    def testEmpty(self):
-        """Tests the empty PostDB."""
-        self.createDirs()
-        postdb = self.createPostDB()
-        self.assert_(os.path.exists(self._postfile_dir))
-        self.assertEquals(postdb.postfile_dir(), self._postfile_dir)
         self.assertEquals(postdb.html_dir(), self._html_dir)
-        self.assertEquals(postdb.heapids(), [])
 
-    def testOnlyPost(self):
-        """Tests that only the files with ".post" postfix are read."""
-        self.createDirs()
-        hkutils.string_to_file('Subject: s1', self.postFileName('1.post'))
-        hkutils.string_to_file('Subject: sx', self.postFileName('xy.post'))
-        hkutils.string_to_file('Subject: s2', self.postFileName('2.other'))
-        hkutils.string_to_file('Subject: s3', self.postFileName('3post'))
-        postdb = self.createPostDB()
-        self.assertEquals(set(postdb.heapids()), set(['1', 'xy']))
-        self.assertEquals(postdb.next_heapid(), '2')
+        # Checking the data attributes
 
-    def testConfig(self):
-        """Tests the PostDB.__init__ which has a ConfigParser argument."""
-        self.createDirs()
-        hkutils.string_to_file('Subject: s1', self.postFileName('1.post'))
-        configFileText = '''\
-[paths]
-mail=%s
-html=%s
-''' % (self._postfile_dir, self._html_dir)
-        configFileName = os.path.join(self._dir, 'hk.cfg')
-        hkutils.string_to_file(configFileText, configFileName)
+        self.assertEquals(
+            postdb._heaps,
+            {'my_heap': self._myheap_dir,
+             'my_other_heap': self._myotherheap_dir})
+
+        self.assertEquals(
+            postdb._html_dir,
+            self._html_dir)
+
+        self.assertEquals(
+            postdb._next_post_index,
+            {('my_heap', ''): 5,
+             ('my_other_heap', ''): 1})
+
+        self.assertEquals(
+            postdb.post_id_to_post,
+            {self.i(0): self.p(0),
+             self.i(1): self.p(1),
+             self.i(2): self.p(2),
+             self.i(3): self.p(3),
+             self.i(4): self.p(4),
+             self.io(0): self.po(0)})
+
+        self.assertEquals(
+            postdb.messid_to_post_id,
+            {'0@': self.i(0),
+             '1@': self.i(1),
+             '2@': self.i(2),
+             '3@': self.i(3),
+             '4@': self.i(4),
+             'other0@': self.io(0)})
+
+        self.assertEquals(
+            postdb.listeners,
+            [])
+
+    def test_add_post_to_dicts(self):
+        """Tests :func:`hklib.PostDB.add_post_to_dicts`."""
+
+        postdb = self._postdb
+
+        # Adding a post without messid
+
+        p = hklib.Post.from_str('', ('my_heap', '10'))
+        expected_postid_to_post = postdb.post_id_to_post.copy()
+        expected_postid_to_post.update({('my_heap', '10'): p})
+        expected_messid_to_postid = postdb.messid_to_post_id.copy()
+
+        postdb.add_post_to_dicts(p)
+        self.assertEquals(
+            postdb.post_id_to_post,
+            expected_postid_to_post)
+        self.assertEquals(
+            postdb.messid_to_post_id,
+            expected_messid_to_postid)
+
+        # Adding a post with a messid
+
+        p = hklib.Post.from_str('Message-Id: 11@', ('my_heap', '11'))
+        expected_postid_to_post = postdb.post_id_to_post.copy()
+        expected_postid_to_post.update({('my_heap', '11'): p})
+        expected_messid_to_postid = postdb.messid_to_post_id.copy()
+        expected_messid_to_postid.update({'11@': ('my_heap', '11')})
+
+        postdb.add_post_to_dicts(p)
+        self.assertEquals(
+            postdb.post_id_to_post,
+            expected_postid_to_post)
+        self.assertEquals(
+            postdb.messid_to_post_id,
+            expected_messid_to_postid)
+
+        # Adding a post with an already used messid
+
+        p = hklib.Post.from_str('Message-Id: 0@', ('my_heap', '12'))
+        expected_postid_to_post = postdb.post_id_to_post.copy()
+        expected_postid_to_post.update({('my_heap', '12'): p})
+        expected_messid_to_postid = postdb.messid_to_post_id.copy()
+
+        postdb.add_post_to_dicts(p)
+        self.assertEquals(
+            postdb.post_id_to_post,
+            expected_postid_to_post)
+        self.assertEquals(
+            postdb.messid_to_post_id,
+            expected_messid_to_postid)
+
+        self.assertEquals(
+            self.pop_log(),
+            ("Warning: post ('my_heap', '12') has message id 0@, but that "
+             "message id is already used by post ('my_heap', '0')."))
+
+    def test_remove_post_from_dicts(self):
+        """Tests :func:`hklib.PostDB.remove_post_from_dicts`."""
+
+        postdb = self._postdb
+
+        # Removing a post
+
+        p0 = self.p(0)
+        expected_postid_to_post = postdb.post_id_to_post.copy()
+        del expected_postid_to_post[('my_heap', '0')]
+        expected_messid_to_postid = postdb.messid_to_post_id.copy()
+        del expected_messid_to_postid['0@']
+
+        postdb.remove_post_from_dicts(p0)
+        self.assertEquals(
+            postdb.post_id_to_post,
+            expected_postid_to_post)
+        self.assertEquals(
+            postdb.messid_to_post_id,
+            expected_messid_to_postid)
+
+        #
+        # Removing a post when there are conflicting messids:
+        # first remove the post that possesses the messid
+        #
+
+        # Creating the conflicting post
+
+        p1_other = hklib.Post.from_str('Message-Id: 1@', ('my_heap', 'other1'))
+        postdb.add_post_to_dicts(p1_other)
+        self.assertEquals(
+            self.pop_log(),
+            ("Warning: post ('my_heap', 'other1') has message id 1@, but that "
+             "message id is already used by post ('my_heap', '1')."))
+        p1 = self.p(1)
+
+        # Removing the original owner: nobody will have the message id
+        # (this could change in the future)
+
+        expected_postid_to_post = postdb.post_id_to_post.copy()
+        del expected_postid_to_post[('my_heap', '1')]
+        expected_messid_to_postid = postdb.messid_to_post_id.copy()
+        del expected_messid_to_postid['1@']
+
+        postdb.remove_post_from_dicts(p1)
+        self.assertEquals(
+            postdb.post_id_to_post,
+            expected_postid_to_post)
+        self.assertEquals(
+            postdb.messid_to_post_id,
+            expected_messid_to_postid)
+
+        # Removing the other post: the messid_to_post_id dictionary will not
+        # change
+
+        expected_postid_to_post = postdb.post_id_to_post.copy()
+        del expected_postid_to_post[('my_heap', 'other1')]
+        expected_messid_to_postid = postdb.messid_to_post_id.copy()
+
+        postdb.remove_post_from_dicts(p1_other)
+        self.assertEquals(
+            postdb.post_id_to_post,
+            expected_postid_to_post)
+        self.assertEquals(
+            postdb.messid_to_post_id,
+            expected_messid_to_postid)
+
+        #
+        # Removing a post when there are conflicting messids:
+        # first remove the post that do not possess the messid
+        #
+
+        # Creating the conflicting post
+
+        p2_other = hklib.Post.from_str('Message-Id: 2@', ('my_heap', 'other2'))
+        postdb.add_post_to_dicts(p2_other)
+        self.assertEquals(
+            self.pop_log(),
+            ("Warning: post ('my_heap', 'other2') has message id 2@, but that "
+             "message id is already used by post ('my_heap', '2')."))
+        p2 = self.p(2)
+
+        # Removing the post that is not the owner: the messid_to_post_id
+        # dictionary will not change
+
+        expected_postid_to_post = postdb.post_id_to_post.copy()
+        del expected_postid_to_post[('my_heap', 'other2')]
+        expected_messid_to_postid = postdb.messid_to_post_id.copy()
+
+        postdb.remove_post_from_dicts(p2_other)
+        self.assertEquals(
+            postdb.post_id_to_post,
+            expected_postid_to_post)
+        self.assertEquals(
+            postdb.messid_to_post_id,
+            expected_messid_to_postid)
+
+        # Removing the other post: the messid will be removed from
+        # the messid_to_post_id dictionary
+
+        expected_postid_to_post = postdb.post_id_to_post.copy()
+        del expected_postid_to_post[('my_heap', '2')]
+        expected_messid_to_postid = postdb.messid_to_post_id.copy()
+        del expected_messid_to_postid['2@']
+
+        postdb.remove_post_from_dicts(p2)
+        self.assertEquals(
+            postdb.post_id_to_post,
+            expected_postid_to_post)
+        self.assertEquals(
+            postdb.messid_to_post_id,
+            expected_messid_to_postid)
+
+    def test_load_heap(self):
+        """Tests :func:`load_heap`."""
+
+        postdb = self._postdb
+
+        #
+        # Modifying and loading an existing heap ('my_heap').
+        #
+
+        # We test that only the files with ".post" postfix are read.
+
+        # Creating new posts and loading them instead of the pre-loaded ones
+
+        def post_path(fname):
+            return os.path.join(self._myheap_dir, fname)
+
+        hkutils.string_to_file('Subject: s1', post_path('1.post'))
+        hkutils.string_to_file('Subject: sx', post_path('xy.post'))
+        hkutils.string_to_file('Subject: s2', post_path('2.other'))
+        hkutils.string_to_file('Subject: s3', post_path('3post'))
+        postdb.load_heap('my_heap')
+
+        self.assertEquals(
+            set(postdb.post_id_to_post.keys()),
+            set([('my_heap', '1'),
+                 ('my_heap', 'xy'),
+                 ('my_other_heap', '0')]))
+
+        self.assertEquals(
+            postdb.next_post_index('my_heap'),
+            '2')
+
+        #
+        # Modifying and loading a new heap ('my_new_heap').
+        #
+
+        heap_dir = os.path.join(self._dir, 'my_new_heap')
+        os.mkdir(heap_dir)
+
+        # We test that only the files with ".post" postfix are read.
+
+        # Creating new posts and loading them instead of the pre-loaded ones
+        hkutils.string_to_file('Subject: s1', os.path.join(heap_dir, '1.post'))
+        hkutils.string_to_file('Subject: sx', os.path.join(heap_dir, 'ab.post'))
+        hkutils.string_to_file('Subject: s2', os.path.join(heap_dir, '2.other'))
+        hkutils.string_to_file('Subject: s3', os.path.join(heap_dir, '3post'))
+
+        postdb._heaps['my_new_heap'] = heap_dir
+        postdb.load_heap('my_new_heap')
+
+        self.assertEquals(
+            set(postdb.post_id_to_post.keys()),
+            set([('my_heap', '1'),
+                 ('my_heap', 'xy'),
+                 ('my_other_heap', '0'),
+                 ('my_new_heap', '1'),
+                 ('my_new_heap', 'ab')]))
+
+        self.assertEquals(
+            postdb.next_post_index('my_new_heap'),
+            '2')
+
+    def test_add_heap(self):
+        """Tests :func:`add_heap`."""
+
+        postdb = self._postdb
+
+        # Adding a new heap
+
+        heap_dir_1 = os.path.join(self._dir, 'my_new_heap_dir_1')
+        postdb.add_heap('my_new_heap_1', heap_dir_1)
+        self.assertEquals(
+            self.pop_log(),
+            ('Warning: post directory does not exists: "%s"\n'
+             'Post directory has been created.'
+             % (heap_dir_1,)))
+
+        self.assertEquals(
+            postdb._heaps,
+            {'my_other_heap': self._myotherheap_dir,
+             'my_heap': self._myheap_dir,
+             'my_new_heap_1': heap_dir_1})
+
+        self.assertEquals(
+            len(postdb.post_id_to_post.keys()),
+            6)
+
+        self.assertEquals(
+            postdb.next_post_index('my_new_heap_1'),
+            '1')
+
+        # Adding a heap that has posts
+
+        heap_dir_2 = os.path.join(self._dir, 'my_new_heap_dir_2')
+        os.mkdir(heap_dir_2)
+        hkutils.string_to_file('Subject: s1', os.path.join(heap_dir_2, '1.post'))
+        postdb.add_heap('my_new_heap_2', heap_dir_2)
+
+        self.assertEquals(
+            len(postdb.post_id_to_post.keys()),
+            7)
+
+        self.assertEquals(
+            postdb.next_post_index('my_new_heap_2'),
+            '2')
+
+    def test_set_html_dir(self):
+        """Tests :func:`set_html_dir`."""
+
+        postdb = self._postdb
+
+        # Non-existing directory
+
+        html_dir_1 = os.path.join(self._dir, 'html_dir_1')
+        postdb.set_html_dir(html_dir_1)
+        self.assertEquals(
+            postdb._html_dir,
+            html_dir_1)
+        self.assertEquals(
+            self.pop_log(),
+            ('Warning: HTML directory does not exists: "%s"\n'
+             'HTML directory has been created.'
+             % (html_dir_1,)))
+
+        # Existing directory
+
+        html_dir_2 = os.path.join(self._dir, 'html_dir_2')
+        os.mkdir(html_dir_2)
+        postdb.set_html_dir(html_dir_2)
+        self.assertEquals(
+            postdb._html_dir,
+            html_dir_2)
+
+    def test_get_heaps_from_config(self):
+        """Tests :func:`hklib.PostDB.get_heaps_from_config`."""
+
+        # "paths/heaps" is specified
+
         config = ConfigParser.ConfigParser()
-        config.read(configFileName)
-        postdb = PostDB.from_config(config)
-        self.assertEquals(set(postdb.heapids()), set(['1']))
+        config.add_section('paths')
+        config.set('paths', 'heaps',
+                   'my_heap1:my_heap_dir_1;my_heap2:my_heap_dir_2')
 
-    def testGetMethods(self):
-        """Tests the 'get' methods of PostDB."""
-        self.createDirs()
-        hkutils.string_to_file('Message-Id: mess1',
-                               self.postFileName('1.post'))
-        hkutils.string_to_file('Message-Id: mess2',
-                               self.postFileName('2.post'))
-        postdb = self.createPostDB()
-        self.assertEquals(set(postdb.heapids()), set(['1', '2']))
-        self.assertEquals(postdb.next_heapid(), '3')
-        self.assertEquals(postdb.next_heapid(), '4')
-        p1 = postdb.post('1')
-        p2 = postdb.post('2')
-        self.assertEquals(set([p1, p2]), set(postdb.posts()))
-        self.assert_(p1 is postdb.post_by_messid('mess1'))
-        self.assert_(p2 is postdb.post_by_messid('mess2'))
+        heaps = hklib.PostDB.get_heaps_from_config(config)
+        self.assertEquals(
+            heaps,
+            {'my_heap1': 'my_heap_dir_1',
+             'my_heap2': 'my_heap_dir_2'})
 
-    def testNextHeapid(self):
-        """Tests `PostDB.next_heapid`'s prefix handling and caching."""
-        self.createDirs()
-        for i in (1, 2, 3, 5):
-            hkutils.string_to_file('Message-Id: mess%d' % i,
-                                   self.postFileName('%d.post' % i))
-            hkutils.string_to_file('Message-Id: a_mess%d' % i,
-                                   self.postFileName('a_%d.post' % i))
-        postdb = self.createPostDB()
-        self.assertEquals(postdb.next_heapid(), '6')
-        self.assertEquals(postdb.next_heapid(), '7')
-        self.assertEquals(postdb.next_heapid('a_'), 'a_6')
-        self.assertEquals(postdb.next_heapid('a_'), 'a_7')
-        self.assertEquals(postdb.next_heapid('b_'), 'b_1')
-        self.assertEquals(postdb.next_heapid('b_'), 'b_2')
+        # Testing whitespace stripping
 
-    def testModifications(self):
-        """Tests the 'set' methods of PostDB."""
+        config = ConfigParser.ConfigParser()
+        config.add_section('paths')
+        config.set('paths', 'heaps',
+                   ' my_heap1 : my_heap_dir_1 ; my_heap2 : my_heap_dir_2 ')
+
+        heaps = hklib.PostDB.get_heaps_from_config(config)
+        self.assertEquals(
+            heaps,
+            {'my_heap1': 'my_heap_dir_1',
+             'my_heap2': 'my_heap_dir_2'})
+
+        # No "paths/heaps", only "paths/mail"
+
+        config = ConfigParser.ConfigParser()
+        config.add_section('paths')
+        config.set('paths', 'mail', 'my_heap_dir')
+
+        heaps = hklib.PostDB.get_heaps_from_config(config)
+        self.assertEquals(
+            heaps,
+            {'': 'my_heap_dir'})
+        self.assertEquals(
+            self.pop_log(),
+            ('Config file contains a "paths/mail" option that should be '
+             'replaced by "paths/heaps". See the documentation for more '
+             'information.'))
+
+        # Neither "paths/heaps", nor "paths/mail" is specified
+
+        config = ConfigParser.ConfigParser()
+        self.assertRaises(
+            hkutils.HkException,
+            lambda: hklib.PostDB.get_heaps_from_config(config))
+
+    def test_read_config(self):
+        """Tests :func:`hklib.PostDB.read_config`."""
+
+        postdb  = self._postdb
+        new_heap_dir = os.path.join(self._dir, 'new_heap_dir')
+        os.mkdir(new_heap_dir)
+        hkutils.string_to_file(
+            'Subject: s1',
+            os.path.join(new_heap_dir, '1.post'))
+
+        html_dir = os.path.join(self._dir, 'new_html_dir')
+        os.mkdir(html_dir)
+
+        config = ConfigParser.ConfigParser()
+        config.add_section('paths')
+        config.set('paths', 'html', html_dir)
+        config.set('paths', 'heaps', 'new_heap:' + new_heap_dir)
+
+        postdb.read_config(config)
+
+        # The new heap goes next to the other heaps. Currently the heaps that
+        # are not present in the configuration are not touched by read_config.
+        self.assertEquals(
+            postdb._heaps,
+            {'my_heap': self._myheap_dir,
+             'my_other_heap': self._myotherheap_dir,
+             'new_heap': new_heap_dir})
+
+        # The post was read
+        self.assert_(postdb.post('new_heap/1') != None)
+
+        # The html_dir was set
+        self.assertEquals(postdb.html_dir(), html_dir)
+
+    def test__get_methods(self):
+        """Tests the following functions:
+
+        - :func:`hklib.PostDB.has_post_id`
+        - :func:`hklib.PostDB.has_heap_id`
+        - :func:`hklib.PostDB.postset`
+        - :func:`hklib.PostDB.post_by_post_id`
+        - :func:`hklib.PostDB.post_by_messid`
+        - :func:`hklib.PostDB.postfile_name`
+        - :func:`hklib.PostDB.html_dir`
+        """
+
+        postdb = self._postdb
+
+        # Testing has_post_id
+        self.assertTrue(postdb.has_post_id(('my_heap', '0')))
+        self.assertFalse(postdb.has_post_id(('my_heap', 'x')))
+
+        # Testing has_heap_id
+        self.assertTrue(postdb.has_heap_id('my_heap'))
+        self.assertFalse(postdb.has_heap_id('nosuchheap'))
+
+        # Testing next_post_index
+        self.assertEquals(postdb.next_post_index('my_heap'), '5')
+
+        # Testing postset
+        self.assertEquals(
+            postdb.postset(['my_heap/0']),
+            hklib.PostSet(postdb, self.p(0)))
+
+        # Testing post_by_post_id
+        self.assertEquals(
+            postdb.post_by_post_id('my_heap/0'),
+            self.p(0))
+        self.assertEquals(
+            postdb.post_by_post_id('my_heap/111'),
+            None)
+
+        # Testing post_by_messid
+        self.assertEquals(
+            postdb.post_by_messid('0@'),
+            self.p(0))
+        self.assertEquals(
+            postdb.post_by_messid('111@'),
+            None)
+
+        # Testing postfile_name
+        self.assertEquals(
+            postdb.postfile_name(self.p(0)),
+            os.path.join(self._myheap_dir, '0.post'))
+
+        # Testing html_dir
+        self.assertEquals(
+            postdb.html_dir(),
+            os.path.join(self._html_dir))
+
+    def test_next_post_index(self):
+        """Tests :func:`hklib.PostDB.next_post_index`."""
+        postdb = self._postdb
+
+        # Basic test
+        self.assertEquals(postdb.next_post_index('my_heap'), '5')
+        self.assertEquals(postdb.next_post_index('my_heap'), '6')
+
+        # We don't fill in the holes
+        postdb.invalidate_next_post_index_cache()
+        postdb.add_new_post(hklib.Post.create_empty(), 'my_heap', '9')
+        self.assertEquals(postdb.next_post_index('my_heap'), '10')
+
+        # Testing prefixed
+        self.assertEquals(postdb.next_post_index('my_heap', 'a_'), 'a_1')
+        self.assertEquals(postdb.next_post_index('my_heap', 'a_'), 'a_2')
+
+    def test__modifications(self):
+        """Tests the following functions:
+
+        - :func:`hklib.PostDB.real_posts`
+        - :func:`hklib.PostDB.posts`
+        - :func:`hklib.PostDB._recalc_posts`
+        - :func:`hklib.PostDB.save`
+        """
+
+        postdb = self.create_postdb()
 
         # Initialisation
-        self.createDirs()
-        postfile1 = self.postFileName('1.post')
-        postfile2 = self.postFileName('2.post')
+        new_heap_dir = os.path.join(self._dir, 'new_heap_dir')
+        os.mkdir(new_heap_dir)
+        postfile1 = os.path.join(new_heap_dir, '1.post')
+        postfile2 = os.path.join(new_heap_dir, '2.post')
         hkutils.string_to_file('Message-Id: mess1', postfile1)
         hkutils.string_to_file('Message-Id: mess2', postfile2)
-        postdb = self.createPostDB()
-        p1 = postdb.post('1')
-        p2 = postdb.post('2')
+        postdb.add_heap('new_heap', new_heap_dir)
+        p1 = postdb.post('new_heap/1')
+        p2 = postdb.post('new_heap/2')
 
         # Modifying and saving a post
         p1.set_subject('subject')
@@ -754,10 +1478,14 @@ html=%s
                           hkutils.file_to_string(postfile2))
 
         # Adding a new post
-        postfile3 = self.postFileName('3.post')
-        p3 = Post.from_str('Subject: subject3')
-        postdb.add_new_post(p3)
-        self.assertEquals(set(postdb.heapids()), set(['1', '2', '3']))
+        postfile3 = os.path.join(new_heap_dir, '3.post')
+        p3 = hklib.Post.from_str('Subject: subject3')
+        postdb.add_new_post(p3, 'new_heap')
+        self.assertEquals(
+            set(postdb.post_id_to_post.keys()),
+            set([('new_heap', '1'),
+                 ('new_heap', '2'),
+                 ('new_heap', '3')]))
         self.assertFalse(os.path.exists(postfile3))
         postdb.save()
         self.assert_(os.path.exists(postfile3))
@@ -769,15 +1497,55 @@ html=%s
         self.assertEquals(set([p2, p3]), set(postdb.posts()))
         self.assertEquals(set([p1, p2, p3]), set(postdb.real_posts()))
 
+    def test_post(self):
+        """Tests :func:`hklib.PostDB.post`."""
+
+        postdb = self._postdb
+        p0 = self.p(0)
+
+        # Specifying the post
+
+        self.assertEquals(postdb.post(p0), p0)
+
+        # Specifying the post id
+
+        self.assertEquals(postdb.post('my_heap/0'), p0)
+        self.assertEquals(postdb.post(('my_heap', '0')), p0)
+        self.assertEquals(postdb.post(('my_heap', 0)), p0)
+
+        # Specifying the post index
+
+        self.assertEquals(postdb.post('0', heap_id_hint='my_heap'), p0)
+        self.assertEquals(postdb.post(0, heap_id_hint='my_heap'), p0)
+        self.assertEquals(postdb.post('0'), None) # no hint -> post not found
+        self.assertEquals(postdb.post(0), None) # no hint -> post not found
+
+        # bad hint -> post not found
+        self.assertEquals(postdb.post('1', heap_id_hint='my_other_heap'), None)
+
+        # Specifying the message id
+
+        self.assertEquals(postdb.post('0@'), p0)
+
+        # Testing the `raise_exception` parameter
+
+        self.assertEquals(postdb.post('nosuchpost'), None)
+        self.assertRaises(
+            hklib.PostNotFoundError,
+            lambda: postdb.post('nosuchpost', raise_exception=True))
+
     def test_reload(self):
+        """Tests the following functions:
+
+        - :func:`hklib.PostDB.save`
+        - :func:`hklib.PostDB.reload`
+        """
 
         # Initialization
-        self.createDirs()
-        postdb = self.createPostDB()
-        postdb.add_new_post(Post.from_str(''))
-        p1 = postdb.post('1')
+        postdb = self._postdb
+        p1 = postdb.add_new_post(hklib.Post.from_str(''), 'my_heap', '11')
 
-        # Saving a subject; setting a new one but abandoning it
+        # Saving a subject
         p1.set_subject('sub1')
         postdb.save()
 
@@ -785,257 +1553,408 @@ html=%s
         p1.set_subject('sub2')
 
         # A change on the disk that will be loaded.
-        hkutils.string_to_file('Subject: sub_new', self.postFileName('x.post'))
+        hkutils.string_to_file(
+            'Subject: sub_new',
+            os.path.join(self._myheap_dir, 'x.post'))
 
         postdb.reload()
         postdb.save()
 
         # The subject of p1 is unchanged, x.mail is loaded
         self.assertEquals(p1.subject(), 'sub1')
-        self.assert_(postdb.post('1') is p1)
+        self.assert_(postdb.post('my_heap/11') is p1)
         self.assertEquals(
             hkutils.file_to_string(p1.postfilename()),
             'Subject: sub1\n\n\n')
-        self.assertEquals(postdb.post('x').subject(), 'sub_new')
+        self.assertEquals(postdb.post('my_heap/x').subject(), 'sub_new')
 
-    def testThreadstructHeapid(self):
-        """Testing that the thread structure also works when the Parent
-        is defined by a heapid.
+    def test_add_new_post(self):
+        """Tests :func:`hklib.PostDB.add_new_post`."""
 
-        If the same messid and heapid exist, the former has priority."""
+        postdb = self._postdb
 
-        # 1 <- 2
-        # 3
-        # 4 <- 5
-        self.createDirs()
-        postdb = self.createPostDB()
-        postdb.add_new_post(Post.from_str(''))               # #1
-        postdb.add_new_post(Post.from_str('Parent: 1'))      # #2
-        postdb.add_new_post(Post.from_str(''))               # #3
-        postdb.add_new_post(Post.from_str('Message-Id: 2'))  # #4
-        postdb.add_new_post(Post.from_str('Parent: 4'))      # #5
+        p1 = postdb.add_new_post(hklib.Post.from_str(''), 'my_heap')
+        self.assert_(postdb.post('my_heap/5') is p1)
 
-        ts = {None: ['1', '3', '4'],
-              '1': ['2'],
-              '4': ['5']}
-        self.assertEquals(ts, postdb.threadstruct())
+        # Testing the `post_index` parameter
+        p2 = postdb.add_new_post(hklib.Post.from_str(''), 'my_heap', '11')
+        self.assert_(postdb.post('my_heap/11') is p2)
 
+        # Testing the `prefix` parameter
+        p3 = \
+            postdb.add_new_post(
+                hklib.Post.from_str(''),
+                'my_heap',
+                prefix='my_prefix_')
+        self.assert_(postdb.post('my_heap/my_prefix_1') is p3)
 
-class TestPostDB2(unittest.TestCase, PostDBHandler):
+        p4 = \
+            postdb.add_new_post(
+                hklib.Post.from_str(''),
+                'my_heap',
+                prefix='my_prefix_')
+        self.assert_(postdb.post('my_heap/my_prefix_2') is p4)
 
-    def setUp(self):
-        self.setUpDirs()
-        self._postdb = self.createPostDB()
-        self.create_threadst()
+    def test_all(self):
+        """Tests the following functions:
 
-    def tearDown(self):
-        self.tearDownDirs()
+        - :func:`hklib.PostDB.all`
+        - :func:`hklib.PostDB._recalc_all`
+        """
+
+        postdb = self._postdb
+
+        # If we call `all` twice without modifying the post database, the
+        # returned objects should be the same and they should be equal to
+        # `all_posts_1`
+
+        all_posts_1 = \
+            postdb.postset(
+                [self.p(0),
+                 self.p(1),
+                 self.p(2),
+                 self.p(3),
+                 self.p(4),
+                 postdb.post('my_other_heap/0')])
+        all_1 = postdb.all()
+        all_2 = postdb.all()
+        self.assert_(all_1 is all_2)
+        self.assertEquals(all_posts_1, all_1)
+
+        # If we modify the post database, `all` should return a different
+        # object then previously and the previously returned object should be
+        # unmodified
+
+        p5 = self.add_post(5)
+        all_posts_2 = all_posts_1 | p5
+        all_3 = postdb.all()
+        self.assertEquals(all_posts_2, all_3)
+        # `all_1` was not modified:
+        self.assertEquals(all_posts_1, all_1)
 
     def test_threadstruct(self):
-        """Tests the thread structure computing method."""
+        """Tests the following functions:
+
+        - :func:`hklib.PostDB.threadstruct`
+        - :func:`hklib.PostDB._recalc_threadstruct`
+        """
 
         postdb = self._postdb
-        # Testing PostDB.threadstruct
 
-        ts = {None: ['0', '4'],
-              '0': ['1', '3'],
-              '1': ['2']}
-        self.assertEquals(ts, postdb.threadstruct())
+        # If we call `threadstruct` twice without modifying the post database,
+        # the returned objects should be the same and they should be equal to
+        # `expected_ts_1`
 
-        # Modifying the PostDB
+        expected_ts_1 = \
+            {None: [self.i(0), self.io(0), self.i(4)],
+             self.i(0): [self.i(1), self.i(3)],
+             self.i(1): [self.i(2)]}
+        ts1 = postdb.threadstruct()
+        ts2 = postdb.threadstruct()
+        self.assert_(ts1 is ts2)
+        self.assertEquals(ts1, expected_ts_1)
+
+        # If we modify the post database, `threadstruct` should return a
+        # different object then previously and the previously returned object
+        # should be unmodified
+
         self.add_post(5, 0)
-        ts = {None: ['0', '4'],
-              '0': ['1', '3', '5'],
-              '1': ['2']}
-        self.assertEquals(ts, postdb.threadstruct())
+        expected_ts_2 = \
+            {None: [self.i(0), self.io(0), self.i(4)],
+             self.i(0): [self.i(1), self.i(3), self.i(5)],
+             self.i(1): [self.i(2)]}
+        ts3 = postdb.threadstruct()
+        self.assertEquals(ts3, expected_ts_2)
+        # `ts1` was not modified:
+        self.assertEquals(ts1, expected_ts_1)
 
-        # Deleting a post
-        postdb.post('1').delete()
-        ts = {None: ['0', '2', '4'],
-              '0': ['3', '5']}
-        self.assertEquals(ts, postdb.threadstruct())
+        # Deleting posts
 
-        postdb.post('0').delete()
-        ts = {None: ['2', '3', '4', '5']}
-        self.assertEquals(ts, postdb.threadstruct())
+        self.p(1).delete()
+        expected_ts = \
+            {None: [self.i(0), self.io(0), self.i(2), self.i(4)],
+             self.i(0): [self.i(3), self.i(5)]}
+        self.assertEquals(postdb.threadstruct(), expected_ts)
 
-        postdb.post('2').delete()
-        postdb.post('3').delete()
-        postdb.post('4').delete()
-        postdb.post('5').delete()
-        ts = {None: []}
-        self.assertEquals(ts, postdb.threadstruct())
+        self.p(0).delete()
+        expected_ts = \
+            {None: [self.io(0), self.i(2), self.i(3), self.i(4), self.i(5)]}
+        self.assertEquals(postdb.threadstruct(), expected_ts)
 
-    def test_iter_thread(self):
-        postdb = self._postdb
-        p = self._posts
+        self.p(2).delete()
+        self.p(3).delete()
+        self.p(4).delete()
+        self.p(5).delete()
+        self.po(0).delete()
+        expected_ts = {None: []}
+        self.assertEquals(postdb.threadstruct(), expected_ts)
 
-        def test(post, result):
-            self.assertEquals(result, \
-                              [ p.heapid() for p in postdb.iter_thread(post)])
+        # Testing that the thread structure also works when the Parent is
+        # defined by a heapid.
 
-        test(None, ['0', '1', '2', '3', '4'])
-        test(p[0], ['0', '1', '2', '3'])
-        test(p[1], ['1', '2'])
-        test(p[2], ['2'])
-        test(p[3], ['3'])
-        test(p[4], ['4'])
+        # If the same messid and heapid exist, the former has priority.
+        add = postdb.add_new_post
+        add(hklib.Post.from_str(''), 'new_heap')               # #1
+        add(hklib.Post.from_str('Parent: 1'), 'new_heap')      # #2
+        add(hklib.Post.from_str(''), 'new_heap')               # #3
+        add(hklib.Post.from_str('Message-Id: 2'), 'new_heap')  # #4
+        add(hklib.Post.from_str('Parent: 4'), 'new_heap')      # #5
 
-        # if the post is not in the postdb, AssertionError will be raised
-        def f():
-            test(Post.from_str(''), [])
-        self.assertRaises(AssertionError, f)
-
-    def test_walk_thread(self):
-        postdb = self._postdb
-        p = self._posts
-
-        def test(root, result):
-            """Tests whether the the :func:`PostDB.walk_thread` function
-            returns the given result when executed with the given root."""
-
-            postitem_strings = [ str(postitem)
-                                 for postitem in postdb.walk_thread(root) ]
-            self.assertEquals(result, postitem_strings)
-
-        # The indentation in the following expressions reflects the thread
-        # structure of the posts.
-
-        test(None,
-             [
-             "<PostItem: pos=begin, heapid='0', level=0>",
-               "<PostItem: pos=begin, heapid='1', level=1>",
-                 "<PostItem: pos=begin, heapid='2', level=2>",
-                 "<PostItem: pos=end, heapid='2', level=2>",
-               "<PostItem: pos=end, heapid='1', level=1>",
-               "<PostItem: pos=begin, heapid='3', level=1>",
-               "<PostItem: pos=end, heapid='3', level=1>",
-             "<PostItem: pos=end, heapid='0', level=0>",
-             "<PostItem: pos=begin, heapid='4', level=0>",
-             "<PostItem: pos=end, heapid='4', level=0>",
-             ])
-
-        test(p[0],
-             [
-             "<PostItem: pos=begin, heapid='0', level=0>",
-               "<PostItem: pos=begin, heapid='1', level=1>",
-                 "<PostItem: pos=begin, heapid='2', level=2>",
-                 "<PostItem: pos=end, heapid='2', level=2>",
-               "<PostItem: pos=end, heapid='1', level=1>",
-               "<PostItem: pos=begin, heapid='3', level=1>",
-               "<PostItem: pos=end, heapid='3', level=1>",
-             "<PostItem: pos=end, heapid='0', level=0>",
-             ])
-
-        test(p[1],
-             [
-             "<PostItem: pos=begin, heapid='1', level=0>",
-               "<PostItem: pos=begin, heapid='2', level=1>",
-               "<PostItem: pos=end, heapid='2', level=1>",
-             "<PostItem: pos=end, heapid='1', level=0>",
-             ])
-        test(p[2],
-             [
-             "<PostItem: pos=begin, heapid='2', level=0>",
-             "<PostItem: pos=end, heapid='2', level=0>",
-             ])
-        test(p[3],
-             [
-             "<PostItem: pos=begin, heapid='3', level=0>",
-             "<PostItem: pos=end, heapid='3', level=0>",
-             ])
-        test(p[4],
-             [
-             "<PostItem: pos=begin, heapid='4', level=0>",
-             "<PostItem: pos=end, heapid='4', level=0>",
-             ])
-
-        # Testing
-
-        def test(root, result):
-            """Tests whether the the :func:`PostDB.walk_thread` function
-            returns the given result when executed with the given root."""
-
-            postitem_strings = \
-                [ str(postitem)
-                  for postitem in postdb.walk_thread(root, yield_main=True) ]
-            self.assertEquals(result, postitem_strings)
-
-        test(None,
-             [
-             "<PostItem: pos=begin, heapid='0', level=0>",
-             "<PostItem: pos=main, heapid='0', level=0>",
-               "<PostItem: pos=begin, heapid='1', level=1>",
-               "<PostItem: pos=main, heapid='1', level=1>",
-                 "<PostItem: pos=begin, heapid='2', level=2>",
-                 "<PostItem: pos=main, heapid='2', level=2>",
-                 "<PostItem: pos=end, heapid='2', level=2>",
-               "<PostItem: pos=end, heapid='1', level=1>",
-               "<PostItem: pos=begin, heapid='3', level=1>",
-               "<PostItem: pos=main, heapid='3', level=1>",
-               "<PostItem: pos=end, heapid='3', level=1>",
-             "<PostItem: pos=end, heapid='0', level=0>",
-             "<PostItem: pos=begin, heapid='4', level=0>",
-             "<PostItem: pos=main, heapid='4', level=0>",
-             "<PostItem: pos=end, heapid='4', level=0>",
-             ])
-
-        # if the post is not in the postdb, AssertionError will be raised
-        def f():
-            test(Post.from_str(''), [])
-        self.assertRaises(AssertionError, f)
+        ts = {None: [('new_heap', '1'),
+                     ('new_heap', '3'),
+                     ('new_heap', '4')],
+              ('new_heap', '1'): [('new_heap', '2')],
+              ('new_heap', '4'): [('new_heap', '5')]}
+        self.assertEquals(postdb.threadstruct(), ts)
 
     def test_parent(self):
+        """Tests :func:`hklib.PostDB.parent`."""
+
         postdb = self._postdb
 
-        def test(post_heapid, parent_heapid):
-            if parent_heapid != None:
-                parentpost = postdb.post(parent_heapid)
-            else:
-                parentpost = None
-            self.assertEquals(postdb.parent(postdb.post(post_heapid)), \
-                              parentpost)
-
-        test('0', None)
-        test('1', '0')
-        test('2', '1')
-        test('3', '0')
-        test('4', None)
+        self.assertEquals(postdb.parent(self.p(0)), None)
+        self.assertEquals(postdb.parent(self.p(1)), self.p(0))
+        self.assertEquals(postdb.parent(self.p(2)), self.p(1))
+        self.assertEquals(postdb.parent(self.p(3)), self.p(0))
+        self.assertEquals(postdb.parent(self.p(4)), None)
+        self.assertEquals(postdb.parent(self.po(0)), None)
 
     def test_root(self):
-        postdb = self._postdb
+        """Tests :func:`hklib.PostDB.parent`."""
 
-        def test(post_heapid, root_heapid):
-            if root_heapid != None:
-                parentpost = postdb.post(root_heapid)
-            else:
-                parentpost = None
-            self.assertEquals(postdb.root(postdb.post(post_heapid)),
-                              parentpost)
+        postdb = self._postdb
 
         ## Testing when there is no cycle
 
-        test('0', '0')
-        test('1', '0')
-        test('2', '0')
-        test('3', '0')
-        test('4', '4')
+        self.assertEquals(postdb.root(self.p(0)), self.p(0))
+        self.assertEquals(postdb.root(self.p(1)), self.p(0))
+        self.assertEquals(postdb.root(self.p(2)), self.p(0))
+        self.assertEquals(postdb.root(self.p(3)), self.p(0))
+        self.assertEquals(postdb.root(self.p(4)), self.p(4))
+        self.assertEquals(postdb.root(self.po(0)), self.po(0))
 
         ## Testing cycles
 
         self.introduce_cycle()
 
         # Normal posts:
-        test('0', '0')
-        test('1', '0')
-        test('2', '0')
-        test('4', '4')
+        self.assertEquals(postdb.root(self.p(0)), self.p(0))
+        self.assertEquals(postdb.root(self.p(1)), self.p(0))
+        self.assertEquals(postdb.root(self.p(2)), self.p(0))
+        self.assertEquals(postdb.root(self.p(4)), self.p(4))
+        self.assertEquals(postdb.root(self.po(0)), self.po(0))
+
 
         # Posts in cycle:
-        test('3', None)
-        test('5', None)
-        test('6', None)
-        test('7', None)
+        self.assertEquals(postdb.root(self.p(3)), None)
+        self.assertEquals(postdb.root(self.p(5)), None)
+        self.assertEquals(postdb.root(self.p(6)), None)
+        self.assertEquals(postdb.root(self.p(7)), None)
+
+    def test_children(self):
+        """Tests :func:`hklib.PostDB.children`."""
+
+        postdb = self._postdb
+
+        self.assertEquals(
+            postdb.children(None),
+            [self.p(0), self.po(0), self.p(4)])
+        self.assertEquals(postdb.children(self.p(0)), [self.p(1), self.p(3)])
+        self.assertEquals(postdb.children(self.p(1)), [self.p(2)])
+        self.assertEquals(postdb.children(self.p(2)), [])
+        self.assertEquals(postdb.children(self.p(3)), [])
+        self.assertEquals(postdb.children(self.p(4)), [])
+        self.assertEquals(postdb.children(self.po(0)), [])
+
+        # Testing the `threadstruct` parameter
+
+        ts = {('my_heap', '0'): [self.p(1)]}
+        self.assertEquals(
+            postdb.children(self.p(0), ts),
+            [self.p(1)])
+        self.assertEquals(
+            postdb.children(self.p(1), ts),
+            [])
+
+        # Testing incorrect threadstruct
+
+        ts = {('my_heap', '0'): 'badvalue'}
+        self.assertRaises(
+            AssertionError,
+            lambda: postdb.children(self.p(0), ts))
+
+    def test_iter_thread(self):
+        """Tests :func:`hklib.PostDB.iter_thread`."""
+
+        postdb = self._postdb
+        p = self.p
+        po = self.po
+
+        self.assertEquals(
+            list(postdb.iter_thread(None)),
+            [p(0), p(1), p(2), p(3), po(0), p(4)])
+        self.assertEquals(
+            list(postdb.iter_thread(p(0))),
+            [p(0), p(1), p(2), p(3)])
+        self.assertEquals(list(postdb.iter_thread(p(1))), [p(1), p(2)])
+        self.assertEquals(list(postdb.iter_thread(p(2))), [p(2)])
+        self.assertEquals(list(postdb.iter_thread(p(3))), [p(3)])
+        self.assertEquals(list(postdb.iter_thread(p(4))), [p(4)])
+        self.assertEquals(list(postdb.iter_thread(po(0))), [po(0)])
+
+        # If the post is not in the postdb, AssertionError will be raised
+        self.assertRaises(
+            AssertionError,
+            lambda: list(postdb.iter_thread(hklib.Post.from_str(''))))
+
+        # Testing the `threadstruct` parameter
+        ts = {('my_heap', '0'): [self.p(1)]}
+        self.assertEquals(
+            list(postdb.iter_thread(p(0), ts)),
+            [p(0), p(1)])
+
+    def test_walk_thread(self):
+        """Tests :func:`hklib.PostDB.walk_thread`."""
+
+        postdb = self._postdb
+
+        def test(root, expected_result):
+            """Tests whether the the :func:`hklib.PostDB.walk_thread` function
+            returns the given result when executed with the given root."""
+
+            postitem_strings = [str(postitem) + '\n'
+                                for postitem in postdb.walk_thread(root)]
+            postitem_strings = ''.join(postitem_strings)
+            self.assertEquals(postitem_strings, expected_result)
+
+        # The indentation in the following expressions reflects the thread
+        # structure of the posts.
+
+        test(None,
+             ("<PostItem: pos=begin, post_id=my_heap/0, level=0>\n"
+                "<PostItem: pos=begin, post_id=my_heap/1, level=1>\n"
+                  "<PostItem: pos=begin, post_id=my_heap/2, level=2>\n"
+                  "<PostItem: pos=end, post_id=my_heap/2, level=2>\n"
+                "<PostItem: pos=end, post_id=my_heap/1, level=1>\n"
+                "<PostItem: pos=begin, post_id=my_heap/3, level=1>\n"
+                "<PostItem: pos=end, post_id=my_heap/3, level=1>\n"
+              "<PostItem: pos=end, post_id=my_heap/0, level=0>\n"
+              "<PostItem: pos=begin, post_id=my_other_heap/0, level=0>\n"
+              "<PostItem: pos=end, post_id=my_other_heap/0, level=0>\n"
+              "<PostItem: pos=begin, post_id=my_heap/4, level=0>\n"
+              "<PostItem: pos=end, post_id=my_heap/4, level=0>\n"))
+
+        test(self.p(0),
+             ("<PostItem: pos=begin, post_id=my_heap/0, level=0>\n"
+                "<PostItem: pos=begin, post_id=my_heap/1, level=1>\n"
+                  "<PostItem: pos=begin, post_id=my_heap/2, level=2>\n"
+                  "<PostItem: pos=end, post_id=my_heap/2, level=2>\n"
+                "<PostItem: pos=end, post_id=my_heap/1, level=1>\n"
+                "<PostItem: pos=begin, post_id=my_heap/3, level=1>\n"
+                "<PostItem: pos=end, post_id=my_heap/3, level=1>\n"
+              "<PostItem: pos=end, post_id=my_heap/0, level=0>\n"))
+
+        test(self.p(1),
+             ("<PostItem: pos=begin, post_id=my_heap/1, level=0>\n"
+                "<PostItem: pos=begin, post_id=my_heap/2, level=1>\n"
+                "<PostItem: pos=end, post_id=my_heap/2, level=1>\n"
+              "<PostItem: pos=end, post_id=my_heap/1, level=0>\n"))
+        test(self.p(2),
+             ("<PostItem: pos=begin, post_id=my_heap/2, level=0>\n"
+              "<PostItem: pos=end, post_id=my_heap/2, level=0>\n"))
+        test(self.p(3),
+             ("<PostItem: pos=begin, post_id=my_heap/3, level=0>\n"
+              "<PostItem: pos=end, post_id=my_heap/3, level=0>\n"))
+        test(self.p(4),
+             ("<PostItem: pos=begin, post_id=my_heap/4, level=0>\n"
+              "<PostItem: pos=end, post_id=my_heap/4, level=0>\n"))
+
+        # Testing the `threadstruct` parameter
+
+        ts = {('my_heap', '0'): [self.p(1)]}
+        self.assertEquals(
+            ''.join([str(postitem) + '\n'
+                     for postitem in postdb.walk_thread(self.p(0), ts)]),
+             ("<PostItem: pos=begin, post_id=my_heap/0, level=0>\n"
+                "<PostItem: pos=begin, post_id=my_heap/1, level=1>\n"
+                "<PostItem: pos=end, post_id=my_heap/1, level=1>\n"
+              "<PostItem: pos=end, post_id=my_heap/0, level=0>\n"))
+
+        # Testing the `yield_main` parameter
+
+        def test(root, expected_result):
+            """Tests whether the the :func:`PostDB.walk_thread` function
+            returns the given result when executed with the given root."""
+
+            postitem_strings = \
+                [ str(postitem) + '\n'
+                  for postitem in postdb.walk_thread(root, yield_main=True) ]
+            postitem_strings = ''.join(postitem_strings)
+            self.assertEquals(postitem_strings, expected_result)
+
+        test(None,
+             ("<PostItem: pos=begin, post_id=my_heap/0, level=0>\n"
+              "<PostItem: pos=main, post_id=my_heap/0, level=0>\n"
+                "<PostItem: pos=begin, post_id=my_heap/1, level=1>\n"
+                "<PostItem: pos=main, post_id=my_heap/1, level=1>\n"
+                  "<PostItem: pos=begin, post_id=my_heap/2, level=2>\n"
+                  "<PostItem: pos=main, post_id=my_heap/2, level=2>\n"
+                  "<PostItem: pos=end, post_id=my_heap/2, level=2>\n"
+                "<PostItem: pos=end, post_id=my_heap/1, level=1>\n"
+                "<PostItem: pos=begin, post_id=my_heap/3, level=1>\n"
+                "<PostItem: pos=main, post_id=my_heap/3, level=1>\n"
+                "<PostItem: pos=end, post_id=my_heap/3, level=1>\n"
+              "<PostItem: pos=end, post_id=my_heap/0, level=0>\n"
+              "<PostItem: pos=begin, post_id=my_other_heap/0, level=0>\n"
+              "<PostItem: pos=main, post_id=my_other_heap/0, level=0>\n"
+              "<PostItem: pos=end, post_id=my_other_heap/0, level=0>\n"
+              "<PostItem: pos=begin, post_id=my_heap/4, level=0>\n"
+              "<PostItem: pos=main, post_id=my_heap/4, level=0>\n"
+              "<PostItem: pos=end, post_id=my_heap/4, level=0>\n"))
+
+        # If the post is not in the postdb, AssertionError will be raised
+
+        self.assertRaises(
+            AssertionError,
+            lambda: test(hklib.Post.from_str(''), []))
+
+    def test_cycles(self):
+        """Tests the following functions:
+
+        - :func:`hklib.PostDB.cycles`
+        - :func:`hklib.PostDB.has_cycle`
+        - :func:`hklib.PostDB._recalc_cycles`
+        """
+
+        postdb = self._postdb
+
+        # Testing when there are no cycles
+        self.assertEquals(postdb.has_cycle(), False)
+        self.assertEquals(postdb.cycles(), postdb.postset([]))
+
+        # Testing cycles
+        self.introduce_cycle()
+        self.assertEquals(postdb.has_cycle(), True)
+        self.assertEquals(
+            postdb.cycles(),
+            postdb.postset([self.p(3), self.p(5), self.p(6), self.p(7)]))
+
+    def test_walk_cycles(self):
+        """Tests :func:`hklib.PostDB.walk_cycles`."""
+
+        # Testing when there are no cycles
+        self.assertEquals(
+            [pi for pi in self._postdb.walk_cycles()],
+            [])
+
+        # Testing cycles
+        self.introduce_cycle()
+        self.assertEquals(
+            [ pi for pi in self._postdb.walk_cycles() ],
+            [hklib.PostItem(pos='flat', post=self.p(3), level=0),
+             hklib.PostItem(pos='flat', post=self.p(5), level=0),
+             hklib.PostItem(pos='flat', post=self.p(6), level=0),
+             hklib.PostItem(pos='flat', post=self.p(7), level=0)])
 
     def threadstruct_cycle_general(self, parents, threadstruct, cycles):
         """The general function that tests the cycle detection of the thread
@@ -1045,118 +1964,199 @@ class TestPostDB2(unittest.TestCase, PostDBHandler):
         then checks that the thread structture and the cycles of the modified
         database are as expected.
 
-        Arguments:
-        parents: Contains child->parent pairs, which indicate that the child
-            post should be modified as if it were a reply to parent.
-            Type: dict(heapid, heapid)
-        threadstruct: The excepted thread structure.
-            Type: dict(None | heapid, [heapid])
-        cycles: Posts that are in a cycle.
-            Type: [heapid]
+        **Arguments:**
+
+        - `parents` ({|PostId|: |PostId|}) -- Contains child -> parent pairs,
+          which indicate that the child post should be modified as if it were a
+          reply to parent.
+        - `threadstruct` ({(``None`` | |PostId|): [|PostId|]}) -- The excepted
+          thread structure.
+        - `cycles` ([|PostId|]) -- Posts that are in a cycle.
         """
 
         postdb = self._postdb
-        p = self._posts
         for child, parent in parents.items():
             postdb.post(child).set_parent(parent)
-        self.assertEquals(threadstruct, postdb.threadstruct())
+        self.assertEquals(postdb.threadstruct(), threadstruct)
         self.assert_(postdb.cycles().is_set(cycles))
         if cycles == []:
             self.assertFalse(postdb.has_cycle())
         else:
             self.assert_(postdb.has_cycle())
 
-    def test_threadstruct_cycle__1(self):
+    def test__threadstruct_cycle_1(self):
+        """Tests the following functions:
+
+        - :func:`hklib.PostDB.cycles`
+        - :func:`hklib.PostDB.has_cycle`
+        - :func:`hklib.PostDB._recalc_cycles`
+        """
+
+        i = self.i
+        io = self.io
         self.threadstruct_cycle_general(
             {},
-            {None: ['0', '4'],
-             '0': ['1', '3'],
-             '1': ['2']},
+            {None: [self.i(0), io(0), i(4)],
+             i(0): [i(1), i(3)],
+             i(1): [i(2)]},
             [])
 
-    def test_threadstruct_cycle__2(self):
+    def test__threadstruct_cycle_2(self):
+        """Tests the following functions:
+
+        - :func:`hklib.PostDB.cycles`
+        - :func:`hklib.PostDB.has_cycle`
+        - :func:`hklib.PostDB._recalc_cycles`
+        """
+
+        i = self.i
+        io = self.io
         self.threadstruct_cycle_general(
-            {'1': '2'},
-            {None: ['0', '4'],
-                  '0': ['3'],
-                  '1': ['2'],
-                  '2': ['1']},
-            ['1', '2'])
+            {i(1): i(2)},
+            {None: [i(0), io(0), i(4)],
+             i(0): [i(3)],
+             i(1): [i(2)],
+             i(2): [i(1)]},
+            [i(1), i(2)])
 
-    def test_threadstruct_cycle__3(self):
+    def test__threadstruct_cycle_3(self):
+        """Tests the following functions:
+
+        - :func:`hklib.PostDB.cycles`
+        - :func:`hklib.PostDB.has_cycle`
+        - :func:`hklib.PostDB._recalc_cycles`
+        """
+
+        i = self.i
+        io = self.io
         self.threadstruct_cycle_general(
-            {'0': '2'},
-            {None: ['4'],
-             '0': ['1', '3'],
-             '1': ['2'],
-             '2': ['0']},
-            ['0', '1', '2', '3'])
+            {i(0): i(2)},
+            {None: [io(0), i(4)],
+             i(0): [i(1), i(3)],
+             i(1): [i(2)],
+             i(2): [i(0)]},
+            [i(0), i(1), i(2), i(3)])
 
-    def test_threadstruct_cycle__4(self):
+    def test__threadstruct_cycle_4(self):
+        """Tests the following functions:
+
+        - :func:`hklib.PostDB.cycles`
+        - :func:`hklib.PostDB.has_cycle`
+        - :func:`hklib.PostDB._recalc_cycles`
+        """
+
+        i = self.i
+        io = self.io
         self.threadstruct_cycle_general(
-            {'0': '0'},
-            {None: ['4'],
-             '0': ['0', '1', '3'],
-             '1': ['2']},
-            ['0', '1', '2', '3'])
+            {i(0): i(0)},
+            {None: [io(0), i(4)],
+             i(0): [i(0), i(1), i(3)],
+             i(1): [i(2)]},
+            [i(0), i(1), i(2), i(3)])
 
-    def test_cycles(self):
+    def test_roots(self):
+        """Tests the following functions:
 
-        # Testing when there are no cycles
+        - :func:`hklib.PostDB.roots`
+        - :func:`hklib.PostDB._recalc_roots`
+        """
+
+        postdb = self._postdb
+        p = self.p
+        po = self.po
+
+        # If we call `roots` twice without modifying the post database, the
+        # returned objects should be the same
+
+        roots1 = postdb.roots()
+        roots2 = postdb.roots()
+        self.assert_(roots1 is roots2)
+        self.assertEquals(roots1, [p(0), po(0), p(4)])
+
+        # If we modify the post database, `root` should return a different
+        # object then previously and the previously returned object should be
+        # unmodified
+
+        self.add_post(5, None)
+        roots3 = postdb.roots()
+        self.assertEquals(roots3, [p(0), po(0), p(4), p(5)])
+        # `root1` was not modified:
+        self.assertEquals(roots1, [p(0), po(0), p(4)])
+
+    def test_threads(self):
+        """Tests the following functions:
+
+        - :func:`hklib.PostDB.threads`
+        - :func:`hklib.PostDB._recalc_threads`
+        """
+
+        postdb = self._postdb
+        p = self.p
+        po = self.po
+
+        # If we call `threads` twice without modifying the post database, the
+        # returned objects should be the same
+
+        threads1 = postdb.threads()
+        threads2 = postdb.threads()
+        self.assert_(threads1 is threads2)
         self.assertEquals(
-            self._postdb.cycles(),
-            self._postdb.postset([]))
+            threads1,
+            {p(0): postdb.postset([p(0), p(1), p(2), p(3)]),
+             po(0): postdb.postset([po(0)]),
+             p(4): postdb.postset([p(4)])})
 
-        # Testing cycles
-        self.introduce_cycle()
+        # If we modify the post database, `threads` should return a different
+        # object then previously and the previously returned object should be
+        # unmodified
+
+        self.add_post(5, None)
+        threads3 = postdb.threads()
         self.assertEquals(
-            self._postdb.cycles(),
-            self._postdb.postset(['3', '5', '6', '7']))
-
-    def test_walk_cycles(self):
-
-        # Testing when there are no cycles
+            threads3,
+            {p(0): postdb.postset([p(0), p(1), p(2), p(3)]),
+             po(0): postdb.postset([po(0)]),
+             p(4): postdb.postset([p(4)]),
+             p(5): postdb.postset([p(5)])})
+        # `threads1` was not modified:
         self.assertEquals(
-            [ pi for pi in self._postdb.walk_cycles() ],
-            [])
-
-        # Testing cycles
-        self.introduce_cycle()
-        self.assertEquals(
-            [ pi for pi in self._postdb.walk_cycles() ],
-            [hklib.PostItem(pos='flat', post=self._posts[3], level=0),
-             hklib.PostItem(pos='flat', post=self._posts[5], level=0),
-             hklib.PostItem(pos='flat', post=self._posts[6], level=0),
-             hklib.PostItem(pos='flat', post=self._posts[7], level=0)])
+            threads1,
+            {p(0): postdb.postset([p(0), p(1), p(2), p(3)]),
+             po(0): postdb.postset([po(0)]),
+             p(4): postdb.postset([p(4)])})
 
 
 class Test_PostItem(unittest.TestCase):
 
+    """Tests :class:`hklib.PostItem`."""
+
     def test_str(self):
+        """Tests :func:`hklib.PostItem.__str__`."""
 
-        # Post with heapid
-        post = Post.from_str('', heapid=42)
-        postitem = PostItem(pos='begin', post=post, level=0)
+        # hklib.Post with heapid
+        post = hklib.Post.from_str('', post_id=('my_heap', 42))
+        postitem = hklib.PostItem(pos='begin', post=post, level=0)
         self.assertEquals(
             str(postitem),
-            "<PostItem: pos=begin, heapid='42', level=0>")
+            "<PostItem: pos=begin, post_id=my_heap/42, level=0>")
 
-        # Post without heapid
-        post = Post.from_str('')
-        postitem = PostItem(pos='begin', post=post, level=0)
+        # hklib.Post without heapid
+        post = hklib.Post.from_str('')
+        postitem = hklib.PostItem(pos='begin', post=post, level=0)
         self.assertEquals(
             str(postitem),
-            "<PostItem: pos=begin, heapid=None, level=0>")
+            "<PostItem: pos=begin, post_id=None, level=0>")
 
     def test_copy(self):
+        """Tests :func:`hklib.PostItem.copy`."""
 
         # We make a copy of a postitem...
-        post = Post.from_str('', heapid=42)
-        postitem = PostItem(pos='begin', post=post, level=0)
+        post = hklib.Post.from_str('', post_id=('my_heap', '42'))
+        postitem = hklib.PostItem(pos='begin', post=post, level=0)
         postitem2 = postitem.copy()
 
         # ...modify its data attributes...
-        post2 = Post.from_str('')
+        post2 = hklib.Post.from_str('')
         postitem.pos = 'end'
         postitem.post = post2
         postitem.level = 1
@@ -1165,14 +2165,15 @@ class Test_PostItem(unittest.TestCase):
         # not changed
         self.assertEquals(
             str(postitem2),
-            "<PostItem: pos=begin, heapid='42', level=0>")
+            "<PostItem: pos=begin, post_id=my_heap/42, level=0>")
 
     def test_eq(self):
+        """Tests :func:`hklib.PostItem.eq`."""
 
-        post = Post.from_str('', heapid=42)
-        postitem1 = PostItem(pos='begin', post=post, level=0)
-        postitem2 = PostItem(pos='begin', post=post, level=0)
-        postitem3 = PostItem(pos='end', post=post, level=0)
+        post = hklib.Post.from_str('', post_id=('my_heap', '42'))
+        postitem1 = hklib.PostItem(pos='begin', post=post, level=0)
+        postitem2 = hklib.PostItem(pos='begin', post=post, level=0)
+        postitem3 = hklib.PostItem(pos='end', post=post, level=0)
         postitem4 = postitem1.copy()
         postitem4.new_attr = 'something'
 
@@ -1183,47 +2184,46 @@ class Test_PostItem(unittest.TestCase):
 
 class Test_PostSet(unittest.TestCase, PostDBHandler):
 
-    """Tests the PostSet class."""
+    """Tests :class:`hklib.PostSet`."""
 
     def setUp(self):
         self.setUpDirs()
-
-        # 1 <- 2
-        #      3
-        postfile1 = self.postFileName('1.post')
-        postfile2 = self.postFileName('2.post')
-        postfile3 = self.postFileName('3.post')
-        hkutils.string_to_file('Message-Id: 1@', postfile1)
-        hkutils.string_to_file('Message-Id: 2@\nParent: 1@', postfile2)
-        hkutils.string_to_file('Message-Id: 3@\nParent: 1@', postfile3)
-        self._postdb = self.createPostDB()
+        self.create_postdb()
+        self.create_threadst()
 
     def tearDown(self):
         self.tearDownDirs()
 
     def test__empty(self):
+        """Tests the empty post set."""
+
         postdb = self._postdb
-        p1 = postdb.post('1')
-        p2 = postdb.post('2')
-        ps1 = PostSet(postdb, set())
+        ps1 = hklib.PostSet(postdb, set())
 
         self.assertNotEquals(ps1, set())
         self.assert_(ps1 != set())
         self.assertFalse(ps1 == set())
         self.assert_(ps1.is_set(set()))
 
-        self.assertEquals(ps1, PostSet(postdb, []))
-        self.assert_(ps1 == PostSet(postdb, []))
-        self.assertFalse(ps1 != PostSet(postdb, []))
+        self.assertEquals(ps1, hklib.PostSet(postdb, []))
+        self.assert_(ps1 == hklib.PostSet(postdb, []))
+        self.assertFalse(ps1 != hklib.PostSet(postdb, []))
 
     def test_copy(self):
-        """Tests PostSet.copy and PostSet.empty_clone."""
+        """Tests the following functions:
+
+        - :func:`hklib.PostSet.copy`
+        - :func:`hklib.PostSet.empty_clone`
+        """
 
         postdb = self._postdb
+        postdb.remove_post_from_dicts(self.p(0))
+        postdb.remove_post_from_dicts(self.p(4))
+        postdb.remove_post_from_dicts(self.po(0))
         ps_all = self._postdb.all().copy()
-        p1 = postdb.post('1')
-        p2 = postdb.post('2')
-        p3 = postdb.post('3')
+        p1 = self.p(1)
+        p2 = self.p(2)
+        p3 = self.p(3)
 
         ps1 = ps_all.copy()
         self.assert_(ps1 == ps_all)
@@ -1244,69 +2244,107 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         self.assert_(ps_all._postdb is ps2._postdb)
 
     def test__1(self):
+        """Tests the following functions:
+
+        - :func:`hklib.PostSet.__init__`
+        - :func:`hklib.PostSet._to_set`
+        - :func:`hklib.PostSet.__eq__`
+        - :func:`hklib.PostSet.__ne__`
+        - :func:`hklib.PostSet.is_set`
+        - :func:`hklib.PostSet.construct`
+        - :func:`hklib.PostSet.__and__`
+        - :func:`hklib.PostSet.__rand__`
+        - :func:`hklib.PostSet.intersection`
+        - :func:`hklib.PostSet.intersection_update`
+        - :func:`hklib.PostSet.__or__`
+        - :func:`hklib.PostSet.__ror__`
+        - :func:`hklib.PostSet.union`
+        - :func:`hklib.PostSet.update`
+        - :func:`hklib.PostSet.__sub__`
+        - :func:`hklib.PostSet.__rsub__`
+        - :func:`hklib.PostSet.difference`
+        - :func:`hklib.PostSet.difference_update`
+        - :func:`hklib.PostSet.__xor__`
+        - :func:`hklib.PostSet.__rxor__`
+        - :func:`hklib.PostSet.symmetric_difference`
+        - :func:`hklib.PostSet.symmetric_difference_update`
+        """
+
         postdb = self._postdb
-        p1 = postdb.post('1')
-        p2 = postdb.post('2')
-        p3 = postdb.post('3')
+        p = self.p
+        po = self.po
+        p1 = self.p(1)
+        p2 = self.p(2)
+        p3 = self.p(3)
 
-        # __init__, _to_set
-        ps0 = PostSet(postdb, set([p1]))
-        ps02 = PostSet(postdb, [p1])
-        ps03 = PostSet(postdb, p1)
-        psh1= PostSet(postdb, set(['1']))
-        psh2 = PostSet(postdb, ['1'])
-        psh3 = PostSet(postdb, '1')
-        psh4 = PostSet(postdb, 1)
-        self.assertEquals(ps0, ps02)
-        self.assertEquals(ps0, ps03)
-        self.assertEquals(ps0, psh1)
-        self.assertEquals(ps0, psh2)
-        self.assertEquals(ps0, psh3)
-        self.assertEquals(ps0, psh4)
+        ## Testing `__init__` and `_to_set`
 
-        ps01 = postdb.postset(set([p1]))
-        ps02 = postdb.postset([p1])
-        ps03 = postdb.postset(p1)
-        psh1= postdb.postset(set(['1']))
-        psh2 = postdb.postset(['1'])
-        psh3 = postdb.postset('1')
-        psh3 = postdb.postset(1)
-        self.assertEquals(ps0, ps01)
-        self.assertEquals(ps0, ps02)
-        self.assertEquals(ps0, ps03)
-        self.assertEquals(ps0, psh1)
-        self.assertEquals(ps0, psh2)
-        self.assertEquals(ps0, psh3)
-        self.assertEquals(ps0, psh4)
+        ps0 = hklib.PostSet(postdb, set([p1]))
+        ps1 = hklib.PostSet(postdb, [p1])
+        ps2 = hklib.PostSet(postdb, p1)
+        ps3 = hklib.PostSet(postdb, set([('my_heap', '1')]))
+        ps3 = hklib.PostSet(postdb, set([('my_heap', 1)]))
+        ps4 = hklib.PostSet(postdb, set(['my_heap/1']))
+        ps5 = hklib.PostSet(postdb, [('my_heap', '1')])
+        ps6 = hklib.PostSet(postdb, [('my_heap', 1)])
+        ps7 = hklib.PostSet(postdb, ['my_heap/1'])
+        ps8 = hklib.PostSet(postdb, ('my_heap', '1'))
+        ps9 = hklib.PostSet(postdb, ('my_heap', 1))
+        ps10 = hklib.PostSet(postdb, 'my_heap/1')
+        self.assertEquals(ps0, ps1)
+        self.assertEquals(ps0, ps2)
+        self.assertEquals(ps0, ps3)
+        self.assertEquals(ps0, ps4)
+        self.assertEquals(ps0, ps5)
+        self.assertEquals(ps0, ps6)
+        self.assertEquals(ps0, ps7)
+        self.assertEquals(ps0, ps8)
+        self.assertEquals(ps0, ps9)
+        self.assertEquals(ps0, ps10)
 
-        ps1 = PostSet(postdb, set([p1, p2]))
-        ps2 = PostSet(postdb, set([p2, p3]))
-        ps3 = PostSet(postdb, [p2, p3])
-        ps4 = PostSet(postdb, ps3)
-        self.assertNotEquals(ps1, ps2)
-        self.assertEquals(ps2, ps3)
-        self.assertEquals(ps2, ps4)
+        self.assertRaises(
+            hklib.PostNotFoundError,
+            lambda: hklib.PostSet(postdb, 'nosuchpost'))
 
-        def f():
-            PostSet(postdb, 'nosuchpost')
-        self.assertRaises(KeyError, f)
+        self.assertRaises(
+            TypeError,
+            lambda: hklib.PostSet(postdb, 1.0))
 
-        def f():
-            PostSet(postdb, 1.0)
-        self.assertRaises(TypeError, f)
+        ## Creating the post sets that will be used for the tests
 
-        # is_set
+        ps1 = hklib.PostSet(postdb, set([p1, p2]))
+        ps2 = hklib.PostSet(postdb, set([p2, p3]))
+        ps3 = hklib.PostSet(postdb, [p2, p3])
+        ps4 = hklib.PostSet(postdb, ps3)
+
+        ## Testing `__eq__` and `__ne__`
+
+        self.assert_(ps1 != ps2)
+        self.assert_(ps2 == ps3)
+        self.assert_(ps2 == ps4)
+
+        self.assertFalse(ps1 == ps2)
+        self.assertFalse(ps2 != ps3)
+        self.assertFalse(ps2 != ps4)
+
+        ## Testing `is_set`
+
         self.assert_(ps0.is_set(set([p1])))
         self.assert_(ps0.is_set([p1]))
         self.assert_(ps0.is_set(p1))
-        self.assert_(ps1.is_set((p1, p2)))
         self.assert_(ps1.is_set([p1, p2]))
         self.assert_(ps2.is_set(ps3))
 
-        # &, |, -, ^
-        ps1 = PostSet(postdb, [p1, p2])
-        ps2 = PostSet(postdb, [p1, p3])
-        ps3 = PostSet(postdb, [p2, p3])
+        # If the argument of `is_set` is a tuple, it is assumed to be a post id
+        self.assertRaises(
+            hklib.PostNotFoundError,
+            lambda: ps1.is_set((p1, p2)))
+
+        ## Testing &, |, -, ^
+
+        ps1 = hklib.PostSet(postdb, [p1, p2])
+        ps2 = hklib.PostSet(postdb, [p1, p3])
+        ps3 = hklib.PostSet(postdb, [p2, p3])
         ps1l = [p1, p2]
         ps2l = [p1, p3]
         ps3l = [p2, p3]
@@ -1315,6 +2353,7 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
             self.assert_(postset.is_set(s))
 
         # &, intersection
+
         test(ps1 & ps2, [p1])
         test(ps1 & ps2l, [p1])
         test(ps1l & ps2, [p1])
@@ -1330,6 +2369,7 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         test(ps1c, [p1])
 
         # |, union
+
         test(ps1.union(ps2l), [p1, p2, p3])
         test(ps1 | ps2, [p1, p2, p3])
         test(ps1 | ps2l, [p1, p2, p3])
@@ -1345,6 +2385,7 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         test(ps1c, [p1, p2, p3])
 
         # -, difference
+
         test(ps1.difference(ps2l), [p2])
         test(ps1 - ps2l, [p2])
         test(ps1l - ps2, [p2])
@@ -1359,6 +2400,7 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         test(ps1c, [p2])
 
         # ^, symmetric_difference
+
         test(ps1.symmetric_difference(ps2l), [p2, p3])
         test(ps1 ^ ps2, [p2, p3])
         test(ps1 ^ ps2l, [p2, p3])
@@ -1373,49 +2415,51 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         ps1c.symmetric_difference_update(ps2)
         test(ps1c, [p2, p3])
 
-        # PostSet.construct
+        ## PostSet.construct
+
         test(ps1 & set([p1, p3]), [p1])
         test(ps1 & [p1, p3], [p1])
         test(ps1 & p1, [p1])
-        test(ps1 & '1', [p1])
-        test(ps1 & 1, [p1])
+        test(ps1 & 'my_heap/1', [p1])
         test(set([p1, p3]) & ps1, [p1])
         test([p1, p3] & ps1, [p1])
         test(p1 & ps1, [p1])
-        test('1' & ps1, [p1])
-        test(1 & ps1, [p1])
+        test('my_heap/1' & ps1, [p1])
 
-        def f():
-            test(ps1 & 1.0, [p1])
-        self.assertRaises(TypeError, f)
+        self.assertRaises(
+            TypeError,
+            lambda: test(ps1 & 1.0, [p1]))
 
-        def f():
-            test(1.0 & ps1, [p1])
-        self.assertRaises(TypeError, f)
+        self.assertRaises(
+            TypeError,
+            lambda: test(1.0 & ps1, [p1]))
 
-        # PostDB.all
-        ps_all = PostSet(postdb, [p1, p2, p3])
-        ps2 = PostSet(postdb, set([p2, p3]))
+        ## Testing PostDB.all
+
+        ps_all = hklib.PostSet(postdb, [p(0), p(1), p(2), p(3), p(4), po(0)])
+        ps2 = hklib.PostSet(postdb, set([p(0), p(2), p(3), p(4), po(0)]))
         self.assertEquals(ps_all, postdb.all())
         p1.delete()
         self.assertEquals(ps2, postdb.all())
 
-        # clear, update
+        ## Testing `clear` and `update`
+
         ps1.clear()
         self.assert_(ps1.is_set([]))
         ps1.update(set([p1, p2]))
         self.assert_(ps1.is_set([p1, p2]))
 
     def test_get_attr(self):
-        """Tests the PostSet.__get_attr__ method."""
+        """Tests :func:`hklib.PostSet.__get_attr__`."""
 
         postdb = self._postdb
-        def f():
-            PostSet(postdb, []).nonexisting_method
-        self.assertRaises(AttributeError, f)
+        self.assertRaises(
+            AttributeError,
+            lambda: hklib.PostSet(postdb, []).nonexisting_method)
 
     def test_forall(self):
-        """Tests the PostSet.forall method."""
+        """Tests :func:`hklib.PostSet.forall` and
+        :class:`hklib.PostSetForallDelegate`."""
 
         def testSubjects(s1, s2, s3):
             self.assertEquals(s1, p1.subject())
@@ -1423,38 +2467,41 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
             self.assertEquals(s3, p3.subject())
 
         postdb = self._postdb
-        p1 = postdb.post('1')
-        p2 = postdb.post('2')
-        p3 = postdb.post('3')
-        testSubjects('', '', '')
+        p1 = self.p(1)
+        p2 = self.p(2)
+        p3 = self.p(3)
+        testSubjects('subject1', 'subject2', 'subject3')
 
-        PostSet(postdb, []).forall.set_subject('x')
-        testSubjects('', '', '')
-        PostSet(postdb, [p1]).forall.set_subject('x')
-        testSubjects('x', '', '')
+        hklib.PostSet(postdb, []).forall.set_subject('x')
+        testSubjects('subject1', 'subject2', 'subject3')
+        hklib.PostSet(postdb, [p1]).forall.set_subject('x')
+        testSubjects('x', 'subject2', 'subject3')
         postdb.all().forall(lambda p: p.set_subject('z'))
         testSubjects('z', 'z', 'z')
         postdb.all().forall.set_subject('y')
         testSubjects('y', 'y', 'y')
 
         # Nonexisting methods will cause exceptions...
-        def f():
-            postdb.all().forall.nonexisting_method()
-        self.assertRaises(AttributeError, f)
+        self.assertRaises(
+            AttributeError,
+            lambda: postdb.all().forall.nonexisting_method())
 
         # ...unless the postset is empty
-        PostSet(postdb, []).forall.nonexisting_method()
+        hklib.PostSet(postdb, []).forall.nonexisting_method()
         testSubjects('y', 'y', 'y')
 
     def test_collect(self):
-        """Tests the PostSet.collect method."""
+        """Tests :func:`hklib.PostSet.collect` and
+        :class:`hklib.PostSetCollectDelegate`."""
 
         postdb = self._postdb
-        p1 = postdb.post('1')
+        p = self.p
+        po = self.po
+        p1 = self.p(1)
+        p2 = self.p(2)
+        p3 = self.p(3)
         p1.set_tags(['t1'])
-        p2 = postdb.post('2')
         p2.set_tags(['t2'])
-        p3 = postdb.post('3')
         p3.set_tags(['t1'])
 
         ps1 = postdb.all().collect.has_tag('t1')
@@ -1462,34 +2509,16 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         ps2 = postdb.all().collect(lambda p: False)
         self.assert_(ps2.is_set([]))
         ps3 = postdb.all().collect(lambda p: True)
-        self.assert_(ps3.is_set([p1, p2, p3]))
+        self.assert_(ps3.is_set([p(0), p(1), p(2), p(3), p(4), po(0)]))
         ps4 = postdb.all().collect(lambda p: p.has_tag('t1'))
         self.assert_(ps4.is_set([p1, p3]))
 
-        def f():
-            postdb.all().collect(lambda p: None)
-        self.assertRaises(AssertionError, f)
+        self.assertRaises(
+            AssertionError,
+            lambda: postdb.all().collect(lambda p: None))
 
         ps_roots = postdb.all().collect.is_root()
-        self.assert_(ps_roots.is_set([p1]))
-
-
-class Test_PostSet__threads(unittest.TestCase, PostDBHandler):
-
-    """Tests thread centric methods of the PostSet class."""
-
-    # Thread structure:
-    # 0 <- 1 <- 2
-    #   <- 3
-    # 4
-
-    def setUp(self):
-        self.setUpDirs()
-        self._postdb = self.createPostDB()
-        self.create_threadst()
-
-    def tearDown(self):
-        self.tearDownDirs()
+        self.assert_(ps_roots.is_set([p(0), po(0), p(4)]))
 
     def _test_exp(self, methodname):
         """Tests the PostSet's method that has the given name.
@@ -1502,15 +2531,25 @@ class Test_PostSet__threads(unittest.TestCase, PostDBHandler):
         1. The heapids of the posts of the input postset.
         2. The heapids of the posts of the expected output postset.
 
-        The following equality tested:
-        input_postset.methodname() = output_postset
+        The following equality tested::
+
+            input_postset.methodname() = output_postset
+
+        For example the following calls ::
+
+            test = self._test_exp('expb')
+            test('02', '012')
+
+        will test that ::
+
+            postdb.postset([self.p('0'), self.p('2')]).expb() ==
+            postdb.postset([self.p('0'), self.p('1'), self.p('2')])
         """
 
-        def test_exp_2(heapids_1, heapids_2):
-            p = self._posts
-            posts_1 = [ self._posts[int(i)] for i in heapids_1 ]
-            posts_2 = [ self._posts[int(i)] for i in heapids_2 ]
-            ps = PostSet(self._postdb, posts_1)
+        def test_exp_2(post_indices_1, post_indices_2):
+            posts_1 = [ self.p(i) for i in post_indices_1 ]
+            posts_2 = [ self.p(i) for i in post_indices_2 ]
+            ps = hklib.PostSet(self._postdb, posts_1)
 
             # Testing that the real output is the expected output.
             self.assert_(eval('ps.' + methodname + '()').is_set(posts_2))
@@ -1521,6 +2560,8 @@ class Test_PostSet__threads(unittest.TestCase, PostDBHandler):
         return test_exp_2
 
     def test_expb(self):
+        """Tests :func:`hklib.PostSet.expb`."""
+
         test = self._test_exp('expb')
 
         # 0 in, 4 out
@@ -1564,6 +2605,8 @@ class Test_PostSet__threads(unittest.TestCase, PostDBHandler):
         test('1234', '01234')
 
     def test_expf(self):
+        """Tests :func:`hklib.PostSet.expf`."""
+
         test = self._test_exp('expf')
 
         # 0 in, 4 out
@@ -1607,6 +2650,8 @@ class Test_PostSet__threads(unittest.TestCase, PostDBHandler):
         test('1234', '1234')
 
     def test_exp(self):
+        """Tests :func:`hklib.PostSet.exp`."""
+
         test = self._test_exp('exp')
 
         # 0 in, 4 out
@@ -1650,8 +2695,14 @@ class Test_PostSet__threads(unittest.TestCase, PostDBHandler):
         test('1234', '01234')
 
     def test_sorted_list(self):
-        ps = self._postdb.postset(self._posts)
-        self.assertEquals(ps.sorted_list(), self._posts)
+        """Tests :func:`hklib.PostSet.sorted_list`."""
+
+        p = self.p
+        po = self.po
+        postdb = self._postdb
+        self.assertEquals(
+            postdb.all().sorted_list(),
+            [p(0), po(0), p(1), p(2), p(3), p(4)])
 
 
 if __name__ == '__main__':

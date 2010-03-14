@@ -30,10 +30,10 @@ Generator
     .. automethod:: print_postitem_tags
     .. automethod:: print_postitem_threadlink_core
     .. automethod:: print_postitem_threadlink
-    .. automethod:: print_postitem_heapid_core
-    .. automethod:: print_postitem_heapid
-    .. automethod:: print_postitem_parent_heapid_core
-    .. automethod:: print_postitem_parent_heapid
+    .. automethod:: print_postitem_post_id_core
+    .. automethod:: print_postitem_post_id
+    .. automethod:: print_postitem_parent_post_id_core
+    .. automethod:: print_postitem_parent_post_id
     .. automethod:: format_timestamp
     .. automethod:: print_postitem_date_core
     .. automethod:: print_postitem_date

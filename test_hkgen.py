@@ -44,25 +44,27 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
     def setUp(self):
         """Creates a temporary working directory."""
+
         self.setUpDirs()
+        self.create_postdb()
+        self.create_threadst()
+
         self._orig_workingdir = os.getcwd()
+        self._generator = hkgen.Generator(self._postdb)
+        self.create_postitems()
 
     def tearDown(self):
         """Deletes the temporary working directory."""
         os.chdir(self._orig_workingdir)
         self.tearDownDirs()
 
-    def p(self, postindex):
-        """Returns the post with the given index.
+    def get_ouv(self):
+        """Returns often used variables.
 
-        **Argument:**
-
-        - `postindex` (int)
-
-        **Returns:** |Post|
+        **Return:** (|PostDB|, |Generator|, function)
         """
 
-        return self._posts[postindex]
+        return self._postdb, self._generator, self.p
 
     def create_postitems(self):
         """Creates a list of post items.
@@ -75,24 +77,6 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
              hklib.PostItem(pos='begin', post=self.p(1), level=1),
              hklib.PostItem(pos='end', post=self.p(1), level=1),
              hklib.PostItem(pos='end', post=self.p(0), level=0)]
-
-    def init(self, create_threadst=True):
-        """Creates a post database and post items.
-
-        **Argument:**
-
-        - `create_threadst` (bool) -- If ``True``, a thread structure will be
-          created in the post database.
-
-        **Returns:** (|PostDB|, |Generator|, ``self.p``)
-        """
-
-        postdb = self._postdb = self.createPostDB()
-        g = hkgen.Generator(postdb)
-        if create_threadst:
-            self.create_threadst()
-        self.create_postitems()
-        return postdb, g, self.p
 
     def assertTextStructsAreEqual(self, text1, text2):
         """Asserts that the given text structures are equal.
@@ -119,7 +103,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def test_escape(self):
         """Tests :func:`hkgen.Generator.escape`."""
 
-        postdb, g, p = self.init()
+        _postdb, g, _p = self.get_ouv()
 
         def test(unescaped, escaped):
             self.assertTextStructsAreEqual(
@@ -133,7 +117,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def test_print_link(self):
         """Tests :func:`hkgen.Generator.link`."""
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
 
         self.assertTextStructsAreEqual(
             g.print_link('mylink', 'mystuff'),
@@ -145,7 +129,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def test_enclose(self):
         """Tests :func:`hkgen.Generator.enclose`."""
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
 
         # Just the one mandatory parameter
         self.assertTextStructsAreEqual(
@@ -228,7 +212,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def test_section_begin(self):
         """Tests :func:`hkgen.section_begin`."""
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
 
         # myid='', section_begin=''
         self.assertTextStructsAreEqual(
@@ -255,7 +239,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def test_section_end(self):
         """Tests :func:`hkgen.section_end`."""
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
 
         # myid='', section_begin=''
         self.assertTextStructsAreEqual(
@@ -265,7 +249,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def test_section(self):
         """Tests :func:`hkgen.Generator.section`."""
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
 
         self.assertTextStructsAreEqual(
             g.section('mysecid', 'mysectitle', 'myhtmltext'),
@@ -282,7 +266,8 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def test_format_timestamp(self):
         """Tests :func:`hkgen.Generator.format_timestamp`."""
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
+
         g.options.localtime_fun = time.gmtime
         self.assertEquals(
             g.format_timestamp(p(0).timestamp()),
@@ -291,7 +276,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def test_print_postitem_main(self):
         """Tests :func:`hkgen.Generator.print_postitem_main`."""
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
         def enc(class_, content):
             return g.enclose(content, class_=class_)
 
@@ -301,8 +286,10 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
-        post_link = g.print_link('thread_0.html#post_0', '&lt;0&gt;')
-        thread_link = g.print_link('thread_0.html', '<img src="thread.png" />')
+        post_link = g.print_link('my_heap/thread_0.html#post_my_heap/0',
+                                 '&lt;my_heap/0&gt;')
+        thread_link = g.print_link('my_heap/thread_0.html',
+                                   '<img src="thread.png" />')
         expected_header = \
             [enc('author', 'author0'), '\n',
              enc('subject', 'subject0'), '\n',
@@ -315,7 +302,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose(
                 expected_header,
                 class_='postsummary',
-                id='post_0',
+                id='post_my_heap/0',
                 newlines=True,
                 closing_comment=True))
 
@@ -337,14 +324,14 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose(
                 (expected_header, expected_body),
                 class_='postsummary',
-                id='post_0',
+                id='post_my_heap/0',
                 newlines=True,
                 closing_comment=True))
 
     def test_print_postitem_flat(self):
         """Tests :func:`hkgen.Generator.print_postitem_flat`."""
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
         def enctd(class_, content, tag):
             return \
                 g.enclose(
@@ -357,7 +344,8 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
-        post_link = g.print_link('thread_0.html#post_0', '&lt;0&gt;')
+        post_link = g.print_link('my_heap/thread_0.html#post_my_heap/0',
+                                 '&lt;my_heap/0&gt;')
         expected_header = \
             g.enclose(
                 (enctd('author', 'author0', 'td'), '\n',
@@ -411,7 +399,8 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         hkutils.add_method(g, 'print_postitem_date', print_postitem_date)
 
-        post_link = g.print_link('thread_0.html#post_0', '&lt;0&gt;')
+        post_link = g.print_link('my_heap/thread_0.html#post_my_heap/0',
+                                 '&lt;my_heap/0&gt;')
         expected_header = \
             [enctd('author', 'author0', 'td'), '\n',
              enctd('subject', 'subject0', 'td'), '\n',
@@ -436,7 +425,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         - :func:`hkgen.Generator.walk_postitems`
         """
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
         postitems = list(g.walk_postitems(self.postitems))
 
         # We check that postitems[0] is only a copy of self.postitems
@@ -453,7 +442,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def test_print_postitems(self):
         """Tests :func:`hkgen.Generator.print_postitem`."""
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
         postitems = list(g.walk_postitems(self.postitems))
         self.assertTextStructsAreEqual(
             g.print_postitems(postitems),
@@ -471,7 +460,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         - :func:`hkgen.Generator.write_main_index_page`
         """
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
 
         # Testing when there are no cycles
 
@@ -501,6 +490,11 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                   g.print_postitems(g.walk_thread(None))),
              g.print_html_footer()])
 
+        self.assertEquals(
+            self.pop_log(),
+            ('Generating index.html...\n'
+             'Generating index.html...'))
+
     def test_write_post_pages(self):
         """Tests the following functions:
 
@@ -508,13 +502,13 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         - :func:`hkgen.Generator.write_post_pages`
         """
 
-        postdb, g, p = self.init()
+        postdb, g, p = self.get_ouv()
         pi_begin = hklib.PostItem('begin', p(0), 0)
         pi_main = hklib.PostItem('main', p(0), 0)
         pi_end = hklib.PostItem('end', p(0), 0)
         pi_begin.print_post_body = True
         pi_main.print_post_body = True
-        g.options.html_title = 'Post 0'
+        g.options.html_title = 'Post my_heap/0'
 
         expected_content = \
             (g.print_html_header(),
@@ -525,7 +519,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         g.write_post_pages(write_all=True)
         self.assertTextStructsAreEqual(
-            self.file_content('0.html'),
+            self.file_content('my_heap/0.html'),
             expected_content)
 
         postitems = [pi_begin, pi_end]
@@ -534,6 +528,11 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
              [g.print_postitem(pi_begin),
               g.print_postitem(pi_end)],
              g.print_postitems(g.walk_postitems(postitems)))
+
+        self.assertEquals(
+            self.pop_log(),
+            ('Generating post pages...\n'
+             'Generating post pages...'))
 
 
 if __name__ == '__main__':
