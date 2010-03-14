@@ -263,6 +263,47 @@ def gen_indices_fast(postdb):
 hkshell.options.callbacks.gen_indices = gen_indices
 
 @hkshell.hkshell_cmd()
+def check_heap_links():
+    """Checks that the heap links in post bodies are not broken.
+
+    A few posts are ignored because they only discuss using "heap://" and not
+    actually use it.
+
+    **Returns:** |PostSet| -- The set of posts that contain broken link.
+    """
+
+    postdb = hkshell.postdb()
+
+    # These posts contain the "heap://" text, but they are OK.
+    ignored_posts = [
+        '<499FFF71.6060401@gmail.com>',
+        '<b29f917d0905230006sac1db4j1aca2a5398cdef6f@mail.gmail.com>',
+        '<49B112C3.8050503@gmail.com>',
+        '<b29f917d0903060004l71f863c1nbd59ae6da3ef9ab6@mail.gmail.com>',
+        '<4A179AE7.5040208@gmail.com>',
+        '<49B28509.4000900@gmail.com>',
+        '<48F84B73.1090705@gmail.com>',
+        '<20100211110220.60214472.nagy.attila.1984@gmail.com>',
+        '<4B767962.2080005@gmail.com>',
+        '<20090518011928.99444ebf.nagy.attila.1984@gmail.com>',
+        '<b29f917d0903020558sd17004dv4dd8da731ddb6ee5@mail.gmail.com>',
+        '<4AF7022B.5000301@gmail.com>',
+    ]
+    ignored_posts = postdb.postset(ignored_posts)
+
+    broken_posts = postdb.postset([])
+    for post in postdb.all().sorted_list():
+        for segment in post.body_object().segments:
+            if segment.type == 'heap_link':
+                target_pre = segment.get_prepost_id_str()
+                target_post = postdb.post(target_pre, post.heap_id())
+                if (target_post is None) and (post not in ignored_posts):
+                    broken_posts.add(post)
+                    s = 'Broken link in %s to "%s"' % (post, target_pre)
+                    hkshell.options.output.write(s + '\n')
+    return broken_posts
+
+@hkshell.hkshell_cmd()
 def R(pps):
     """Mark thread as reviewed."""
     hkshell.aTr(pps, 'reviewed')
