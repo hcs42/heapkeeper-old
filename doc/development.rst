@@ -267,6 +267,8 @@ Pushing to your GitHub repository
 
     $ hcs/testhtml [COMMIT_1] [COMMIT_2] ...
 
+* Check that post downloading works.
+
 * Push the changes::
 
     $ git push origin <branch>
