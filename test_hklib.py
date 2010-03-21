@@ -1299,10 +1299,8 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # "paths/heaps" is specified
 
-        config = ConfigParser.ConfigParser()
-        config.add_section('paths')
-        config.set('paths', 'heaps',
-                   'my_heap1:my_heap_dir_1;my_heap2:my_heap_dir_2')
+        config = {'paths': {'heaps':
+                  'my_heap1:my_heap_dir_1;my_heap2:my_heap_dir_2'}}
 
         heaps = hklib.PostDB.get_heaps_from_config(config)
         self.assertEqual(
@@ -1312,10 +1310,8 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # Testing whitespace stripping
 
-        config = ConfigParser.ConfigParser()
-        config.add_section('paths')
-        config.set('paths', 'heaps',
-                   ' my_heap1 : my_heap_dir_1 ; my_heap2 : my_heap_dir_2 ')
+        config = {'paths': {'heaps':
+                  ' my_heap1 : my_heap_dir_1 ; my_heap2 : my_heap_dir_2 '}}
 
         heaps = hklib.PostDB.get_heaps_from_config(config)
         self.assertEqual(
@@ -1325,9 +1321,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # No "paths/heaps", only "paths/mail"
 
-        config = ConfigParser.ConfigParser()
-        config.add_section('paths')
-        config.set('paths', 'mail', 'my_heap_dir')
+        config = {'paths': {'mail': 'my_heap_dir'}}
 
         heaps = hklib.PostDB.get_heaps_from_config(config)
         self.assertEqual(
@@ -1341,7 +1335,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # Neither "paths/heaps", nor "paths/mail" is specified
 
-        config = ConfigParser.ConfigParser()
+        config = {}
         self.assertRaises(
             hkutils.HkException,
             lambda: hklib.PostDB.get_heaps_from_config(config))
@@ -1359,10 +1353,8 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         html_dir = os.path.join(self._dir, 'new_html_dir')
         os.mkdir(html_dir)
 
-        config = ConfigParser.ConfigParser()
-        config.add_section('paths')
-        config.set('paths', 'html', html_dir)
-        config.set('paths', 'heaps', 'new_heap:' + new_heap_dir)
+        config = {'paths': {'html': html_dir,
+                            'heaps': 'new_heap:' + new_heap_dir}}
 
         postdb.read_config(config)
 

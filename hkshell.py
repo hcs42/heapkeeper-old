@@ -287,7 +287,7 @@ class Options(object):
 
     **Data attributes:**
 
-    - `config` (ConfigParser.ConfigParser) -- Configuration object.
+    - `config` (|ConfigDict|) -- Configuration object.
     - `output` (|Writable|) -- When |hkshell| wants to print something, it
       calls `output`'s write method.
       Default value: ``sys.stdout``
@@ -1658,8 +1658,9 @@ def read_postdb(configfile):
     except IOError:
         hklib.log('Config file not found: "%s"' % (configfile,))
         sys.exit(1)
+    configdict = hkutils.configparser_to_configdict(config)
     postdb = hklib.PostDB()
-    postdb.read_config(config)
+    postdb.read_config(configdict)
     return config, postdb
 
 def init():

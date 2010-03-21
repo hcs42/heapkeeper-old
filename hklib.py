@@ -1658,14 +1658,14 @@ class PostDB(object):
 
         **Argument:**
 
-        - `config` (ConfigParser.ConfigParser)
+        - `config` (|ConfigDict|)
 
         **Returns:** {|HeapId|: str} -- The directory that stores the heap is
         assigned to each heap.
         """
 
-        if not config.has_option('paths', 'heaps'):
-            if not config.has_option('paths', 'mail'):
+        if 'heaps' not in config.get('paths', {}):
+            if 'mail' not in config.get('paths', {}):
                 raise hkutils.HkException('Config file does not contain a '
                                           '"heaps" section.')
             else:
@@ -1673,10 +1673,10 @@ class PostDB(object):
                 log('Config file contains a "paths/mail" option that should '
                     'be replaced by "paths/heaps". See the documentation for '
                     'more information.')
-                heap_path = config.get('paths', 'mail')
+                heap_path = config['paths']['mail']
                 return {'': heap_path}
 
-        heaps_raw = config.get('paths', 'heaps').split(';')
+        heaps_raw = config['paths']['heaps'].split(';')
         heaps = {}
         for heap_raw in heaps_raw:
             try:
@@ -1700,11 +1700,11 @@ class PostDB(object):
 
         **Argument:**
 
-        - `config` (ConfigParser.ConfigParser)
+        - `config` (|ConfigDict|)
         """
 
         heaps = self.get_heaps_from_config(config)
-        html_dir = config.get('paths', 'html')
+        html_dir = config['paths']['html']
 
         for heap_id, heap_dir in heaps.iteritems():
             self.add_heap(heap_id, heap_dir)
@@ -3050,10 +3050,10 @@ class EmailDownloader(object):
         """Connects to the IMAP server."""
 
         log('Reading settings...')
-        host = self._config.get('server', 'host')
-        port = int(self._config.get('server', 'port'))
-        username = self._config.get('server', 'username')
-        password = self._config.get('server', 'password')
+        host = self._config['server']['host']
+        port = int(self._config['server']['port'])
+        username = self._config['server']['username']
+        password = self._config['server']['password']
         log('Connecting...')
         self._server = imaplib.IMAP4_SSL(host, port)
         self._server.login(username, password)
@@ -3166,10 +3166,10 @@ class EmailDownloader(object):
         post.remove_newlines_from_subject()
         post.normalize_subject()
 
-        if self._config.has_section('nicknames'):
-            for entry, author_regex in self._config.items('nicknames'):
-                [author, regex] = \
-                    self._config.get('nicknames', entry).split(' ',1)
+        nicknames = self._config.get('nicknames')
+        if nicknames is not None:
+            for entry, author_regex in nicknames:
+                [author, regex] = nicknames[entry].split(' ', 1)
                 if re.search(regex, post.author()) != None:
                     post.set_author(author)
                     break
