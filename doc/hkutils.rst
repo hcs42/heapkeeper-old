@@ -50,5 +50,6 @@ Miscellaneous
 .. autofunction:: plural
 .. autofunction:: add_method
 .. autofunction:: insert_sep
+.. autofunction:: configparser_to_configdict
 .. autoclass:: NOT_SET
 

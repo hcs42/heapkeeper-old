@@ -28,6 +28,7 @@ Usage:
 
 from __future__ import with_statement
 
+import ConfigParser
 import StringIO
 import unittest
 
@@ -249,6 +250,113 @@ class Test__Misc(unittest.TestCase):
         self.assertEqual(
             hkutils.insert_sep((1, 2, 3), 0),
             [1, 0, 2, 0, 3])
+
+    def test_configparser_to_configdict(self):
+        """Tests :func:`hkutils.configparser_to_configdict`."""
+
+        ## Basic tests
+
+        # Basic test
+        configparser = ConfigParser.ConfigParser()
+        configparser.add_section('section')
+        configparser.set('section', 'key', 'value')
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {'section': {'key': 'value'}})
+
+        # Testing empty configparser
+        configparser = ConfigParser.ConfigParser()
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {})
+
+        ## Testing subsections
+
+        # Testing subsection
+        configparser = ConfigParser.ConfigParser()
+        configparser.add_section('section/subsection')
+        configparser.set('section/subsection', 'key', 'value')
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {'section': {'subsection': {'key': 'value'}}})
+
+        # Testing subsubsection
+        configparser = ConfigParser.ConfigParser()
+        configparser.add_section('section/subsection/subsubsection')
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {'section': {'subsection': {'subsubsection': {}}}})
+
+        # Testing when we have both section and subsection
+        configparser = ConfigParser.ConfigParser()
+        configparser.add_section('section')
+        configparser.add_section('section/subsection')
+        configparser.set('section', 'key', 'value')
+        configparser.set('section/subsection', 'key sub', 'value sub')
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {'section': {'key': 'value',
+                         'subsection': {'key sub': 'value sub'}}})
+
+        ## Testing key-value pairs
+
+        # Testing empty section (=no key-value pair)
+        configparser = ConfigParser.ConfigParser()
+        configparser.add_section('section')
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {'section': {}})
+
+        # Testing several key-value pairs
+        configparser = ConfigParser.ConfigParser()
+        configparser.add_section('section')
+        configparser.set('section', 'key', 'value')
+        configparser.set('section', 'key2', 'value2')
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {'section': {'key': 'value' ,
+                         'key2': 'value2'}})
+
+        # Testing conflicting key-value pairs
+        configparser = ConfigParser.ConfigParser()
+        configparser.add_section('section')
+        configparser.set('section', 'key', 'value1')
+        configparser.set('section', 'key', 'value2')
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {'section': {'key': 'value2'}})
+
+        # Testing the same key in different sections
+        configparser = ConfigParser.ConfigParser()
+        configparser.add_section('section1')
+        configparser.add_section('section2')
+        configparser.add_section('section1/subsection')
+        configparser.set('section1', 'key', 'value1')
+        configparser.set('section2', 'key', 'value2')
+        configparser.set('section1/subsection', 'key', 'value sub')
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {'section1': {'key': 'value1',
+                          'subsection': {'key': 'value sub'}},
+             'section2': {'key': 'value2'}})
+
+        ## Testing funny section names
+
+        # Testing empty section name
+        configparser = ConfigParser.ConfigParser()
+        configparser.add_section('')
+        configparser.set('', 'key', 'value')
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {'': {'key': 'value'}})
+
+        # Testing empty subsection name
+        configparser = ConfigParser.ConfigParser()
+        configparser.add_section('/')
+        configparser.set('/', 'key', 'value')
+        self.assertEqual(
+            hkutils.configparser_to_configdict(configparser),
+            {'': {'': {'key': 'value'}}})
 
 
 if __name__ == '__main__':

@@ -50,6 +50,18 @@ types in the documentation so we can talk about them easily.
             yield 'in 1982.'
 
   Real type: str | iterable(|TextStruct|)
+
+.. _hkutils_ConfigItem:
+
+- **ConfigItem** -- A recursive structure that represents a configuration item.
+
+  Real type: str | {str: |ConfigItem|}
+
+.. _hkutils_ConfigDict:
+
+- **ConfigDict** -- A dictionary that represents a configuration.
+
+  Real type: {str: |ConfigItem|}
 """
 
 from __future__ import with_statement
@@ -427,6 +439,59 @@ def insert_sep(seq, separator):
             result.append(separator)
         result.append(item)
     return result
+
+
+def configparser_to_configdict(configparser):
+    """Converts a ConfigParser to a |ConfigDict| object.
+
+    If a section of the ConfigParser object contains a ``/`` character, it will
+    a subsection. If it contains two ``/`` characters, it will be a
+    subsubsection. This rule applies to any number of ``/`` characters.
+
+    **Argument:**
+
+    - `configparser` (ConfigParser)
+
+    **Returns:** |ConfigDict|
+
+    **Example:**
+
+    Input file for the configparser::
+
+        [paths]
+        html_dir=/home/me/html
+
+        [heaps/hh]
+        heap_id=hh
+        name=Heapkeeper heap
+        path=/home/me/hh
+
+        [heaps/personal]
+        heap_id=my
+        name=Personal heap
+        path=/home/me/personal
+
+    The return value of :func:`configparser_to_configdict`::
+
+        {'paths': {'html_dir': '/home/me/html'},
+         'heaps': {'hh': {'heap_id': 'hh',
+                          'name': 'Heapkeeper heap',
+                          'path': '/home/me/hh'},
+                   'personal': {'heap_id': 'my',
+                                'name': 'Personal heap',
+                                'path': '/home/me/personal'}}}
+    """
+
+    main_dict = {}
+    for section in configparser.sections():
+        section_parts = section.split('/')
+        section_dict = main_dict
+        for section_part in section_parts:
+            section_dict = section_dict.setdefault(section_part, {})
+        for option in configparser.options(section):
+            value = configparser.get(section, option)
+            section_dict[option] = value
+    return main_dict
 
 
 ##### Constants #####

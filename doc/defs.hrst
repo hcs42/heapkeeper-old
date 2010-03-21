@@ -11,6 +11,8 @@
 .. |Callbacks| replace:: :class:`Callbacks <hkshell.Callbacks>`
 .. |cat| replace:: :func:`cat <hkshell.cat>`
 .. |collect| replace:: :class:`collect <hklib.PostSetCollectDelegate>`
+.. |ConfigDict| replace:: :ref:`ConfigDict <hkutils_ConfigDict>`
+.. |ConfigItem| replace:: :ref:`ConfigItem <hkutils_ConfigItem>`
 .. |dl| replace:: :func:`dl <hkshell.dl>`
 .. |d| replace:: :func:`d <hkshell.d>`
 .. |EditFileFun| replace:: :ref:`EditFileFun <hkshell_EditFileFun>`
