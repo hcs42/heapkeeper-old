@@ -1103,7 +1103,7 @@ def gen_page(pps=None):
     ps = postdb().postset(pps)
     g = hkgen.GivenPostsGenerator(postdb())
     g.posts = ps
-    g.html_filename = 'gen_page.html'
+    g.html_filename = 'index/gen_page.html'
     g.write_all()
 
 @hkshell_cmd(add_events=True)
