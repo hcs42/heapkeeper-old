@@ -26,8 +26,6 @@ Usage:
 """
 
 
-import datetime
-import time
 import unittest
 
 import hkutils

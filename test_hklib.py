@@ -28,11 +28,9 @@ Usage:
 
 from __future__ import with_statement
 
-import ConfigParser
 import itertools
 import os
 import os.path
-import re
 import shutil
 import StringIO
 import tempfile
@@ -49,8 +47,8 @@ class PostDBHandler(object):
 
     # Creating an ordered array of dates. (Increment the number after `range`
     # if you need more posts.)
-    dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200\n' % i \
-              for i in range(10) ]
+    dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200\n' % ii \
+              for ii in range(10) ]
 
     def setUpDirs(self):
         """Sets up the following temporary directories:
@@ -804,7 +802,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         test(' [ a ] [ b ] Subject', 'Subject', ['a', 'b'])
         test('Sub[c]ject',           'Sub[c]ject', [])
         test('[a][b]Sub[c]ject',     'Sub[c]ject', ['a', 'b'])
-        test(' [a] [b] Sub [c] ject','Sub [c] ject', ['a', 'b'])
+        test(' [a] [b] Sub [c] ject', 'Sub [c] ject', ['a', 'b'])
 
         p = hklib.Post.from_str('Subject: [t1][t2] subject\nTag: t3')
         p.normalize_subject()
@@ -1173,8 +1171,8 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # Creating new posts and loading them instead of the pre-loaded ones
         hkutils.string_to_file('Subject: s1', os.path.join(heap_dir, '1.post'))
-        hkutils.string_to_file('Subject: sx', os.path.join(heap_dir, 'ab.post'))
-        hkutils.string_to_file('Subject: s2', os.path.join(heap_dir, '2.other'))
+        hkutils.string_to_file('Subject: sx', os.path.join(heap_dir, 'a.post'))
+        hkutils.string_to_file('Subject: s2', os.path.join(heap_dir, '2.xx'))
         hkutils.string_to_file('Subject: s3', os.path.join(heap_dir, '3post'))
 
         postdb._heaps['my_new_heap'] = heap_dir
@@ -1186,7 +1184,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
                  ('my_heap', 'xy'),
                  ('my_other_heap', '0'),
                  ('my_new_heap', '1'),
-                 ('my_new_heap', 'ab')]))
+                 ('my_new_heap', 'a')]))
 
         self.assertEqual(
             postdb.next_post_index('my_new_heap'),
@@ -1225,7 +1223,8 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         heap_dir_2 = os.path.join(self._dir, 'my_new_heap_dir_2')
         os.mkdir(heap_dir_2)
-        hkutils.string_to_file('Subject: s1', os.path.join(heap_dir_2, '1.post'))
+        hkutils.string_to_file('Subject: s1',
+                               os.path.join(heap_dir_2, '1.post'))
         postdb.add_heap('my_new_heap_2', heap_dir_2)
 
         self.assertEqual(
@@ -1855,6 +1854,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         # Testing the `yield_main` parameter
 
         def test(root, expected_result):
+            # function already defined # pylint: disable-msg=E0102
             """Tests whether the the :func:`PostDB.walk_thread` function
             returns the given result when executed with the given root."""
 

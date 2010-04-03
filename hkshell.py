@@ -1279,7 +1279,8 @@ def edit_posts(pps):
                 post.load()
                 hkutils.log('Post "%s" reloaded.' % (post.post_id_str(),))
             else:
-                hkutils.log('Post "%s" left unchanged.' % (post.post_id_str(),))
+                hkutils.log('Post "%s" left unchanged.' %
+                            (post.post_id_str(),))
 
 @hkshell_cmd(postset_operation=True)
 def e(pps):

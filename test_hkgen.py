@@ -333,6 +333,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         postdb, g, p = self.get_ouv()
         def enctd(class_, content, tag):
+            # Unused argument 'tag' # pylint: disable-msg=W0613
             return \
                 g.enclose(
                     g.enclose(content, class_=class_),
@@ -395,6 +396,8 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         import types
 
         def print_postitem_date(self, postitem):
+            # Unused argument 'self' # pylint: disable-msg=W0613
+            # Unused argument 'postitem' # pylint: disable-msg=W0613
             return ''
 
         hkutils.add_method(g, 'print_postitem_date', print_postitem_date)

@@ -741,6 +741,7 @@ class Generator(object):
 
     # TODO test
     def get_postsummary_fields_main(self, postitem):
+        # Unused argument 'postitem' # pylint: disable-msg=W0613
         """Returns the fields of the post summary when the pos position is
         ``"main"``.
 
@@ -762,6 +763,7 @@ class Generator(object):
 
     # TODO test
     def get_postsummary_fields_flat(self, postitem):
+        # Unused argument 'postitem' # pylint: disable-msg=W0613
         """Returns the fields of the post summary when the pos position is
         ``"flat"``.
 

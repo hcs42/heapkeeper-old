@@ -21,15 +21,10 @@
 """My (Attis) hkrc."""
 
 
-import datetime
 import re
-import subprocess
-import time
 
-import hkutils
 import hklib
 import hkgen
-import hkcustomlib
 import hkshell
 
 import issue_tracker
@@ -206,9 +201,9 @@ main()
 #    return (start_date, end_date)
 #
 #def get_month(year, month):
-#    months = ['január', 'február', 'március', 'április', 'május', 'június',
-#              'július', 'augusztus', 'szeptember', 'október', 'november',
-#              'december']
+#    months = ['január', 'február', 'március', 'április', 'május',
+#              'június', 'július', 'augusztus', 'szeptember', 'október',
+#              'november', 'december']
 #    return "%d %s" % (year, months[month - 1])
 #
 #def get_posts_in_month(postdb, year, month):

@@ -104,6 +104,7 @@ class Test__1(unittest.TestCase):
 
     def test_hkshell_events(self):
 
+        event_list = []
         hkshell.append_listener(lambda e: event_list.append(e))
 
         ## Testing the add_events decorator
@@ -130,6 +131,7 @@ class Test__1(unittest.TestCase):
 
         @hkshell.add_events('f_cmd1')
         def f():
+            # function already defined # pylint: disable-msg=E0102
             hkshell.event(type='f_body', command='f_cmd2')
             return 1
 
@@ -223,6 +225,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
         # Redirect the output of hkshell to nowhere.
         class NullOutput():
+            # Class has no __init__ method # pylint: disable-msg=W0232
             def write(self, str):
                 pass
         hkshell.options.output = NullOutput()
@@ -318,12 +321,12 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         post0 = hklib.Post.from_file(self.p(0).postfilename())
         self.assertEqual(post0.subject(), 'newsubject1')
 
-    def test_save_listener(self):
+    def test_save_listener__1(self):
         self._test_save(
             on=lambda: hkshell.append_listener(hkshell.save_listener),
             off=lambda: hkshell.remove_listener(hkshell.save_listener))
 
-    def test_save_listener(self):
+    def test_save_listener__2(self):
         self._test_save(
             on=lambda: hkshell.on('save'),
             off=lambda: hkshell.off('save'))
@@ -331,6 +334,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
     def _test_TouchedPostPrinter(self, on, off):
 
         class MyOutput():
+            # Class has no __init__ method # pylint: disable-msg=W0232
             @staticmethod
             def write(str):
                 output_list.append(str)
@@ -427,8 +431,8 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
     def test_self(self):
         self.init_hkshell()
         self.clear_subjects()
-        self.assertEqual(self.subjects(), ['','','','',''])
-        self.assertEqual(self.tags(), [[],[],[],[],[]])
+        self.assertEqual(self.subjects(), ['', '', '', '', ''])
+        self.assertEqual(self.tags(), [[], [], [], [], []])
 
     def test_p(self):
         """Tests :func:`hkshell.p`."""
@@ -462,6 +466,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         """Tests :func:`hkshell.ls`."""
 
         class MyOutput():
+            # Class has no __init__ method # pylint: disable-msg=W0232
             @staticmethod
             def write(str):
                 output_list.append(str)
@@ -484,9 +489,9 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
              '<my_heap/4> subject4  author4 (2008.08.20. 15:41)\n'])
 
         # ls with given parameters
-        hkshell.aTr('my_heap/1',['mytag1','mytag2'])
+        hkshell.aTr('my_heap/1', ['mytag1', 'mytag2'])
         output_list = []
-        hkshell.ls(hkshell.ps([1,2,4]),
+        hkshell.ls(hkshell.ps([1, 2, 4]),
                    show_author=False, show_tags=True,
                    show_date=False, indent=4)
         self.assertEqual(
@@ -558,16 +563,18 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
     def test_pT__1(self):
         self.init_hkshell()
         hkshell.aT(1, 't')
-        self.assertEqual(self.tags(), [[],['t'],[],[],[]])
+        self.assertEqual(self.tags(), [[], ['t'], [], [], []])
         hkshell.pT(1)
-        self.assertEqual(self.tags(), [[],['t'],['t'],[],[]])
+        self.assertEqual(self.tags(), [[], ['t'], ['t'], [], []])
 
     def test_pT__2(self):
         self.init_hkshell()
         hkshell.aT(0, 't1')
         hkshell.aT(1, 't2')
         hkshell.pT(0)
-        self.assertEqual(self.tags(), [['t1'],['t1','t2'],['t1'],['t1'],[]])
+        self.assertEqual(
+            self.tags(),
+            [['t1'], ['t1', 't2'], ['t1'], ['t1'], []])
 
     def test_pT__3(self):
         self.init_hkshell()
@@ -580,58 +587,70 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
     def test_aT(self):
         self.init_hkshell()
         hkshell.aT(1, 't')
-        self.assertEqual(self.tags(), [[],['t'],[],[],[]])
+        self.assertEqual(self.tags(), [[], ['t'], [], [], []])
         hkshell.aT(1, ['t', 'u'])
-        self.assertEqual(self.tags(), [[],['t','u'],[],[],[]])
+        self.assertEqual(self.tags(), [[], ['t', 'u'], [], [], []])
 
     def test_aTr(self):
         self.init_hkshell()
         hkshell.aTr(1, 't')
-        self.assertEqual(self.tags(), [[],['t'],['t'],[],[]])
+        self.assertEqual(self.tags(), [[], ['t'], ['t'], [], []])
         hkshell.aTr(1, ['t', 'u'])
-        self.assertEqual(self.tags(), [[],['t','u'],['t','u'],[],[]])
+        self.assertEqual(self.tags(), [[], ['t', 'u'], ['t', 'u'], [], []])
 
     def test_rT_AND_rTr(self):
         self.init_hkshell()
         hkshell.aTr(0, ['t', 'u'])
-        self.ae(self.tags(), [['t','u'],['t','u'],['t','u'],['t','u'],[]])
+        self.ae(
+            self.tags(),
+            [['t', 'u'], ['t', 'u'], ['t', 'u'], ['t', 'u'], []])
         hkshell.rT(1, ['t'])
-        self.ae(self.tags(), [['t','u'],['u'],['t','u'],['t','u'],[]])
+        self.ae(
+            self.tags(),
+            [['t', 'u'], ['u'], ['t', 'u'], ['t', 'u'], []])
         hkshell.rTr(1, ['u'])
-        self.ae(self.tags(), [['t','u'],[],['t'],['t','u'],[]])
+        self.ae(
+            self.tags(),
+            [['t', 'u'], [], ['t'], ['t', 'u'], []])
 
     def test_sT_AND_sTr(self):
         self.init_hkshell()
         hkshell.aTr(0, ['t', 'u'])
-        self.ae(self.tags(), [['t','u'],['t','u'],['t','u'],['t','u'],[]])
+        self.ae(
+            self.tags(),
+            [['t', 'u'], ['t', 'u'], ['t', 'u'], ['t', 'u'], []])
         hkshell.sT(1, ['x', 'y'])
-        self.ae(self.tags(), [['t','u'],['x','y'],['t','u'],['t','u'],[]])
+        self.ae(
+            self.tags(),
+            [['t', 'u'], ['x', 'y'], ['t', 'u'], ['t', 'u'], []])
         hkshell.sTr(1, 'z')
-        self.ae(self.tags(), [['t','u'],['z'],['z'],['t','u'],[]])
+        self.ae(
+            self.tags(),
+            [['t', 'u'], ['z'], ['z'], ['t', 'u'], []])
 
     def test_sS_AND_pS(self):
         self.init_hkshell()
         self.clear_subjects()
         hkshell.sS(1, 's')
-        self.assertEqual(self.subjects(), ['','s','','',''])
+        self.assertEqual(self.subjects(), ['', 's', '', '', ''])
         hkshell.pS(1)
-        self.assertEqual(self.subjects(), ['','s','s','',''])
+        self.assertEqual(self.subjects(), ['', 's', 's', '', ''])
 
     def test_sSr(self):
         self.init_hkshell()
         self.clear_subjects()
         hkshell.sSr(1, 's')
-        self.assertEqual(self.subjects(), ['','s','s','',''])
+        self.assertEqual(self.subjects(), ['', 's', 's', '', ''])
 
     def test_cS_AND_cSr(self):
         self.init_hkshell()
         self.clear_subjects()
         hkshell.sSr(0, 'su')
-        self.assertEqual(self.subjects(), ['su','su','su','su',''])
+        self.assertEqual(self.subjects(), ['su', 'su', 'su', 'su', ''])
         hkshell.cS(2)
-        self.assertEqual(self.subjects(), ['su','su','Su','su',''])
+        self.assertEqual(self.subjects(), ['su', 'su', 'Su', 'su', ''])
         hkshell.cSr(0)
-        self.assertEqual(self.subjects(), ['Su','Su','Su','Su',''])
+        self.assertEqual(self.subjects(), ['Su', 'Su', 'Su', 'Su', ''])
 
 
 class Test_main(unittest.TestCase, test_hklib.PostDBHandler):

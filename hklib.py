@@ -376,7 +376,8 @@ class Post(object):
         h['Flag'].sort()
 
         # Adding additional keys to the _header and print warning about them
-        # (We sort the keys so that the order of the warnings is deterministic.)
+        # (We sort the keys so that the order of the warnings is
+        # deterministic.)
         for attr in sorted(d.keys()):
             hkutils.log('WARNING: Additional attribute in post: "%s"' % attr)
             copy_list(attr)
@@ -1941,10 +1942,10 @@ class PostDB(object):
 
         - `post` (|Post|) -- The post to be added to the database.
         - `heap_id` (|HeapId|) -- The heap to which the post is added.
-        - `post_index` (str | ``None``) -- The post should have this post index.
-          If ``None``, the post should get the next free post index that starts
-          with `prefix` (see the definition of "next free post index" at
-          :func:`next_post_index`).
+        - `post_index` (str | ``None``) -- The post should have this post
+          index. If ``None``, the post should get the next free post index
+          that starts with `prefix` (see the definition of "next free post
+          index" at :func:`next_post_index`).
         - `prefix` (str) -- If `post_index` is ``None``, the post should get
           the next free heapid that starts with `prefix`.
 

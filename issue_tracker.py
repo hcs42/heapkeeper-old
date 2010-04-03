@@ -44,16 +44,9 @@ If you want to use it, the simplest way is to append its invocation to your
 """
 
 
-import datetime
 import itertools
-import os
-import re
-import subprocess
-import time
 
 import hkutils
-import hklib
-import hkcustomlib
 import hkgen
 import hkshell
 
