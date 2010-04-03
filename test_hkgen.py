@@ -536,5 +536,5 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
 
 if __name__ == '__main__':
-    set_log(False)
+    hkutils.set_log(False)
     unittest.main()

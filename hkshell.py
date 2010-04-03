@@ -600,7 +600,7 @@ def postset_operation(operation):
             try:
                 posts = ps(pps)
             except:
-                hklib.log('Posts not found: %s' % (pps,))
+                hkutils.log('Posts not found: %s' % (pps,))
                 return
             event('postset_calculated', command, postset=posts)
             if len(posts) != 0:
@@ -1070,7 +1070,7 @@ def gi():
     Deprecated. Use |g| instead.
     """
 
-    hklib.log('WARNING: using hkshell.gi() is deprecated. Use g() instead.')
+    hkutils.log('WARNING: using hkshell.gi() is deprecated. Use g() instead.')
     gen_indices()
 
 @hkshell_cmd(add_events=True)
@@ -1085,7 +1085,7 @@ def ga():
     Deprecated. Use |g| instead.
     """
 
-    hklib.log('WARNING: using hkshell.gi() is deprecated. Use g() instead.')
+    hkutils.log('WARNING: using hkshell.gi() is deprecated. Use g() instead.')
     gen_indices()
 
 @hkshell_cmd()
@@ -1259,7 +1259,7 @@ def edit_posts(pps):
 
     posts = pps.sorted_list()
     if posts == []:
-        hklib.log('No post to edit.')
+        hkutils.log('No post to edit.')
     else:
 
         # Editing the post files of given posts
@@ -1277,9 +1277,9 @@ def edit_posts(pps):
             post = postfilename_to_post[filename]
             if filename in changed_files:
                 post.load()
-                hklib.log('Post "%s" reloaded.' % (post.post_id_str(),))
+                hkutils.log('Post "%s" reloaded.' % (post.post_id_str(),))
             else:
-                hklib.log('Post "%s" left unchanged.' % (post.post_id_str(),))
+                hkutils.log('Post "%s" left unchanged.' % (post.post_id_str(),))
 
 @hkshell_cmd(postset_operation=True)
 def e(pps):
@@ -1339,15 +1339,15 @@ def enew(prefix='', author='', parent=None, heap_id=None):
             post = hklib.Post.from_file(tmp_file_name)
             if heap_id is None:
                 if heap_id_hint_var is None:
-                    hklib.log('Post cannot be created: no heap specified.')
+                    hkutils.log('Post cannot be created: no heap specified.')
                     return None
                 else:
                     heap_id = heap_id_hint_var
             postdb().add_new_post(post, heap_id, prefix=prefix)
-            hklib.log('Post created.')
+            hkutils.log('Post created.')
             return post
         else:
-            hklib.log('No change in the data base.')
+            hkutils.log('No change in the data base.')
     finally:
         os.remove(tmp_file_name)
 
@@ -1362,7 +1362,7 @@ def enew_str(post_string):
 
     post = hklib.Post.from_str(post_string)
     post = postdb().add_new_post(post)
-    hklib.log('Post created.')
+    hkutils.log('Post created.')
     return post
 
 @hkshell_cmd(add_events=True)
@@ -1383,7 +1383,7 @@ def dl(from_=0, detailed_log=False, ps=False):
     """
 
     if heap_id_hint_var is None:
-        hklib.log('Posts cannot be downloaded: no heap specified.')
+        hkutils.log('Posts cannot be downloaded: no heap specified.')
         return
     else:
         heap_id = heap_id_hint_var
@@ -1655,7 +1655,7 @@ def read_postdb(configfile):
     try:
         config.readfp(open(configfile))
     except IOError:
-        hklib.log('Config file not found: "%s"' % (configfile,))
+        hkutils.log('Config file not found: "%s"' % (configfile,))
         sys.exit(1)
     configdict = hkutils.configparser_to_configdict(config)
     postdb = hklib.PostDB()
@@ -1676,7 +1676,7 @@ def init():
 def import_module(modname):
     """Imports the `modname` module.
 
-    It prints whether it succeeded or not using :func:`hklib.log`.
+    It prints whether it succeeded or not using :func:`hkutils.log`.
 
     **Argument:**
 
@@ -1684,11 +1684,11 @@ def import_module(modname):
     """
 
     try:
-        hklib.log('Importing %s...' % (modname,))
+        hkutils.log('Importing %s...' % (modname,))
         __import__(modname)
-        hklib.log('Importing %s OK' % (modname,))
+        hkutils.log('Importing %s OK' % (modname,))
     except ImportError:
-        hklib.log('Module not found: "%s"' % (modname,))
+        hkutils.log('Module not found: "%s"' % (modname,))
 
 def parse_args(args=None):
     """Parses the given command line options.

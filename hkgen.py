@@ -1312,7 +1312,7 @@ class Generator(object):
                 # Copy from the current directory
                 shutil.copyfile(file, target_file)
             else:
-                hklib.log('WARNING: file "%s" not found' % (file,))
+                hkutils.log('WARNING: file "%s" not found' % (file,))
 
     # TODO test, doc
     def write_page(self, filename, html_body):
@@ -1428,7 +1428,7 @@ class Generator(object):
     def write_main_index_page(self):
         """Writes the main index page into ``'index.html'``."""
 
-        hklib.log('Generating index.html...')
+        hkutils.log('Generating index.html...')
         self.options.html_title = 'Main index'
         self.write_page(
             'index/index.html',
@@ -1445,7 +1445,7 @@ class Generator(object):
           pages. Otherwise it writes only those whose posts were modified.
         """
 
-        hklib.log('Generating thread pages...')
+        hkutils.log('Generating thread pages...')
 
         if write_all:
             posts = self._postdb.roots()
@@ -1469,7 +1469,7 @@ class Generator(object):
           were modified.
         """
 
-        hklib.log('Generating post pages...')
+        hkutils.log('Generating post pages...')
 
         if write_all:
             posts = self._postdb.roots()
@@ -1532,7 +1532,7 @@ class GivenPostsGenerator(Generator):
     # TODO: test
     def write_given_posts_page(self):
         """Writes the "given post" page."""
-        hklib.log('Generating %s...' % (self.html_filename,))
+        hkutils.log('Generating %s...' % (self.html_filename,))
         self.write_page(
             self.html_filename,
             self.print_given_posts_page())

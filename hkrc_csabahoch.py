@@ -24,7 +24,7 @@
 import datetime
 import itertools
 
-import hklib
+import hkutils
 import hkgen
 import hkshell
 import issue_tracker
@@ -129,14 +129,14 @@ class MyGenerator(hkgen.Generator):
     def write_my_pages(self):
         # Call self.calc before you call this function
 
-        hklib.log('Generating ums.html...')
+        hkutils.log('Generating ums.html...')
         self.options.html_title = 'UMS heap'
         self._favicon = "http://hcs42.github.com/favicons/ums.png"
         self.write_page(
             'index/ums.html',
             self.print_ums_page())
 
-        hklib.log('Generating hh.html...')
+        hkutils.log('Generating hh.html...')
         self.options.html_title = 'Heapkeeper heap'
         self._favicon = "http://hcs42.github.com/favicons/hh.png"
         self.write_page(

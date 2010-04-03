@@ -669,5 +669,5 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
             'Module not found: "hkrc"')
 
 if __name__ == '__main__':
-    hklib.set_log(False)
+    hkutils.set_log(False)
     unittest.main()

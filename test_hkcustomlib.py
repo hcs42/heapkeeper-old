@@ -30,7 +30,7 @@ import datetime
 import time
 import unittest
 
-import hklib
+import hkutils
 import hkcustomlib
 import test_hklib
 
@@ -73,5 +73,5 @@ class Test__1(unittest.TestCase, test_hklib.PostDBHandler):
             lambda: hkcustomlib.editor_to_editor_list('vim \\x'))
 
 if __name__ == '__main__':
-    hklib.set_log(False)
+    hkutils.set_log(False)
     unittest.main()

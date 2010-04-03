@@ -120,14 +120,6 @@ types in the documentation so we can talk about them easily.
 - **HtmlText** -- Text that contains HTML code.
 
   Subtype of |TextStruct|.
-
-.. _hklib_LogFun:
-
-- **LogFun(*args)** -- A function that logs the given strings.
-
-   **Arguments:**
-
-   - `*args` ([str]): list of strings to be logged
 """
 
 
@@ -143,7 +135,6 @@ import os.path
 import quopri
 import re
 import StringIO
-import sys
 import time
 
 import hkutils
@@ -155,53 +146,26 @@ heapkeeper_version = '0.4'
 
 ##### logging #####
 
-# Not tested
+# TODO: Remove these functions after releasing Heapkeeper v0.5.
+
+# {
+
 def default_log_fun(*args):
-    """Default logging function: prints the arguments to the standard output,
-    terminated with a newline character.
+    """Deprecated. Use :func:`hkutils.default_log_fun` instead."""
 
-    **Type:** |LogFun|
-    """
-
-    for arg in args:
-        sys.stdout.write(arg)
-    sys.stdout.write('\n')
-    sys.stdout.flush()
-
-# The function to be used for logging.
-log_fun = default_log_fun
+    return hkutils.default_log_fun(*args)
 
 def set_log(log):
-    """Sets the logging function.
+    """Deprecated. Use :func:`hkutils.set_log` instead."""
 
-    **Argument:**
-
-    - `log` (bool | |LogFun|) -- If ``False``, logging will be turned off.
-      If ``True``, the default logging function will be used. Otherwise the
-      specified logging function will be used.
-    """
-
-    global log_fun
-
-    if log == True:
-        log_fun = default_log_fun
-    elif log == False:
-        # Do nothing when invoked
-        log_fun = lambda *args: None
-    else:
-        log_fun = log
+    return hkutils.set_log(log)
 
 def log(*args):
-    """Logs the given strings.
+    """Deprecated. Use :func:`hkutils.log` instead."""
 
-    This function invokes the logger fuction set by :func:`set_log`.
+    return hkutils.log(*args)
 
-    **Arguments:**
-
-    - `*args` ([str]) -- List of strings to be logged.
-    """
-
-    log_fun(*args)
+# }
 
 
 ##### Post #####
@@ -414,7 +378,7 @@ class Post(object):
         # Adding additional keys to the _header and print warning about them
         # (We sort the keys so that the order of the warnings is deterministic.)
         for attr in sorted(d.keys()):
-            log('WARNING: Additional attribute in post: "%s"' % attr)
+            hkutils.log('WARNING: Additional attribute in post: "%s"' % attr)
             copy_list(attr)
         return h
 
@@ -1542,9 +1506,9 @@ class PostDB(object):
             # Don't store the messid if it is already used
             if messid in self.messid_to_post_id:
                 messid_user_post = self.messid_to_post_id[messid]
-                log('Warning: post %s has message id %s, but that message id '
-                    'is already used by post %s.' %
-                    (post_id, messid, messid_user_post))
+                hkutils.log('Warning: post %s has message id %s, but that '
+                            'message id is already used by post %s.' %
+                            (post_id, messid, messid_user_post))
             else:
                 self.messid_to_post_id[messid] = post_id
         self.touch()
@@ -1631,10 +1595,10 @@ class PostDB(object):
 
         self._heaps[heap_id] = heap_dir
         if not os.path.exists(heap_dir):
-            log('Warning: post directory does not exists: "%s"' %
-                (heap_dir,))
+            hkutils.log('Warning: post directory does not exists: "%s"' %
+                        (heap_dir,))
             os.mkdir(heap_dir)
-            log('Post directory has been created.')
+            hkutils.log('Post directory has been created.')
         self.load_heap(heap_id)
 
     def set_html_dir(self, html_dir):
@@ -1647,10 +1611,10 @@ class PostDB(object):
 
         self._html_dir = html_dir
         if not os.path.exists(html_dir):
-            log('Warning: HTML directory does not exists: "%s"' %
-                (html_dir,))
+            hkutils.log('Warning: HTML directory does not exists: "%s"' %
+                        (html_dir,))
             os.mkdir(html_dir)
-            log('HTML directory has been created.')
+            hkutils.log('HTML directory has been created.')
 
     @staticmethod
     def get_heaps_from_config(config):
@@ -1670,9 +1634,9 @@ class PostDB(object):
                                           '"heaps" section.')
             else:
                 # legacy behaviour
-                log('Config file contains a "paths/mail" option that should '
-                    'be replaced by "paths/heaps". See the documentation for '
-                    'more information.')
+                hkutils.log('Config file contains a "paths/mail" option that '
+                            'should be replaced by "paths/heaps". See the '
+                            'documentation for more information.')
                 heap_path = config['paths']['mail']
                 return {'': heap_path}
 
@@ -3049,15 +3013,15 @@ class EmailDownloader(object):
     def connect(self):
         """Connects to the IMAP server."""
 
-        log('Reading settings...')
+        hkutils.log('Reading settings...')
         host = self._config['server']['host']
         port = int(self._config['server']['port'])
         username = self._config['server']['username']
         password = self._config['server']['password']
-        log('Connecting...')
+        hkutils.log('Connecting...')
         self._server = imaplib.IMAP4_SSL(host, port)
         self._server.login(username, password)
-        log('Connected')
+        hkutils.log('Connected')
 
     def close(self):
         """Closes the connection with the IMAP server."""
@@ -3110,13 +3074,15 @@ class EmailDownloader(object):
             if message.is_multipart():
                 if (content_type not in
                     ('multipart/mixed', 'multipart/alternative')):
-                    log('WARNING: unknown type of multipart message: %s\n%s' %
-                        (content_type, header + text))
+                    hkutils.log('WARNING: unknown type of multipart '
+                                'message: %s\n%s' %
+                                (content_type, header + text))
                 message = message.get_payload(0)
             else:
                 if content_type != 'text/plain':
-                    log('WARNING: content type is not text/plain: %s\n%s' %
-                        (content_type, header + text))
+                    hkutils.log('WARNING: content type is not text/plain: '
+                                '%s\n%s' %
+                                (content_type, header + text))
                 break
 
         # encoding
@@ -3134,8 +3100,9 @@ class EmailDownloader(object):
             elif encoding.lower() == 'quoted-printable':
                 text = quopri.decodestring(text)
             else:
-                log('WARNING: Unknown encoding, skipping decoding: %s\n'
-                    'text:\n%s\n' % (encoding, text))
+                hkutils.log('WARNING: Unknown encoding, skipping decoding: '
+                            '%s\n'
+                            'text:\n%s\n' % (encoding, text))
         charset = message.get_content_charset()
         text = hkutils.utf8(text, charset)
         text = re.sub(r'\r\n', r'\n', text)
@@ -3195,14 +3162,14 @@ class EmailDownloader(object):
         self._server.select("INBOX")
         result = self._server.search(None, '(ALL)')[1][0].strip()
         if result == '':
-            log('Message box is empty.')
+            hkutils.log('Message box is empty.')
             return
         all_emails = result.split(' ')
 
         emails = [ em for em in all_emails if int(em) >= lower_value ]
         emails_imap = ','.join(emails)
 
-        log('Checking...')
+        hkutils.log('Checking...')
 
         result = self._server.fetch(emails_imap,
                                     '(BODY[HEADER.FIELDS (MESSAGE-ID)])')[1]
@@ -3217,19 +3184,19 @@ class EmailDownloader(object):
             if post == None:
                 download_list.append(index)
             elif detailed_log:
-                log('Post #%s (#%s in INBOX) found.' %
+                hkutils.log('Post #%s (#%s in INBOX) found.' %
                     (post.post_index(), int(index) + lower_value))
         download_imap = ','.join(download_list)
         num_new = len(download_list)
 
         if num_new == 0:
-            log('No new messages.')
+            hkutils.log('No new messages.')
             return
         else:
-            log('%d new message%s found.' %
+            hkutils.log('%d new message%s found.' %
                 (num_new, hkutils.plural(num_new)))
 
-        log('Downloading...')
+        hkutils.log('Downloading...')
 
         new_posts = []
 
@@ -3242,11 +3209,11 @@ class EmailDownloader(object):
             self._postdb.add_new_post(post, heap_id)
             new_posts.append(post)
             if detailed_log:
-                log('Post #%s (#%s in INBOX) downloaded.' %
-                    (post.post_index(), download_list[i]))
+                hkutils.log('Post #%s (#%s in INBOX) downloaded.' %
+                            (post.post_index(), download_list[i]))
 
-        log('%d new message%s downloaded.' %
-            (num_new, hkutils.plural(num_new)))
+        hkutils.log('%d new message%s downloaded.' %
+                    (num_new, hkutils.plural(num_new)))
 
         return PostSet(self._postdb, new_posts)
 

@@ -51,6 +51,14 @@ types in the documentation so we can talk about them easily.
 
   Real type: str | iterable(|TextStruct|)
 
+.. _hkutils_LogFun:
+
+- **LogFun(*args)** -- A function that logs the given strings.
+
+   **Arguments:**
+
+   - `*args` ([str]): list of strings to be logged
+
 .. _hkutils_ConfigItem:
 
 - **ConfigItem** -- A recursive structure that represents a configuration item.
@@ -71,6 +79,7 @@ import email.utils
 import inspect
 import os.path
 import shutil
+import sys
 import types
 
 
@@ -275,6 +284,56 @@ def is_textstruct(text):
         except: # pylint: disable-msg=W0702
             return False
 
+
+##### logging #####
+
+# Not tested
+def default_log_fun(*args):
+    """Default logging function: prints the arguments to the standard output,
+    terminated with a newline character.
+
+    **Type:** |LogFun|
+    """
+
+    for arg in args:
+        sys.stdout.write(arg)
+    sys.stdout.write('\n')
+    sys.stdout.flush()
+
+# The function to be used for logging.
+log_fun = default_log_fun
+
+def set_log(log):
+    """Sets the logging function.
+
+    **Argument:**
+
+    - `log` (bool | |LogFun|) -- If ``False``, logging will be turned off.
+      If ``True``, the default logging function will be used. Otherwise the
+      specified logging function will be used.
+    """
+
+    global log_fun
+
+    if log == True:
+        log_fun = default_log_fun
+    elif log == False:
+        # Do nothing when invoked
+        log_fun = lambda *args: None
+    else:
+        log_fun = log
+
+def log(*args):
+    """Logs the given strings.
+
+    This function invokes the logger fuction set by :func:`set_log`.
+
+    **Arguments:**
+
+    - `*args` ([str]) -- List of strings to be logged.
+    """
+
+    log_fun(*args)
 
 ##### Misc #####
 

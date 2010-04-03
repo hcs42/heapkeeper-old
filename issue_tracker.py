@@ -299,7 +299,7 @@ class Generator(hkgen.Generator):
     def write_issues_all_page(self):
         # Call self.calc before you call this function
 
-        hklib.log('Generating issues_all.html...')
+        hkutils.log('Generating issues_all.html...')
         self.options.html_title = 'All issues'
         self.write_page(
             'index/issues_all.html',
@@ -308,7 +308,7 @@ class Generator(hkgen.Generator):
     def write_issues_sorted_page(self):
         # Call self.calc before you call this function
 
-        hklib.log('Generating issues_sorted.html...')
+        hkutils.log('Generating issues_sorted.html...')
         self.options.html_title = 'Sorted issues'
         self.write_page(
              'index/issues_sorted.html',

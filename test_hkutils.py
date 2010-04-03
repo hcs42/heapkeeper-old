@@ -176,6 +176,37 @@ class Test__TextStruct(unittest.TestCase):
         self.assertFalse(hkutils.is_textstruct(0))
 
 
+class Test__logging(unittest.TestCase):
+
+    """Tests the logging functions of hklib."""
+
+    def test__1(self):
+
+        """Tests the following functions:
+
+        - :func:`hkutils.set_log`
+        - :func:`hkutils.log`
+        """
+
+        # We use a custom log function
+        old_log_fun = hkutils.log_fun
+        def log_fun(*args):
+            log.append(list(args))
+        hkutils.set_log(log_fun)
+
+        # Test logging
+        log = []
+        hkutils.log('first line', 'second line')
+        hkutils.log('third line')
+        self.assertEqual(
+            log,
+            [['first line', 'second line'],
+             ['third line']])
+
+        # Setting the original logging function back
+        hkutils.set_log(old_log_fun)
+
+
 class Test__Misc(unittest.TestCase):
 
     """Tests the miscellaneous functions in |hkutils|."""

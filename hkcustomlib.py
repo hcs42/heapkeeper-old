@@ -23,7 +23,6 @@ import os
 import subprocess
 
 import hkutils
-import hklib
 import hkgen
 
 
@@ -145,7 +144,7 @@ def edit_files(files):
 
     # if not even the default is set, print an error message
     if editor is None:
-        hklib.log(
+        hkutils.log(
            'Cannot determine the default editor based on the operating\n'
            'system. Please set the EDITOR environment variable to the editor\n'
            'you want to use or set hkshell.options.callback.edit_files to\n'
@@ -155,7 +154,7 @@ def edit_files(files):
     try:
         editor = editor_to_editor_list(editor)
     except IncorrectEditorException:
-        hklib.log(
+        hkutils.log(
             'The editor variable is incorrect:\n' +
             editor +
             'Please set the EDITOR environment variable to the editor\n'

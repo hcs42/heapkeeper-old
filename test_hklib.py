@@ -42,37 +42,6 @@ import hkutils
 import hklib
 
 
-class Test__logging(unittest.TestCase):
-
-    """Tests the logging functions of hklib."""
-
-    def test__1(self):
-
-        """Tests the following functions:
-
-        - :func:`hklib.set_log`
-        - :func:`hklib.log`
-        """
-
-        # We use a custom log function
-        old_log_fun = hklib.log_fun
-        def log_fun(*args):
-            log.append(list(args))
-        hklib.set_log(log_fun)
-
-        # Test logging
-        log = []
-        hklib.log('first line', 'second line')
-        hklib.log('third line')
-        self.assertEqual(
-            log,
-            [['first line', 'second line'],
-             ['third line']])
-
-        # Setting the original logging function back
-        hklib.set_log(old_log_fun)
-
-
 class PostDBHandler(object):
 
     """Helps implementing the tester classes by containing functions commonly
@@ -113,10 +82,10 @@ class PostDBHandler(object):
 
         # We use a custom log function
         self._log = []
-        self._old_log_fun = hklib.log_fun
+        self._old_log_fun = hkutils.log_fun
         def log_fun(*args):
             self._log.append(''.join(args))
-        hklib.set_log(log_fun)
+        hkutils.set_log(log_fun)
 
     def tearDownDirs(self):
         """Removes the temporary directories and checks that no logs are
@@ -126,7 +95,7 @@ class PostDBHandler(object):
 
         # Setting the original logging function back
         self.assertEqual(self._log, [])
-        hklib.set_log(self._old_log_fun)
+        hkutils.set_log(self._old_log_fun)
 
     def create_postdb(self):
         """Creates a post database.
@@ -2820,5 +2789,5 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
 
 
 if __name__ == '__main__':
-    set_log(False)
+    hkutils.set_log(False)
     unittest.main()

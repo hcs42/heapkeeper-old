@@ -30,7 +30,7 @@ from __future__ import with_statement
 import unittest
 import re
 
-import hklib
+import hkutils
 import hkbodyparser
 import test_hklib
 
@@ -461,5 +461,5 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
             'ab')
 
 if __name__ == '__main__':
-    hklib.set_log(False)
+    hkutils.set_log(False)
     unittest.main()

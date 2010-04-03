@@ -39,6 +39,13 @@ Text structures
 .. autofunction:: is_textstruct
 .. autofunction:: write_textstruct
 
+Logging
+-------
+
+.. autofunction:: default_log_fun
+.. autofunction:: set_log
+.. autofunction:: log
+
 Miscellaneous
 -------------
 

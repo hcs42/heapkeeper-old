@@ -29,7 +29,7 @@ It can be used to run a specific test:
 import sys
 import unittest
 
-import hklib
+import hkutils
 
 
 testmodules = ['test_hkutils',
@@ -40,7 +40,7 @@ testmodules = ['test_hkutils',
                'test_hkcustomlib']
 
 def main(args):
-    hklib.set_log(False)
+    hkutils.set_log(False)
     if len(args) > 0 and args[0] in ['-h', '--help']:
         sys.stdout.write(__doc__)
     elif args == []:
