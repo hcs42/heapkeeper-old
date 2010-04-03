@@ -194,7 +194,6 @@ Commands
 --------
 
 h()                - prints a detailed help
-hh()               - print help about the commands
 s()                - save
 x()                - save and exit
 rl()               - reload the database (changes will be lost!)
