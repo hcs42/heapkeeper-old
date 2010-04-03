@@ -103,7 +103,7 @@ It is recommended to use the ``hk_pylint`` wrapper (part of
 :ref:`hk-dev-utils`) to execute pylint on Heapkeeper::
 
     $ cd <Heapkeeper directory>
-    $ hk-dev-utils/hk_pylint hk{utils,lib,gen,shell,customlib}.py
+    $ hk-dev-utils/hk_pylint
 
 __ http://www.logilab.org/857
 
@@ -221,7 +221,7 @@ Developing code and committing it to the local repository
 #. Write the code (``*.py``) and the unit test (in ``test_*.py``) in parallel.
 #. Execute :ref:`pylint` to find problems::
 
-    $ hk-dev-utils/hk_pylint modifiedmodule1.py modifiedmodule2.py
+    $ hk-dev-utils/hk_pylint
 
 #. Execute the unit test suite including the test you just wrote::
 
