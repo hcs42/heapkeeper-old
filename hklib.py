@@ -1629,32 +1629,9 @@ class PostDB(object):
         assigned to each heap.
         """
 
-        if 'heaps' not in config.get('paths', {}):
-            if 'mail' not in config.get('paths', {}):
-                raise hkutils.HkException('Config file does not contain a '
-                                          '"heaps" section.')
-            else:
-                # legacy behaviour
-                hkutils.log('Config file contains a "paths/mail" option that '
-                            'should be replaced by "paths/heaps". See the '
-                            'documentation for more information.')
-                heap_path = config['paths']['mail']
-                return {'': heap_path}
-
-        heaps_raw = config['paths']['heaps'].split(';')
         heaps = {}
-        for heap_raw in heaps_raw:
-            try:
-                heap_id, heap_dir = heap_raw.split(':')
-                heap_id = heap_id.strip()
-                heap_dir = heap_dir.strip()
-            except ValueError:
-                raise \
-                    hkutils.HkException(
-                        'Heap specification is not in heap_id:heap_dir '
-                        'format: %s' %
-                        (heap_raw,))
-            heaps[heap_id] = heap_dir
+        for heap_config in config['heaps'].values():
+            heaps[heap_config['id']] = heap_config['path']
         return heaps
 
     def read_config(self, config):
@@ -1669,7 +1646,7 @@ class PostDB(object):
         """
 
         heaps = self.get_heaps_from_config(config)
-        html_dir = config['paths']['html']
+        html_dir = config['paths']['html_dir']
 
         for heap_id, heap_dir in heaps.iteritems():
             self.add_heap(heap_id, heap_dir)
@@ -2986,7 +2963,7 @@ class EmailDownloader(object):
     **Data attributes:**
 
     - `_postdb` (|PostDB|) -- The post database.
-    - `_config` (ConfigParser.ConfigParser) -- The configuration object.
+    - `_config` (|ConfigDict|) -- The configuration object.
     - `_server` (imaplib.IMAP4_SSL | ``None``) -- The object that represents
       the IMAP server.
 
@@ -2997,28 +2974,39 @@ class EmailDownloader(object):
     - http://en.wikipedia.org/wiki/MIME#Multipart_messages
     """
 
-    def __init__(self, postdb, config):
+    def __init__(self, postdb, config, heap_id):
         """Constructor.
 
         **Arguments:**
 
         - `_postdb` (|PostDB|) -- The post database.
-        - `_config` (ConfigParser.ConfigParser) -- The configuration object.
+        - `_config` (|ConfigDict|) -- The configuration object.
+        - `_heap_id` (|HeapId|) -- The id of the heap which will be used.
         """
 
         super(EmailDownloader, self).__init__()
         self._postdb = postdb
         self._config = config
+        self._heap_id = heap_id
         self._server = None
 
     def connect(self):
         """Connects to the IMAP server."""
 
         hkutils.log('Reading settings...')
-        host = self._config['server']['host']
-        port = int(self._config['server']['port'])
-        username = self._config['server']['username']
-        password = self._config['server']['password']
+
+        # Try to get the server configuration specific to the heap
+        server = self._config['heaps'][self._heap_id].get('server')
+
+        # If that does not exist, get the generic server configuration
+        if server is None:
+            server = self._config['server']
+
+        host = server['host']
+        port = server['port']
+        username = server['username']
+        password = server['password']
+
         hkutils.log('Connecting...')
         self._server = imaplib.IMAP4_SSL(host, port)
         self._server.login(username, password)
@@ -3134,23 +3122,34 @@ class EmailDownloader(object):
         post.remove_newlines_from_subject()
         post.normalize_subject()
 
-        nicknames = self._config.get('nicknames')
-        if nicknames is not None:
-            for entry, author_regex in nicknames:
-                [author, regex] = nicknames[entry].split(' ', 1)
-                if re.search(regex, post.author()) != None:
-                    post.set_author(author)
-                    break
+        # If the author has a nickname, we set it
+        r = re.compile('[-._A-Za-z0-9]+@[-._A-Za-z0-9]+')
+        author_address = r.search(post.author()).group(0)
+
+        # We try to read the nickname from the
+        # heaps/<heap id>/nicknames/<author address> configuration item
+        heap_config = self._config['heaps'][self._heap_id]
+        author_nick = heap_config['nicknames'].get(author_address)
+
+        # We try to read the nickname from the nicknames/<author address>
+        # configuration item
+        if author_nick is None:
+            author_nick = self._config['nicknames'].get(author_address)
+
+        if author_nick is not None:
+            post.set_author(author_nick)
+        else:
+            hkutils.log("WARNING: author's nickname not found: %s" %
+                        (post.author()))
 
         return post
 
-    def download_new(self, heap_id, lower_value=0, detailed_log=False):
+    def download_new(self, lower_value=0, detailed_log=False):
         """Downloads the new emails from the INBOX of the IMAP server and adds
         them to the post database.
 
         **Arguments:**
 
-        - `heap_id` (str) -- Heap to be used.
         - `lower_value` (int) -- Only the email indices that are greater or
           equal to `lower_value` are examined.
         - `detailed_log` (bool) -- If ``True``, every email found or downloaded
@@ -3159,7 +3158,7 @@ class EmailDownloader(object):
         **Returns:** |PostSet| -- A set of the new posts.
         """
 
-        assert self._postdb.has_heap_id(heap_id)
+        assert self._postdb.has_heap_id(self._heap_id)
         self._server.select("INBOX")
         result = self._server.search(None, '(ALL)')[1][0].strip()
         if result == '':
@@ -3207,7 +3206,7 @@ class EmailDownloader(object):
             text = result[i * 3][1]
             header = result[i * 3 + 1][1]
             post = self.create_post_from_email(header, text)
-            self._postdb.add_new_post(post, heap_id)
+            self._postdb.add_new_post(post, self._heap_id)
             new_posts.append(post)
             if detailed_log:
                 hkutils.log('Post #%s (#%s in INBOX) downloaded.' %

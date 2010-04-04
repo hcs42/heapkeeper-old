@@ -664,7 +664,32 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
         os.chdir(self._orig_workingdir)
         self.tearDownDirs()
 
-    def test__1(self):
+    def test__config_format_1(self):
+        """Tests hkshell start when the config file is in version 1."""
+
+        # Empty heap
+        config_file = os.path.join(self._dir, 'test.cfg')
+        config_str = \
+            ("[paths]\n"
+             "mail=my_heap_dir\n"
+             "html=my_html_dir\n")
+        hkutils.string_to_file(config_str, config_file)
+
+        cmdl_options, args = \
+            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell'])
+        hkshell.main(cmdl_options, args)
+
+        self.assertEqual(
+            self.pop_log(),
+            'Warning: post directory does not exists: "my_heap_dir"\n'
+            'Post directory has been created.\n'
+            'Warning: HTML directory does not exists: "my_html_dir"\n'
+            'HTML directory has been created.\n'
+            'Importing hkrc...\n'
+            'Module not found: "hkrc"')
+
+    def test__config_format_2(self):
+        """Tests hkshell start when the config file is in version 2."""
 
         # Empty heap
         config_file = os.path.join(self._dir, 'test.cfg')
@@ -672,6 +697,34 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
             ("[paths]\n"
              "heaps=my_heap:my_heap_dir\n"
              "html=my_html_dir\n")
+        hkutils.string_to_file(config_str, config_file)
+
+        cmdl_options, args = \
+            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell'])
+        hkshell.main(cmdl_options, args)
+
+        self.assertEqual(
+            self.pop_log(),
+            'Warning: post directory does not exists: "my_heap_dir"\n'
+            'Post directory has been created.\n'
+            'Warning: HTML directory does not exists: "my_html_dir"\n'
+            'HTML directory has been created.\n'
+            'Importing hkrc...\n'
+            'Module not found: "hkrc"')
+
+    def test__config_format_3(self):
+        """Tests hkshell start when the config file is in version 3."""
+
+        # Empty heap
+        config_file = os.path.join(self._dir, 'test.cfg')
+        config_str = \
+            ('[paths]\n'
+             'html_dir=my_html_dir\n'
+             '\n'
+             '[heaps/my_heap]\n'
+             'heap_id=my_heap\n'
+             'name=My heap\n'
+             'path=my_heap_dir\n')
         hkutils.string_to_file(config_str, config_file)
 
         cmdl_options, args = \

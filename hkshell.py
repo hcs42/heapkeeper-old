@@ -1389,10 +1389,9 @@ def dl(from_=0, detailed_log=False, ps=False):
     else:
         heap_id = heap_id_hint_var
 
-    email_downloader = hklib.EmailDownloader(postdb(), options.config)
+    email_downloader = hklib.EmailDownloader(postdb(), options.config, heap_id)
     email_downloader.connect()
-    new_posts = \
-        email_downloader.download_new(heap_id, int(from_), bool(detailed_log))
+    new_posts = email_downloader.download_new(int(from_), bool(detailed_log))
     email_downloader.close()
     if ps:
         return new_posts
@@ -1659,9 +1658,10 @@ def read_postdb(configfile):
         hkutils.log('Config file not found: "%s"' % (configfile,))
         sys.exit(1)
     configdict = hkutils.configparser_to_configdict(config)
+    hklib.unify_config(configdict)
     postdb = hklib.PostDB()
     postdb.read_config(configdict)
-    return config, postdb
+    return configdict, postdb
 
 def init():
     """Sets the default event handlers."""
