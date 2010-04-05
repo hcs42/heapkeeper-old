@@ -5,6 +5,8 @@ This page describes the development methods and the tools that are used.
 The :doc:`codingconventions` page contains more specific conventions regarding
 the documentation and the source code.
 
+.. _reading:
+
 Reading
 -------
 
@@ -196,24 +198,43 @@ can contact us via email as described on the :doc:`index page <index-main>`.
 Workflow
 --------
 
-Using the version control system
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Policies about commits
+^^^^^^^^^^^^^^^^^^^^^^
 
-* Run the :ref:`tests <testing>` before you *push* your changes and never push
-  code whose test fail.
-* There is not a strict policy about whether the developers may *commit*
-  code intentionally that is not correct (e.g. in the middle of a refactoring).
-  Probably the best is not commit incorrect code. (Note: it is about *commit*,
-  the developers strictly should not *push* code intentionally that is not
-  correct.)
-* Try to do larger independent changes in independent commits. E.g. if you add
-  50 lines to the documentation and add a new class, and these have nothing to
-  do with each other, it is better to have two separate commits for them. Of
-  course if the documentation is about the new class, it is better to have them
-  in the same commit.
+The following rules apply to commits in the GitHub repositories. Anyone may
+have commits in their own private repositories that do not conform to these
+policies; but before the commits are pushed to GitHub, they should be rebased
+so that they conform.
+
+* All commits should be correct and should contain a version of Heapkeeper that
+  works correctly.
+* Every test case in every commit should pass; i.e. ``test.py`` should execute
+  all test cases and it should not report any failures. See also :ref:`tests
+  <testing>`.
+* :ref:`pylint` should not give any warning in any commit that is not disabled
+  in the ``pylintrc`` file of the corresponding commit; i.e.
+  ``hk-dev-utils/hk_pylint`` should not print anything.
+* Do independent changes in independent commits, but closely related changes in
+  the same commit. As Karl Fogel wrote in his :ref:`book <reading>`: "have each
+  commit be a single logical change". You can read more here__. Examples from
+  Heapkeeper development:
+
+  * If you add some documentation and add a new class, and these have not much
+    to do with each other, create two separate commits for them.
+  * If you add a new method to a class, write documentation and unit tests for
+    the method, create one commit for all of these. It is nice to review a
+    commit when both the documentation and the unit tests for the change are in
+    the commit.
+  * If several totally independent source code lines are modified in order to
+    get rid of :ref:`pylint` warnings, these should be in one commit. The parts
+    of the source code that were modified may have nothing to do with each
+    other, but the commit is still logically a single change because of the one
+    common objective.
 
 See the conventions about commit messages :ref:`here
 <commit_message_conventions>`.
+
+__ http://producingoss.com/en/releases-and-daily-development.html
 
 Developing code and committing it to the local repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
