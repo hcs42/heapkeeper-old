@@ -42,7 +42,7 @@ __ mailing_list_
 Downloading Heapkeeper
 ----------------------
 
-First make sure you have Python 2.5 or 2.6.
+First make sure you have Python 2.5, 2.6 or 2.7.
 
 Then download the latest version of Heapkeeper (either in `tar.gz`__ or in
 `zip`__). For Unix users:
