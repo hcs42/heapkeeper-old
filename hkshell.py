@@ -177,8 +177,8 @@ console_help = """\
 Types
 -----
 
-pp = PrePost = int | str | Post
-pps = PrePostSet = prepost | [prepost] | set(prepost) | PostSet
+pp = PrePost = str | int | (str, int) | (str, str) | | Post
+pps = PrePostSet = pp | [pp] | set(pp) | PostSet
 pts = PreTagSet = tag | set(tag) | [tag]
 
 Features
