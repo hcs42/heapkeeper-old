@@ -357,11 +357,9 @@ class Post(object):
         else:
             post_id_str = ' (post %s/%s)' % post_id
 
-        def copy_one(key, alt_key=None):
+        def copy_one(key):
             try:
                 [value] = d.pop(key, [''])
-                if alt_key != None and value == '':
-                    [value] = d.pop(alt_key, [''])
             except ValueError:
                 raise hkutils.HkException, \
                       ('Multiple "%s" keys.' % key)
@@ -372,12 +370,12 @@ class Post(object):
 
         d = d.copy()
         h = {}
-        # TODO the alternate keys can be deleted soon
-        copy_one('Author', 'From')
+
+        copy_one('Author')
         copy_one('Subject')
         copy_list('Tag')
         copy_one('Message-Id')
-        copy_one('Parent', 'In-Reply-To')
+        copy_one('Parent')
         copy_one('Date')
         copy_list('Flag')
         h['Tag'].sort()
