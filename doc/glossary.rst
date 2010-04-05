@@ -1,13 +1,100 @@
 Glossary
 ========
 
+.. include:: defs.hrst
+
+.. _glossary_basic_concepts:
+
+Basic concepts of Heapkeeper
+----------------------------
+
+.. _glossary_heap:
+
+**Heap:**
+
+    A heap is an editable mailing list. It is a changing set of :ref:`posts
+    <glossary_post>`: new posts can be added, and existing posts can be
+    modified. Usually there is a mailing list behind a heap which is piped into
+    the heap, i.e. new emails will appear on the heap as new posts, where they
+    can be modified (or even deleted). The heap is stored as a directory in the
+    file system, in which each file is a :ref:`post file <glossary_post_file>`
+    that stores a post. This directory is usually version controlled so that if
+    some posts on the heap are modified, the modifications can be viewed later.
+    Heapkeeper can manage several heaps simultaneously. Heaps are identified in
+    Heapkeeper by their :ref:`heap id <glossary_heap_id>`.
+
+.. _glossary_post:
+
+**Post:**
+
+    A post is a message that is stored on a :ref:`heap <glossary_heap>`. A post
+    is uniquely identified by its :ref:`post id <glossary_post_id>`. Each post
+    is stored in a :ref:`post file <glossary_post_file>`. A post has attributes
+    (author, subject, tags, etc.) and a body. All of these are strings. When
+    Heapkeeper is running, posts are represented as instances of the |Post|
+    class.
+
+.. _glossary_post_file:
+
+**Post file:**
+
+    A file in which a :ref:`post <glossary_post>` is stored. It has a very
+    similar format to the email file format (:rfc:`2822`). An example of a
+    post file::
+
+        Author: ashe@usrobots.com
+        Subject: RB-34
+
+        RB-34 is behaving wierdly. You should have a look at it.
+        I have never seen anything like that. It seems as if it
+        could read my mind.
+
+        Ashe
+
+.. _glossary_post_id:
+
+**Post id:**
+
+    A post identifier that uniquely identifies a :ref:`post <glossary_post>`.
+    It has two components: a :ref:`heap id <glossary_heap_id>` (which
+    identifies the heap), and a :ref:`post index <glossary_post_index>` (which
+    identities the post within the heap). For example ``usr/12`` is a post
+    index, and it identities the post within the ``usr`` heap that has post
+    index ``12``. Heapkeeper's shell accepts the post id either in a string
+    format (``'usr/12'``) or in a tuple format (``('usr', '12')``).
+
+.. _glossary_heap_id:
+
+**Heap id:**
+
+    A string that identifies a heap. The heap id will also be used as the name
+    of the directory in which the HTML pages for the heap are generated, so it
+    should not be an empty string and should not contain any character that
+    is illegal in a file name.
+
+.. _glossary_post_index:
+
+**Post index:**
+
+    A string that identifies a post within a heap. Usually (but not
+    necessarily) post indices are integers. In Heapkeeper's shell, post indices
+    that are indeed integers may also be specified as integers (e.g. ``12``),
+    not only as strings (e.g. ``'12'``).
+
+.. _glossary_post_set:
+
+**Post set:**
+
+    A set of posts on which operations can be performed. A set of posts is
+    represented by an instance of the |PostSet| class.
+
 .. _post_relations:
 
 Relation between the posts
 --------------------------
 
-*Primitive* means that it cannot be defined using other concepts mentioned
-here, because they are stored by the post. All primitive concepts are
+*Primitive* means that a concept cannot be defined using other concepts
+mentioned here, because they are stored by the post. All primitive concepts are
 explicitly noted to be primitive. Actually, there are only two primitives:
 *parent* and *reference*.
 

@@ -49,16 +49,16 @@ Then download the latest version of Heapkeeper (either in `tar.gz`__ or in
 
 .. code-block:: sh
 
-    $ wget http://heapkeeper.org/releases/heapkeeper-0.4.tar.gz
+    $ wget http://heapkeeper.org/releases/heapkeeper-0.5.tar.gz
 
-__ http://heapkeeper.org/releases/heapkeeper-0.4.tar.gz
-__ http://heapkeeper.org/releases/heapkeeper-0.4.zip
+__ http://heapkeeper.org/releases/heapkeeper-0.5.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.5.zip
 
 Unzip the tar.gz or zip file. For Unix users:
 
 .. code-block:: sh
 
-    $ tar xzf heapkeeper-0.4.tar.gz
+    $ tar xzf heapkeeper-0.5.tar.gz
 
 Make Heapkeeper's directory the current one. Heapkeeper's shell (|hkshell|) can
 be started from here without any installation procedure. You can ask for
@@ -66,9 +66,9 @@ version information for example:
 
 .. code-block:: sh
 
-    $ cd heapkeeper-0.4
+    $ cd heapkeeper-0.5
     $ python hk.py --version
-    Heapkeeper version 0.4
+    Heapkeeper version 0.5
 
 Or you can execute the automatic test:
 
@@ -76,7 +76,7 @@ Or you can execute the automatic test:
 
     $ python test.py
     ----------------------------------------------------------------------
-    Ran 93 tests in 0.172s
+    Ran 126 tests in 0.172s
 
     OK
 
@@ -86,9 +86,10 @@ Configuration
 -------------
 
 First, we create two directories: ``posts`` and ``html``. ``posts`` will store
-the post database, which contains the posts themselves in text files. The
-``html`` directory will contain the HTML pages that will be generated from the
-posts.
+the :ref:`heap <glossary_heap>`, i.e. the post database, which contains the
+:ref:`posts <glossary_post>` themselves in text files (so-called :ref:`post
+files <glossary_post_file>`). The ``html`` directory will contain the HTML
+pages that will be generated from the posts.
 
 .. code-block:: sh
 
@@ -102,19 +103,22 @@ HTML generation target.
 .. code-block:: ini
 
     [paths]
-    mail=posts
-    html=html
+    html_dir=html
+
+    # Heap for U.S. Robots and Mechanical Men, Inc.
+    [heaps/usr]
+    path=posts
 
 .. _adding_posts:
 
 Adding a new post to the heap
 -----------------------------
 
-Normally, the posts on the heap are emails that were downloaded from IMAP
-servers and converted into a post. To make it easier to understand this
-tutorial, first we will create and manipulate posts locally by |hkshell|
-commands. (Afterwards we will go through on how to download emails from a
-mailing list, which makes Heapkeeper actually usable.)
+Normally, the :ref:`posts <glossary_post>` on the heap are emails that were
+downloaded from IMAP servers and converted into a post. To make it easier to
+understand this tutorial, first we will create and manipulate posts locally by
+|hkshell| commands. (Afterwards we will go through on how to download emails
+from a mailing list, which makes Heapkeeper actually usable.)
 
 Start |hkshell|:
 
@@ -136,9 +140,9 @@ Let's list all the posts we have (of course we don't have any posts yet)::
     >>> postdb().all()
     PostSet([])
 
-Let's create now a new post with the |enew| command::
+Let's create now a new post with the |enew| command in the ``'usr'`` heap::
 
-    >>> enew()
+    >>> enew(heap_id='usr')
 
 An editor will pop up that lets you edit the post to be created. By default,
 the editor is ``notepad`` on Windows and ``vi`` on Unix systems; this can be
@@ -176,7 +180,7 @@ This structure is similar to the standard email file format (:rfc:`2822`).
 After saving and quitting from the text editor, we should see confirmation
 about the post's successful creation::
 
-    >>> enew()
+    >>> enew(heap_id='usr')
     Post created.
     <post '1'>
 
@@ -331,7 +335,7 @@ stands for "generate")::
     Generating index.html...
     Generating thread pages...
 
-Open ``html/index.html`` in a browser. You will see something like this:
+Open ``html/index/index.html`` in a browser. You will see something like this:
 
 .. image:: images/1.png
       :align: center
@@ -386,25 +390,26 @@ post or posts, which can be specified for example by their heapid. If no posts
 are specified, it prints the header of all posts. The posts in the output of
 |ls| have the same indentation as in the index page that we saw previously. ::
 
-    >>> ls(1)
-    <1> RB-34  ashe@usrobots.com
-    >>> ls([1,2])
-    <1> RB-34  ashe@usrobots.com
-      <2> RB-34  alfred.lanning@usrobots.com
+    >>> ls('usr/1')
+    <usr/1> RB-34  ashe@usrobots.com
+    >>> ls(['usr/1', 'usr/2'])
+    <usr/1> RB-34  ashe@usrobots.com
+      <usr/2> RB-34  alfred.lanning@usrobots.com
     >>> ls()
-    <1> RB-34  ashe@usrobots.com
-      <2> RB-34  alfred.lanning@usrobots.com
-        <3> RB-34  peter.bogert@usrobots.com
-          <5> RB-34  alfred.lanning@usrobots.com
-        <4> RB-34  susan@usrobots.com
-          <6> RB-34  alfred.lanning@usrobots.com
-            <7> RB-34  susan@usrobots.com
-    <8> Cinema  susan@usrobots.com
+    <usr/1> RB-34  ashe@usrobots.com
+      <usr/2> RB-34  alfred.lanning@usrobots.com
+        <usr/3> RB-34  peter.bogert@usrobots.com
+          <usr/5> RB-34  alfred.lanning@usrobots.com
+        <usr/4> RB-34  susan@usrobots.com
+          <usr/6> RB-34  alfred.lanning@usrobots.com
+            <usr/7> RB-34  susan@usrobots.com
+    <usr/8> Cinema  susan@usrobots.com
+    >>>
 
 The |cat| command prints the post itself::
 
-    >>> cat(1)
-    Heapid: 1
+    >>> cat('usr/1')
+    Post-id: usr/1
     Author: ashe@usrobots.com
     Subject: RB-34
     Tag: interesting
@@ -416,6 +421,30 @@ The |cat| command prints the post itself::
 
     Ashe
 
+Heap hint, |sh| and |gh|
+::::::::::::::::::::::::
+
+Previously we referred to a post with its :ref:`post id <glossary_post_id>`
+(e.g. ``usr/1``), which is the combination of its :ref:`heap id
+<glossary_heap_id>` (``'usr'``) and its post index (``'1'``). If we specify a
+"heap hint", then we can use only the post index, and Heapkeeper will try to
+find the post it within that heap.
+
+Let's set the heap hint to ``'usr'``::
+
+    >> sh('usr')
+
+Now can just refer to post 1 (``1`` can be given either as a string or as an
+integer)::
+
+    >>> ls(1)
+    <usr/1> RB-34  ashe@usrobots.com
+
+The heap hint can be printed using |gh|::
+
+    >>> gh()
+    'usr
+
 Manipulating the subject and tags
 :::::::::::::::::::::::::::::::::
 
@@ -423,16 +452,16 @@ Now let's have a look at the commands that actually modify the posts. For
 example the |sS| command ("set subject") sets the subject of the given posts.
 An example::
 
-    >>> sS([1,2], 'Robot Problem: RB-34')
+    >>> sS([1, 2], 'Robot Problem: RB-34')
     >>> ls()
-    <1> Robot Problem: RB-34  ashe@usrobots.com
-      <2> Robot Problem: RB-34  alfred.lanning@usrobots.com
-        <3> RB-34  peter.bogert@usrobots.com
-          <5> RB-34  alfred.lanning@usrobots.com
-        <4> RB-34  susan@usrobots.com
-          <6> RB-34  alfred.lanning@usrobots.com
-            <7> RB-34  susan@usrobots.com
-    <8> Cinema  susan@usrobots.com
+    <usr/1> Robot Problem: RB-34  ashe@usrobots.com
+      <usr/2> Robot Problem: RB-34  alfred.lanning@usrobots.com
+        <usr/3> RB-34  peter.bogert@usrobots.com
+          <usr/5> RB-34  alfred.lanning@usrobots.com
+        <usr/4> RB-34  susan@usrobots.com
+          <usr/6> RB-34  alfred.lanning@usrobots.com
+            <usr/7> RB-34  susan@usrobots.com
+    <usr/8> Cinema  susan@usrobots.com
 
 There is a recursive version of |sS| that is called |sSr| ("set subject
 recursively"). It changes not only the subject of the given post, but the
@@ -442,14 +471,15 @@ recursively, and all posts' subject will be set::
 
     >>> sSr(1, 'Mind-reader robot')
     >>> ls()
-    <1> Mind-reader robot  ashe@usrobots.com
-      <2> Mind-reader robot  alfred.lanning@usrobots.com
-        <3> Mind-reader robot  peter.bogert@usrobots.com
-          <5> Mind-reader robot  alfred.lanning@usrobots.com
-        <4> Mind-reader robot  susan@usrobots.com
-          <6> Mind-reader robot  alfred.lanning@usrobots.com
-            <7> Mind-reader robot  susan@usrobots.com
-    <8> Cinema  susan@usrobots.com
+    <usr/1> Mind-reader robot  ashe@usrobots.com
+      <usr/2> Mind-reader robot  alfred.lanning@usrobots.com
+        <usr/3> Mind-reader robot  peter.bogert@usrobots.com
+          <usr/5> Mind-reader robot  alfred.lanning@usrobots.com
+        <usr/4> Mind-reader robot  susan@usrobots.com
+          <usr/6> Mind-reader robot  alfred.lanning@usrobots.com
+            <usr/7> Mind-reader robot  susan@usrobots.com
+    <usr/8> Cinema  susan@usrobots.com
+
 
 There are similar functions to control tags, for example |aT| ("add tag"),
 |aTr| ("add tag recursively"), |rT| ("remove tag") and |rTr| ("remove tag
@@ -475,7 +505,7 @@ works like |enew|, but receives the content of the post as an argument::
     ...          "\n"
     ...          "Ashe\n")
     Post created.
-    <post '9'>
+    <post usr/9>
     >>> g()
     Generating index.html...
     Generating thread pages...
@@ -487,7 +517,7 @@ The generated page will look like this:
 
 Let's join post 8 and 9 and regenerate the index page::
 
-    >>> j(8,9)
+    >>> j(8, 9)
     >>> g()
     Generating index.html...
     Generating thread pages...
@@ -502,21 +532,30 @@ Posts
 """""
 
 The most basic data structure of Heapkeeper is :class:`hklib.Post`. A |Post|
-stores the headers and the body of the post that it represents. The simplest
-way to obtain the |Post| object of a post in |hkshell| is using its heapid and
-the |p| function::
+object represents a post, and it stores the attributes and the body of the post
+that it represents. The simplest way to obtain the |Post| object of a post in
+|hkshell| is using its :ref:`post id <glossary_post_id>` and the |p| function::
 
     >>> post = p(1)
     >>> print post
-    <post '1'>
+    <post usr/1>
 
-|Post| has functions for getting and setting the headers and the body. The
-getter functions work in a quite obvious way::
+(We don't have to specify the heap because we set the heap hint to ``'usr'``
+before using the |sh| command.)
+
+The |Post| class has functions for getting and setting the attributes and the
+body. The getter functions work in a quite obvious way::
 
     >>> post = p(1)
     >>> print post
-    <post '1'>
-    >>> post.heapid()
+    <post usr/1>
+    >>> post.post_id()
+    ('usr', '1')
+    >>> post.post_id_str()
+    'usr/1'
+    >>> post.heap_id()
+    'usr'
+    >>> post.post_index()
     '1'
     >>> post.author()
     'ashe@usrobots.com'
@@ -545,7 +584,7 @@ Let's create a new post and change its content using |Post| methods! ::
     ...               '\n'
     ...               'http://buyrobot99.com')
     >>> cat(post)
-    Heapid: 10
+    Post-id: usr/10
     Author: noname spammer
     Subject: Ugly spam
 
@@ -561,68 +600,72 @@ generated HTML pages, or in the result of :func:`postdb().all()
 by a placeholder content::
 
     >>> ls()
-    <1> Mind-reader robot  ashe@usrobots.com
-      <2> Mind-reader robot  alfred.lanning@usrobots.com
-        <3> Mind-reader robot  peter.bogert@usrobots.com
-          <5> Mind-reader robot  alfred.lanning@usrobots.com
-        <4> Mind-reader robot  susan@usrobots.com
-          <6> Mind-reader robot  alfred.lanning@usrobots.com
-            <7> Mind-reader robot  susan@usrobots.com
-    <8> Cinema  susan@usrobots.com
-      <9> Cinema  ashe@usrobots.com
-    <10> Ugly spam  noname spammer
+    <usr/1> Mind-reader robot  ashe@usrobots.com
+      <usr/2> Mind-reader robot  alfred.lanning@usrobots.com
+        <usr/3> Mind-reader robot  peter.bogert@usrobots.com
+          <usr/5> Mind-reader robot  alfred.lanning@usrobots.com
+        <usr/4> Mind-reader robot  susan@usrobots.com
+          <usr/6> Mind-reader robot  alfred.lanning@usrobots.com
+            <usr/7> Mind-reader robot  susan@usrobots.com
+    <usr/10> Ugly spam  noname spammer
+    <usr/8> Cinema  susan@usrobots.com
+      <usr/9> Cinema  ashe@usrobots.com
     >>> d(10)
     >>> ls()
-    <1> Mind-reader robot  ashe@usrobots.com
-      <2> Mind-reader robot  alfred.lanning@usrobots.com
-        <3> Mind-reader robot  peter.bogert@usrobots.com
-          <5> Mind-reader robot  alfred.lanning@usrobots.com
-        <4> Mind-reader robot  susan@usrobots.com
-          <6> Mind-reader robot  alfred.lanning@usrobots.com
-            <7> Mind-reader robot  susan@usrobots.com
-    <8> Cinema  susan@usrobots.com
-      <9> Cinema  ashe@usrobots.com
+    <usr/1> Mind-reader robot  ashe@usrobots.com
+      <usr/2> Mind-reader robot  alfred.lanning@usrobots.com
+        <usr/3> Mind-reader robot  peter.bogert@usrobots.com
+          <usr/5> Mind-reader robot  alfred.lanning@usrobots.com
+        <usr/4> Mind-reader robot  susan@usrobots.com
+          <usr/6> Mind-reader robot  alfred.lanning@usrobots.com
+            <usr/7> Mind-reader robot  susan@usrobots.com
+    <usr/8> Cinema  susan@usrobots.com
+      <usr/9> Cinema  ashe@usrobots.com
     >>> cat(10)
-    Heapid: 10
+    Post-id: usr/10
     Flag: deleted
 
 Post sets
 """""""""
 
-Most |hkshell| commands take a post set as an argument. They accept
-:class:`hklib.PostSet` objects, as well as a few other types that can be
-converted to |PostSet|. We saw examples of the followings, all of which can be
-converted to |PostSet| objects:
+Most |hkshell| commands take a :ref:`post set <glossary_post_set>` as an
+argument. They accept :class:`hklib.PostSet` objects, as well as a few other
+types that can be converted to |PostSet|. We saw examples of the followings,
+all of which can be converted to |PostSet| objects:
 
-* the heapid as an integer (e.g. ``sS(42, 'something')``)
-* the heapid as a string (e.g. ``sS('43', 'something')``)
-* a list or set of strings and integers (e.g. ``sS([42, '43'], 'something')``)
+* the :ref:`post index <glossary_post_index>` as an integer (e.g. ``sS(42,
+  'something')``)
+* the post index as a string (e.g. ``sS('43', 'something')``)
+* the :ref:`post id <glossary_post_id>` as a string (e.g. ``sS('usr/43',
+  'something')``)
+* a list or set of any of the previous types (e.g. ``sS([42, '43', 'usr/44'],
+  'something')``)
 
 The |PostSet| object can also be created explicitly, using the |ps| function::
 
-    >>> posts = ps([8,9])
+    >>> posts = ps([8, 9])
     >>> print posts
-    PostSet([<post '8'>, <post '9'>])
+    PostSet([<post usr/8>, <post usr/9>])
     >>> sS(posts,'How about cinema?')
     >>> ls(posts)
-    <8> How about cinema?  susan@usrobots.com
-      <9> How about cinema?  ashe@usrobots.com
+    <usr/8> How about cinema?  susan@usrobots.com
+      <usr/9> How about cinema?  ashe@usrobots.com
 
-:func:`postdb().all() <hklib.PostSet.all>` returns a post set that contains all
+:func:`postdb().all() <hklib.PostDB.all>` returns a post set that contains all
 posts. In the following example, we use it to add the ``internal`` tag to all
 posts::
 
-    >>> aT(postdb().all(),'internal')
+    >>> aT(postdb().all(), 'internal')
     >>> ls(show_tags=True, show_author=False)
-    <1> Mind-reader robot  [interesting,internal,robot]
-      <2> Mind-reader robot  [interesting,internal,robot]
-        <3> Mind-reader robot  [interesting,internal,robot]
-          <5> Mind-reader robot  [interesting,internal,robot]
-        <4> Mind-reader robot  [interesting,internal,psychology,robot]
-          <6> Mind-reader robot  [interesting,internal,psychology,robot]
-            <7> Mind-reader robot  [interesting,internal,psychology,robot]
-    <8> How about cinema?  [free time,internal]
-      <9> How about cinema?  [internal]
+    <usr/1> Mind-reader robot  [interesting,internal,robot]
+      <usr/2> Mind-reader robot  [interesting,internal,robot]
+        <usr/3> Mind-reader robot  [interesting,internal,robot]
+          <usr/5> Mind-reader robot  [interesting,internal,robot]
+        <usr/4> Mind-reader robot  [interesting,internal,psychology,robot]
+          <usr/6> Mind-reader robot  [interesting,internal,psychology,robot]
+            <usr/7> Mind-reader robot  [interesting,internal,psychology,robot]
+    <usr/8> How about cinema?  [free time,internal]
+      <usr/9> How about cinema?  [internal]
 
 There are many things we can do with a post set. It has standard set operations
 like union, intersection, etc; but it also has operations that are specific to
@@ -632,13 +675,14 @@ descendants. If we expand post 1, we will get all posts concerning the
 mind-reader robot::
 
     >>> ls(ps([1]).expf())
-    <1> Mind-reader robot  ashe@usrobots.com
-      <2> Mind-reader robot  alfred.lanning@usrobots.com
-        <3> Mind-reader robot  peter.bogert@usrobots.com
-          <5> Mind-reader robot  alfred.lanning@usrobots.com
-        <4> Mind-reader robot  susan@usrobots.com
-          <6> Mind-reader robot  alfred.lanning@usrobots.com
-            <7> Mind-reader robot  susan@usrobots.com
+    <usr/1> Mind-reader robot  ashe@usrobots.com
+      <usr/2> Mind-reader robot  alfred.lanning@usrobots.com
+        <usr/3> Mind-reader robot  peter.bogert@usrobots.com
+          <usr/5> Mind-reader robot  alfred.lanning@usrobots.com
+        <usr/4> Mind-reader robot  susan@usrobots.com
+          <usr/6> Mind-reader robot  alfred.lanning@usrobots.com
+            <usr/7> Mind-reader robot  susan@usrobots.com
+
 
 |PostSet| has two special attributes: |collect| and |forall|.
 |collect| collects posts from a post set which have certain property.
@@ -649,19 +693,19 @@ add ``psycho`` instead (using |aT|)::
 
     >>> posts = postdb().all().collect(lambda p: p.has_tag('psychology'))
     >>> posts
-    PostSet([<post '6'>, <post '4'>, <post '7'>])
+    PostSet([<post usr/4>, <post usr/6>, <post usr/7>])
     >>> posts.forall(lambda p: rT(p, 'psychology'))
     >>> posts.forall(lambda p: aT(p, 'psycho'))
     >>> ls(show_tags=True, show_author=False)
-    <1> Mind-reader robot  [interesting,internal,robot]
-      <2> Mind-reader robot  [interesting,internal,robot]
-        <3> Mind-reader robot  [interesting,internal,robot]
-          <5> Mind-reader robot  [interesting,internal,robot]
-        <4> Mind-reader robot  [interesting,internal,psycho,robot]
-          <6> Mind-reader robot  [interesting,internal,psycho,robot]
-            <7> Mind-reader robot  [interesting,internal,psycho,robot]
-    <8> How about cinema?  [free time,internal]
-      <9> How about cinema?  [internal]
+    <usr/1> Mind-reader robot  [interesting,internal,robot]
+      <usr/2> Mind-reader robot  [interesting,internal,robot]
+        <usr/3> Mind-reader robot  [interesting,internal,robot]
+          <usr/5> Mind-reader robot  [interesting,internal,robot]
+        <usr/4> Mind-reader robot  [interesting,internal,psycho,robot]
+          <usr/6> Mind-reader robot  [interesting,internal,psycho,robot]
+            <usr/7> Mind-reader robot  [interesting,internal,psycho,robot]
+    <usr/8> How about cinema?  [free time,internal]
+      <usr/9> How about cinema?  [internal]
 
 .. _mailing_list:
 
@@ -688,30 +732,33 @@ so that Heapkeeper would download emails arriving to the mailing list.
 
 Let's create a GMail account first. It can be done at
 http://mail.google.com/mail/signup. In the example, we used the
-``myheap.channel`` user name and the ``mystrongpassword`` password.
+``myheap.channel`` user name.
 
 Then modify the configuration file so that Heapkeeper will know where to
 download the emails from:
 
 .. code-block:: none
 
-    [server]
+    [paths]
+    html_dir=html
+
+    [heaps/myheap]
+    path=myheap_posts
+
+    [heaps/myheap/server]
     host=imap.gmail.com
     port=993
     username=myheap.channel@gmail.com
-    password=mystrongpassword
 
-    [paths]
-    mail=myheap_posts
-    html=myheap_html
-
-Create the post and HTML directories and start Heapkeeper:
+Start Heapkeeper:
 
 .. code-block:: sh
 
-    $ mkdir myheap_posts
-    $ mkdir myheap_html
     $ ./hk.py
+    Warning: post directory does not exists: "myheap_posts"
+    Post directory has been created.
+    Warning: HTML directory does not exists: "myheap_html"
+    HTML directory has been created.
     Importing hkrc...
     Module not found: "hkrc"
 
@@ -720,18 +767,23 @@ Create the post and HTML directories and start Heapkeeper:
 The |dl| command can be used to download new emails and convert them into
 posts::
 
+    >>> sh('myheap')
     >>> dl()
     Reading settings...
+    Password:
     Connecting...
     Connected
-    Post #1 (#1 in INBOX) downloaded.
-    Post #2 (#2 in INBOX) downloaded.
-    Post #3 (#3 in INBOX) downloaded.
-    Downloading finished.
+    Checking...
+    3 new messages found.
+    Downloading...
+    WARNING: author's nickname not found: Gmail Team <mail-noreply@google.com>
+    WARNING: author's nickname not found: Gmail Team <mail-noreply@google.com>
+    WARNING: author's nickname not found: Gmail Team <mail-noreply@google.com>
+    3 new messages downloaded.
     >>> ls()
-    <1> Get started with Google Mail  Google Mail Team <mail-noreply@google.com> (2009.07.25. 21:36)
-    <2> Access Google Mail on your mobile phone  Google Mail Team <mail-noreply@google.com> (2009.07.25. 21:36)
-    <3> Import your contacts and old email  Google Mail Team <mail-noreply@google.com> (2009.07.25. 21:36)
+    <myheap/1> Get started with Gmail  Gmail Team <mail-noreply@google.com> (2009.10.31. 12:44)
+    <myheap/2> Access Gmail on your mobile phone  Gmail Team <mail-noreply@google.com> (2009.10.31. 12:44)
+    <myheap/3> Import your contacts and old email  Gmail Team <mail-noreply@google.com> (2009.10.31. 12:44)
 
 As we can see, Heapkeeper downloaded the three "Get started" emails that were
 automatically sent by Google. Unfortunately these are HTML messages, which is
@@ -740,13 +792,13 @@ code.
 
 We can modify the posts as we like, we can even delete them::
 
-    >>> sS(1,'Get started')
-    >>> sS(2,'Mobile phone access')
+    >>> sS(1, 'Get started')
+    >>> sS(2, 'Mobile phone access')
     >>> d(3)
     >>> postdb().all().forall(lambda p: p.set_author('Google Mail Team'))
     >>> ls()
-    <1> Get started  Google Mail Team (2009.07.25. 21:36)
-    <2> Mobile phone access  Google Mail Team (2009.07.25. 21:36)
+    <myheap/1> Get started  Google Mail Team (2009.10.31. 12:44)
+    <myheap/2> Mobile phone access  Google Mail Team (2009.10.31. 12:44)
 
 Date and message id
 """""""""""""""""""
@@ -758,7 +810,7 @@ Heapkeeper similarly to other fields::
     >>> p(1).messid()
     '<b53945e0907251236l60da49b8t@mail.gmail.com>'
     >>> p(1).date()
-    'Sat, 25 Jul 2009 12:36:27 -0700'
+    'Sat, 31 Oct 2009 04:44:02 -0700'
 
 They are stored similarly, as well:
 
@@ -768,24 +820,24 @@ They are stored similarly, as well:
     Author: Google Mail Team
     Subject: Get started
     Message-Id: <b53945e0907251236l60da49b8t@mail.gmail.com>
-    Date: Sat, 25 Jul 2009 12:36:27 -0700
+    Date: Sat, 31 Oct 2009 04:44:02 -0700
 
 The |ls| command already showed the date of the posts. The post contains the
 date in :rfc:`2822` format, but Heapkeeper usually displays the date in local
-time (e.g. the |ls| command does so). The :func:`date <Post.date>` and
-:func:`date_str <Post.date_str>` methods of |Post| can be used to access the
-two form of the post's date:
+time (e.g. the |ls| command does so). The :func:`date <hklib.Post.date>` and
+:func:`date_str <hklib.Post.date_str>` methods of |Post| can be used to access
+the two form of the post's date::
 
     >>> p(1).date()
-    'Sat, 25 Jul 2009 12:36:27 -0700'
+    'Sat, 31 Oct 2009 04:44:02 -0700'
     >>> p(1).date_str()
-    '2009.07.25. 21:36'
+    '2009.10.31. 12:44'
 
 Message id and post deletion
 """"""""""""""""""""""""""""
 
 The message id is not really important to the readers and maintainers of the
-heap, but it is very important to Heapkeeper itself. Just like a heapid
+heap, but it is very important to Heapkeeper itself. Just like a post id
 identifies a *post*, a message id identifies an *email*. So if the |dl| command
 of |hkshell| is called again, Heapkeeper will not download the emails already
 downloaded, even if their posts were modified or deleted. The reason is that
@@ -803,9 +855,8 @@ If we invoke the |dl| command again, it will not download post 3 again:
 
     >>> dl()
     Reading settings...
+    Password:
     Connecting...
     Connected
-    Post #1 (#1 in INBOX) found.
-    Post #2 (#2 in INBOX) found.
-    Post #3 (#3 in INBOX) found.
-    Downloading finished.
+    Checking...
+    No new messages.
