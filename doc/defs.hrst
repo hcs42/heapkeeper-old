@@ -26,6 +26,7 @@
 .. |GeneratorOptions| replace:: :class:`GeneratorOptions <hklib.GeneratorOptions>`
 .. |Generator| replace:: :class:`Generator <hklib.Generator>`
 .. |GenIndicesFun| replace:: :ref:`GenIndicesFun <hkshell_GenIndicesFun>`
+.. |gh| replace:: :func:`gh <hkshell.gh>`
 .. |g| replace:: :func:`g <hkshell.g>`
 .. |HeapId| replace:: :ref:`HeapId <hklib_HeapId>`
 .. |hkbodyparser| replace:: :mod:`hkbodyparser`
@@ -70,6 +71,7 @@
 .. |rT| replace:: :func:`rT <hkshell.rT>`
 .. |Section| replace:: :class:`Section <hklib.Section>`
 .. |Segment| replace:: :class:`Segment <hkbodyparser.Segment>`
+.. |sh| replace:: :func:`sh <hkshell.sh>`
 .. |sSr| replace:: :func:`sSr <hkshell.sSr>`
 .. |sS| replace:: :func:`sS <hkshell.sS>`
 .. |s| replace:: :func:`s <hkshell.s>`

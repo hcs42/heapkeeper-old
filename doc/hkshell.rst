@@ -148,8 +148,8 @@ General commands
 ^^^^^^^^^^^^^^^^
 
 .. autofunction:: h()
-.. autofunction:: get_heap_id_hint()
-.. autofunction:: set_heap_id_hint()
+.. autofunction:: gh()
+.. autofunction:: sh()
 .. autofunction:: p()
 .. autofunction:: ps()
 .. autofunction:: postdb()

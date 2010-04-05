@@ -199,6 +199,8 @@ x()                - save and exit
 rl()               - reload the database (changes will be lost!)
 g()                - generate HTML pages
 gen_page(pps)      - generates a page that contains the posts
+sh(str)            - set heap id hint
+gh()               - get heap id hint
 p(pp)              - get a post
 ps(pps)            - create a postset
 ls(ps)             - get a summary of a postset
@@ -978,12 +980,12 @@ def h():
 heap_id_hint_var = None
 
 @hkshell_cmd()
-def get_heap_id_hint():
+def gh():
     """Gets the heap id hint."""
     return heap_id_hint_var
 
 @hkshell_cmd()
-def set_heap_id_hint(heap_id_hint):
+def sh(heap_id_hint):
     """Sets the heap id hint."""
     global heap_id_hint_var
     heap_id_hint_var = heap_id_hint
