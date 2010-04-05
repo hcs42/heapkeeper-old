@@ -1306,6 +1306,31 @@ def eR(pps):
 
     edit_posts(pps.expf())
 
+def add_post_to_heap(post, prefix, heap_id):
+    """Adds the given post to a heap if it can find out which heap to use.
+
+    **Argument:**
+
+    - `post` (|Post|)
+    - `prefix` (str) -- The prefix of the file.
+    - `heap_id` (|HeapId| | ``None``) -- The id of the heap in which the post
+      will be created. If ``None``, the value of |gh| is used.
+
+    **Returns:** |Post| | ``None`` -- Returns ``None`` if the post was not
+    added to any heap.
+    """
+
+    if heap_id is None:
+        heap_id_hint = gh()
+        if heap_id_hint is None:
+            hkutils.log('Post cannot be created: no heap specified.')
+            return None
+        else:
+            heap_id = heap_id_hint
+    postdb().add_new_post(post, heap_id, prefix=prefix)
+    hkutils.log('Post created.')
+    return post
+
 @hkshell_cmd(add_events=True, touching_command=True)
 def enew(prefix='', author='', parent=None, heap_id=None):
     """Creates and edits a post.
@@ -1321,6 +1346,8 @@ def enew(prefix='', author='', parent=None, heap_id=None):
     - `author` (str) -- The author of the post.
     - `parent` (|Post| | ``None``) -- The parent of the post. If not ``None``,
       the subject of the parent is also copied.
+    - `heap_id` (|HeapId| | ``None``) -- The id of the heap in which the post
+      will be created. If ``None``, the value of |gh| is used.
 
     **Returns:** |Post| | ``None`` -- The newly created post.
     """
@@ -1340,33 +1367,26 @@ def enew(prefix='', author='', parent=None, heap_id=None):
         changed_files = options.callbacks.edit_files([tmp_file_name])
         if len(changed_files) > 0:
             post = hklib.Post.from_file(tmp_file_name)
-            if heap_id is None:
-                if heap_id_hint_var is None:
-                    hkutils.log('Post cannot be created: no heap specified.')
-                    return None
-                else:
-                    heap_id = heap_id_hint_var
-            postdb().add_new_post(post, heap_id, prefix=prefix)
-            hkutils.log('Post created.')
-            return post
+            return add_post_to_heap(post, prefix, heap_id)
         else:
             hkutils.log('No change in the data base.')
     finally:
         os.remove(tmp_file_name)
 
 @hkshell_cmd(add_events=True)
-def enew_str(post_string):
+def enew_str(post_string, prefix='', heap_id=None):
     """Creates a post from `post_string` and adds it to the post database.
 
     **Argument:**
 
     - `post_string` (str)
+    - `prefix` (str) -- The prefix of the file.
+    - `heap_id` (|HeapId| | ``None``) -- The id of the heap in which the post
+      will be created. If ``None``, the value of |gh| is used.
     """
 
     post = hklib.Post.from_str(post_string)
-    post = postdb().add_new_post(post)
-    hkutils.log('Post created.')
-    return post
+    return add_post_to_heap(post, prefix, heap_id)
 
 @hkshell_cmd(add_events=True)
 def dl(from_=0, detailed_log=False, ps=False):

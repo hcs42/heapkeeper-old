@@ -501,6 +501,12 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
              '<my_heap/4> subject4  []\n'])
 
     def test_enew(self):
+        """Tests the following functions:
+
+        - :func:`hkshell.enew`
+        - :func:`hkshell.enew_str`
+        """
+
         self.init_hkshell()
 
         # If we edit the file, a new post is created.
@@ -558,6 +564,10 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         hkshell.options.callbacks.edit_files = lambda files: set(files)
         post = hkshell.enew(prefix='myprefix')
         self.assert_(post.post_index().startswith('myprefix'))
+        self.assertEqual(self.pop_log(), 'Post created.')
+
+        # Calling enew_str
+        post = hkshell.enew_str('Author: \nSubject: \n\n\n')
         self.assertEqual(self.pop_log(), 'Post created.')
 
     def test_pT__1(self):
