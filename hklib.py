@@ -129,6 +129,7 @@ import base64
 import datetime
 import email
 import email.header
+import getpass
 import imaplib
 import os
 import os.path
@@ -3005,7 +3006,12 @@ class EmailDownloader(object):
         host = server['host']
         port = server['port']
         username = server['username']
-        password = server['password']
+        password = server.get('password')
+
+        # If no password was specified, ask it from the user
+        if password is None:
+            prompt = 'Password for %s@%s: ' % (username, host)
+            password = getpass.getpass()
 
         hkutils.log('Connecting...')
         self._server = imaplib.IMAP4_SSL(host, port)
@@ -3295,7 +3301,7 @@ def unify_config(config):
             'server': {'host': str,
                         'port': str(int),
                         'username': str,
-                        'password': str}
+                        ['password': str]}
 
     Unified format::
 
@@ -3313,7 +3319,7 @@ def unify_config(config):
             {'server': {'host': str,
                         'port': int,
                         'username': str,
-                        'password': str}}
+                        ['password': str]}}
 
     Definitions (in BNF):
 
@@ -3478,7 +3484,7 @@ def unify_server(server):
         assert isinstance(server['port'], str)
         server['port'] = int(server['port'])
         assert isinstance(server['username'], str)
-        assert isinstance(server['password'], str)
+        assert isinstance(server.get('password', ''), str)
 
 def unify_format_3(config):
     """Converts the configuration object in format 3 into the unified

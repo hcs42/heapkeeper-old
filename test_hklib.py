@@ -2924,6 +2924,24 @@ class Test__config(unittest.TestCase):
                          'password': '-password'},
               'nicknames': {'c': 'd'}})
 
+        # Testing when server/password is not specified
+        self.assertEqual(
+             hklib.unify_config(
+                 {'paths': {'html_dir': '-html_dir'},
+                  'heaps': {'-heap': {'path': '-path'}},
+                  'server': {'host': '-host',
+                             'port': '1111',
+                             'username': '-username'}}),
+             {'paths': {'html_dir': '-html_dir'},
+              'heaps': {'-heap': {'path': '-path',
+                                  'id': '-heap',
+                                  'name': '-heap',
+                                  'nicknames': {}}},
+              'server': {'host': '-host',
+                         'port': 1111,
+                         'username': '-username'},
+              'nicknames': {}})
+
         # Testing several heaps
         self.assertEqual(
              hklib.unify_config(
