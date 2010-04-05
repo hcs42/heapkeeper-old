@@ -39,11 +39,10 @@ Currently Heapkeeper is a console tool with the following features:
   that is similar to the standard email file format (:rfc:`2822`).
 * Downloading new emails via the IMAP SSL protocol.
 * Console interface with commands to modify the heap. This is actually a
-  Python shell with functions. See the available commands :doc:`here
-  <hkshell>`.
-* Generating HTML pages from the heap. There are two kinds of HTML page: index
-  pages and post pages. Index pages show the structure of the threads. Post
-  pages contain one post.
+  Python shell with functions. Have a look at the console interface :ref:`here
+  <screenshots_hkshell>`.
+* Generating HTML pages from the heap. See examples of HTML pages :ref:`here
+  <screenshots_pages>`.
 
 We plan to implement a web version of the tool in the future. It would download
 new emails automatically, and it would have a web interface for modifying
