@@ -1244,8 +1244,8 @@ def j(pp1, pp2):
     - `pp2` (|PrePost|) -- The post that will be the child.
     """
 
-    p1 = postdb().post(pp1)
-    p2 = postdb().post(pp2)
+    p1 = postdb().post(pp1, heap_id_hint=gh())
+    p2 = postdb().post(pp2, heap_id_hint=gh())
     event('postset_calculated', 'j')
     if p1 != None and p2 != None:
         p2.set_parent(p1.post_id_str())
