@@ -333,7 +333,7 @@ class Post(object):
         return headers
 
     @staticmethod
-    def create_header(d):
+    def create_header(d, post_id=None):
         """Transforms the ``{str: [str])}`` returned by :func:`parse_header` to
         a ``{str: (str | [str])}`` dictionary.
 
@@ -346,9 +346,16 @@ class Post(object):
         **Argument:**
 
         - `d` ({str: [str])})
+        - `post_id` (|PostId| | ``None``) -- The id of the post to be read.
+          Used in warning printouts.
 
         **Returns:** {str: (str | [str])}
         """
+
+        if post_id is None:
+            post_id_str = ''
+        else:
+            post_id_str = ' (post %s/%s)' % post_id
 
         def copy_one(key, alt_key=None):
             try:
@@ -380,22 +387,26 @@ class Post(object):
         # (We sort the keys so that the order of the warnings is
         # deterministic.)
         for attr in sorted(d.keys()):
-            hkutils.log('WARNING: Additional attribute in post: "%s"' % attr)
+            hkutils.log(
+                'WARNING%s: Additional attribute in post: "%s"' %
+                (post_id_str, attr))
             copy_list(attr)
         return h
 
     @staticmethod
-    def parse(f):
+    def parse(f, post_id=None):
         """Parses a file and returns a tuple of the header and the body.
 
         **Arguments:**
 
         - `f` (file) -- A file object.
+        - `post_id` (|PostId| | ``None``) -- The id of the post to be read.
+          Used in warning printouts.
 
         **Returns:** (str, str)
         """
 
-        headers = Post.create_header(Post.parse_header(f))
+        headers = Post.create_header(Post.parse_header(f), post_id)
         body = f.read().strip() + '\n'
         return headers, body
 
@@ -416,7 +427,7 @@ class Post(object):
         assert(postdb is None or Post.is_post_id(post_id))
         super(Post, self).__init__()
         try:
-            self._header, self._body = Post.parse(f)
+            self._header, self._body = Post.parse(f, post_id)
             self._post_id = Post.unify_post_id(post_id)
             self._postdb = postdb
             self._datetime = hkutils.NOT_SET
@@ -1091,7 +1102,7 @@ class Post(object):
         # Parsing the post file and returning if it is the same as the post
         # object
         with open(self.postfilename(), 'r') as f:
-            header, body = Post.parse(f)
+            header, body = Post.parse(f, self._post_id)
         if header == self._header and body == self._body:
             return
 
