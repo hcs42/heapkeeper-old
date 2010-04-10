@@ -57,8 +57,8 @@ HTML page of a thread:
 Have a look at the `web page generated from the Heapkeeper Heap`__, and `the
 database of the Heapkeeper Heap`__.
 
-__ http://github.com/hcs42/heapkeeper-heap
 __ http://heapkeeper-heap.github.com
+__ http://github.com/hcs42/heapkeeper-heap
 
 If you like the screenshots, it may be a good idea to continue with the
 :doc:`tutorial`, where you can find explanations and more screenshots.
