@@ -1,5 +1,5 @@
-Screenshots
-===========
+Screenshots and a real heap
+===========================
 
 Using Heapkeeper's shell to download new posts and modify them:
 
@@ -52,6 +52,12 @@ HTML page of a thread:
 
 .. image:: images/2.png
       :align: center
+
+Have a look at the `web page generated from the Heapkeeper Heap`__, and `the
+database of the Heapkeeper Heap`__.
+
+__ http://github.com/hcs42/heapkeeper-heap
+__ http://heapkeeper-heap.github.com
 
 If you like the screenshots, it may be a good idea to continue with the
 :doc:`tutorial`, where you can find explanations and more screenshots.
