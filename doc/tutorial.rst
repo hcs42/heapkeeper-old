@@ -28,6 +28,7 @@ Table of contents
 - `Generating HTML pages`__
 - `Modifying the heap with hkshell`__
 - `Creating a heap for a mailing list`__
+- `Opening an existing heap: the Heapkeeper Heap`__
 
 __ downloading_hk_
 __ configuring_hk_
@@ -36,6 +37,7 @@ __ adding_posts_from_outside
 __ generating_html_
 __ manipulating_posts_
 __ mailing_list_
+__ opening_an_existing_heap_
 
 .. _downloading_hk:
 
@@ -860,3 +862,35 @@ If we invoke the |dl| command again, it will not download post 3 again:
     Connected
     Checking...
     No new messages.
+
+.. _opening_an_existing_heap:
+
+Opening an existing heap: the Heapkeeper Heap
+---------------------------------------------
+
+The Heapkeeper project has its own heap that serves as the project mailing
+list. The most easy way of trying out how Heapkeeper manager large heaps is to
+clone the Heapkeeper Heap repository and load it into Heapkeeper.
+
+To do so, first use Git to clone the `Heapkeeper Heap repository`__:
+
+.. code-block:: sh
+
+    $ git clone git://github.com/hcs42/heapkeeper-heap.git
+
+Modify the configuration file to manage the Heapkeeper Heap:
+
+.. code-block:: none
+
+    [paths]
+    html_dir=hh_html
+
+    [heaps/hh]
+    path=heapkeeper-heap/posts
+
+Then you can start Heapkeeper and play around with the Heapkeeper Heap.
+
+The web pages generated from the Heapkeeper Heap can be viewed online__.
+
+__ http://github.com/hcs42/heapkeeper-heap
+__ http://heapkeeper-heap.github.com
