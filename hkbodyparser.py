@@ -257,7 +257,7 @@ def parse_text_line_part(quote_level, text, segments):
         after = match.group(5)
 
         # Removing trailing dots
-        while address[-1] in '.,;?:':
+        while address[-1] in '.,;?:()':
             after = address[-1] + after
             address = address[:-1]
 
