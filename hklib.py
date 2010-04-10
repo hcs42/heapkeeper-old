@@ -3254,3 +3254,266 @@ class GeneratorOptions(object):
 
         super(GeneratorOptions, self).__init__()
         hkutils.set_dict_items(self, locals())
+
+##### PostDB configuration object #####
+
+def unify_config(config):
+    """Modifies the configuration object to conform to a unified format.
+
+    The `config` object may have 3 formats:
+
+    Format 1 (legacy)::
+
+        {'paths': {'mail': str,
+                   'html': str},
+         [Server,]
+         ['nicknames': {object: Nickname}]}
+
+    Format 2 (legacy)::
+
+        {'paths': {'heaps': HeapSequence,
+                   'html': str},
+         [Server,]
+         ['nicknames': {object: Nickname}]}
+
+    Format 3::
+
+        {'paths': {'html_dir': str},
+         'heaps': {HeapName: {'path': str,
+                              ['id': str,]
+                              ['name': str,]
+                              [Server,]
+                              ['nicknames': Nicknames]}},
+         [Server,]
+         ['nicknames': Nicknames]}
+
+        Nicknames:
+
+            {EmailAddress: str(nickname)}
+
+        Server:
+
+            'server': {'host': str,
+                        'port': str(int),
+                        'username': str,
+                        'password': str}
+
+    Unified format::
+
+        {'paths': {'html_dir': str},
+         'heaps': {HeapName: {'path': str,
+                              'id': str,
+                              'name': str,
+                              [Server,]
+                              'nicknames': Nicknames}},
+         [Server,]
+         'nicknames': Nicknames}
+
+        Server:
+
+            {'server': {'host': str,
+                        'port': int,
+                        'username': str,
+                        'password': str}}
+
+    Definitions (in BNF):
+
+    - HeapSequence (str) ::= ``"<heapid>:<heap>{;<heapid>:<heap>}"``
+    - Nickname (str) ::= ``"<nickname><space><email address>"``
+    - HeapName (str)
+
+    **Argument:**
+
+    - `config` (|ConfigDict|)
+
+    **Returns:** |ConfigDict|
+    """
+
+    path = config['paths']
+    if 'heaps' in path:
+        return unify_format_2(config)
+    elif 'mail' in path:
+        return unify_format_1(config)
+    else:
+        return unify_format_3(config)
+
+def unify_format_1(config):
+    """Converts the configuration object in format 1 into the unified
+    configuration format.
+
+    The `config` parameter is modified and returned.
+
+    **Argument:**
+
+    - `config` (|ConfigDict|)
+
+    **Returns:** |ConfigDict|
+    """
+
+    # We convert format 1 to format 2 and call the function that unifies
+    # format 2
+
+    # Conversion to format 2
+    assert isinstance(config['paths']['mail'], str)
+
+    # The default heap is called "defaultheap". An empty string would not be
+    # OK, because the HTML directory will contain directories whose name are
+    # the same as the names of heaps, and an empty string cannot be a directory
+    # name.
+    config['paths']['heaps'] = 'defaultheap:' + config['paths']['mail']
+
+    del config['paths']['mail']
+
+    # Unify format 2
+    return unify_format_2(config)
+
+def convert_nicknames_f12_to_f3(nicknames):
+    """Converts the `nicknames` dictionary given in format 1/2 into format 3.
+
+    **Argument:**
+
+    - `nicknames` ({object: str}) -- it will be converted to {str: str}
+    """
+
+    result = {}
+    for index, nickname_setting in nicknames.items():
+        assert isinstance(nickname_setting, str)
+        [nickname, email] = nickname_setting.split(' ', 1)
+        result[email] = nickname
+    nicknames.clear()
+    nicknames.update(result)
+
+def convert_heaps_f2_to_f3(heaps_str):
+    """Converts the "paths/heaps" configuration item that is in format 2 into
+    format 3.
+
+    **Argument:**
+
+    - `heaps_str` (str)
+
+    **Returns:** {str: {str: object}}
+    """
+
+    heaps_raw = heaps_str.split(';')
+    heaps = {}
+    for heap_raw in heaps_raw:
+        try:
+            heap_id, heap_dir = heap_raw.split(':')
+            heap_id = heap_id.strip()
+            heap_dir = heap_dir.strip()
+        except ValueError:
+            raise \
+                hkutils.HkException(
+                    'Heap specification is not in heap_id:heap_dir '
+                    'format: %s' %
+                    (heap_raw,))
+        heaps[heap_id] = {}
+        heaps[heap_id]['path'] = heap_dir
+    return heaps
+
+def unify_format_2(config):
+    """Converts the configuration object in format 2 into the unified
+    configuration format.
+
+    The `config` parameter is modified and returned.
+
+    **Argument:**
+
+    - `config` (|ConfigDict|)
+
+    **Returns:** |ConfigDict|
+    """
+
+    # We convert format 2 to format 3 and call the function that unifies
+    # format 3
+
+    # Conversion to format 3
+
+    assert isinstance(config['paths']['heaps'], str)
+    assert isinstance(config['paths']['html'], str)
+
+    # paths/heaps -> heaps/HeapName
+    config['heaps'] = convert_heaps_f2_to_f3(config['paths']['heaps'])
+    del config['paths']['heaps']
+
+    # paths/html -> paths/html_dir
+    config['paths']['html_dir'] = config['paths']['html']
+    del config['paths']['html']
+
+    # nicknames/object/<nickname email> -> nicknames/<email>/<nickname>
+    nicknames = config.get('nicknames')
+    if nicknames is not None:
+        convert_nicknames_f12_to_f3(nicknames)
+        config['nicknames'] = nicknames
+
+    # Unify format 3
+    return unify_format_3(config)
+
+def unify_nicknames(nicknames):
+    """Converts the `nicknames` dictionary given in format 3 to the unified
+    format.
+
+    Actually, it does not do any modification to `nicknames`, it just checks
+    it.
+
+    **Argument:**
+
+    - `nicknames` ({str: str})
+    """
+
+    for email, author in nicknames.items():
+        assert isinstance(email, str)
+        assert isinstance(author, str)
+
+def unify_server(server):
+    """Converts the `server` dictionary given in format 3 to the unified
+    format.
+
+    **Argument:**
+
+    - `server` ({str: str})
+    """
+
+    if server is not None:
+        assert isinstance(server['host'], str)
+        assert isinstance(server['port'], str)
+        server['port'] = int(server['port'])
+        assert isinstance(server['username'], str)
+        assert isinstance(server['password'], str)
+
+def unify_format_3(config):
+    """Converts the configuration object in format 3 into the unified
+    configuration format.
+
+    The `config` parameter is modified and returned.
+
+    **Argument:**
+
+    - `config` (|ConfigDict|)
+
+    **Returns:** |ConfigDict|
+    """
+
+    assert isinstance(config['paths']['html_dir'], str)
+
+    # heaps/<heap name>
+    for heap_name, heap_dict in config['heaps'].items():
+        assert isinstance(heap_dict['path'], str)
+        heap_dict.setdefault('id', heap_name)
+        heap_dict.setdefault('name', heap_name)
+
+        # heaps/<heap name>/server
+        unify_server(heap_dict.get('server'))
+
+        # heaps/<heap name>/nicknames
+        heap_dict.setdefault('nicknames', {})
+        unify_nicknames(heap_dict['nicknames'])
+
+    # server
+    unify_server(config.get('server'))
+
+    # nicknames
+    config.setdefault('nicknames', {})
+    unify_nicknames(config['nicknames'])
+
+    return config

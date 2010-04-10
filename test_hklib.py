@@ -2788,6 +2788,193 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
             [p(0), po(0), p(1), p(2), p(3), p(4)])
 
 
+class Test__config(unittest.TestCase):
+
+    """Tests the configuration objects."""
+
+    def test__format_1(self):
+        """Tests the following functions:
+
+        - :func:`hklib:unify_format`
+        - :func:`hklib:unify_format_1`
+        - :func:`hklib:convert_heaps_f2_to_f3`
+        - :func:`hklib:convert_nicknames_f12_to_f3`
+        """
+
+        # Specifying only the mandatory fields
+        self.assertEqual(
+             hklib.unify_config(
+                 {'paths': {'mail': 'dir1',
+                            'html': '-html'}}),
+             {'paths': {'html_dir': '-html'},
+              'heaps': {'defaultheap': {'path': 'dir1',
+                                        'id': 'defaultheap',
+                                        'name': 'defaultheap',
+                                        'nicknames': {}}},
+              'nicknames': {}})
+
+        # Specifying all fields
+        self.assertEqual(
+             hklib.unify_config(
+                 {'paths': {'mail': 'dir1',
+                            'html': '-html'},
+                  'server': {'host': '-host',
+                             'port': '1111',
+                             'username': '-username',
+                             'password': '-password'},
+                  'nicknames': {0: 'nick1 email1',
+                                1: 'nick2 email2'}}),
+             {'paths': {'html_dir': '-html'},
+              'heaps': {'defaultheap': {'path': 'dir1',
+                                        'id': 'defaultheap',
+                                        'name': 'defaultheap',
+                                        'nicknames': {}}},
+              'server': {'host': '-host',
+                         'port': 1111,
+                         'username': '-username',
+                         'password': '-password'},
+              'nicknames': {'email1': 'nick1',
+                            'email2': 'nick2'}})
+
+        # Not specifying all mandatory fields
+        self.assertRaises(
+            KeyError,
+            lambda: hklib.unify_config({'paths': {'mail': 'dir'}}))
+
+    def test__format_2(self):
+        """Tests the following functions:
+
+        - :func:`hklib:unify_format`
+        - :func:`hklib:unify_format_2`
+        - :func:`hklib:convert_heaps_f2_to_f3`
+        - :func:`hklib:convert_nicknames_f12_to_f3`
+        """
+
+        # Specifying only the mandatory fields
+        self.assertEqual(
+             hklib.unify_config(
+                 {'paths': {'heaps': 'heap1:dir1;heap2:dir2',
+                            'html': '-html'}}),
+             {'paths': {'html_dir': '-html'},
+              'heaps': {'heap1': {'path': 'dir1',
+                                  'id': 'heap1',
+                                  'name': 'heap1',
+                                  'nicknames': {}},
+                        'heap2': {'path': 'dir2',
+                                  'id': 'heap2',
+                                  'name': 'heap2',
+                                  'nicknames': {}}},
+              'nicknames': {}})
+
+        # Specifying all fields
+        self.assertEqual(
+             hklib.unify_config(
+                 {'paths': {'heaps': 'heap1:dir1;heap2:dir2',
+                            'html': '-html'},
+                  'server': {'host': '-host',
+                             'port': '1111',
+                             'username': '-username',
+                             'password': '-password'},
+                  'nicknames': {0: 'nick1 email1',
+                                1: 'nick2 email2'}}),
+             {'paths': {'html_dir': '-html'},
+              'heaps': {'heap1': {'path': 'dir1',
+                                  'id': 'heap1',
+                                  'name': 'heap1',
+                                  'nicknames': {}},
+                        'heap2': {'path': 'dir2',
+                                  'id': 'heap2',
+                                  'name': 'heap2',
+                                  'nicknames': {}}},
+              'server': {'host': '-host',
+                         'port': 1111,
+                         'username': '-username',
+                         'password': '-password'},
+              'nicknames': {'email1': 'nick1',
+                            'email2': 'nick2'}})
+
+        # Testing several heaps
+        self.assertRaises(
+            hkutils.HkException,
+            lambda: hklib.unify_config({'paths': {'heaps': '',
+                                                  'html': '-html'}}))
+
+    def test__format_3(self):
+        """Tests the following functions:
+
+        - :func:`hklib:unify_format`
+        - :func:`hklib:unify_format_3`
+        - :func:`hklib:unify_nicknames`
+        - :func:`hklib:unify_server`
+        """
+
+        # Specifying only the mandatory fields
+        self.assertEqual(
+             hklib.unify_config(
+                 {'paths': {'html_dir': '-html_dir'},
+                  'heaps': {'-heap': {'path': '-path'}}}),
+             {'paths': {'html_dir': '-html_dir'},
+              'heaps': {'-heap': {'path': '-path',
+                                  'id': '-heap',
+                                  'name': '-heap',
+                                  'nicknames': {}}},
+              'nicknames': {}})
+
+        # Specifying all fields
+        self.assertEqual(
+             hklib.unify_config(
+                 {'paths': {'html_dir': '-html_dir'},
+                  'heaps': {'-heap': {'path': '-path',
+                                      'id': '-id',
+                                      'name': '-name',
+                                      'server': {'host': '-host2',
+                                                 'port': '2222',
+                                                 'username': '-user2',
+                                                 'password': '-pw2'},
+                                      'nicknames': {'a': 'b'}}},
+                  'server': {'host': '-host',
+                             'port': '1111',
+                             'username': '-username',
+                             'password': '-password'},
+                  'nicknames': {'c': 'd'}}),
+             {'paths': {'html_dir': '-html_dir'},
+              'heaps': {'-heap': {'path': '-path',
+                                  'id': '-id',
+                                  'name': '-name',
+                                  'server': {'host': '-host2',
+                                             'port': 2222,
+                                             'username': '-user2',
+                                             'password': '-pw2'},
+                                  'nicknames': {'a': 'b'}}},
+              'server': {'host': '-host',
+                         'port': 1111,
+                         'username': '-username',
+                         'password': '-password'},
+              'nicknames': {'c': 'd'}})
+
+        # Testing several heaps
+        self.assertEqual(
+             hklib.unify_config(
+                 {'paths': {'html_dir': '-html_dir'},
+                  'heaps': {'-heap1': {'path': '-path1'},
+                            '-heap2': {'path': '-path2'}}}),
+             {'paths': {'html_dir': '-html_dir'},
+              'heaps': {'-heap1': {'path': '-path1',
+                                   'id': '-heap1',
+                                   'name': '-heap1',
+                                   'nicknames': {}},
+                        '-heap2': {'path': '-path2',
+                                   'id': '-heap2',
+                                   'name': '-heap2',
+                                   'nicknames': {}}},
+              'nicknames': {}})
+
+        # Testing several heaps
+        self.assertRaises(
+            KeyError,
+            lambda: hklib.unify_config({}))
+
+
 if __name__ == '__main__':
     hkutils.set_log(False)
     unittest.main()

@@ -210,3 +210,15 @@ Generator
 .. autoclass:: GeneratorOptions
 
     .. automethod:: __init__
+
+Configuration objects
+---------------------
+
+.. autofunction:: unify_config
+.. autofunction:: unify_format_1
+.. autofunction:: convert_nicknames_f12_to_f3
+.. autofunction:: convert_heaps_f2_to_f3
+.. autofunction:: unify_format_2
+.. autofunction:: unify_nicknames
+.. autofunction:: unify_server
+.. autofunction:: unify_format_3
