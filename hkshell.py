@@ -223,7 +223,7 @@ d(pps)             - delete
 dr(pps)            - delete recursively
 j(pp, pp)          - join two threads
 e(pps)             - edit posts as files
-eR(pps)            - edit posts as files recursively
+er(pps)            - edit posts as files recursively
 enew()             - creates and edits a new post as a file
 enew_str(str)      - creates a new post from a string
 dl()               - download new mail
@@ -1296,7 +1296,7 @@ def e(pps):
     edit_posts(pps)
 
 @hkshell_cmd(postset_operation=True)
-def eR(pps):
+def er(pps):
     """Edits the posts in `pps` and all their children.
 
     **Argument:**
