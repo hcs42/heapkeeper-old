@@ -59,7 +59,7 @@ __ http://heapkeeper.org/releases/heapkeeper-0.4.zip
 __ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.4.tar.gz
 __ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.4.zip
 
-The main improvement if this release is the new Generator.
+The main improvement of this release is the new Generator.
 
 Major new features:
 

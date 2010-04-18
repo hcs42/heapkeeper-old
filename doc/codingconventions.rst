@@ -17,6 +17,50 @@ This is an evolving set of conventions. Most of them were not used from the
 beginning, thus there may be some code that does not use certain conventions.
 This does not mean that you should not use them.
 
+.. _commit_message_conventions:
+
+Commit messages
+"""""""""""""""
+
+A commit message has three parts: a mandatory title and a topic, and an
+optional description.
+
+* Title:
+
+    * It should not be more than 50 characters
+    * It is generally a good idea to begin the title with a word that describes
+      the scope of the change (e.g. the name of a module or a class).
+    * Do not put a period after the title.
+
+* Topic:
+
+    * The topic should be preceded by a blank line.
+    * The topic should be written between brackets.
+
+* Description:
+
+    * The description should be preceded by a blank line.
+    * The description should not contain lines that have more than 79
+      characters.
+    * If the changes introduce incompatibilities that the users can notice
+      (e.g. the format of the config file changes), it is generally worth
+      describing them.
+    * If it increases readability, it is a good idea to put code objects
+      between ````` signs.
+
+Example:
+
+.. code-block:: none
+
+    Doc: improved docstrings
+
+    [development documentation]
+
+    A class and a method have been documented with docstrings. The current
+    format shall be used in all docstrings.
+
+    The modified class is MyClass, the modified function is `it`.
+
 Documentation
 -------------
 
@@ -77,6 +121,40 @@ Classes
             self.re = re
             self.im = im
 
+Header levels
+^^^^^^^^^^^^^
+
+Use the following underline types in ``*.rst`` files:
+
+.. code-block:: none
+
+    Page title
+    ==========
+
+    Section
+    -------
+
+    Subsection
+    ^^^^^^^^^^
+
+    Subsubsection
+    """""""""""""
+
+    Paragraph
+    '''''''''
+
+    Subparagraph
+    ::::::::::::
+
+Use the following underline types in ``*.py`` files:
+
+.. code-block:: none
+
+    Paragraph
+    '''''''''
+
+    Subparagraph
+    ::::::::::::
 
 Python code
 -----------

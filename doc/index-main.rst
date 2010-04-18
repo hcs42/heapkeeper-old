@@ -39,11 +39,10 @@ Currently Heapkeeper is a console tool with the following features:
   that is similar to the standard email file format (:rfc:`2822`).
 * Downloading new emails via the IMAP SSL protocol.
 * Console interface with commands to modify the heap. This is actually a
-  Python shell with functions. See the available commands :doc:`here
-  <hkshell>`.
-* Generating HTML pages from the heap. There are two kinds of HTML page: index
-  pages and post pages. Index pages show the structure of the threads. Post
-  pages contain one post.
+  Python shell with functions. Have a look at the console interface :ref:`here
+  <screenshots_hkshell>`.
+* Generating HTML pages from the heap. See examples of HTML pages :ref:`here
+  <screenshots_pages>`.
 
 We plan to implement a web version of the tool in the future. It would download
 new emails automatically, and it would have a web interface for modifying
@@ -57,8 +56,8 @@ Quick information
   page <download>`. The source code and the documentation is stored in the
   `Heapkeeper repository`_, which is hosted by GitHub_, and can be used with
   the Git_ version control system.
-* **Installation**: Heapkeeper requires Python_ 2.5 or 2.6 installed; otherwise
-  it can be executed without any specific installation steps.
+* **Installation**: Heapkeeper requires Python_ 2.5, 2.6 or 2.7 installed;
+  otherwise it can be executed without any specific installation steps.
 * **Documentation**: The home page and the documentation is written in
   reStructuredText_ format. Sphinx_ is used to generate HTML pages.
 * **Status**: Heapkeeper is in a usable form now, although there are many
@@ -92,10 +91,8 @@ Documentation
 * :doc:`developersguide`
 
   * :doc:`development`
-  * :doc:`developmentrules`
   * :doc:`codingconventions`
   * :doc:`keyprinciples`
   * :doc:`patterns`
   * :doc:`architecture`
   * :doc:`modules`
-  * :doc:`todo`

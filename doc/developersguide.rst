@@ -12,7 +12,6 @@ conventions.
 .. toctree::
 
     development
-    developmentrules
     codingconventions
 
 Concepts
@@ -35,10 +34,3 @@ The concrete implementation concepts and details of Heapkeeper.
 
     architecture
     modules
-
-Plans
------
-
-.. toctree::
-
-    todo

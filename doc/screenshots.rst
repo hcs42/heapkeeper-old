@@ -1,6 +1,8 @@
 Screenshots and a real heap
 ===========================
 
+.. _screenshots_hkshell:
+
 Using Heapkeeper's shell to download new posts and modify them:
 
 .. image:: images/shell.png
@@ -43,6 +45,8 @@ Using Heapkeeper's shell to download new posts and modify them:
 .. ..   <usr/1> Powell and Donovan in trouble  Susan Calvin  (2010.04.10. 11:40)
 .. ..     <usr/2> Powell and Donovan in trouble  Peter Bogert  (2010.04.10. 11:58)
 .. .. >>>
+
+.. _screenshots_pages:
 
 An index page of a heap:
 
