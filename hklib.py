@@ -1337,6 +1337,14 @@ class Post(object):
         self.set_body(footer_re.sub('', self.body()))
         self.set_body(self.body().strip() + '\n')
 
+        # even newer footer (since 2010 April)
+        footer_str = \
+            (r'^--\s*'
+              '^Subscription settings: http://groups.google.com/.*')
+        footer_re = re.compile(footer_str, re.MULTILINE)
+        self.set_body(footer_re.sub('', self.body()))
+        self.set_body(self.body().strip() + '\n')
+
     def remove_newlines_from_subject(self):
         """Removes newlines from the subject.
 
