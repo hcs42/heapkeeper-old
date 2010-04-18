@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
-# Copyright (C) 2009 Attila Nagy
-# Copyright (C) 2009 Csaba Hoch
+# Copyright (C) 2009-2010 Attila Nagy
+# Copyright (C) 2009-2010 Csaba Hoch
 
 """My (Attis) hkrc."""
 
