@@ -1087,7 +1087,7 @@ def ga():
     Deprecated. Use |g| instead.
     """
 
-    hkutils.log('WARNING: using hkshell.gi() is deprecated. Use g() instead.')
+    hkutils.log('WARNING: using hkshell.ga() is deprecated. Use g() instead.')
     gen_indices()
 
 @hkshell_cmd()
