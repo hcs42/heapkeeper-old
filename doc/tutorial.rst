@@ -888,9 +888,23 @@ Modify the configuration file to manage the Heapkeeper Heap:
     [heaps/hh]
     path=heapkeeper-heap/posts
 
-Then you can start Heapkeeper and play around with the Heapkeeper Heap.
+In this configuration file the ``heaps/my_heaps`` sections were removed, but
+they can be left as they were in the previous section, and then Heapkeeper will
+manage both heaps simultaneously. Note that only one ``html_dir`` can be
+specified, so the posts of the heaps will be handled as one data store
+[#post_index_collision]_; e.g. the index page will contains the posts of both heaps.
+
+After the configuration file contains the path to the Heapkeeper Heap's data
+store, you can start Heapkeeper and play around with the Heapkeeper Heap.
 
 The web pages generated from the Heapkeeper Heap can be viewed online__.
 
 __ http://github.com/hcs42/heapkeeper-heap
 __ http://heapkeeper-heap.github.com
+
+.. rubric:: Footnotes
+
+.. [#post_index_collision] This does not mean that posts cannot have the same
+   post indices. If both heap contain a post file ``1.post``, they both will
+   have the post id ``"1"``, but Heapkeeper will differentiate them by the
+   heaps they are in.
