@@ -170,7 +170,7 @@ The parametrization of Margitka is same as that of Gitk, for example::
     $ cd <Heapkeeper directory>
     $ <path to margitka>/margitka --all &
 
-__ http://github.com/attis/margitka
+__ http://github.com/attish/margitka
 __ http://lwn.net/Articles/140350/
 
 .. _hk-dev-utils:
