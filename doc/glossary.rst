@@ -88,6 +88,20 @@ Basic concepts of Heapkeeper
     A set of posts on which operations can be performed. A set of posts is
     represented by an instance of the |PostSet| class.
 
+.. _glossary_tag:
+
+**Tag:**
+
+    A :ref:`post <glossary_post>` may have tags, which tell us information
+    about the topic of the post. They are usually written into brackets when
+    displayed: ``[computer science]``, ``[humor]``. If the subject of an email
+    contains character sequences in brackets, they will be parsed as tags. The
+    post created from the email will contain these character sequences as tags,
+    and the subject of the post will not contain them. E.g. if the subject of
+    the email was ``[humor][computer] The Website Is Down``, the subject of the
+    post will be ``The Website Is Down``, but the post will have tag
+    ``[humor]`` and tag ``[computer]``.
+
 .. _post_relations:
 
 Relation between the posts

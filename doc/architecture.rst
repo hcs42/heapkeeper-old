@@ -17,15 +17,16 @@ The main directories and files in `Heapkeeper's repository`__:
 
 __ http://github.com/hcs42/heapkeeper/
 
-``README``
-    Usual README file.
-``doc``
-    Documentation files. The ``rst`` files are text files with wiki-like
-    syntax, and Sphinx can be used to generate HTML or other output from them.
+``README``, ``COPYING``
+    Usual files about the program.
+``doc/``
+    Directory for documentation files. The ``rst`` files are text files with
+    wiki-like syntax, and :ref:`Sphinx <development_sphinx>` can be used to
+    generate HTML or other output from them.
 ``*.py``
-    Python source files -- Heapkeeper itself
-``heapindex.css``
-    A CSS file for the generated HTML files.
+    Python source files -- Heapkeeper itself.
+``*.css``
+    CSS files for the generated HTML files.
 
 Module structure
 ----------------
@@ -42,6 +43,8 @@ the file ``<module>.py``.
     It generates HTML output from the posts on the heaps.
 :mod:`hkshell`
     The interactive interface of Heapkeeper.
+:mod:`hkbodyparser`
+    It parses the body of the posts.
 :mod:`hk`
     A small module whose only task is to invoke :mod:`hkshell`.
 :mod:`hkcustomlib`
@@ -72,47 +75,41 @@ such a derived generator.
 We use unit tests to test Heapkeeper's code, using the standard ``unittest``
 module. Each module has a corresponding module that tests it.
 
-:mod:`test_hkutils`
-    Module that tests the :mod:`hkutils` module.
-:mod:`test_hklib`
-    Module that tests the :mod:`hklib` module.
-:mod:`test_hkshell`
-    Module that tests the :mod:`hkshell` module.
-:mod:`test_hkcustomlib`
-    Module that tests the :mod:`hkcustomlib` module.
+:mod:`test_*`
+    Modules that test another module.
 :mod:`test`
-    Module that tests all modules.
+    Module that tests all modules. Invokes the :mod:`test_*` modules.
 
 Module contents
 ---------------
 
-:mod:`hklib`
-^^^^^^^^^^^^
+:mod:`hklib`: Classes that implement and manipulate the heap
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The main concept of Heapkeeper is the *heap*. The heap is an abstract data
-structure that consists of *posts*. The heap data structure is implemented in
-the :mod:`hklib` module.
+The main concept of Heapkeeper is the :ref:`heap <glossary_heap>`. The heap is
+an abstract data structure that consists of :ref:`posts <glossary_post>`. The
+heap data structure is implemented in the :mod:`hklib` module.
 
-Classes that implement and manipulate the heap
-""""""""""""""""""""""""""""""""""""""""""""""
-
-Heapkeeper stores the heap on the disk. Each post is stored in a *post file*.
-When Heapkeeper runs, the heap on the disk is read and the heap is stored
-in the memory as a :class:`PostDB <hklib.PostDB>` object, which is called
-*post database*. Each post is then stored in a :class:`Post <hklib.Post>`
-object, which we call *post object* or just *post*. A post object can be
-re-written into its post file, and re-read from its post file. A post is
-usually created from an email in the first place, but later it may be modified
-in the heap.
+Heapkeeper stores the heaps (that consists of posts) on the disk. Each post is
+stored in a :ref:`post file <glossary_post_file>`. When Heapkeeper runs, the
+heaps on the disk are read and the heaps are stored in the memory as a
+:class:`PostDB <hklib.PostDB>` object, which is called *post database*. Each
+post is then stored in a :class:`Post <hklib.Post>` object, which we call *post
+object* or just *post*. A post object can be re-written into its post file, and
+re-read from its post file. A post is usually created from an email in the
+first place, but later it may be modified in the heap.
 
 :class:`hklib.Post`
 
     A :class:`Post <hklib.Post>` object (called a *post object*) represents
     a post.
 
-    Each post has a unique id called *heapid*, which is a string. (Often a
-    string that contains a number.) The post file of a post has the name
-    ``<heapid>.mail``. The post object of a post stores its heapid in a data
+    Each post has a unique id called :ref:`post id <glossary_post_id>` (e.g.
+    ``usr/1``), which is the combination of a :ref:`heap id <glossary_heap_id>`
+    (``'usr'``) and a :ref:`post index <glossary_post_index>` (``'1'``). The
+    post file is in the directory that belongs to the heap (which is specified
+    in the configuration file). The post file has the name ``<post
+    index>.post``. The post object of a post stores its post id in a data
     attribute.
 
     A post consists of a *header* and a *body*. The header contains
@@ -131,43 +128,38 @@ in the heap.
 
     There are different relations between the posts: the most basic one is when
     a post is the child of another post. It usually means that the latter one
-    is a reply to the former one. This information is stored in the
-    ``In-Reply-To`` attribute of the header of the child post: this attribute
-    contains the heapid or message id of the parent of the post. If there is no
-    post with such heapid or message id, or it is ``None``, the post does not
-    have a parent. For more information about the relations, see
-    :ref:`post_relations`.
+    is a reply to the former one. This information is stored in the ``Parent``
+    attribute of the header of the child post: this attribute contains the post
+    id hint (which is a post id, a post index or message id) of the parent of
+    the post. If there is no post found based on the post id hint, or the post
+    id hint is ``None``, the post does not have a parent. For more information
+    about the relations, see :ref:`post_relations`. The ``Parent`` attribute of
+    the post comes from the ``In-Reply-To`` attribute of the original email.
 
-    A post may have *tags*, which tell us information about the topic of the
-    post. They are written into brackets when displayed: ``[computer
-    science]``, ``[humor]``. If the subject of an email contains character
-    sequences in brackets, they will be parsed as tags. The post created from
-    the email will contain the tags as tags, and the subject of the post will
-    not contain them. E.g. if the subject of the email was ``[humor][computer]
-    The Website Is Down``, the subject of the post will be ``The Website Is
-    Down``, but the post will have tag ``[humor]`` and tag ``[computer]``.
+    A post may have :ref:`tags <glossary_tag>`, which tell us information
+    about the topic of the post.
 
     A post may have *flags*, which tells Heapkeeper special information about
     the post. Currently there is only one flag, the ``deleted`` flag. When a
     post is deleted, it will not be removed entirely: the corresponding post
     object and post file will not be removed from the memory and the disk. The
-    post will only obtain a ``deleted`` flag instead. It will keep its heapid
+    post will only obtain a ``deleted`` flag instead. It will keep its post id
     and message id; this way we achieve that no other post will have the same
-    heapid ever [#same_heapid]_. To save space and time, most attributes and
+    post id ever [#same_post_id]_. To save space and time, most attributes and
     the body of the post will be deleted, so the deletion cannot really be
     undone by Heapkeeper. Heapkeeper's database will handle deleted posts as if
-    they would not exist, except that their heapid is reserved.
+    they would not exist, except that their post id is reserved.
 
-    The body of a post is currently a plain string. We plan to parse this
-    string so that we can identify quotes (lines that start with ``>``),
-    footnotes (e.g. ``This page [1] says:``) and so-called *meta text* (text
-    written between ``<<<`` and ``>>>``). Meta text is either meta information
-    about the post for the readers or the maintainers of the heap (e.g.
-    ``<<<todo The subject of this email should be corrected>>>``), or command
-    that should be processed by Heapkeeper (e.g. ``<<<!delpost>>>``, which
-    means that the current post should be deleted).
+    The body of a post is a string. We parse this string so that we can
+    identify quotes (lines that start with ``>``), links and so-called *meta
+    text* (text written between ``[`` and ``]``). Meta text is either meta
+    information about the post for the readers or the maintainers of the heap
+    (e.g. ``[todo The subject of this email should be corrected]``), or command
+    that could be processed by Heapkeeper (e.g. ``[!delpost]``, which means
+    that the current post should be deleted). The parsed string is called the
+    *body object*.
 
-:class:`hklib.PostDB` (*PostDB*)
+:class:`hklib.PostDB`
 
     A :class:`PostDB <hklib.PostDB>` object (called a *post database*)
     represents the heap in the memory. It stores the post object of all
@@ -190,9 +182,9 @@ in the heap.
     root, the parent and the children of a post. There are also methods to find
     the cycles in the thread structure.
 
-:class:`PostSet <hklib.PostSet>`
+:class:`hklib.PostSet`
 
-    todo
+    See :ref:`here <glossary_post_set>`.
 
 :class:`hklib.EmailDownloader`
 
@@ -216,12 +208,6 @@ that implements a relational database, e.g. MySQL:
 +----------------------------------+-------------------------+
 | :class:`PostSet <hklib.PostSet>` | result of a query       |
 +----------------------------------+-------------------------+
-
-:mod:`hkshell`
-^^^^^^^^^^^^^^
-
-:class:`Options <hkshell.Options>`
-    todo
 
 Module dependencies
 -------------------
@@ -261,10 +247,10 @@ All tests can be executed using the :mod:`test` module:
 
 .. rubric:: Footnotes
 
-.. [#same_heapid]
-    Why is it important that heapids cannot be recycled? Imagine the following
-    situation: the ``In-Reply-To`` field of post ``y`` contains the heapid of
-    ``x``, so ``x`` is the parent of ``y``. Then we delete ``x``: ``y`` does
-    not have a parent now. If a new post ``z`` would be created with the heapid
-    of ``x``, Heapkeeper would think it is the parent of ``y``, altough they
+.. [#same_post_id]
+    Why is it important that post ids cannot be recycled? Imagine the following
+    situation: the ``Parent`` field of post ``y`` contains the post id of
+    ``x``, so ``x`` is the parent of ``y``. Then we delete ``x``; so ``y`` does
+    not have a parent now. If a new post ``z`` would be created with the post
+    id of ``x``, Heapkeeper would think it is the parent of ``y``, altough they
     may have nothing to do with each other.

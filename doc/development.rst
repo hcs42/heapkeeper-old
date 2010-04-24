@@ -57,6 +57,8 @@ Using Git to download Heapkeeper::
 .. _`GitHub`: http://github.com/
 .. _`Heapkeeper repository`: http://github.com/hcs42/heapkeeper/
 
+.. _development_sphinx:
+
 Sphinx
 ^^^^^^
 

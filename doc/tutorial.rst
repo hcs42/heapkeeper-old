@@ -428,9 +428,9 @@ Heap hint, |sh| and |gh|
 
 Previously we referred to a post with its :ref:`post id <glossary_post_id>`
 (e.g. ``usr/1``), which is the combination of its :ref:`heap id
-<glossary_heap_id>` (``'usr'``) and its post index (``'1'``). If we specify a
-"heap hint", then we can use only the post index, and Heapkeeper will try to
-find the post it within that heap.
+<glossary_heap_id>` (``'usr'``) and its :ref:`post index <glossary_post_index>`
+(``'1'``). If we specify a "heap hint", then we can use only the post index,
+and Heapkeeper will try to find the post it within that heap.
 
 Let's set the heap hint to ``'usr'``::
 
