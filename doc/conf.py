@@ -207,16 +207,11 @@ latex_documents = [
 # and was was released by Kevin Teague <kevin at bud ca> under
 # a BSD license.
 
-rot_13_trans = string.maketrans(
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-    'NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm'
-)
-
 def rot_13_encrypt(line):
     """Rotate 13 encryption.
 
     """
-    line = line.translate(rot_13_trans)
+    line = unicode(line, 'rot_13')
     line = re.sub('(?=[\\"])', r'\\', line)
     line = re.sub('\n', r'\n', line)
     line = re.sub('@', r'\\100', line)
