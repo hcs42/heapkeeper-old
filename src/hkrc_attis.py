@@ -60,6 +60,43 @@ class MyGenerator(hkgen.Generator):
             output.append(self.section(n - 1, title, content, flat=is_flat))
         return output
 
+def tidy(base=None):
+    """Returns the set of posts that need tidying."""
+    if base is None:
+        base = hkshell.postdb().all()
+    assert isinstance(base, hklib.PostSet)
+
+    # tidy
+    # we agreed that I (Attis) would primarily tidy UMS posts
+    # (that means anything that has no Heap-related tags)
+    # posts that belong here either:
+    # * contain quote introduction (like "xyz wrote:")
+    # * contain more quote lines than non-quote (may be OK)
+    # * signed (no need for them, esp. quoted signatures)
+    # * contain quoted lines, but have no parent or reference
+    # * subject starts with lowercase letter (may be OK)
+    # * contain obsolete metas
+    # * of course we ignore posts already marked as reviewed
+
+    regexp = '\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>'
+    ps_tidy = base.collect.body_contains(regexp)
+    ps_tidy |= base.collect.body_contains('wrote:\s*$')
+    ps_tidy |= base.collect.body_contains('írta:\s*$')
+    ps_tidy |= base.collect(overquoted)
+    ps_tidy |= base.collect.body_contains('^\s*Csabi\s*$')
+    ps_tidy |= base.collect.body_contains('^\s*Attis\s*$')
+    ps_tidy |= base.collect.body_contains('^\s*Josh\s*$')
+    ps_unheaded = base.collect(lambda p: not p.parent())
+    ps_tidy |= ps_unheaded.collect.body_contains('^>')
+    ps_tidy |= base.collect(
+        lambda p: p.subject().decode('utf-8')[0] in
+            u'abcdefghijklmnopqrstuvwxyzöüóőúéáűí')
+    ps_tidy |= base.collect.body_contains('<<<')
+    ps_tidy -= base.collect.has_tag('reviewed')
+    print '%d posts are problematic.' \
+        % len(ps_tidy)
+    return ps_tidy
+
 def sections(postdb):
     exp = False
     eliminate = True
@@ -75,35 +112,7 @@ def sections(postdb):
     for post in postdb.all():
         ps_singles -= hklib.PostSet(postdb, [postdb.parent(post)])
 
-    # tidy
-    # we agreed that I (Attis) would primarily tidy UMS posts
-    # (that means anything that has no Heap-related tags)
-    # posts that belong here either:
-    # * contain quote introduction (like "xyz wrote:")
-    # * contain more quote lines than non-quote (may be OK)
-    # * signed (no need for them, esp. quoted signatures)
-    # * contain quoted lines, but have no parent or reference
-    # * subject starts with lowercase letter (may be OK)
-    # * contain obsolete metas
-    # * of course we ignore posts already marked as reviewed
-
-    regexp = '\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>'
-    ps_tidy = ps_nonheap.collect.body_contains(regexp)
-    ps_tidy |= ps_nonheap.collect.body_contains('wrote:\s*$')
-    ps_tidy |= ps_nonheap.collect.body_contains('írta:\s*$')
-    ps_tidy |= ps_nonheap.collect(overquoted)
-    ps_tidy |= ps_nonheap.collect.body_contains('^\s*Csabi\s*$')
-    ps_tidy |= ps_nonheap.collect.body_contains('^\s*Attis\s*$')
-    ps_tidy |= ps_nonheap.collect.body_contains('^\s*Josh\s*$')
-    ps_unheaded = ps_nonheap.collect(lambda p: not p.parent())
-    ps_tidy |= ps_unheaded.collect.body_contains('^>')
-    ps_tidy |= ps_nonheap.collect(
-        lambda p: p.subject().decode('utf-8')[0] in
-            u'abcdefghijklmnopqrstuvwxyzöüóőúéáűí')
-    ps_tidy |= ps_nonheap.collect.body_contains('<<<')
-    ps_tidy -= ps_all.collect.has_tag('reviewed')
-    print '%d posts are problematic.' \
-        % len(ps_tidy)
+    ps_tidy = tidy(ps_nonheap)
 
     # we agreed that it would be illegal to reply to an UMS post on Hh
     # so we are looking for Hh posts with non-Hh parents
@@ -365,6 +374,16 @@ def statmill(base=None):
     statcontrib(heap)
     print '== Statistics for the UMS Heap ==\n'
     statcontrib(nonheap)
+
+@hkshell.hkshell_cmd()
+def n():
+    ps_all = hkshell.postdb().all().copy()
+    # ps_heap = Heap-related (scheduled to go to Hh)
+    ps_heap = ps_all.collect.has_tag_from(('heap', 'hh', 'hk'))
+    ps_nonheap = ps_all - ps_heap
+    l = list(tidy(ps_nonheap))
+    l.sort()
+    return l[0]
 
 main()
 
