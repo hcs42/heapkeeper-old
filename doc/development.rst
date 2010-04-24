@@ -352,7 +352,7 @@ Heapkeeper, it is something like ``0.3``.
 
     $ git push origin _v<version>
 
-#. Let the others review the commits.
+#. Send an email to the Heapkeeper Heap. Let the others review the commits.
 
 #. If everybody is satisfied, tag the commit, push the tag and merge the
    master::
@@ -368,7 +368,7 @@ Heapkeeper, it is something like ``0.3``.
 
     $ scripts/pushdoc hcs@heapkeeper.org
 
-#. Make an announcement on Freshmeat__
+#. Send an email to the Heapkeeper Heap. Make an announcement on Freshmeat__.
 
 #. Change the new version string in the following files to ``<version>+`` (e.g.
    ``0.3+``):
