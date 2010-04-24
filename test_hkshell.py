@@ -686,7 +686,8 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
         hkutils.string_to_file(config_str, config_file)
 
         cmdl_options, args = \
-            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell'])
+            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell',
+                                '--hkrc', 'NONE'])
         hkshell.main(cmdl_options, args)
 
         self.assertEqual(
@@ -694,9 +695,7 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
             'Warning: post directory does not exists: "my_heap_dir"\n'
             'Post directory has been created.\n'
             'Warning: HTML directory does not exists: "my_html_dir"\n'
-            'HTML directory has been created.\n'
-            'Importing hkrc...\n'
-            'Module not found: "hkrc"')
+            'HTML directory has been created.')
 
     def test__config_format_2(self):
         """Tests hkshell start when the config file is in version 2."""
@@ -710,7 +709,8 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
         hkutils.string_to_file(config_str, config_file)
 
         cmdl_options, args = \
-            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell'])
+            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell',
+                                '--hkrc', 'NONE'])
         hkshell.main(cmdl_options, args)
 
         self.assertEqual(
@@ -718,9 +718,7 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
             'Warning: post directory does not exists: "my_heap_dir"\n'
             'Post directory has been created.\n'
             'Warning: HTML directory does not exists: "my_html_dir"\n'
-            'HTML directory has been created.\n'
-            'Importing hkrc...\n'
-            'Module not found: "hkrc"')
+            'HTML directory has been created.')
 
     def test__config_format_3(self):
         """Tests hkshell start when the config file is in version 3."""
@@ -738,7 +736,8 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
         hkutils.string_to_file(config_str, config_file)
 
         cmdl_options, args = \
-            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell'])
+            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell',
+                                '--hkrc', 'NONE'])
         hkshell.main(cmdl_options, args)
 
         self.assertEqual(
@@ -746,9 +745,7 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
             'Warning: post directory does not exists: "my_heap_dir"\n'
             'Post directory has been created.\n'
             'Warning: HTML directory does not exists: "my_html_dir"\n'
-            'HTML directory has been created.\n'
-            'Importing hkrc...\n'
-            'Module not found: "hkrc"')
+            'HTML directory has been created.')
 
 if __name__ == '__main__':
     hkutils.set_log(False)
