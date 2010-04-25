@@ -849,7 +849,7 @@ the post is deleted. Post 2 was deleted, but as discussed previously, the
 
 .. code-block:: sh
 
-    $ cat mail_test/3.post
+    $ cat myheap_posts/3.post
     Message-Id: <b53945e0907251236l2285b7faq@mail.gmail.com>
     Flag: deleted
 
