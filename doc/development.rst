@@ -343,8 +343,8 @@ Heapkeeper, it is something like ``0.3``.
 
 #. Execute the package maker script and push the package to the homepage::
 
-    $ scripts/make_package
-    $ scripts/pushrelease hcs@heapkeeper.org
+    $ hk-dev-utils/make_package
+    $ hk-dev-utils/pushrelease hcs@heapkeeper.org
 
 #. Download the uploaded package and perform the steps in the :doc:`tutorial`.
 
@@ -366,7 +366,8 @@ Heapkeeper, it is something like ``0.3``.
 
 #. Push the new documentation to the home page::
 
-    $ scripts/pushdoc hcs@heapkeeper.org
+    $ cd doc; make clean && make html; cd ..
+    $ hk-dev-utils/pushdoc hcs@heapkeeper.org
 
 #. Send an email to the Heapkeeper Heap. Make an announcement on Freshmeat__.
 
