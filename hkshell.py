@@ -1406,7 +1406,7 @@ def dl(from_=0, detailed_log=False, ps=False):
     """
 
     if heap_id_hint_var is None:
-        hkutils.log('Posts cannot be downloaded: no heap specified.')
+        hkutils.log("No default heap specified. Select a heap using 'sh()'.")
         return
     else:
         heap_id = heap_id_hint_var
