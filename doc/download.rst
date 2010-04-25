@@ -23,6 +23,8 @@ Packaged releases
 | version  | date       | source      | HTML documentation |
 |          |            |             |                    |
 +==========+============+=============+====================+
+| `0.5`_   | 2010-04-25 | tgz__ zip__ | tgz__ zip__        |
++----------+------------+-------------+--------------------+
 | `0.4`_   | 2010-02-19 | tgz__ zip__ | tgz__ zip__        |
 +----------+------------+-------------+--------------------+
 | `0.3`_   | 2009-10-11 | tgz__ zip__ | tgz__ zip__        |
@@ -32,6 +34,10 @@ Packaged releases
 | `0.1`_   | 2008-10-16 | tgz__ zip__ |  --                |
 +----------+------------+-------------+--------------------+
 
+__ http://heapkeeper.org/releases/heapkeeper-0.5.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.5.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.5.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.5.zip
 __ http://heapkeeper.org/releases/heapkeeper-0.4.tar.gz
 __ http://heapkeeper.org/releases/heapkeeper-0.4.zip
 __ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.4.tar.gz
@@ -44,6 +50,29 @@ __ http://github.com/hcs42/heapkeeper/tarball/v0.2
 __ http://github.com/hcs42/heapkeeper/zipball/v0.2
 __ http://github.com/hcs42/heapkeeper/tarball/v0.1
 __ http://github.com/hcs42/heapkeeper/zipball/v0.1
+
+.. _`0.5`:
+
+Version 0.5
+^^^^^^^^^^^
+
+- **date:** 2010-04-25
+- **download:** tgz__, zip__
+- **download HTML documentation:** tgz__, zip__
+
+__ http://heapkeeper.org/releases/heapkeeper-0.5.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.5.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.5.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.5.zip
+
+The main improvement of this release is supporting several heaps.
+
+Major new features:
+
+- Heapkeeper now supports several heaps.
+- The term "heapid" was abandoned as the identifiers of posts. The new terms
+  are: :ref:`post index <glossary_post_index>`, :ref:`heap id
+  <glossary_heap_id>`, and :ref:`post id <glossary_post_id>`.
 
 .. _`0.4`:
 
