@@ -142,7 +142,7 @@ import hkutils
 import hkbodyparser
 
 
-heapkeeper_version = '0.5'
+heapkeeper_version = '0.5+'
 
 
 ##### logging #####
