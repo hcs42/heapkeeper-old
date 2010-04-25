@@ -115,6 +115,7 @@ PostDB
     .. automethod:: notify_listeners
     .. automethod:: touch
     .. automethod:: has_post_id
+    .. automethod:: heap_ids
     .. automethod:: has_heap_id
     .. automethod:: next_post_index
     .. automethod:: invalidate_next_post_index_cache

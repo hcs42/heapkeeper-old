@@ -1683,6 +1683,11 @@ def read_postdb(configfile):
     hklib.unify_config(configdict)
     postdb = hklib.PostDB()
     postdb.read_config(configdict)
+
+    # If there is only one heap, select it
+    if len(postdb.heap_ids()) == 1:
+        sh(postdb.heap_ids()[0])
+
     return configdict, postdb
 
 def init():

@@ -1316,6 +1316,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         """Tests the following functions:
 
         - :func:`hklib.PostDB.has_post_id`
+        - :func:`hklib.PostDB.heap_ids`
         - :func:`hklib.PostDB.has_heap_id`
         - :func:`hklib.PostDB.postset`
         - :func:`hklib.PostDB.post_by_post_id`
@@ -1329,6 +1330,11 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         # Testing has_post_id
         self.assertTrue(postdb.has_post_id(('my_heap', '0')))
         self.assertFalse(postdb.has_post_id(('my_heap', 'x')))
+
+        # Testing heap_ids
+        self.assertEqual(
+            set(postdb.heap_ids()),
+            set(['my_heap', 'my_other_heap']))
 
         # Testing has_heap_id
         self.assertTrue(postdb.has_heap_id('my_heap'))

@@ -1731,6 +1731,14 @@ class PostDB(object):
 
         return self.post_id_to_post.has_key(post_id)
 
+    def heap_ids(self):
+        """Returns the heap ids.
+
+        **Returns:** [|HeapId|]
+        """
+
+        return self._heaps.keys()
+
     def has_heap_id(self, heap_id):
         """Returns whether there is a heap with the given heap id.
 
