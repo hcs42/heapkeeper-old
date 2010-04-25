@@ -190,12 +190,19 @@ the two repositories will be completely separate.
 
 __ http://github.com/hcs42/hk-dev-utils
 
-Communication
--------------
+.. _heapkeeper_heap:
 
-We use a heap to communicate. It is called the Heapkeeper heap. It will become
-public when we Heapkeeper supports handling several heaps. Until then, you
-can contact us via email as described on the :doc:`index page <index-main>`.
+Communication: Heapkeeper Heap
+------------------------------
+
+We use a heap to communicate. That heap is called the Heapkeeper Heap. The
+e-mail address of the traditional mailing list behind it is
+:email:`heapkeeper-heap@googlegroups.com`, so send an email to this address if
+you want to send a post to the Heapkeeper Heap. The post database of Heapkeeper
+Heap can be accessed here__. The generated HTML pages can be viewed here__.
+
+__ http://github.com/hcs42/heapkeeper-heap
+__ http://heapkeeper-heap.github.com
 
 Workflow
 --------
