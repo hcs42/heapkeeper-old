@@ -75,7 +75,7 @@ types in the documentation so we can talk about them easily.
   the prepost's content. If the prepost is a |PostIndex| or an int (which will
   be converted to a post index), then the prepost itself is not enough to find
   the post, a heap id is also needed. When a prepost is passed to a function to
-  convert it to a post, often a heap id hint will be passed too, which is used
+  convert it to a post, often a default heap will be passed too, which is used
   when the prepost is a post index or an int to determine in which heap should
   the function look up the post.
 
@@ -2571,7 +2571,7 @@ class PostSet(set):
         - `postdb` (| PostDB|) -- The post database.
         - `posts` ( |PrePostSet|) -- The set of posts to be initially
           contained.
-        - `default_heap` (|HeapId| | ``None``) -- Heap id hint for `posts`.
+        - `default_heap` (|HeapId| | ``None``) -- Default heap for `posts`.
         """
 
         initpostset = PostSet._to_set(postdb, posts, default_heap)
