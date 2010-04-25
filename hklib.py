@@ -1834,18 +1834,18 @@ class PostDB(object):
             self._posts = \
                 [ p for p in self.real_posts() if not p.is_deleted() ]
 
-    def postset(self, posts, heap_id_hint=None):
+    def postset(self, posts, default_heap=None):
         """Creates a PostSet that will contain the specified posts.
 
         **Arguments:**
 
         - `posts` (|PrePostSet|)
-        - `heap_id_hint` (|HeapId| | ``None``)
+        - `default_heap` (|HeapId| | ``None``)
 
         **Returns:** |PostSet|
         """
 
-        return PostSet(self, posts, heap_id_hint)
+        return PostSet(self, posts, default_heap)
 
     def post_by_post_id(self, post_id):
         """Finds a post by its post id.
@@ -1876,7 +1876,7 @@ class PostDB(object):
         else:
             return self.post_by_post_id(post_id)
 
-    def post(self, prepost, heap_id_hint=None, raise_exception=False):
+    def post(self, prepost, default_heap=None, raise_exception=False):
         """Converts a |PrePost| into a |Post|.
 
         It other words, it returns the post specified by its post id or message
@@ -1886,7 +1886,7 @@ class PostDB(object):
         **Arguments:**
 
         - `prepost` (|PrePost|)
-        - `heap_id_hint` (|HeapId| | ``None``)
+        - `default_heap` (|HeapId| | ``None``)
         - `raise_exception` (bool) -- Specifies what should happen it the post
           is not found. If raise_exception is ``False``, ``None`` will be
           returned, otherwise a |PostNotFoundError| exception will be raised.
@@ -1909,11 +1909,11 @@ class PostDB(object):
             if post is not None:
                 return post
 
-        # Try with `(heap_id_hint, prepost)` as post id
-        if (heap_id_hint is not None
-            and Post.is_post_id((heap_id_hint, prepost))):
+        # Try with `(default_heap, prepost)` as post id
+        if (default_heap is not None
+            and Post.is_post_id((default_heap, prepost))):
 
-            post = self.post_by_post_id((heap_id_hint, prepost))
+            post = self.post_by_post_id((default_heap, prepost))
             if post is not None:
                 return post
 
@@ -2023,7 +2023,7 @@ class PostDB(object):
         if postparent == '':
             return None
 
-        parentpost = self.post(postparent, heap_id_hint=post.heap_id())
+        parentpost = self.post(postparent, default_heap=post.heap_id())
 
         # deleted posts do not count
         if parentpost is not None and parentpost.is_deleted():
@@ -2563,7 +2563,7 @@ class PostSet(set):
     - `_postdb` (|PostDB|) -- The post database.
     """
 
-    def __init__(self, postdb, posts, heap_id_hint=None):
+    def __init__(self, postdb, posts, default_heap=None):
         """Constructor.
 
         **Arguments:**
@@ -2571,10 +2571,10 @@ class PostSet(set):
         - `postdb` (| PostDB|) -- The post database.
         - `posts` ( |PrePostSet|) -- The set of posts to be initially
           contained.
-        - `heap_id_hint` (|HeapId| | ``None``) -- Heap id hint for `posts`.
+        - `default_heap` (|HeapId| | ``None``) -- Heap id hint for `posts`.
         """
 
-        initpostset = PostSet._to_set(postdb, posts, heap_id_hint)
+        initpostset = PostSet._to_set(postdb, posts, default_heap)
         super(PostSet, self).__init__(initpostset)
         self._postdb = postdb
 
@@ -2599,7 +2599,7 @@ class PostSet(set):
         return PostSet(self._postdb, self)
 
     @staticmethod
-    def _to_set(postdb, prepostset, heap_id_hint=None):
+    def _to_set(postdb, prepostset, default_heap=None):
         """Converts a |PrePostSet| object to a set of posts.
 
         **Arguments:**
@@ -2619,7 +2619,7 @@ class PostSet(set):
             return prepostset
         elif is_prepost(prepostset): # we have a prepost
             return set([postdb.post(prepostset,
-                                    heap_id_hint,
+                                    default_heap,
                                     raise_exception=True)])
         else: # we have a list of preposts
             result = set()
@@ -2628,7 +2628,7 @@ class PostSet(set):
                     continue
                 if is_prepost(prepost):
                     result.add(postdb.post(prepost,
-                                           heap_id_hint,
+                                           default_heap,
                                            raise_exception=True))
                 else:
                     raise hkutils.HkException, \

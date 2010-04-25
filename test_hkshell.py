@@ -440,14 +440,14 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.init_hkshell()
         p0 = self.p(0)
 
-        # hkshell.heap_id_hint_var == None
+        # hkshell.default_heap_var == None
 
         hkshell.sh(None)
         self.assertEqual(hkshell.p('my_heap/0'), p0)
         self.assertEqual(hkshell.p(('my_heap', '0')), p0)
         self.assertRaises(hklib.PostNotFoundError, lambda: hkshell.p(0))
 
-        # hkshell.heap_id_hint_var can be used
+        # hkshell.default_heap_var can be used
 
         hkshell.sh('my_heap')
         self.assertEqual(hkshell.p('my_heap/0'), p0)
@@ -457,7 +457,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEqual(hkshell.p('my_heap/0'), p0)
         self.assertEqual(hkshell.p(0), self.po(0))
 
-        # hkshell.heap_id_hint_var is not None, but cannot be used
+        # hkshell.default_heap_var is not None, but cannot be used
 
         hkshell.sh('my_other_heap')
         self.assertRaises(hklib.PostNotFoundError, lambda: hkshell.p(1))

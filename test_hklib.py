@@ -1464,13 +1464,13 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # Specifying the post index
 
-        self.assertEqual(postdb.post('0', heap_id_hint='my_heap'), p0)
-        self.assertEqual(postdb.post(0, heap_id_hint='my_heap'), p0)
-        self.assertEqual(postdb.post('0'), None) # no hint -> post not found
-        self.assertEqual(postdb.post(0), None) # no hint -> post not found
+        self.assertEqual(postdb.post('0', default_heap='my_heap'), p0)
+        self.assertEqual(postdb.post(0, default_heap='my_heap'), p0)
+        self.assertEqual(postdb.post('0'), None) # no default -> post not found
+        self.assertEqual(postdb.post(0), None) # no default -> post not found
 
-        # bad hint -> post not found
-        self.assertEqual(postdb.post('1', heap_id_hint='my_other_heap'), None)
+        # bad default heap -> post not found
+        self.assertEqual(postdb.post('1', default_heap='my_other_heap'), None)
 
         # Specifying the message id
 

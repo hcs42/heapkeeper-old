@@ -199,8 +199,8 @@ x()                - save and exit
 rl()               - reload the database (changes will be lost!)
 g()                - generate HTML pages
 gen_page(pps)      - generates a page that contains the posts
-sh(str)            - set heap id hint
-gh()               - get heap id hint
+sh(str)            - set default heap
+gh()               - get default heap
 p(pp)              - get a post
 ps(pps)            - create a postset
 ls(ps)             - get a summary of a postset
@@ -977,18 +977,25 @@ def h():
     """Prints the console help."""
     write(console_help)
 
-heap_id_hint_var = None
+default_heap_var = None
 
 @hkshell_cmd()
 def gh():
-    """Gets the heap id hint."""
-    return heap_id_hint_var
+    """Gets the heap id of the default heap."""
+    return default_heap_var
 
 @hkshell_cmd()
-def sh(heap_id_hint):
-    """Sets the heap id hint."""
-    global heap_id_hint_var
-    heap_id_hint_var = heap_id_hint
+def sh(default_heap):
+    """Sets the default heap.
+
+    **Argument:**
+
+    - `default_heap` (|HeapId|) -- The heap id of the heap that should be the
+      new default heap.
+    """
+
+    global default_heap_var
+    default_heap_var = default_heap
 
 @hkshell_cmd()
 def p(pp):
@@ -1005,7 +1012,7 @@ def p(pp):
     """
 
     # PostSet is better in making post from a prepost...
-    postset = postdb().postset(pp, heap_id_hint_var)
+    postset = postdb().postset(pp, default_heap_var)
     return postset.pop()
 
 @hkshell_cmd()
@@ -1019,7 +1026,7 @@ def ps(pps):
     **Returns:** |PrePost|
     """
 
-    return postdb().postset(pps, heap_id_hint_var)
+    return postdb().postset(pps, default_heap_var)
 
 @hkshell_cmd()
 def postdb():
@@ -1244,8 +1251,8 @@ def j(pp1, pp2):
     - `pp2` (|PrePost|) -- The post that will be the child.
     """
 
-    p1 = postdb().post(pp1, heap_id_hint=gh())
-    p2 = postdb().post(pp2, heap_id_hint=gh())
+    p1 = postdb().post(pp1, default_heap=gh())
+    p2 = postdb().post(pp2, default_heap=gh())
     event('postset_calculated', 'j')
     if p1 != None and p2 != None:
         p2.set_parent(p1.post_id_str())
@@ -1321,12 +1328,12 @@ def add_post_to_heap(post, prefix, heap_id):
     """
 
     if heap_id is None:
-        heap_id_hint = gh()
-        if heap_id_hint is None:
+        default_heap = gh()
+        if default_heap is None:
             hkutils.log('Post cannot be created: no heap specified.')
             return None
         else:
-            heap_id = heap_id_hint
+            heap_id = default_heap
     postdb().add_new_post(post, heap_id, prefix=prefix)
     hkutils.log('Post created.')
     return post
@@ -1405,11 +1412,11 @@ def dl(from_=0, detailed_log=False, ps=False):
     if `ps` is ``True``; ``None`` otherwise.
     """
 
-    if heap_id_hint_var is None:
+    if default_heap_var is None:
         hkutils.log("No default heap specified. Select a heap using 'sh()'.")
         return
     else:
-        heap_id = heap_id_hint_var
+        heap_id = default_heap_var
 
     email_downloader = hklib.EmailDownloader(postdb(), options.config, heap_id)
     email_downloader.connect()

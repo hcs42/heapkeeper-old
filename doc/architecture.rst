@@ -129,12 +129,12 @@ first place, but later it may be modified in the heap.
     There are different relations between the posts: the most basic one is when
     a post is the child of another post. It usually means that the latter one
     is a reply to the former one. This information is stored in the ``Parent``
-    attribute of the header of the child post: this attribute contains the post
-    id hint (which is a post id, a post index or message id) of the parent of
-    the post. If there is no post found based on the post id hint, or the post
-    id hint is ``None``, the post does not have a parent. For more information
-    about the relations, see :ref:`post_relations`. The ``Parent`` attribute of
-    the post comes from the ``In-Reply-To`` attribute of the original email.
+    attribute of the header of the child post: this attribute contains an id (a
+    post id, a post index or message id) of the parent of the post. If there is
+    no post found based on the id, or the id ``None``, the post does not have a
+    parent. For more information about the relations, see
+    :ref:`post_relations`. The ``Parent`` attribute of the post comes from the
+    ``In-Reply-To`` attribute of the original email.
 
     A post may have :ref:`tags <glossary_tag>`, which tell us information
     about the topic of the post.

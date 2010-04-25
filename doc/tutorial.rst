@@ -423,16 +423,16 @@ The |cat| command prints the post itself::
 
     Ashe
 
-Heap hint, |sh| and |gh|
-::::::::::::::::::::::::
+Default heap, |sh| and |gh|
+:::::::::::::::::::::::::::
 
 Previously we referred to a post with its :ref:`post id <glossary_post_id>`
 (e.g. ``usr/1``), which is the combination of its :ref:`heap id
 <glossary_heap_id>` (``'usr'``) and its :ref:`post index <glossary_post_index>`
-(``'1'``). If we specify a "heap hint", then we can use only the post index,
+(``'1'``). If we specify a default heap, then we can use only the post index,
 and Heapkeeper will try to find the post it within that heap.
 
-Let's set the heap hint to ``'usr'``::
+Let's set the default heap to ``'usr'``::
 
     >> sh('usr')
 
@@ -442,7 +442,7 @@ integer)::
     >>> ls(1)
     <usr/1> RB-34  ashe@usrobots.com
 
-The heap hint can be printed using |gh|::
+The default heap can be printed using |gh|::
 
     >>> gh()
     'usr
@@ -542,7 +542,7 @@ that it represents. The simplest way to obtain the |Post| object of a post in
     >>> print post
     <post usr/1>
 
-(We don't have to specify the heap because we set the heap hint to ``'usr'``
+(We don't have to specify the heap because we set the default heap to ``'usr'``
 before using the |sh| command.)
 
 The |Post| class has functions for getting and setting the attributes and the
