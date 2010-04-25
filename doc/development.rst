@@ -354,22 +354,20 @@ Heapkeeper, it is something like ``0.3``.
 
 #. Send an email to the Heapkeeper Heap. Let the others review the commits.
 
-#. If everybody is satisfied, tag the commit, push the tag and merge the
-   master::
+#. If everybody is satisfied, tag the commit, push the tag::
 
     $ git tag v<version>
     $ git push origin v<version>
-    $ git checkout master
-    $ git merge v<version>
-    $ git push origin master
-    $ git push origin :_v<version>
 
 #. Push the new documentation to the home page::
 
     $ cd doc; make clean && make html; cd ..
     $ hk-dev-utils/pushdoc hcs@heapkeeper.org
 
-#. Send an email to the Heapkeeper Heap. Make an announcement on Freshmeat__.
+#. Check out ``_master`` and fast forward it to the new release::
+
+    $ git checkout _master
+    $ git merge v<version>
 
 #. Change the new version string in the following files to ``<version>+`` (e.g.
    ``0.3+``):
@@ -378,10 +376,21 @@ Heapkeeper, it is something like ``0.3``.
    - ``hklib.py``
    - ``doc/conf.py``
 
-   Use the following commit message::
+#. Commit it into ``_master``, and use the following commit message::
 
     Heapkeeper v<version>+ first commit
 
     [v<version>]
 
-__ http://freshmeat.net/
+#. Fast forward ``master`` to ``_master``. Push both branches, and remove
+   branch ``_v<version>``::
+
+    $ git checkout master
+    $ git merge _master
+    $ git checkout _master
+    $ git push origin master _master
+    $ git push origin :_v<version>
+
+#. Send an email to the Heapkeeper Heap. Make an announcement on Freshmeat__.
+
+__ http://freshmeat.net/projects/heapkeeper
