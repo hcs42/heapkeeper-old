@@ -91,11 +91,24 @@ class Segment(object):
         **Returns:** bool
         """
 
-        return (self.type == other.type and
-                self.key == other.key and
-                self.value == other.value and
-                self.protocol == other.protocol and
-                self.quote_level == other.quote_level)
+        # We examine all data members of the segments except for 'text'.
+
+        # Checking that the segments have the same data members. (If they
+        # don't, they are not similar.)
+        keys = self.__dict__.keys()
+        keys_other = other.__dict__.keys()
+        if keys != keys_other:
+            return False
+
+        # Checking that all attributes except for 'text' have the same values
+        # in both segments; if it's not true, the segments are not similar.
+        keys.remove('text')
+        for key in keys:
+            if getattr(self, key) != getattr(other, key):
+                return False
+
+        # The segments are similar because all check passed.
+        return True
 
     def __str__(self):
         """Converts the segment into a string.
