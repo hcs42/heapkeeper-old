@@ -30,12 +30,13 @@ class Segment(object):
     - `type` (str) -- The type of the segment. Possible values:
 
         - ``'normal'``: normal text (quotes, too)
-        - ``'meta'``: meta text, written between brackets
         - ``'link'``: http or ftp links
         - ``'heap_link'``: link to a post on a heap
 
     - `quote_level` (int) -- The quote level: the numbers of ``'>'`` characters
       in the beginning of the line(s) of the segment.
+    - `'is_meta'` (bool) -- Whether the text is meta text or not. (Meta text is
+      text written between brackets)
     - `text` (str) -- The (unaltered) text of the segment.
     - `key` (str | ``None``) -- If the segment is a meta text, this is the
       meta key. Otherwise it is ``None``.
@@ -46,14 +47,15 @@ class Segment(object):
       protocol. Otherwise it is ``None.``
     """
 
-    def __init__(self, type='normal', quote_level=0, text='', key=None,
-                 value=None, protocol=None):
+    def __init__(self, type='normal', quote_level=0, is_meta=False, text='',
+                 key=None, value=None, protocol=None):
         """Constructor.
 
         **Arguments:**
 
         - `type` (str)
         - `quote_level` (str)
+        - `is_meta` (bool)
         - `text` (str)
         - `key` (str | ``None``)
         - `value` (str | ``None``)
@@ -62,6 +64,7 @@ class Segment(object):
 
         self.type = type
         self.quote_level = quote_level
+        self.is_meta = is_meta
         self.text = text
         self.key = key
         self.value = value
@@ -219,6 +222,21 @@ def segment_type_is(type, segments):
     return len(segments) > 0 and segments[-1].type == type
 
 
+def segment_condition(segments, condition):
+    """Returns whether the last item of `segments` exists and has the given
+    property.
+
+    **Argument:**
+
+    - `segments` ([|Segment|])
+    - `condition` (fun(|Segment|) -> bool)
+
+    **Returns:** bool
+    """
+
+    return len(segments) > 0 and condition(segments[-1])
+
+
 def ensure_similar(segment, segments):
     """Ensures that the last element of `segments` is similar to `segment`.
 
@@ -321,7 +339,7 @@ def parse_line(line, segments):
         return
 
     # If the current line is the continuation of a meta text...
-    if segment_type_is('meta', segments):
+    if segment_condition(segments, lambda segment: segment.is_meta):
         meta_segment = segments[-1]
         # ...and the meta text is closed
         if line[-1] == ']':
@@ -349,7 +367,7 @@ def parse_line(line, segments):
 
         match = re.match(r' *([^ \t]*)(.*)', content)
         assert match
-        meta_segment = Segment(type='meta')
+        meta_segment = Segment(is_meta=True)
         meta_segment.key = match.group(1)
         value = match.group(2).strip()
         meta_segment.value = value

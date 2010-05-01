@@ -43,7 +43,7 @@ class Test_Segment(unittest.TestCase):
         Segment = hkbodyparser.Segment
         self.assertEqual(Segment(), Segment())
         self.assertNotEqual(Segment(), Segment(text='a'))
-        self.assertNotEqual(Segment(), Segment(type='meta'))
+        self.assertNotEqual(Segment(), Segment(is_meta=True))
 
     def test_is_similar(self):
         """Tests :func:`hkbodyparser.Segment.is_similar`."""
@@ -51,7 +51,7 @@ class Test_Segment(unittest.TestCase):
         Segment = hkbodyparser.Segment
         self.assertTrue(Segment().is_similar(Segment()))
         self.assertTrue(Segment().is_similar(Segment(text='a')))
-        self.assertFalse(Segment().is_similar(Segment(type='meta')))
+        self.assertFalse(Segment().is_similar(Segment(is_meta=True)))
 
     def test_str(self):
         """Tests :func:`hkbodyparser.Segment.__str__`."""
@@ -140,7 +140,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
 
         test(
             ('[key value text]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key value text]',
                   key='key',
                   value='value text'),
@@ -154,7 +154,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
              '[key value text]\n'
              'b\n'),
             [Segm(text='a\n'),
-             Segm(type='meta',
+             Segm(is_meta=True,
                   text='[key value text]',
                   key='key',
                   value='value text'),
@@ -164,7 +164,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         # only key, no value
         test(
             ('[a]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[a]',
                   key='a',
                   value=''),
@@ -174,7 +174,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         # no key, no value
         test(
             ('[]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[]',
                   key='',
                   value=''),
@@ -187,7 +187,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         test(
             ('[key value\n'
              'text]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key value\ntext]',
                   key='key',
                   value='value\ntext'),
@@ -198,7 +198,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         test(
             ('[key\n'
              'value text]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key\nvalue text]',
                   key='key',
                   value='\nvalue text'),
@@ -209,7 +209,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         test(
             ('[key\n'
              ']\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key\n]',
                   key='key',
                   value='\n'),
@@ -221,7 +221,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
             ('[\n'
              'value\n'
              'text]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[\nvalue\ntext]',
                   key='',
                   value='\nvalue\ntext'),
@@ -232,7 +232,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         test(
             ('[key\n'
              'value\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key\nvalue\n',
                   key='key',
                   value='\nvalue\n')]
@@ -243,7 +243,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         ## # '[]' can be a key
         ## test(
         ##     ('[[]]\n'),
-        ##     [Segm(type='meta',
+        ##     [Segm(is_meta=True,
         ##           text='[[]]',
         ##           key='[]',
         ##           value=''),
@@ -253,7 +253,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         ## # ']' can be a key
         ## test(
         ##     ('[]]\n'),
-        ##     [Segm(type='meta',
+        ##     [Segm(is_meta=True,
         ##           text='[]]',
         ##           key=']',
         ##           value=''),
@@ -263,7 +263,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         # '[' can be a key
         test(
             ('[[]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[[]',
                   key='[',
                   value=''),
@@ -274,7 +274,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
 
         test(
             ('[key   value  text  ]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key   value  text  ]',
                   key='key',
                   value='value  text'),
@@ -285,7 +285,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
             ('[ key \n'
              ' value\t\n'
              ' text ] \n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[ key\n value\n text ]',
                   key='key',
                   value='\n value\n text'),
@@ -295,7 +295,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         # Tab is a separator as well
         test(
             ('[key\tvalue]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key\tvalue]',
                   key='key',
                   value='value'),
@@ -370,7 +370,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         # no link within meta
         test(
             ('[key http://x ]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key http://x ]',
                   key='key',
                   value='http://x'),

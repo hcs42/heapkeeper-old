@@ -629,7 +629,7 @@ class Generator(object):
             body_html = []
             for segment in postitem.post.body_object().segments:
                 s = self.escape(segment.text)
-                if segment.type == 'meta':
+                if segment.type == 'normal' and segment.is_meta:
                     s = self.enclose(s, class_='meta-text')
                 elif segment.type == 'link' and segment.protocol == 'http':
                     s = self.print_link(segment.text, s)
