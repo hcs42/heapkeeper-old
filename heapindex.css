@@ -212,6 +212,11 @@ pre
     color: #f00;
 }
 
+.postbody .raw-block
+{
+    color: #555;
+}
+
 .postbody .quote-2, .quote-4, .quote-6, .quote-8
 {
     color: #088;

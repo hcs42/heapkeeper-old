@@ -276,6 +276,34 @@ def ensure_similar(segment, segments):
     return segments[-1]
 
 
+def calc_quote_level(line):
+    """Calculates the quote level of the given line.
+
+    **Argument:**
+
+    - `line` (str)
+
+    **Returns:** (int, str, str)
+
+    - `quote_level` (int) -- The quote level of the line.
+    - `quote_str` (str) -- A string that contains the quote signs and the
+      optional space after them.
+    - `rest_str` (str) -- A string that contains the rest of the line.
+    """
+
+    # Calculating the quote level: how many '>' characters are in the
+    # beginning of the line? One space after each '>' character is acceptable.
+    match = re.match(r'((> ?)*)(.*)$', line)
+    quote_str = match.group(1)
+    rest_str = match.group(3)
+    if quote_str == '':
+        quote_level = 0
+    else:
+        # `quote_level` is the number of '>' characters in `quote_str`
+        quote_level = len(['x' for ch in quote_str if ch == '>'])
+    return quote_level, quote_str, rest_str
+
+
 def parse_line_part(text, segments, sample_segment):
     """Parses the part of a line.
 
@@ -337,7 +365,7 @@ def parse_line_part(text, segments, sample_segment):
     segment = ensure_similar(sample_segment, segments)
     segment.text += text
 
-def parse_line(line, segments, variables):
+def parse_line(line, line_index, segments, lines, variables):
     """Parses a line.
 
     **Argument:**
@@ -352,19 +380,23 @@ def parse_line(line, segments, variables):
       function.
     """
 
-    # If a line is empty, the linefeed will just be appended to the last
-    # existing segment.
-    if len(line) == 0:
-        if len(segments) == 0:
-            segments.append(Segment())
-        segments[-1].text += '\n'
+    # If the current line is the continuation of a raw block...
+    end_of_raw_block = variables.get('end_of_raw_block')
+    if end_of_raw_block is not None:
+        assert line_index <= end_of_raw_block
+        segments[-1].text += line + '\n'
+
+        # If this is the last line of the raw block, delete the
+        # `end_of_raw_block` variable
+        if line_index == end_of_raw_block:
+            del variables['end_of_raw_block']
         return
 
     # If the current line is the continuation of a meta text...
     if segment_condition(segments, lambda segment: segment.is_meta):
         meta_segment = segments[-1]
         # ...and the meta text is closed
-        if line[-1] == ']':
+        if (len(line) > 0) and (line[-1] == ']'):
             variables['main_meta_segment'].value += line[:-1].rstrip()
             parse_line_part(line[:-1], segments, meta_segment)
             segment = ensure_similar(meta_segment, segments)
@@ -379,7 +411,7 @@ def parse_line(line, segments, variables):
         return
 
     # If this is the beginning of a meta text...
-    if line[0] == '[' and (']' not in line[1:-1]):
+    if (len(line) > 0) and (line[0] == '[') and (']' not in line[1:-1]):
 
         # ...which is a one-liner
         if line[-1] == ']':
@@ -420,22 +452,87 @@ def parse_line(line, segments, variables):
             segments[-1].text += '\n'
         return
 
-    # Calculating the quote level: how many '>' characters are in the
-    # beginning of the line? One space after each '>' character is acceptable.
-    match = re.match(r'((> ?)*)(.*)$', line)
-    quote_str = match.group(1)
-    if quote_str == '':
-        quote_level = 0
-    else:
-        # `quote_level` is the number of '>' characters in `quote_str`
-        quote_level = len(['x' for ch in quote_str if ch == '>'])
+    quote_level, quote_str, rest_str = calc_quote_level(line)
+
+    # If this is the beginning of a raw block...
+    if (len(rest_str) > 0) and (rest_str[0] in ' \t'):
+
+        # Check that the previous line allows us to make this line a raw line
+        # (if the previous line is on the same quote level and is not a raw
+        # line, then this line cannot be a raw line either)
+        if line_index == 0:
+            prev_line_ok = True
+        else:
+            prev_line = lines[line_index - 1]
+            prev_quote_level, prev_quote_str, prev_rest_str = \
+                calc_quote_level(prev_line)
+            if prev_quote_level != quote_level:
+                prev_line_ok = True
+            elif prev_rest_str == '':
+                prev_line_ok = True
+            else:
+                prev_line_ok = False
+
+        if prev_line_ok:
+
+            # Check whether there is a line in the following paragraph that
+            # does not start with whitespace
+            i = line_index + 1
+            lines_count = len(lines)
+            end_of_raw_block = None # no raw block
+            while True:
+
+                # The body has ended and we haven't found a
+                # non-whitespace-starting line
+                if (i == lines_count):
+                    end_of_raw_block = lines_count - 1
+                    break
+
+                i_quote_level, i_quote_str, i_rest_str = \
+                    calc_quote_level(lines[i])
+
+                # The quote level changed, so the last line of the raw block is
+                # the previous line
+                if i_quote_level != quote_level:
+                    end_of_raw_block = i - 1
+                    break
+
+                # If we find an empty line, that line could be the end of the
+                # raw block. Later we may find another line and set
+                # `end_of_raw_block` then accordingly.
+                if i_rest_str == '':
+                    end_of_raw_block = i - 1
+                    i += 1
+                    continue
+
+                # If we find a line that cannot be in a raw block, we stop the
+                # loop.
+                if i_rest_str[0] not in ' \t':
+                    break
+
+                i += 1
+
+            if end_of_raw_block is not None:
+
+                raw_segment = Segment(type='raw',
+                                      quote_level=quote_level,
+                                      text=line+'\n')
+                segments.append(raw_segment)
+
+                # If this is a multiline raw block, we store the index of its
+                # last line in `variables`
+                if end_of_raw_block != line_index:
+                    variables['end_of_raw_block'] = end_of_raw_block
+                return
+
+    # If this is a normal text line
+    if quote_level > 0:
         segment = ensure_similar(Segment(quote_level=quote_level), segments)
         segment.text += quote_str
 
     # `rest`: text after the quote signs
-    rest = match.group(3)
     sample_segment = Segment(quote_level=quote_level)
-    parse_line_part(rest, segments, sample_segment)
+    parse_line_part(rest_str, segments, sample_segment)
     segment = ensure_similar(Segment(quote_level=quote_level), segments)
     segment.text += '\n'
 
@@ -468,7 +565,7 @@ def parse(body_str):
     # manipulate the end of this list.
     segments = []
     variables = {}
-    for line in lines:
-        parse_line(line.rstrip(), segments, variables)
+    for index, line in enumerate(lines):
+        parse_line(line.rstrip(), index, segments, lines, variables)
 
     return Body(segments=segments)

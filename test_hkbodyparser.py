@@ -296,6 +296,19 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
              Segm(text='\n')]
         )
 
+        test(
+            ('[key\n'
+             '\n'
+             'text\n'
+             '\n'
+             ']\n'),
+            [Segm(is_meta=True,
+                  text='[key\n\ntext\n\n]',
+                  key='key',
+                  value='\n\ntext\n\n'),
+             Segm(text='\n')]
+        )
+
         # Tab is a separator as well
         test(
             ('[key\tvalue]\n'),
@@ -322,8 +335,8 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
 
         # normal text around the link
         test(
-            (' http://www.example.com x\n'),
-            [Segm(text=' '),
+            ('x http://www.example.com x\n'),
+            [Segm(text='x '),
              Segm(type='link',
                   text='http://www.example.com',
                   protocol='http'),
@@ -495,22 +508,99 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
             [Segm(quote_level=1, text='> [not meta]\n')]
         )
 
-        ## ## verbatim - not implemented yet
-        ##
-        ## test(
-        ##     ('normal text\n'
-        ##      '\n'
-        ##      '    verbatim\n'
-        ##      '\n'
-        ##      '    still verbatim\n'
-        ##      '\n'
-        ##      'normal text\n'),
-        ##     [Segm(text='normal text\n\n'),
-        ##      Segm(text='    verbatim\n'
-        ##                '\n'
-        ##                '    still verbatim\n'),
-        ##      Segm(text='\nnormal text\n')]
-        ## )
+        ### Testing raw blocks
+
+        test(
+            ('normal text\n'
+             '\n'
+             '    verbatim\n'
+             '\n'
+             'normal text\n'),
+            [Segm(text='normal text\n\n'),
+             Segm(type='raw',
+                  text='    verbatim\n'),
+             Segm(text='\nnormal text\n')]
+        )
+
+        test(
+            ('normal text\n'
+             '\n'
+             '    verbatim\n'
+             '\n'
+             '    still verbatim\n'
+             '\n'
+             'normal text\n'),
+            [Segm(text='normal text\n\n'),
+             Segm(type='raw',
+                  text='    verbatim\n'
+                       '\n'
+                       '    still verbatim\n'),
+             Segm(text='\nnormal text\n')]
+        )
+
+        # Verbatim in quotes
+
+        test(
+            ('> normal text\n'
+             '> \n'
+             '>     verbatim\n'
+             '> \n'
+             '> normal text\n'),
+            [Segm(text='> normal text\n'
+                       '>\n',
+                  quote_level=1),
+             Segm(type='raw',
+                  text='>     verbatim\n',
+                  quote_level=1),
+             Segm(text='>\n'
+                       '> normal text\n',
+                  quote_level=1)]
+        )
+
+        test(
+            ('>     verbatim\n'
+             '> \n'
+             '>     still verbatim\n'
+             '> \n'
+             '> normal text\n'),
+            [Segm(type='raw',
+                  text='>     verbatim\n'
+                       '>\n'
+                       '>     still verbatim\n',
+                  quote_level=1),
+             Segm(text='>\n'
+                       '> normal text\n',
+                  quote_level=1)]
+        )
+
+        # Verbatim finished by different quote level
+        # Verbatim finished by end of body
+
+        test(
+            ('>> normal text\n'
+             '>> \n'
+             '>>     verbatim\n'
+             '>    other verbatim\n'),
+            [Segm(text='>> normal text\n'
+                       '>>\n',
+                  quote_level=2),
+             Segm(type='raw',
+                  text='>>     verbatim\n',
+                  quote_level=2),
+             Segm(type='raw',
+                  text='>    other verbatim\n',
+                  quote_level=1)]
+        )
+
+        # Not verbatim because of missing empty line
+
+        test(
+            ('normal text\n'
+             '    not verbatim\n'),
+            [Segm(text='normal text\n    not verbatim\n')]
+        )
+
+        ### Testing API
 
         p = self.p(0)
         p.set_body('a\nb\n')

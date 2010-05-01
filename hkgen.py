@@ -647,6 +647,9 @@ class Generator(object):
                 if segment.is_meta:
                     s = self.enclose(s, class_='meta-text')
 
+                if segment.type == 'raw':
+                    s = self.enclose(s, class_='raw-block')
+
                 if segment.quote_level != 0:
 
                     # The following code prints the name of the author before
