@@ -53,6 +53,10 @@ class Test_Segment(unittest.TestCase):
         self.assertTrue(Segment().is_similar(Segment(text='a')))
         self.assertFalse(Segment().is_similar(Segment(is_meta=True)))
 
+        segment = Segment()
+        segment.new_attribute = True
+        self.assertFalse(segment.is_similar(Segment()))
+
     def test_str(self):
         """Tests :func:`hkbodyparser.Segment.__str__`."""
 
@@ -367,13 +371,72 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
              Segm(text='\n')]
         )
 
-        # no link within meta
+        # link within meta
         test(
-            ('[key http://x ]\n'),
+            ('[key http://www.example.com]\n'),
             [Segm(is_meta=True,
-                  text='[key http://x ]',
+                  text='[key ',
                   key='key',
-                  value='http://x'),
+                  value='http://www.example.com'),
+             Segm(type='link',
+                  is_meta=True,
+                  text='http://www.example.com',
+                  protocol='http'),
+             Segm(is_meta=True,
+                  text=']',
+                  key=None,
+                  value=None),
+             Segm(text='\n')]
+        )
+
+        # link within multi-line meta
+        test(
+            ('[key http://www.example.com\n'
+             'http://www.example.com]\n'),
+            [Segm(is_meta=True,
+                  text='[key ',
+                  key='key',
+                  value='http://www.example.com\nhttp://www.example.com'),
+             Segm(type='link',
+                  is_meta=True,
+                  text='http://www.example.com',
+                  protocol='http'),
+             Segm(is_meta=True,
+                  text='\n'),
+             Segm(type='link',
+                  is_meta=True,
+                  text='http://www.example.com',
+                  protocol='http'),
+             Segm(is_meta=True,
+                  text=']'),
+             Segm(text='\n')]
+        )
+
+        # heap link within meta
+        test(
+            ('[key heap://ums/12]\n'),
+            [Segm(is_meta=True,
+                  text='[key ',
+                  key='key',
+                  value='heap://ums/12'),
+             Segm(type='heap_link',
+                  is_meta=True,
+                  text='heap://ums/12',
+                  value='ums/12'),
+             Segm(is_meta=True,
+                  text=']',
+                  key=None,
+                  value=None),
+             Segm(text='\n')]
+        )
+
+        # link within a meta: the key is not interpreted as a link
+        test(
+            ('[http://www.example.com value]\n'),
+            [Segm(is_meta=True,
+                  text='[http://www.example.com value]',
+                  key='http://www.example.com',
+                  value='value'),
              Segm(text='\n')]
         )
 

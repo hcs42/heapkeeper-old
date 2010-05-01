@@ -629,9 +629,8 @@ class Generator(object):
             body_html = []
             for segment in postitem.post.body_object().segments:
                 s = self.escape(segment.text)
-                if segment.type == 'normal' and segment.is_meta:
-                    s = self.enclose(s, class_='meta-text')
-                elif segment.type == 'link' and segment.protocol == 'http':
+
+                if segment.type == 'link' and segment.protocol == 'http':
                     s = self.print_link(segment.text, s)
                 elif segment.type == 'heap_link':
                     heap_id = postitem.post.heap_id()
@@ -644,6 +643,10 @@ class Generator(object):
                         s = self.print_link(
                                 self.print_postitem_link(target_postitem),
                                 s)
+
+                if segment.is_meta:
+                    s = self.enclose(s, class_='meta-text')
+
                 if segment.quote_level != 0:
 
                     # The following code prints the name of the author before

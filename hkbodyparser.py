@@ -83,6 +83,17 @@ class Segment(object):
         return (self.is_similar(other) and
                 self.text == other.text)
 
+    def copy(self):
+        """Returns a copy of the segment.
+
+        **Returns:** |Segment|
+        """
+
+        result = Segment()
+        for key, value in self.__dict__.items():
+            setattr(result, key, value)
+        return result
+
     def is_similar(self, other):
         """Returns whether the segment is equal to another segment if we don't
         count their text.
@@ -94,7 +105,8 @@ class Segment(object):
         **Returns:** bool
         """
 
-        # We examine all data members of the segments except for 'text'.
+        # We examine all data members of the segments except for 'text', 'key'
+        # and 'value'.
 
         # Checking that the segments have the same data members. (If they
         # don't, they are not similar.)
@@ -103,9 +115,12 @@ class Segment(object):
         if keys != keys_other:
             return False
 
-        # Checking that all attributes except for 'text' have the same values
-        # in both segments; if it's not true, the segments are not similar.
+        # Checking that all attributes except for 'text', 'key' and 'value',
+        # have the same values in both segments; if it's not true, the segments
+        # are not similar.
         keys.remove('text')
+        keys.remove('key')
+        keys.remove('value')
         for key in keys:
             if getattr(self, key) != getattr(other, key):
                 return False
@@ -253,22 +268,26 @@ def ensure_similar(segment, segments):
     """
 
     if len(segments) == 0 or not segments[-1].is_similar(segment):
-        segments.append(segment)
+        new_segment = segment.copy()
+        new_segment.text = ''
+        new_segment.key = None
+        new_segment.value = None
+        segments.append(new_segment)
     return segments[-1]
 
 
-def parse_text_line_part(quote_level, text, segments):
+def parse_line_part(text, segments, sample_segment):
     """Parses the part of a line.
 
     **Argument:**
 
-    - `quote_level` (int) -- The level of quote in which the given text is.
     - `text` (str) -- The text to be parsed.
     - `segments` ([|Segment|]) -- The segments that are resulted from the
       parsing will be appended to `segments`. Also, the last element of
       `segments` may be modified.
+    - `sample_segment` (|Segment|) -- A segment that is similar to the one
+      expected here.
     """
-
 
     # Nothing to parse, nothing to do
     if text == '':
@@ -296,28 +315,29 @@ def parse_text_line_part(quote_level, text, segments):
             link_segment = \
                 Segment(type='link',
                         text=address,
-                        quote_level=quote_level,
+                        quote_level=sample_segment.quote_level,
+                        is_meta=sample_segment.is_meta,
                         protocol=protocol)
         else:
             link_segment = \
                 Segment(type='heap_link',
                         text=address,
                         value=inner_address,
-                        quote_level=quote_level)
+                        quote_level=sample_segment.quote_level,
+                        is_meta=sample_segment.is_meta)
 
-        parse_text_line_part(quote_level, before, segments)
+        parse_line_part(before, segments, sample_segment)
         segments.append(link_segment)
-        parse_text_line_part(quote_level, after, segments)
+        parse_line_part(after, segments, sample_segment)
 
         return
 
     # If the text is a normal text, we append it to the last segment if that
     # is on the same quote level; otherwise we create a new segment.
-    segment = ensure_similar(Segment(quote_level=quote_level), segments)
+    segment = ensure_similar(sample_segment, segments)
     segment.text += text
 
-
-def parse_line(line, segments):
+def parse_line(line, segments, variables):
     """Parses a line.
 
     **Argument:**
@@ -328,6 +348,8 @@ def parse_line(line, segments):
       modified: the new segments will be appended to this list, and the last
       element of the list may be modified. The ending linefeed will be
       appended to the segment that will be the last in `segments`.
+    - `variables` ({str: object}) -- Variables created and used by this
+      function.
     """
 
     # If a line is empty, the linefeed will just be appended to the last
@@ -343,14 +365,17 @@ def parse_line(line, segments):
         meta_segment = segments[-1]
         # ...and the meta text is closed
         if line[-1] == ']':
-            meta_segment.value += line[:-1].rstrip()
-            meta_segment.text += line
+            variables['main_meta_segment'].value += line[:-1].rstrip()
+            parse_line_part(line[:-1], segments, meta_segment)
+            segment = ensure_similar(meta_segment, segments)
+            segments[-1].text += ']'
             normal_segment = Segment(text='\n')
             segments.append(normal_segment)
         # ...and the meta text will still be continued
         else:
-            meta_segment.value += line + '\n'
-            meta_segment.text += line + '\n'
+            variables['main_meta_segment'].value += line + '\n'
+            parse_line_part(line, segments, meta_segment)
+            segments[-1].text += '\n'
         return
 
     # If this is the beginning of a meta text...
@@ -365,20 +390,34 @@ def parse_line(line, segments):
             one_liner = False
             content = line[1:]
 
-        match = re.match(r' *([^ \t]*)(.*)', content)
+        match = re.match(r'( *[^ \t]*)(.*)', content)
         assert match
         meta_segment = Segment(is_meta=True)
-        meta_segment.key = match.group(1)
-        value = match.group(2).strip()
+        key_text = match.group(1)
+        value_text = match.group(2)
+        meta_segment.key = key_text.strip()
+        value = value_text.strip()
         meta_segment.value = value
-        meta_segment.text = line
+
+        # The "[" and the key_text is added to `meta_segment`; the rest (which
+        # is `value_text`) will be handled by parse_line_part
+        meta_segment.text = '[' + key_text
         if one_liner:
+            segments += [meta_segment]
+            parse_line_part(value_text, segments, meta_segment)
+            segment = ensure_similar(meta_segment, segments)
+            segments[-1].text += ']'
             normal_segment = Segment(text='\n')
-            segments += [meta_segment, normal_segment]
+            segments += [normal_segment]
         else:
-            meta_segment.text += '\n'
+            variables['main_meta_segment'] = meta_segment
             meta_segment.value += '\n'
             segments += [meta_segment]
+            parse_line_part(value_text, segments, meta_segment)
+            if segments[-1].type != 'normal':
+                normal_segment = Segment(is_meta=True)
+                segments.append(normal_segment)
+            segments[-1].text += '\n'
         return
 
     # Calculating the quote level: how many '>' characters are in the
@@ -395,7 +434,8 @@ def parse_line(line, segments):
 
     # `rest`: text after the quote signs
     rest = match.group(3)
-    parse_text_line_part(quote_level, rest, segments)
+    sample_segment = Segment(quote_level=quote_level)
+    parse_line_part(rest, segments, sample_segment)
     segment = ensure_similar(Segment(quote_level=quote_level), segments)
     segment.text += '\n'
 
@@ -427,7 +467,8 @@ def parse(body_str):
     # segments ([Segment]) -- The list of segments. The parser functions
     # manipulate the end of this list.
     segments = []
+    variables = {}
     for line in lines:
-        parse_line(line.rstrip(), segments)
+        parse_line(line.rstrip(), segments, variables)
 
     return Body(segments=segments)
