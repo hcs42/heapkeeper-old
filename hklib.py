@@ -3126,7 +3126,7 @@ class EmailDownloader(object):
                 '`text` is not a string but the following object: %s\n' %
                 (str(text),))
         if encoding != None:
-            if encoding.lower() == '7bit':
+            if encoding.lower() in ('7bit', '8bit', 'binary'):
                 pass # no conversion needed
             elif encoding.lower() == 'base64':
                 text = base64.b64decode(text)
