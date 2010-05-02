@@ -145,30 +145,6 @@ import hkbodyparser
 heapkeeper_version = '0.5+'
 
 
-##### logging #####
-
-# TODO: Remove these functions after releasing Heapkeeper v0.5.
-
-# {
-
-def default_log_fun(*args):
-    """Deprecated. Use :func:`hkutils.default_log_fun` instead."""
-
-    return hkutils.default_log_fun(*args)
-
-def set_log(log):
-    """Deprecated. Use :func:`hkutils.set_log` instead."""
-
-    return hkutils.set_log(log)
-
-def log(*args):
-    """Deprecated. Use :func:`hkutils.log` instead."""
-
-    return hkutils.log(*args)
-
-# }
-
-
 ##### Post #####
 
 # This variable should be put into hklib.Options, but we don't have that yet.
