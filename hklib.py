@@ -3072,6 +3072,11 @@ class EmailDownloader(object):
 
         message = email.message_from_string(header + text)
 
+        def normalize_str(s):
+            s = re.sub(r'\r\n', r'\n', s) # Windows EOL
+            s = re.sub(r'\xc2\xa0', ' ', s) # Non-breaking space
+            return s
+
         # processing the header
         headers = {}
         for attr in ['From', 'Subject', 'Message-Id', 'In-Reply-To', 'Date']:
@@ -3087,7 +3092,7 @@ class EmailDownloader(object):
                     else:
                         value += ' '
                     value += hkutils.utf8(v[0], v[1])
-                value = re.sub(r'\r\n', r'\n', value)
+                value = normalize_str(value)
                 headers[attr] = value
 
         # We find the first leaf of the "message tree", where the multipart
@@ -3133,7 +3138,7 @@ class EmailDownloader(object):
                             'text:\n%s\n' % (encoding, text))
         charset = message.get_content_charset()
         text = hkutils.utf8(text, charset)
-        text = re.sub(r'\r\n', r'\n', text)
+        text = normalize_str(text)
 
         return headers, text
 
