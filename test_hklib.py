@@ -47,7 +47,7 @@ class PostDBHandler(object):
 
     # Creating an ordered array of dates. (Increment the number after `range`
     # if you need more posts.)
-    dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200\n' % ii \
+    dates = [ 'Date: Wed, 20 Aug 2008 17:41:0%d +0200' % ii \
               for ii in range(10) ]
 
     def setUpDirs(self):
@@ -406,10 +406,10 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         self.assertEqual(p1.body(), '\n')
         self.assertEqual(p2.body(), '\n')
         self.assertEqual(p3.body(), '\n')
-        self.assertEqual(p4.body(), 'Hi\n')
-        self.assertEqual(p5.body(), 'Hi\n')
-        self.assertEqual(p6.body(), 'Hi\n')
-        self.assertEqual(p7.body(), 'Hi\n\nHi\n')
+        self.assertEqual(p4.body(), '\nHi\n')
+        self.assertEqual(p5.body(), '\nHi\n')
+        self.assertEqual(p6.body(), '\nHi\n')
+        self.assertEqual(p7.body(), '\nHi\n\nHi\n')
 
         # p1 == p2 == p3 != p4 == p5 == p6
         self.assertEqual(p1, p2)
@@ -428,6 +428,13 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         for post1, post2 in itertools.combinations([p8, p10, p11], 2):
             self.assertNotEquals(post1, post2)
             self.assertNotEquals(post2, post1)
+
+        # Testing that whitespace is preserved in the beginning of the body,
+        # but it is removed from the end of the body (and a '\n' is added to
+        # the body)
+        self.assertEqual(
+            hklib.Post.from_str('\n \n Body \n ').body(),
+            ' \n Body\n')
 
     def test__init(self):
         """Tests the following functions:
@@ -692,8 +699,11 @@ class Test_Post(unittest.TestCase, PostDBHandler):
 
         # whitespace
         self.assertEqual(
-            hklib.Post.from_str('\n\n [ key  value ] ').meta_dict(),
+            hklib.Post.from_str('\n\n[ key  value ] ').meta_dict(),
             {'key': 'value'})
+        self.assertEqual(
+            hklib.Post.from_str('\n\n [ key  value ] ').meta_dict(),
+            {})
 
         # two metas
         self.assertEqual(

@@ -405,7 +405,7 @@ class Post(object):
         """
 
         headers = Post.create_header(Post.parse_header(f), post_id)
-        body = f.read().strip() + '\n'
+        body = f.read().rstrip() + '\n'
         return headers, body
 
     # Constructors
