@@ -1518,7 +1518,7 @@ class PostDB(object):
         self.touch()
 
     def add_post_to_dicts(self, post):
-        """Adds the post to the `heapid_to_post` and `messid_to_heapid`
+        """Adds the post to the `heapid_to_post` and `messid_to_post_id`
         dictionaries.
 
         **Arguments:**
@@ -1541,7 +1541,7 @@ class PostDB(object):
         self.touch()
 
     def remove_post_from_dicts(self, post):
-        """Removed the post from the `heapid_to_post` and `messid_to_heapid`
+        """Removed the post from the `heapid_to_post` and `messid_to_post_id`
         dictionaries.
 
         **Arguments:**
