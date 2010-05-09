@@ -514,6 +514,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         - :func:`hklib.Post.set_subject`
         - :func:`hklib.Post.messid`
         - :func:`hklib.Post.set_messid`
+        - :func:`hklib.PostDB.notify_changed_messid`
         - :func:`hklib.Post.parent`
         - :func:`hklib.Post.set_parent`
         - :func:`hklib.Post.date`
@@ -527,6 +528,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         ## Testing the touch-system
 
         # Setting is_modified to False by saving the post database
+        postdb = self._postdb
         self._postdb.save()
         p0 = self.p(0)
         self.assertEqual(p0.is_modified(), False)
@@ -554,9 +556,16 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         self.assertEqual(p0.real_subject(), 'subject2')
         check_modified()
 
+        self.assertEqual(
+            postdb.messid_to_post_id['0@'],
+            ('my_heap', '0'))
         p0.set_messid('@')
         self.assertEqual(p0.messid(), '@')
         check_modified()
+        self.assertFalse(postdb.messid_to_post_id.has_key('0@'))
+        self.assertEqual(
+            postdb.messid_to_post_id['@'],
+            ('my_heap', '0'))
 
         p0.set_parent('@@')
         self.assertEqual(p0.parent(), '@@')

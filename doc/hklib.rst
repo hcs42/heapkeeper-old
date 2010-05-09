@@ -114,6 +114,7 @@ PostDB
     .. automethod:: read_config
     .. automethod:: notify_listeners
     .. automethod:: touch
+    .. automethod:: notify_changed_messid
     .. automethod:: has_post_id
     .. automethod:: heap_ids
     .. automethod:: has_heap_id

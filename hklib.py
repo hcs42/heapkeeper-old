@@ -632,7 +632,11 @@ class Post(object):
         - `messid` (|Messageid| | ``None``)
         """
 
+        old_messid = self.messid()
         self._header['Message-Id'] = messid
+        postdb = self._postdb
+        if postdb is not None:
+            postdb.notify_changed_messid(self, old_messid, messid)
         self.touch()
 
     # parent field
@@ -1716,6 +1720,25 @@ class PostDB(object):
         self._threads = None
         if post != None:
             self.notify_listeners(PostDBEvent(type='touch', post=post))
+
+    def notify_changed_messid(self, post, old_messid, new_messid):
+        """Should be called when the messid of a post changed.
+
+        **Argument:**
+
+        - `post` (|Post|) -- The post whose messid changed.
+        - `old_messid` (|Messageid|) -- The old messid.
+        - `new_messid` (|Messageid|) -- The new messid.
+        """
+
+        post_id = post.post_id()
+
+        # We should remove the old messid from messid_to_post_id only if `post`
+        # is stored as the owner of that messid
+        if self.messid_to_post_id.get(old_messid) == post_id:
+            del self.messid_to_post_id[old_messid]
+
+        self.messid_to_post_id.setdefault(new_messid, post_id)
 
     # Get-set functions
 
