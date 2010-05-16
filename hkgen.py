@@ -543,13 +543,9 @@ class Generator(object):
                 return \
                     self.print_link(
                         self.print_postitem_link(parent_postitem),
-                        ('&lt;&uarr;',
-                         self.escape(parent.post_id_str()),
-                         '&gt;'))
-            else:
-                return self.escape('<root>')
-        else:
-            return ''
+                        ('Parent: ',
+                         self.escape(parent.post_id_str())))
+        return ''
 
     # TODO: test
     def print_postitem_parent_post_id(self, postitem):
@@ -758,8 +754,8 @@ class Generator(object):
             self.print_postitem_subject,
             self.print_postitem_tags,
             self.print_postitem_post_id,
-            self.print_postitem_parent_post_id,
             self.print_postitem_date,
+            self.print_postitem_parent_post_id,
         )
 
     # TODO test

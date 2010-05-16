@@ -237,3 +237,9 @@ pre
     border: 1px solid #080;
     border-style: dotted;
 }
+
+.parent a
+{
+    border: 1px solid #080;
+    border-style: dotted;
+}
