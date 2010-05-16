@@ -231,3 +231,9 @@ pre
 {
     margin-right: 1em;
 }
+
+.back-to-index a
+{
+    border: 1px solid #080;
+    border-style: dotted;
+}

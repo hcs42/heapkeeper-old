@@ -115,6 +115,40 @@ class PostPageGenerator(WebGenerator):
                    '<script type="text/javascript" src="/hk.js"></script>')
         return content
 
+    def get_postsummary_fields_main(self, postitem):
+
+        old_fields = \
+            hkgen.Generator.get_postsummary_fields_main(self, postitem)
+        new_fields = [self.print_postitem_back]
+        return tuple(list(old_fields) + new_fields)
+
+    def print_postitem_back_core(self, postitem):
+        """Prints the core of the post id of the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        # post link example: /#post_hh/12
+        post_link = ('/#post_' + postitem.post.post_id_str())
+        return self.print_link(post_link, 'Back to the index')
+
+    def print_postitem_back(self, postitem):
+        """Prints the post id of the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_back_core(postitem),
+                   class_='back-to-index')
 
 
 ##### Server classes #####
