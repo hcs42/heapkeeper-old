@@ -563,6 +563,50 @@ class Generator(object):
                    class_='parent',
                    skip_empty=True)
 
+    # TODO: test
+    def print_postitem_children_post_id_core(self, postitem):
+        """Prints the core of the post id list of the children of the post.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        if (hasattr(postitem, 'print_children_post_id') and
+            postitem.print_children_post_id):
+
+            children = self._postdb.children(postitem.post)
+            children_printed = []
+            for child in children:
+                child_postitem = hklib.PostItem('main', child)
+                child_printed = \
+                    self.print_link(
+                        self.print_postitem_link(child_postitem),
+                        (self.escape(child.post_id_str())))
+                child_printed = hkutils.textstruct_to_str(child_printed)
+                children_printed.append(child_printed)
+            return ('Children: ',
+                    ', '.join(children_printed))
+        return ''
+
+    # TODO: test
+    def print_postitem_children_post_id(self, postitem):
+        """Prints the post ids of the children of the post.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_children_post_id_core(postitem),
+                   class_='children',
+                   skip_empty=True)
+
     # TODO test
     def format_timestamp(self, timestamp):
         """Formats the date of the given post.
@@ -756,6 +800,7 @@ class Generator(object):
             self.print_postitem_post_id,
             self.print_postitem_date,
             self.print_postitem_parent_post_id,
+            self.print_postitem_children_post_id,
         )
 
     # TODO test
@@ -1164,6 +1209,10 @@ class Generator(object):
         xpostitems = \
             itertools.imap(
                 self.set_postitem_attr('print_parent_post_id'),
+                xpostitems)
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_children_post_id'),
                 xpostitems)
         return self.print_postitems(xpostitems)
 

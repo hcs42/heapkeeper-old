@@ -227,19 +227,14 @@ pre
     text-decoration: underline;
 }
 
-.author, .subject, .button, .tags, .index, .parent, .date
+.author, .subject, .button, .tags, .index, .date
 {
     margin-right: 1em;
 }
 
-.back-to-index a
+.parent, .children, .back-to-index
 {
-    border: 1px solid #080;
-    border-style: dotted;
-}
-
-.parent a
-{
+    margin-right: 1em;
     border: 1px solid #080;
     border-style: dotted;
 }
