@@ -3080,6 +3080,8 @@ class EmailDownloader(object):
         port = server['port']
         username = server['username']
         password = server.get('password')
+        # if imaps is omitted, default to True iff port is 993
+        imaps = server.get('imaps', (port == 993))
 
         # If no password was specified, ask it from the user
         if password is None:
@@ -3087,7 +3089,10 @@ class EmailDownloader(object):
             password = getpass.getpass()
 
         hkutils.log('Connecting...')
-        self._server = imaplib.IMAP4_SSL(host, port)
+        if imaps:
+            self._server = imaplib.IMAP4_SSL(host, port)
+        else:
+            self._server = imaplib.IMAP4(host, port)
         self._server.login(username, password)
         hkutils.log('Connected')
 
