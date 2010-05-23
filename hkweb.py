@@ -110,9 +110,24 @@ class PostPageGenerator(WebGenerator):
         self._requested_post = post
         post_id_str = post.post_id_str()
         self.options.html_body_attributes += \
-            ' onload="ScrollToId(\'post_' + post_id_str + '\')"'
+            ' onload="ScrollToId(\'post_' + post_id_str + '\')";'
         self.options.html_title = post.subject()
-        content = (self.print_thread_page(root),
+
+        buttons = \
+            self.enclose(
+                (self.enclose(
+                     self.print_link('javascript:hideAllPostBodies();',
+                                     'Hide all post bodies'),
+                     class_='global-button'),
+                 self.enclose(
+                     self.print_link('javascript:showAllPostBodies();',
+                                     'Show all post bodies'),
+                     class_='global-button')),
+                class_='global-buttons',
+                tag='div')
+
+        content = (buttons,
+                   self.print_thread_page(root),
                    '<script type="text/javascript" src="/hk.js"></script>')
         return content
 
@@ -150,6 +165,29 @@ class PostPageGenerator(WebGenerator):
         return self.enclose(
                    self.print_postitem_back_core(postitem),
                    class_='back-to-index')
+
+    def print_postitem_body(self, postitem):
+        """Prints the body the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        body = hkgen.Generator.print_postitem_body(self, postitem)
+
+        id = 'post-body-container: ' + postitem.post.post_id_str()
+        action = '"javascript:togglePostBodyVisibility(\'' + id + '\')"'
+
+        return self.enclose(
+                   body,
+                   class_='body-container',
+                   skip_empty=True,
+                   newlines=True,
+                   id=id,
+                   attributes=' onclick=' + action)
 
 
 ##### Server classes #####

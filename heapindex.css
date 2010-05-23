@@ -178,11 +178,6 @@ td
     font-style: italic;
 }
 
-pre
-{
-    margin: 1em;
-}
-
 .button a img
 {
     text-decoration: none;
@@ -196,6 +191,7 @@ pre
 
 .postbody
 {
+    margin: 1em;
     background-color: #fff;
     border: 1px solid #080;
     color: #000;
@@ -227,6 +223,19 @@ pre
     text-decoration: underline;
 }
 
+.postbody-stub
+{
+    margin: 1em;
+    background-color: #fff;
+    border: 1px solid #080;
+    border-style: dashed;
+    color: #000;
+    font-family: Courier, monospace;
+
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
 .author, .subject, .button, .tags, .index, .date
 {
     margin-right: 1em;
@@ -236,5 +245,18 @@ pre
 {
     margin-right: 1em;
     border: 1px solid #080;
+    border-style: dotted;
+}
+
+.global-buttons
+{
+    display: block;
+    margin: 1em;
+}
+
+.global-button
+{
+    margin-right: 1em;
+    border: 1px;
     border-style: dotted;
 }
