@@ -111,6 +111,7 @@ class PostPageGenerator(WebGenerator):
         post_id_str = post.post_id_str()
         self.options.html_body_attributes += \
             ' onload="ScrollToId(\'post_' + post_id_str + '\')"'
+        self.options.html_title = post.subject()
         content = (self.print_thread_page(root),
                    '<script type="text/javascript" src="/hk.js"></script>')
         return content
