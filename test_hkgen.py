@@ -511,7 +511,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         pi_end = hklib.PostItem('end', p(0), 0)
         pi_begin.print_post_body = True
         pi_main.print_post_body = True
-        g.options.html_title = 'Post my_heap/0'
+        g.options.html_title = 'subject0'
 
         expected_content = \
             (g.print_html_header(),

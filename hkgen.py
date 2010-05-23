@@ -1455,7 +1455,7 @@ class Generator(object):
             posts = self.outdated_thread_pages()
 
         for post in posts:
-            self.options.html_title = 'Thread ' + post.post_id_str()
+            self.options.html_title = post.subject()
             self.write_page(
                 filename=post.htmlthreadbasename(),
                 html_body=self.print_thread_page(post))
@@ -1480,7 +1480,7 @@ class Generator(object):
             posts = self.outdated_post_pages(posts_in_cycles)
 
         for post in posts:
-            self.options.html_title = 'Post ' + post.post_id_str()
+            self.options.html_title = post.subject()
             self.write_page(
                 filename=post.htmlfilebasename(),
                 html_body=self.print_post_page(post))
