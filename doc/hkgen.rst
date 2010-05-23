@@ -57,7 +57,6 @@ Generator
     .. automethod:: print_main_index_page
     .. automethod:: print_thread_page
     .. automethod:: print_post_page
-    .. automethod:: print_html_header_info
     .. automethod:: print_html_header
     .. automethod:: print_html_footer
     .. automethod:: print_html_page
