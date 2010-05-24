@@ -56,17 +56,29 @@ function getPostBodyFromContainer(postBodyContainer) {
     //
     // - postBodyContainer (node)
 
-    return $('div.body', postBodyContainer)[0];
+    return $('.inner-body-container', postBodyContainer)[0];
 }
 
-function getPostBodyStubFromContainer(postBodyContainer) {
+function getShowPostBodyButtonFromContainer(postBodyContainer) {
     // Returns the post body of the given post body container.
     //
     // Argument:
     //
     // - postBodyContainer (node)
+    //
+    // Returns:
+    //
+    // - showPostBodyButton (jqnode)
+    //
+    // Example:
+    //
+    // > getShowPostBodyButtonFromContainer(
+    //       $('[id=post-body-container-myheap/12]'))
+    // $('[id="post-body-show-button-myheap/12"]')[0]
 
-    return $('div.postbody-stub', postBodyContainer)[0];
+    var index = $(postBodyContainer).attr('id').
+                replace('post-body-container-', '');
+    return $('[id|=post-body-show-button-' + index + ']')[0];
 }
 
 function getPostBodyContainers() {
@@ -98,8 +110,8 @@ function hidePostBody(postBodyContainer) {
     //
     // - postBodyContainer (node)
 
-    $(postBodyContainer).append('<div class="postbody-stub">Open</div>');
     getPostBodyFromContainer(postBodyContainer).style.display = 'none';
+    getShowPostBodyButtonFromContainer(postBodyContainer).style.display = '';
 }
 
 function showPostBody(postBodyContainer) {
@@ -110,11 +122,9 @@ function showPostBody(postBodyContainer) {
     //
     // - postBodyContainer (node)
 
-    var postBodyStub = getPostBodyStubFromContainer(postBodyContainer);
-    var postBody = getPostBodyFromContainer(postBodyContainer);
-
-    postBody.style.display = 'block';
-    postBodyContainer.removeChild(postBodyStub);
+    getPostBodyFromContainer(postBodyContainer).style.display = 'block';
+    getShowPostBodyButtonFromContainer(postBodyContainer).style.display =
+        'none';
 }
 
 // High level funtions
@@ -126,7 +136,8 @@ function togglePostBodyVisibility(id) {
     //
     // - id (str): the id of the post body container
 
-    var postBodyContainer = document.getElementById(id);
+    var dom_id = 'post-body-container-' + id
+    var postBodyContainer = document.getElementById(dom_id);
 
     if (isPostBodyVisible(postBodyContainer)) {
         hidePostBody(postBodyContainer);

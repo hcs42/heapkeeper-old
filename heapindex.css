@@ -242,19 +242,6 @@ td
     text-decoration: underline;
 }
 
-.postbody-stub
-{
-    margin: 1em;
-    background-color: #fff;
-    border: 1px solid #080;
-    border-style: dashed;
-    color: #000;
-    font-family: Courier, monospace;
-
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-}
-
 .author, .subject, .button, .tags, .index, .date
 {
     margin-right: 1em;

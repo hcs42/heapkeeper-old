@@ -49,7 +49,7 @@ import hkshell
 
 urls = (
     '/', 'Index',
-    '/(heapindex\\.css)', 'Fetch',
+    '/(.*\\.css)', 'Fetch',
     '/(thread\\.png)', 'Fetch',
     '/(.*\\.js)', 'Fetch',
     '/posts/(.*)', 'Post',
@@ -66,6 +66,7 @@ class WebGenerator(hkgen.Generator):
 
     def __init__(self, postdb):
         hkgen.Generator.__init__(self, postdb)
+        self.options.cssfiles.append("hkweb.css")
 
     def print_html_head_content(self):
         """Prints the content in the HTML header.
@@ -133,28 +134,41 @@ class PostPageGenerator(WebGenerator):
                    '<script type="text/javascript" src="/hk.js"></script>')
         return content
 
+    # TODO doc
     def get_postsummary_fields_main(self, postitem):
+        """Returns the fields of the post summary when the pos position is
+        ``"main"``.
 
-        old_fields = \
-            hkgen.Generator.get_postsummary_fields_main(self, postitem)
-        new_fields = [self.print_postitem_back]
-        return tuple(list(old_fields) + new_fields)
-
-    def print_postitem_back_core(self, postitem):
-        """Prints the core of the post id of the post item.
+        The function gets the usual buttons from |Generator| and adds its own
+        buttons.
 
         **Argument:**
 
         - `postitem` (|PostItem|)
 
-        **Returns:** |HtmlText|
+        **Returns:** iterable(|PostItemPrinterFun|)
         """
 
-        # post link example: /#post_hh/12
-        post_link = ('/#post_' + postitem.post.post_id_str())
-        return self.print_link(post_link, 'Back to the index')
+        old_fields = \
+            hkgen.Generator.get_postsummary_fields_main(self, postitem)
+        new_fields = [self.print_hkweb_summary_buttons]
+        return tuple(list(old_fields) + new_fields)
 
-    def print_postitem_back(self, postitem):
+    def get_toggle_post_body_visibility_action(self, postitem):
+        """Returns the JavaScript code that toggles the visibility of the body
+        of the given post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** str
+        """
+
+        id = postitem.post.post_id_str()
+        return 'javascript:togglePostBodyVisibility(\'' + id + '\');'
+
+    def print_hkweb_summary_buttons(self, postitem):
         """Prints the post id of the post item.
 
         **Argument:**
@@ -164,9 +178,22 @@ class PostPageGenerator(WebGenerator):
         **Returns:** |HtmlText|
         """
 
-        return self.enclose(
-                   self.print_postitem_back_core(postitem),
-                   class_='post-summary-button')
+        # Post link example: /#post_hh/12
+        post_link = ('/#post_' + postitem.post.post_id_str())
+
+        id = 'post-body-show-button-' + postitem.post.post_id_str()
+        action = self.get_toggle_post_body_visibility_action(postitem)
+
+        return \
+            self.enclose(
+                (self.enclose(
+                     self.print_link(post_link, 'Back to the index'),
+                     class_='post-summary-button'),
+                 self.enclose(
+                     self.print_link(action, 'Show body'),
+                     class_='post-summary-button',
+                     id=id,
+                     attributes=' style="display: none;"')))
 
     def print_postitem_body(self, postitem):
         """Prints the body the post item.
@@ -181,15 +208,27 @@ class PostPageGenerator(WebGenerator):
         body = hkgen.Generator.print_postitem_body(self, postitem)
 
         id = 'post-body-container-' + postitem.post.post_id_str()
-        action = '"javascript:togglePostBodyVisibility(\'' + id + '\')"'
+        action = self.get_toggle_post_body_visibility_action(postitem)
+
+        buttons = \
+            self.enclose(
+                (self.enclose(
+                     self.print_link(action, 'Hide'),
+                     class_='post-body-button'),
+                 self.enclose(
+                     'Edit (does not work)',
+                     class_='post-body-button')),
+                class_='post-body-buttons',
+                tag='div')
 
         return self.enclose(
-                   body,
+                   self.enclose(
+                       (buttons, body),
+                       class_='inner-body-container',
+                       newlines=True),
                    class_='body-container',
-                   skip_empty=True,
                    newlines=True,
-                   id=id,
-                   attributes=' onclick=' + action)
+                   id=id)
 
 
 ##### Server classes #####
