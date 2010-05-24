@@ -128,6 +128,8 @@ class PostPageGenerator(WebGenerator):
 
         content = (buttons,
                    self.print_thread_page(root),
+                   '<script type="text/javascript" src="/jquery.js">'
+                   '</script>\n'
                    '<script type="text/javascript" src="/hk.js"></script>')
         return content
 
@@ -178,7 +180,7 @@ class PostPageGenerator(WebGenerator):
 
         body = hkgen.Generator.print_postitem_body(self, postitem)
 
-        id = 'post-body-container: ' + postitem.post.post_id_str()
+        id = 'post-body-container-' + postitem.post.post_id_str()
         action = '"javascript:togglePostBodyVisibility(\'' + id + '\')"'
 
         return self.enclose(

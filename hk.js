@@ -56,15 +56,7 @@ function getPostBodyFromContainer(postBodyContainer) {
     //
     // - postBodyContainer (node)
 
-//    return postBodyContainer.childNodes[1];
-
-    for (var i = 0; i < postBodyContainer.childNodes.length; i++) {
-        var childNode = postBodyContainer.childNodes[i];
-        if (childNode.tagName == 'DIV' &&
-            childNode.getAttribute('class') == 'body') {
-            return childNode;
-        }
-    }
+    return $('div.body', postBodyContainer)[0];
 }
 
 function getPostBodyStubFromContainer(postBodyContainer) {
@@ -74,13 +66,7 @@ function getPostBodyStubFromContainer(postBodyContainer) {
     //
     // - postBodyContainer (node)
 
-    for (var i = 0; i < postBodyContainer.childNodes.length; i++) {
-        var childNode = postBodyContainer.childNodes[i];
-        if (childNode.tagName == 'DIV' &&
-            childNode.getAttribute('class') == 'postbody-stub') {
-            return childNode;
-        }
-    }
+    return $('div.postbody-stub', postBodyContainer)[0];
 }
 
 function getPostBodyContainers() {
@@ -89,15 +75,7 @@ function getPostBodyContainers() {
     //
     // Returns: Array(node)
 
-    var containers = new Array();
-    var spans = document.getElementsByTagName('span');
-
-    for (var i=0; i<spans.length; i++) {
-        if (/^post-body-container/.test(spans[i].getAttribute('id'))) {
-            containers.push(spans[i]);
-        }
-    }
-    return containers;
+    return $('span[id|=post-body-container]');
 }
 
 function isPostBodyVisible(postBodyContainer) {
@@ -120,13 +98,8 @@ function hidePostBody(postBodyContainer) {
     //
     // - postBodyContainer (node)
 
-    var postBody = getPostBodyFromContainer(postBodyContainer);
-    var postBodyStub = document.createElement('div');
-
-    postBodyStub.appendChild(document.createTextNode('Open'));
-    postBodyStub.setAttribute('class', 'postbody-stub');
-    postBody.style.display = 'none';
-    postBodyContainer.appendChild(postBodyStub);
+    $(postBodyContainer).append('<div class="postbody-stub">Open</div>');
+    getPostBodyFromContainer(postBodyContainer).style.display = 'none';
 }
 
 function showPostBody(postBodyContainer) {
