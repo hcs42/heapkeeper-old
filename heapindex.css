@@ -264,6 +264,8 @@ td
 {
     margin-right: 1em;
     border: 1px solid #080;
+    padding-left: 1px;
+    padding-right: 1px;
     border-style: dotted;
 }
 
@@ -278,4 +280,6 @@ td
     margin-right: 1em;
     border: 1px;
     border-style: dotted;
+    padding-left: 1px;
+    padding-right: 1px;
 }
