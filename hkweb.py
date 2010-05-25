@@ -222,10 +222,7 @@ class PostPageGenerator(WebGenerator):
                 tag='div')
 
         return self.enclose(
-                   self.enclose(
-                       (buttons, body),
-                       class_='inner-body-container',
-                       newlines=True),
+                   (buttons, body),
                    class_='body-container',
                    newlines=True,
                    id=id)

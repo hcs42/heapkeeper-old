@@ -56,7 +56,7 @@ function getPostBodyFromContainer(postBodyContainer) {
     //
     // - postBodyContainer (node)
 
-    return $('.inner-body-container', postBodyContainer)[0];
+    return postBodyContainer;
 }
 
 function getShowPostBodyButtonFromContainer(postBodyContainer) {
