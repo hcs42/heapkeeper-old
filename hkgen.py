@@ -724,7 +724,7 @@ class Generator(object):
         return self.enclose(
                    self.print_postitem_body_core(postitem),
                    'pre',
-                   'postbody',
+                   'post-body-content',
                    skip_empty=True)
 
     # TODO: test
@@ -759,7 +759,7 @@ class Generator(object):
         """
 
         post_id_str = postitem.post.post_id_str()
-        return ('\n<div class="postbox">',
+        return ('\n<div class="post-box">',
                 self.print_comment('post ' + post_id_str), '\n')
 
     # TODO: test
@@ -848,7 +848,7 @@ class Generator(object):
         post_id_str = postitem.post.post_id_str()
         return self.enclose(
                    (post_summary_fields, body),
-                   class_='postsummary',
+                   class_='post-summary',
                    id=('post_', post_id_str),
                    newlines=True,
                    closing_comment=True)
@@ -891,7 +891,7 @@ class Generator(object):
 
         return self.enclose(
                    (post_summary_str, body_str),
-                   class_='postsummary',
+                   class_='post-summary',
                    newlines=True)
 
     # TODO: test

@@ -301,7 +301,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.print_postitem_main(postitem),
             g.enclose(
                 expected_header,
-                class_='postsummary',
+                class_='post-summary',
                 id='post_my_heap/0',
                 newlines=True,
                 closing_comment=True))
@@ -313,13 +313,13 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose(
                 'body0\n',
                 'pre',
-                'postbody')
+                'post-body-content')
 
         self.assertTextStructsAreEqual(
             g.print_postitem_main(postitem),
             g.enclose(
                 (expected_header, expected_body),
-                class_='postsummary',
+                class_='post-summary',
                 id='post_my_heap/0',
                 newlines=True,
                 closing_comment=True))
@@ -357,7 +357,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.print_postitem_flat(postitem),
             g.enclose(
                 expected_header,
-                class_='postsummary',
+                class_='post-summary',
                 newlines=True))
 
         # With post body
@@ -367,7 +367,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                     g.enclose(
                         'body0\n',
                         'pre',
-                        'postbody'),
+                        'post-body-content'),
                     'td colspan=5',
                     newlines=True),
                 'tr',
@@ -379,7 +379,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose(
                 (expected_header, expected_body),
                 'span',
-                'postsummary',
+                'post-summary',
                 newlines=True))
 
         # Without post body and some other fields
@@ -410,7 +410,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                     expected_header,
                     'tr',
                     newlines=True),
-                class_='postsummary',
+                class_='post-summary',
                 newlines=True))
 
     def test_walk_postitems(self):

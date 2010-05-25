@@ -92,7 +92,7 @@ a
     margin-left: 1em;
 }
 
-.postbox
+.post-box
 {
     display: block;
     background-color: #eed;
@@ -101,7 +101,7 @@ a
     padding: 0.7em 0 0.7em 0.7em;
 }
 
-.postbox .postbox
+.post-box .post-box
 {
     background-color: #eed;
     border: none;
@@ -208,7 +208,7 @@ td
     color: gray;
 }
 
-.postbody
+.post-body-content
 {
     margin: 1em;
     background-color: #fff;
@@ -222,22 +222,22 @@ td
     padding-bottom: 0.5em;
 }
 
-.postbody .meta-text
+.post-body-content .meta-text
 {
     color: #f00;
 }
 
-.postbody .quote-2, .quote-4, .quote-6, .quote-8
+.post-body-content .quote-2, .quote-4, .quote-6, .quote-8
 {
     color: #088;
 }
 
-.postbody .quote-1, .quote-3, .quote-5, .quote-7, .quote-9
+.post-body-content .quote-1, .quote-3, .quote-5, .quote-7, .quote-9
 {
     color: #00f;
 }
 
-.postbody a
+.post-body-content a
 {
     text-decoration: underline;
 }

@@ -17,14 +17,14 @@
  * Copyright (C) 2009 Attila Nagy
  */
 
-.body-container
+.post-body-container
 {
     display: block;
     margin: 1em;
     color: #000;
 }
 
-.postbody
+.post-body-content
 {
     border: 1px solid #080;
     margin-top: 0em;

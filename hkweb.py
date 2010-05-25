@@ -223,7 +223,7 @@ class PostPageGenerator(WebGenerator):
 
         return self.enclose(
                    (buttons, body),
-                   class_='body-container',
+                   class_='post-body-container',
                    newlines=True,
                    id=id)
 
