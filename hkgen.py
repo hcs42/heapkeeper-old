@@ -706,9 +706,7 @@ class Generator(object):
                     s = self.enclose(s, class_='quote')
 
                 body_html.append(s)
-            return self.enclose(body_html,
-                                'pre',
-                                'postbody')
+            return body_html
         else:
             return ''
 
@@ -725,10 +723,9 @@ class Generator(object):
 
         return self.enclose(
                    self.print_postitem_body_core(postitem),
-                   'div',
-                   'body',
-                   skip_empty=True,
-                   newlines=True)
+                   'pre',
+                   'postbody',
+                   skip_empty=True)
 
     # TODO: test
     def print_postitem_link(self, postitem):

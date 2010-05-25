@@ -311,13 +311,9 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem.print_post_body = True
         expected_body = \
             g.enclose(
-                g.enclose(
-                    'body0\n',
-                    'pre',
-                    'postbody'),
-                'div',
-                'body',
-                newlines=True)
+                'body0\n',
+                'pre',
+                'postbody')
 
         self.assertTextStructsAreEqual(
             g.print_postitem_main(postitem),
@@ -369,13 +365,9 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose(
                 g.enclose(
                     g.enclose(
-                        g.enclose(
-                            'body0\n',
-                            'pre',
-                            'postbody'),
-                        'div',
-                        'body',
-                        newlines=True),
+                        'body0\n',
+                        'pre',
+                        'postbody'),
                     'td colspan=5',
                     newlines=True),
                 'tr',
