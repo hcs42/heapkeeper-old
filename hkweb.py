@@ -166,7 +166,7 @@ class PostPageGenerator(WebGenerator):
 
         return self.enclose(
                    self.print_postitem_back_core(postitem),
-                   class_='back-to-index')
+                   class_='post-summary-button')
 
     def print_postitem_body(self, postitem):
         """Prints the body the post item.

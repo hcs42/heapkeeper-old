@@ -560,7 +560,7 @@ class Generator(object):
 
         return self.enclose(
                    self.print_postitem_parent_post_id_core(postitem),
-                   class_='parent',
+                   class_='post-summary-button',
                    skip_empty=True)
 
     # TODO: test
@@ -604,7 +604,7 @@ class Generator(object):
 
         return self.enclose(
                    self.print_postitem_children_post_id_core(postitem),
-                   class_='children',
+                   class_='post-summary-button',
                    skip_empty=True)
 
     # TODO test
