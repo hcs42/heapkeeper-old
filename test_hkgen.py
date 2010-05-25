@@ -297,8 +297,9 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
-        post_link = g.print_link('../my_heap/thread_0.html#post_my_heap/0',
-                                 '&lt;my_heap/0&gt;')
+        post_link = \
+            g.print_link('../my_heap/thread_0.html#post-summary-my_heap-0',
+                         '&lt;my_heap/0&gt;')
         thread_link = g.print_link('../my_heap/thread_0.html',
                                    '<img src="../thread.png" />')
         expected_header = \
@@ -314,7 +315,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                 expected_header,
                 tag='div',
                 class_='post-summary',
-                id='post_my_heap/0',
+                id='post-summary-my_heap-0',
                 newlines=True,
                 closing_comment=True))
 
@@ -333,7 +334,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                 (expected_header, expected_body),
                 tag='div',
                 class_='post-summary',
-                id='post_my_heap/0',
+                id='post-summary-my_heap-0',
                 newlines=True,
                 closing_comment=True))
 
@@ -354,8 +355,9 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
-        post_link = g.print_link('../my_heap/thread_0.html#post_my_heap/0',
-                                 '&lt;my_heap/0&gt;')
+        post_link = \
+            g.print_link('../my_heap/thread_0.html#post-summary-my_heap-0',
+                         '&lt;my_heap/0&gt;')
         expected_header = \
             g.enclose(
                 (enctd('author', 'author0', 'td'), '\n',
@@ -407,8 +409,9 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         hkutils.add_method(g, 'print_postitem_date', print_postitem_date)
 
-        post_link = g.print_link('../my_heap/thread_0.html#post_my_heap/0',
-                                 '&lt;my_heap/0&gt;')
+        post_link = \
+            g.print_link('../my_heap/thread_0.html#post-summary-my_heap-0',
+                         '&lt;my_heap/0&gt;')
         expected_header = \
             [enctd('author', 'author0', 'td'), '\n',
              enctd('subject', 'subject0', 'td'), '\n',

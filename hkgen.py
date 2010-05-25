@@ -751,9 +751,10 @@ class Generator(object):
         if root is None:
             return ('../', post.htmlfilebasename())
         else:
+
+            heap_id, post_index = post.post_id()
             return (('../', self._postdb.root(post).htmlthreadbasename()),
-                    '#post_',
-                    post.post_id_str())
+                    '#post-summary-', heap_id, '-', post_index)
 
     # TODO: test
     def print_postitem_begin(self, postitem):
@@ -853,12 +854,14 @@ class Generator(object):
              for fun in self.get_postsummary_fields_main(postitem)]
 
         body = self.print_postitem_body(postitem)
-        post_id_str = postitem.post.post_id_str()
+        heap_id, post_index = postitem.post.post_id()
+        id = ('post-summary-', heap_id, '-', post_index)
+
         return self.enclose(
                    (post_summary_fields, body),
                    tag='div',
                    class_='post-summary',
-                   id=('post_', post_id_str),
+                   id=id,
                    newlines=True,
                    closing_comment=True)
 
