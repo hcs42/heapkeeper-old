@@ -176,7 +176,7 @@ class Generator(object):
 
         return ('<!-- ', content, ' -->')
 
-    # TODO test: comment and closing_comment args
+    # TODO test: comment, closing_comment args
     def enclose(self, content, tag='span', class_=None, newlines=False,
                 id=None, comment=None, closing_comment=False, title=None,
                 skip_empty=False, attributes=''):
@@ -205,6 +205,7 @@ class Generator(object):
           list: e.g. the ``[[], []]`` text structure will be converted to an
           empty string, but this function will not consider it as empty. This
           is due to efficiency reasons.)
+        - `attributes` (str) -- Additional attributes.
 
         **Returns:** |HtmlText|
 
@@ -246,7 +247,14 @@ class Generator(object):
         else:
             closing_comment_str = ''
 
-        return ('<', tag, classstr, idstr, title_str, attributes, '>',
+        # If attributes is not empty and does not begin with a space character,
+        # we have to add one.
+        if (attributes == '') or (attributes[0] == ' '):
+            attributes_str = attributes
+        else:
+            attributes_str = ' ' + attributes
+
+        return ('<', tag, classstr, idstr, title_str, attributes_str, '>',
                 comment_str, newline,
                 content,
                 '</', tag, '>', comment_str, closing_comment_str, newline)

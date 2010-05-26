@@ -199,12 +199,23 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose('', skip_empty=False),
             '<span></span>')
 
+        # Testing the `attribute` parameter
+        self.assertTextStructsAreEqual(
+            g.enclose('mystuff', attributes='a="b" c="d"'),
+            '<span a="b" c="d">mystuff</span>')
+
+        # Testing the `attribute` parameter: no additional space is added
+        self.assertTextStructsAreEqual(
+            g.enclose('mystuff', attributes=' a="b"'),
+            '<span a="b">mystuff</span>')
+
         # All parameters have a value
         self.assertTextStructsAreEqual(
             g.enclose('mystuff\n', class_='myclass', tag='mytag',
                       newlines=True, id='myid', comment='my comment',
-                      closing_comment=True, title='mytitle'),
-            ('<mytag class="myclass" id="myid" title="mytitle">'
+                      closing_comment=True, title='mytitle',
+                      attributes='a="b" c="d"'),
+            ('<mytag class="myclass" id="myid" title="mytitle" a="b" c="d">'
              '<!-- my comment -->\n'
              'mystuff\n'
              '</mytag><!-- my comment --><!-- myclass -->\n'))
