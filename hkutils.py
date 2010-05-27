@@ -390,6 +390,16 @@ def utf8(s, charset):
     else:
         return s
 
+def uutf8(unicode_obj):
+    """Encodes a unicode object into a utf-8 string.
+
+    **Arguments:**
+
+    - `unicode_obj` (unicode)
+    """
+
+    return unicode_obj.encode('utf-8')
+
 def calc_timestamp(date):
     """Calculates a timestamp from a date.
 
