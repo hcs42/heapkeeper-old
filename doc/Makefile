@@ -13,6 +13,11 @@ ALLSPHINXOPTS   = -d _build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest
 
+html:
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) _build/html
+	@echo
+	@echo "Build finished. The HTML pages are in _build/html."
+
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html      to make standalone HTML files"
@@ -28,11 +33,6 @@ help:
 
 clean:
 	-rm -rf _build/*
-
-html:
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) _build/html
-	@echo
-	@echo "Build finished. The HTML pages are in _build/html."
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) _build/dirhtml
