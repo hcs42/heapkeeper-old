@@ -129,13 +129,13 @@ class PostPageGenerator(WebGenerator):
         buttons = \
             self.enclose(
                 (self.enclose(
-                     self.print_link('javascript:hideAllPostBodies();',
-                                     'Hide all post bodies'),
-                     class_='global-button'),
+                     'Hide all post bodies',
+                     class_='button global-button',
+                     id='hide-all-post-bodies'),
                  self.enclose(
-                     self.print_link('javascript:showAllPostBodies();',
-                                     'Show all post bodies'),
-                     class_='global-button')),
+                     'Show all post bodies',
+                     class_='button global-button',
+                     id='show-all-post-bodies')),
                 class_='global-buttons',
                 tag='div')
 
@@ -169,21 +169,6 @@ class PostPageGenerator(WebGenerator):
         new_fields = [self.print_hkweb_summary_buttons]
         return tuple(list(old_fields) + new_fields)
 
-    def get_toggle_post_body_visibility_action(self, postitem):
-        """Returns the JavaScript code that toggles the visibility of the body
-        of the given post item.
-
-        **Argument:**
-
-        - `postitem` (|PostItem|)
-
-        **Returns:** str
-        """
-
-        heap_id, post_index = postitem.post.post_id()
-        id = heap_id + '-' + post_index
-        return 'javascript:togglePostBodyVisibility(\'' + id + '\');'
-
     def print_hkweb_summary_buttons(self, postitem):
         """Prints the post id of the post item.
 
@@ -201,16 +186,15 @@ class PostPageGenerator(WebGenerator):
         heap_id, post_index = postitem.post.post_id()
         post_id = heap_id + '-' + post_index
         id = 'post-body-show-button-' + post_id
-        action = self.get_toggle_post_body_visibility_action(postitem)
 
         return \
             self.enclose(
                 (self.enclose(
                      self.print_link(post_link, 'Back to the index'),
-                     class_='post-summary-button'),
+                     class_='button post-summary-button'),
                  self.enclose(
-                     self.print_link(action, 'Show body'),
-                     class_='post-summary-button',
+                     'Show body',
+                     class_='button post-summary-button',
                      id=id,
                      attributes=' style="display: none;"')))
 
@@ -228,17 +212,16 @@ class PostPageGenerator(WebGenerator):
 
         heap_id, post_index = postitem.post.post_id()
         post_id = heap_id + '-' + post_index
-        hide_action = self.get_toggle_post_body_visibility_action(postitem)
-        edit_action = 'javascript:editPostBody(\'' + post_id + '\');'
 
         buttons = \
             self.enclose(
                 (self.enclose(
-                     self.print_link(hide_action, 'Hide'),
-                     class_='post-body-button'),
+                     'Hide',
+                     class_='button post-body-button',
+                     id='post-body-hide-button-' + post_id),
                  self.enclose(
-                     self.print_link(edit_action, 'Edit'),
-                     class_='post-body-button',
+                     'Edit',
+                     class_='button post-body-button',
                      id='post-body-edit-button-' + post_id)),
                 class_='post-body-buttons',
                 tag='div')

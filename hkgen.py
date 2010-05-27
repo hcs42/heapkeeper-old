@@ -496,7 +496,7 @@ class Generator(object):
 
         return self.enclose(
                    self.print_postitem_threadlink_core(postitem),
-                   class_='button',
+                   class_='image-button',
                    skip_empty=True)
 
     # TODO: test
@@ -549,9 +549,9 @@ class Generator(object):
             if parent is not None:
                 parent_postitem = hklib.PostItem('main', parent)
                 return \
-                    self.print_link(
-                        self.print_postitem_link(parent_postitem),
-                        ('Parent: ',
+                    ('Parent: ',
+                     self.print_link(
+                         self.print_postitem_link(parent_postitem),
                          self.escape(parent.post_id_str())))
         return ''
 
@@ -568,7 +568,7 @@ class Generator(object):
 
         return self.enclose(
                    self.print_postitem_parent_post_id_core(postitem),
-                   class_='post-summary-button',
+                   class_='container-button post-summary-button',
                    skip_empty=True)
 
     # TODO: test
@@ -612,7 +612,7 @@ class Generator(object):
 
         return self.enclose(
                    self.print_postitem_children_post_id_core(postitem),
-                   class_='post-summary-button',
+                   class_='container-button post-summary-button',
                    skip_empty=True)
 
     # TODO test

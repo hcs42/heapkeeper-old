@@ -266,3 +266,34 @@ function savePostBody(postId) {
         editButton.bind('click', function() { editPostBody(postId); });
      });
 }
+
+
+///// Adding event handlers /////
+
+$(document).ready(function() {
+
+    $('#hide-all-post-bodies').bind('click', function() {
+        hideAllPostBodies();
+    });
+
+    $('#show-all-post-bodies').bind('click', function() {
+        showAllPostBodies();
+    });
+
+    getPostIds().each(function(index) {
+        var postId = this;
+
+        $('#post-body-hide-button-' + postId).bind('click', function() {
+            togglePostBodyVisibility(postId);
+        });
+
+        $('#post-body-show-button-' + postId).bind('click', function() {
+            togglePostBodyVisibility(postId);
+        });
+
+        $('#post-body-edit-button-' + postId).bind('click', function() {
+            editPostBody(postId);
+        });
+
+    });
+});

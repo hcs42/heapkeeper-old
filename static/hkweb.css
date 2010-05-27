@@ -17,6 +17,12 @@
  * Copyright (C) 2009 Attila Nagy
  */
 
+.global-buttons
+{
+    display: block;
+    margin: 1em;
+}
+
 .post-body-container
 {
     display: block;
@@ -36,15 +42,9 @@
     margin-right: 1em;
 }
 
+/* Buttons */
+
 .post-body-button
 {
-    margin-right: 1em;
-    background-color: #fff;
-    border: 1px dotted #080;
-    border-bottom: 0px solid #fff;
-    padding-top: 3px;
-    padding-left: 3px;
-    padding-right: 3px;
-    cursor: pointer;
-    color: #006;
+    border-bottom: 0px;
 }
