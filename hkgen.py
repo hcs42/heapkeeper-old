@@ -856,6 +856,7 @@ class Generator(object):
         post_id_str = postitem.post.post_id_str()
         return self.enclose(
                    (post_summary_fields, body),
+                   tag='div',
                    class_='post-summary',
                    id=('post_', post_id_str),
                    newlines=True,
@@ -1271,7 +1272,8 @@ class Generator(object):
         """
 
         return \
-            ['    <link rel=stylesheet href="%s" type="text/css">\n' % (css,)
+            ['    <link rel="stylesheet" href="%s" type="text/css" />\n' %
+             (css,)
              for css in self.options.cssfiles]
 
     # TODO: test
@@ -1282,10 +1284,13 @@ class Generator(object):
         """
 
         meta_stuff = ('<meta http-equiv="Content-Type" '
-                      'content="text/html;charset=utf-8">')
+                      'content="text/html;charset=utf-8" />')
 
         content = [(self.print_html_header_info(),
-                    '<html>\n'
+                    '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"'
+                    ' "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
+                    '<html xmlns="http://www.w3.org/1999/xhtml"'
+                    ' xml:lang="en" lang="en">\n'
                     '  <head>\n'
                     '    ', meta_stuff, '\n',
                     '    <title>', self.options.html_title, '</title>\n')]

@@ -312,6 +312,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.print_postitem_main(postitem),
             g.enclose(
                 expected_header,
+                tag='div',
                 class_='post-summary',
                 id='post_my_heap/0',
                 newlines=True,
@@ -330,6 +331,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.print_postitem_main(postitem),
             g.enclose(
                 (expected_header, expected_body),
+                tag='div',
                 class_='post-summary',
                 id='post_my_heap/0',
                 newlines=True,
