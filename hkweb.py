@@ -53,7 +53,7 @@ urls = (
     r'/([A-Za-z0-9_-]+\.css)', 'Fetch',
     r'/(thread\\.png)', 'Fetch',
     r'/(external/[A-Za-z0-9_-]+\.js)', 'Fetch',
-    r'/([A-Za-z0-9_-]+\.js)', 'Fetch',
+    r'/(static/[A-Za-z0-9_.-]+)', 'Fetch',
     r'/posts/(.*)', 'Post',
     r'/raw-post-bodies/(.*)', 'RawPostBody',
     r'/set-post-body/(.*)', 'SetPostBody',
@@ -70,7 +70,7 @@ class WebGenerator(hkgen.Generator):
 
     def __init__(self, postdb):
         hkgen.Generator.__init__(self, postdb)
-        self.options.cssfiles.append("hkweb.css")
+        self.options.cssfiles.append("static/hkweb.css")
 
     def print_html_head_content(self):
         """Prints the content in the HTML header.
@@ -141,7 +141,7 @@ class PostPageGenerator(WebGenerator):
 
         js_files = ('/external/jquery.js',
                     '/external/json2.js',
-                    '/hk.js')
+                    '/static/hkweb.js')
         js_links = \
             [('<script type="text/javascript" src="%s"></script>\n' %
               (js_file,)) for js_file in js_files]
