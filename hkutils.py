@@ -270,10 +270,12 @@ def is_textstruct(text):
 
     - `text` (object)
 
-    **Returns:** True
+    **Returns:** bool
     """
 
-    if isinstance(text, str):
+    if isinstance(text, unicode):
+        return False
+    elif isinstance(text, str):
         return True
     else:
         try:
