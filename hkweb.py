@@ -293,7 +293,6 @@ class Server(threading.Thread):
 
 ##### hkshell commands #####
 
-@hkshell.hkshell_cmd()
 def start(port=8080):
     options = hkshell.options
     options.web_server = Server(port)
