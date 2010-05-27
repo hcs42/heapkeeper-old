@@ -188,15 +188,14 @@ class PostPageGenerator(WebGenerator):
         id = 'post-body-show-button-' + post_id
 
         return \
-            self.enclose(
-                (self.enclose(
-                     self.print_link(post_link, 'Back to the index'),
-                     class_='button post-summary-button'),
-                 self.enclose(
-                     'Show body',
-                     class_='button post-summary-button',
-                     id=id,
-                     attributes=' style="display: none;"')))
+            (self.enclose(
+                 self.print_link(post_link, 'Back to the index'),
+                 class_='button post-summary-button'),
+             self.enclose(
+                 'Show body',
+                 class_='button post-summary-button',
+                 id=id,
+                 attributes=' style="display: none;"'))
 
     def print_postitem_body(self, postitem):
         """Prints the body the post item.
