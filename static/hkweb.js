@@ -57,6 +57,24 @@ function ajaxQuery(url, args, callback) {
 }
 
 
+///// Basic DOM stuff /////
+
+function setButtonVisibility(button, visibility) {
+    // Sets the visibility of a button.
+    //
+    // Arguments:
+    //
+    // - button(JQuery)
+    // - visibility(str) -- Either 'show' or 'hide'.
+
+    // `show('fast')` and `hide('fast')` would not be good instead of
+    // `animate`, because that would set the style.display to 'block', but we
+    // need it to be ''.
+
+    button.animate({opacity: visibility}, 'fast');
+}
+
+
 ///// Scrolling /////
 
 // Code copied from Peter-Paul Koch:
@@ -116,12 +134,7 @@ function hidePostBody(postId) {
     // - postId (postId)
 
     $('#post-body-container-' + postId).hide('fast');
-
-    // Showing the "Show body" button. `show('fast')` would not be good instead
-    // of `animate`, because that would set the style.display to 'block', but
-    // we need it to be ''.
-    $('#post-body-show-button-' + postId).animate(
-        {opacity: 'show' }, 'fast');
+    setButtonVisibility($('#post-body-show-button-' + postId), 'show');
 }
 
 function showPostBody(postId) {
@@ -132,9 +145,7 @@ function showPostBody(postId) {
     // - postId (PostId)
 
     $('#post-body-container-' + postId).show('fast');
-
-    $('#post-body-show-button-' + postId).animate(
-        {opacity: 'hide' }, 'fast');
+    setButtonVisibility($('#post-body-show-button-' + postId), 'hide');
 }
 
 // High level funtions
