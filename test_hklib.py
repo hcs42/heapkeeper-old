@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
-# Copyright (C) 2009 Csaba Hoch
+# Copyright (C) 2009-2010 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
 """Tests the hklib module.
@@ -586,8 +586,11 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         self.assertEqual(p0.is_modified(), True)
         self.assertEqual(p0.body(), '')
 
-    def test_write(self):
-        """Tests :func:`hklib.Post.write`.
+    def test__write(self):
+        """Tests the following functions:
+
+        - :func:`hklib.Post.write`
+        - :func:`hklib.Post.write_str`
 
         The `force_print` argument is tested in :func:`test_postfile_str`."""
 
@@ -599,6 +602,8 @@ class Test_Post(unittest.TestCase, PostDBHandler):
             p.write(sio)
             self.assertEqual(sio.getvalue(), output)
             sio.close()
+
+            self.assertEqual(p.write_str(), output)
 
         # Testing empty post
         check_write('', '\n\n')
@@ -637,6 +642,26 @@ class Test_Post(unittest.TestCase, PostDBHandler):
             self.pop_log(),
             ('WARNING: Additional attribute in post: "Nosuchattr"\n'
              'WARNING: Additional attribute in post: "Nosuchattr2"'))
+
+    def test__read(self):
+        """Tests the following functions:
+
+        - :func:`hklib.Post.read`
+        - :func:`hklib.Post.read_str`
+        """
+
+        p0 = self.p(0)
+
+        p0._modified = False
+        p0.read_str('Author: new_author\n')
+        self.assertEqual(p0.author(), 'new_author')
+        self.assertEqual(p0.subject(), '')
+        self.assertEqual(p0.is_modified(), True)
+
+        p0._modified = False
+        p0.read_str('Author: new_author\n')
+        self.assertEqual(p0.is_modified(), False)
+        self.assertEqual(p0.author(), 'new_author')
 
     def test_postfile_str(self):
         """Tests :func:`hklib.Post.postfile_str`."""

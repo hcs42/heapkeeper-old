@@ -1063,6 +1063,54 @@ class Post(object):
         f.write('\n')
         f.write(self._body)
 
+    def write_str(self, force_print=set()):
+        """Writes the post to a string.
+
+        **Arguments:**
+
+        - `force_print` (set(str)) -- The attributes in this set will be
+          printed even if they are empty strings.
+
+        **Returns:** str
+        """
+
+        sio = StringIO.StringIO()
+        self.write(sio, force_print)
+        result = sio.getvalue()
+        sio.close()
+        return result
+
+    def read(self, f, silent=False):
+        """Reads the post from a file object.
+
+        **Arguments:**
+
+        - `f` (file) -- File object to be read from.
+        - `silent` (bool) --- Do not call :func:`PostDB.touch`.
+        """
+
+        # Parsing the post file and returning if it is the same as the post
+        # object
+        header, body = Post.parse(f, self._post_id)
+        if header == self._header and body == self._body:
+            return
+
+        self._header, self._body = header, body
+        self.touch(touch_postdb=(not silent))
+
+    def read_str(self, post_text, silent=False):
+        """Reads the post from a string.
+
+        **Arguments:**
+
+        - `post_text` (str) -- The text of the new contents of the post.
+        - `silent` (bool) --- Do not call :func:`PostDB.touch`.
+        """
+
+        sio = StringIO.StringIO(post_text)
+        self.read(sio, silent)
+        sio.close()
+
     def postfile_str(self, force_print=set()):
         """Returns a string that contains the post in post file format.
 
@@ -1090,22 +1138,15 @@ class Post(object):
                 self._modified = False
 
     def load(self, silent=False):
-        """(Re)loads the Post from the disk.
+        """(Re)loads the post from the disk.
 
         **Arguments:**
 
-        - `silent` --- Do not call :func:`PostDB.touch`.
+        - `silent` (bool) --- Do not call :func:`PostDB.touch`.
         """
 
-        # Parsing the post file and returning if it is the same as the post
-        # object
         with open(self.postfilename(), 'r') as f:
-            header, body = Post.parse(f, self._post_id)
-        if header == self._header and body == self._body:
-            return
-
-        self._header, self._body = header, body
-        self.touch(touch_postdb=(not silent))
+            self.read(f, silent)
 
     # Filenames
 

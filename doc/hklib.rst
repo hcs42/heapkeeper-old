@@ -69,6 +69,9 @@ Post
     .. automethod:: set_body
     .. automethod:: body_contains
     .. automethod:: write
+    .. automethod:: write_str
+    .. automethod:: read
+    .. automethod:: read_str
     .. automethod:: postfile_str
     .. automethod:: save
     .. automethod:: load
