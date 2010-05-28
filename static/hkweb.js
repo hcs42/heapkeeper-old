@@ -62,16 +62,19 @@ function ajaxQuery(url, args, callback) {
 function setButtonVisibility(button, visibility) {
     // Sets the visibility of a button.
     //
+    // When the button has to be hidden, it is not animated, but when it
+    // appears, it is.
+    //
     // Arguments:
     //
     // - button(JQuery)
     // - visibility(str) -- Either 'show' or 'hide'.
 
-    // `show('fast')` and `hide('fast')` would not be good instead of
-    // `animate`, because that would set the style.display to 'block', but we
-    // need it to be ''.
-
-    button.animate({opacity: visibility}, 'fast');
+    if (visibility == 'show') {
+        button.animate({opacity: visibility}, 'fast');
+    } else {
+        button.hide();
+    }
 }
 
 
@@ -226,6 +229,22 @@ function getPostBodyRequest(postId, callback) {
         callback);
 }
 
+function editPostBodyStarted(postId) {
+    // Should be called when editing the post body has been started.
+    //
+    setButtonVisibility($('#post-body-edit-button-' + postId), 'hide');
+    setButtonVisibility($('#post-body-save-button-' + postId), 'show');
+    setButtonVisibility($('#post-body-cancel-button-' + postId), 'show');
+}
+
+function editPostBodyFinished(postId) {
+    // Should be called when editing the post body has been finished.
+
+    setButtonVisibility($('#post-body-edit-button-' + postId), 'show');
+    setButtonVisibility($('#post-body-save-button-' + postId), 'hide');
+    setButtonVisibility($('#post-body-cancel-button-' + postId), 'hide');
+}
+
 function editPostBody(postId) {
     // Lets the user edit the body of a post.
     //
@@ -252,28 +271,8 @@ function editPostBody(postId) {
         textArea.val(postBodyText);
         textArea.focus();
 
-        // Changing the "Edit" button to "Save"
-        var editButton = $('#post-body-edit-button-' + postId);
-        editButton.html('Save');
-        editButton.unbind('click');
-        editButton.bind('click', function() { savePostBody(postId); });
-
-        // Showing the "Cancel" button
-        setButtonVisibility($('#post-body-cancel-button-' + postId), 'show');
+        editPostBodyStarted(postId);
      });
-}
-
-function editPostBodyFinished(postId) {
-    // Should be called when editing the post body has been finished.
-
-    // Changing the "Save" button to "Edit"
-    var editButton = $('#post-body-edit-button-' + postId);
-    editButton.html('Edit');
-    editButton.unbind('click');
-    editButton.bind('click', function() { editPostBody(postId); });
-
-    // Hiding the "Cancel" button
-    setButtonVisibility($('#post-body-cancel-button-' + postId), 'hide');
 }
 
 function savePostBody(postId) {
@@ -359,6 +358,10 @@ $(document).ready(function() {
 
         $('#post-body-edit-button-' + postId).bind('click', function() {
             editPostBody(postId);
+        });
+
+        $('#post-body-save-button-' + postId).bind('click', function() {
+            savePostBody(postId);
         });
 
         $('#post-body-cancel-button-' + postId).bind('click', function() {

@@ -224,6 +224,11 @@ class PostPageGenerator(WebGenerator):
                      class_='button post-body-button',
                      id='post-body-edit-button-' + post_id),
                  self.enclose(
+                     'Save',
+                     class_='button post-body-button',
+                     id='post-body-save-button-' + post_id,
+                     attributes='style="display: none;"'),
+                 self.enclose(
                      'Cancel',
                      class_='button post-body-button',
                      id='post-body-cancel-button-' + post_id,
