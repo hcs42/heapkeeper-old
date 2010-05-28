@@ -127,9 +127,16 @@ class PostPageGenerator(WebGenerator):
     def print_post_page(self, post_id):
         self.set_post_id(post_id)
 
+        # Post link example: /#post-summary-my_heap-12
+        heap_id, post_index = self._post.post_id()
+        post_link = ('/#post-summary-' + heap_id + '-' + post_index)
+
         buttons = \
             self.enclose(
                 (self.enclose(
+                     self.print_link(post_link, 'Back to the index'),
+                     class_='button post-summary-button'),
+                 self.enclose(
                      'Hide all post bodies',
                      class_='button global-button',
                      id='hide-all-post-bodies'),
@@ -180,19 +187,12 @@ class PostPageGenerator(WebGenerator):
         **Returns:** |HtmlText|
         """
 
-        # Post link example: /#post_hh/12
-        heap_id, post_index = postitem.post.post_id()
-        post_link = ('/#post-summary-' + heap_id + '-' + post_index)
-
         heap_id, post_index = postitem.post.post_id()
         post_id = heap_id + '-' + post_index
         id = 'post-body-show-button-' + post_id
 
         return \
             (self.enclose(
-                 self.print_link(post_link, 'Back to the index'),
-                 class_='button post-summary-button'),
-             self.enclose(
                  'Show body',
                  class_='button post-summary-button',
                  id=id,
