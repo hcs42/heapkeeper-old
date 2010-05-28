@@ -137,17 +137,18 @@ class PostPageGenerator(WebGenerator):
             self.enclose(
                 (self.enclose(
                      self.print_link(post_link, 'Back to the index'),
-                     class_='button post-summary-button'),
+                     class_='button post-summary-button'), '\n',
                  self.enclose(
                      'Hide all post bodies',
                      class_='button global-button',
-                     id='hide-all-post-bodies'),
+                     id='hide-all-post-bodies'), '\n',
                  self.enclose(
                      'Show all post bodies',
                      class_='button global-button',
-                     id='show-all-post-bodies')),
+                     id='show-all-post-bodies'), '\n'),
                 class_='global-buttons',
-                tag='div')
+                tag='div',
+                newlines=True)
 
         js_files = ('/external/jquery.js',
                     '/external/json2.js',
@@ -220,27 +221,28 @@ class PostPageGenerator(WebGenerator):
                 (self.enclose(
                      'Hide',
                      class_='button post-body-button',
-                     id='post-body-hide-button-' + post_id),
+                     id='post-body-hide-button-' + post_id), '\n',
                  self.enclose(
                      'Edit',
                      class_='button post-body-button',
-                     id='post-body-edit-button-' + post_id),
+                     id='post-body-edit-button-' + post_id), '\n',
                  self.enclose(
                      'Edit raw post',
                      class_='button post-body-button',
-                     id='post-raw-edit-button-' + post_id),
+                     id='post-raw-edit-button-' + post_id), '\n',
                  self.enclose(
                      'Save',
                      class_='button post-body-button',
                      id='post-body-save-button-' + post_id,
-                     attributes='style="display: none;"'),
+                     attributes='style="display: none;"'), '\n',
                  self.enclose(
                      'Cancel',
                      class_='button post-body-button',
                      id='post-body-cancel-button-' + post_id,
-                     attributes='style="display: none;"')),
+                     attributes='style="display: none;"'), '\n'),
                 class_='post-body-buttons',
-                tag='div')
+                tag='div',
+                newlines=True)
 
         return self.enclose(
                    (buttons, body),
