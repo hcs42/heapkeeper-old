@@ -595,8 +595,14 @@ class Generator(object):
                         (self.escape(child.post_id_str())))
                 child_printed = hkutils.textstruct_to_str(child_printed)
                 children_printed.append(child_printed)
-            return ('Children: ',
-                    ', '.join(children_printed))
+
+            if children_printed == []:
+                children_printed_str = '-'
+            else:
+                children_printed_str = ', '.join(children_printed)
+
+            return ('Children: ', children_printed_str)
+
         return ''
 
     # TODO: test
