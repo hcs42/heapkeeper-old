@@ -56,8 +56,10 @@ urls = (
     r'/(static/[A-Za-z0-9_.-]+)', 'Fetch',
     r'/posts/(.*)', 'Post',
     r'/raw-post-bodies/(.*)', 'RawPostBody',
+    r'/raw-post-text/(.*)', 'RawPostText',
     r'/set-post-body/(.*)', 'SetPostBody',
     r'/get-post-body/(.*)', 'GetPostBody',
+    r'/set-raw-post/(.*)', 'SetRawPost',
     )
 
 log = []
@@ -224,6 +226,10 @@ class PostPageGenerator(WebGenerator):
                      class_='button post-body-button',
                      id='post-body-edit-button-' + post_id),
                  self.enclose(
+                     'Edit raw post',
+                     class_='button post-body-button',
+                     id='post-raw-edit-button-' + post_id),
+                 self.enclose(
                      'Save',
                      class_='button post-body-button',
                      id='post-body-save-button-' + post_id,
@@ -339,6 +345,25 @@ class RawPostBody(WebpyServer):
         return content
 
 
+class RawPostText(WebpyServer):
+    """Serves raw post text.
+
+    Served URL: ``/raw-post-text/<heap>/<post index>``"""
+
+    def __init__(self):
+        WebpyServer.__init__(self)
+
+    def GET(self, name):
+        webpy.header('Content-type', 'text/plain')
+        webpy.header('Transfer-Encoding', 'chunked')
+        post_id = hkutils.uutf8(name)
+        post = self._postdb.post(post_id)
+        if post is None:
+            return 'No such post: "%s"' % (post_id,)
+        content = post.write_str()
+        return content
+
+
 class AjaxServer(WebpyServer):
     """Base class for classes that serve AJAX requests.
 
@@ -425,6 +450,62 @@ class GetPostBody(AjaxServer):
         new_body_html = hkutils.textstruct_to_str(new_body_html)
 
         return {'body_html': new_body_html}
+
+
+class SetRawPost(AjaxServer):
+    """Sets the raw content of the given post.
+
+    Served URL: ``/set-raw-post/<heap>/<post index>``"""
+
+    def __init__(self):
+        AjaxServer.__init__(self)
+
+    def execute(self, post_id, args):
+        """Sets the raw content of the given post.
+
+        **Argument:**
+
+        - `args` ({'new_post_text': str})
+
+        **Returns:** {'error': str} | {'new_post_summary': str}
+        """
+
+        post = self._postdb.post(post_id)
+        if post is None:
+            return {'error': 'No such post: "%s"' % (post_id,)}
+
+        new_post_text = args.get('new_post_text')
+        if new_post_text is None:
+            return {'error': 'No post text specified'}
+        else:
+            new_post_text = hkutils.uutf8(new_post_text)
+
+        old_parent = post.parent()
+
+        # Catch "Exception" # pylint: disable-msg=W0703
+        try:
+            post.read_str(new_post_text)
+        except Exception, e:
+            return {'error':
+                    'Exception was raised while parsing the post:\n' + str(e)}
+
+        if post.parent() != old_parent:
+            major_change = True
+        else:
+            major_change = False
+
+        # Generating the HTML for the new post text
+        generator = PostPageGenerator(self._postdb)
+        generator.set_post_id(post.post_id())
+        postitem = generator.augment_postitem(hklib.PostItem('main', post))
+        postitem.print_post_body = True
+        postitem.print_parent_post_id = True
+        postitem.print_children_post_id = True
+        new_post_summary = generator.print_postitems([postitem])
+        new_post_summary = hkutils.textstruct_to_str(new_post_summary)
+
+        return {'new_post_summary': new_post_summary,
+                'major_change': major_change}
 
 
 class Fetch(object):
