@@ -119,16 +119,6 @@ function getPostIds() {
     });
 }
 
-function isPostBodyVisible(postId) {
-    // Returns whether the post body is visible.
-    //
-    // Argument:
-    //
-    // - postId (PostId)
-
-    return ($('#post-body-container-' + postId).css('display') != 'none');
-}
-
 function hidePostBody(postId) {
     // Hides a post body and shows the "Show body" button.
     //
@@ -152,20 +142,6 @@ function showPostBody(postId) {
 }
 
 // High level funtions
-
-function togglePostBodyVisibility(postId) {
-    // Toggles the visibility of a post's body.
-    //
-    // Argument:
-    //
-    // - postId (str)
-
-    if (isPostBodyVisible(postId)) {
-        hidePostBody(postId);
-    } else {
-        showPostBody(postId);
-    }
-}
 
 function hideAllPostBodies() {
     // Turns off the visibility for all visible post bodies.
@@ -379,11 +355,11 @@ function addEventHandlersToPostSummary(postId) {
     // - postId(PostId)
 
     $('#post-body-hide-button-' + postId).bind('click', function() {
-        togglePostBodyVisibility(postId);
+        hidePostBody(postId);
     });
 
     $('#post-body-show-button-' + postId).bind('click', function() {
-        togglePostBodyVisibility(postId);
+        showPostBody(postId);
     });
 
     $('#post-body-edit-button-' + postId).bind('click', function() {
