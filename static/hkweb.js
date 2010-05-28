@@ -201,7 +201,7 @@ function setPostBodyRequest(postId, newPostBodyText, callback) {
 }
 
 function editPostBody(postId) {
-    // Lets the user edit the post of a post.
+    // Lets the user edit the body of a post.
     //
     // The post-body-content box is replaced with a textarea that contains
     // the post body.
