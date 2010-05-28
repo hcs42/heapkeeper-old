@@ -1019,7 +1019,7 @@ class Post(object):
     def write(self, f, force_print=set()):
         """Writes the post to a stream.
 
-        **Arguments**:
+        **Arguments:**
 
         - `f` (|Writable|) -- The output stream.
         - `force_print` (set(str)) -- The attributes in this set will be
