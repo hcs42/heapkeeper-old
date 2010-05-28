@@ -162,9 +162,12 @@ function showAllPostBodies() {
 
 ///// Post body editing /////
 
+// Keys: post ids that are being edited.
+// Values: mode of editing: either 'body' if the body is edited or 'raw' if the
+// raw post text is edited.
 var editState = {}
 
-function getRawPostBodyRequest(postId, mode, callback) {
+function getRawPostRequest(postId, mode, callback) {
     // Gets the raw body of the given post and executes a callback function with
     // it.
     //
@@ -182,13 +185,13 @@ function getRawPostBodyRequest(postId, mode, callback) {
     }
 }
 
-function setPostBodyRequest(postId, newPostBodyText, mode, callback) {
+function setPostContentRequest(postId, newPostText, mode, callback) {
     // Sets the body of the given post in a raw format.
     //
     // Arguments:
     //
     // - postId (PostId)
-    // - newPostBodyText(str)
+    // - newPostText(str)
     // - mode(str) -- Either 'body' or 'raw'.
     // - callback (fun(result)) -- Function to be called after we set the post
     //   body. `result` is the information returned by the server.
@@ -196,12 +199,12 @@ function setPostBodyRequest(postId, newPostBodyText, mode, callback) {
     if (mode == 'body') {
         ajaxQuery(
             "/set-post-body/" + postIdToPostIdStr(postId),
-            {'new_body_text': newPostBodyText},
+            {'new_body_text': newPostText},
             callback);
     } else if (mode == 'raw') {
         ajaxQuery(
             "/set-raw-post/" + postIdToPostIdStr(postId),
-            {'new_post_text': newPostBodyText},
+            {'new_post_text': newPostText},
             callback);
     }
 }
@@ -221,7 +224,7 @@ function getPostBodyRequest(postId, callback) {
         callback);
 }
 
-function editPostBodyStarted(postId) {
+function editPostStarted(postId) {
     // Should be called when editing the post body has been started.
     //
     setButtonVisibility($('#post-body-edit-button-' + postId), 'hide');
@@ -230,7 +233,7 @@ function editPostBodyStarted(postId) {
     setButtonVisibility($('#post-body-cancel-button-' + postId), 'show');
 }
 
-function editPostBodyFinished(postId) {
+function editPostFinished(postId) {
     // Should be called when editing the post body has been finished.
 
     setButtonVisibility($('#post-body-edit-button-' + postId), 'show');
@@ -241,7 +244,7 @@ function editPostBodyFinished(postId) {
     delete editState[postId]
 }
 
-function editPostBody(postId, mode) {
+function editPost(postId, mode) {
     // Lets the user edit the body of a post.
     //
     // The post-body-content box is replaced with a textarea that contains
@@ -252,7 +255,7 @@ function editPostBody(postId, mode) {
     // - postId (PostId)
     // - mode(str) -- Either 'body' or 'raw'.
 
-    getRawPostBodyRequest(postId, mode, function(postBodyText) {
+    getRawPostRequest(postId, mode, function(postText) {
         var postBodyContainer = $('#post-body-container-' + postId);
         var postBodyContentNode = $('.post-body-content', postBodyContainer);
 
@@ -267,14 +270,14 @@ function editPostBody(postId, mode) {
         // Adding the text to the textarea
         var textArea = $('textarea', postBodyContainer);
         textArea.attr('class', 'post-body-content');
-        textArea.val(postBodyText);
+        textArea.val(postText);
         textArea.focus();
 
-        editPostBodyStarted(postId);
+        editPostStarted(postId);
      });
 }
 
-function savePostBody(postId) {
+function savePost(postId) {
     // Saves the contents of the post's textarea as the new post body.
     //
     // The textarea is replaced with the post-body-content box that contains
@@ -286,10 +289,10 @@ function savePostBody(postId) {
 
     var postBodyContainer = $('#post-body-container-' + postId);
     var textArea = $('textarea', postBodyContainer);
-    var newPostBodyText = textArea.val();
+    var newPostText = textArea.val();
     var mode = editState[postId]
 
-    setPostBodyRequest(postId, newPostBodyText, mode, function(result) {
+    setPostContentRequest(postId, newPostText, mode, function(result) {
 
         if (result.error) {
             window.alert('Error occured:\n' + result.error);
@@ -312,11 +315,11 @@ function savePostBody(postId) {
             }
         }
 
-        editPostBodyFinished(postId);
+        editPostFinished(postId);
      });
 }
 
-function cancelEditPostBody(postId) {
+function cancelEditPost(postId) {
     // Saves the contents of the post's textarea as the new post body.
     //
     // The textarea is replaced with the post-body-content box that contains
@@ -340,7 +343,7 @@ function cancelEditPostBody(postId) {
         // box
         textArea.replaceWith(result.body_html);
 
-        editPostBodyFinished(postId);
+        editPostFinished(postId);
      });
 }
 
@@ -363,19 +366,19 @@ function addEventHandlersToPostSummary(postId) {
     });
 
     $('#post-body-edit-button-' + postId).bind('click', function() {
-        editPostBody(postId, 'body');
+        editPost(postId, 'body');
     });
 
     $('#post-raw-edit-button-' + postId).bind('click', function() {
-        editPostBody(postId, 'raw');
+        editPost(postId, 'raw');
     });
 
     $('#post-body-save-button-' + postId).bind('click', function() {
-        savePostBody(postId);
+        savePost(postId);
     });
 
     $('#post-body-cancel-button-' + postId).bind('click', function() {
-        cancelEditPostBody(postId);
+        cancelEditPost(postId);
     });
 }
 
