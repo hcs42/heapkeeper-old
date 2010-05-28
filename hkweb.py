@@ -57,6 +57,7 @@ urls = (
     r'/posts/(.*)', 'Post',
     r'/raw-post-bodies/(.*)', 'RawPostBody',
     r'/set-post-body/(.*)', 'SetPostBody',
+    r'/get-post-body/(.*)', 'GetPostBody',
     )
 
 log = []
@@ -221,7 +222,12 @@ class PostPageGenerator(WebGenerator):
                  self.enclose(
                      'Edit',
                      class_='button post-body-button',
-                     id='post-body-edit-button-' + post_id)),
+                     id='post-body-edit-button-' + post_id),
+                 self.enclose(
+                     'Cancel',
+                     class_='button post-body-button',
+                     id='post-body-cancel-button-' + post_id,
+                     attributes='style="display: none;"')),
                 class_='post-body-buttons',
                 tag='div')
 
@@ -383,6 +389,37 @@ class SetPostBody(AjaxServer):
         new_body_html = hkutils.textstruct_to_str(new_body_html)
 
         return {'new_body_html': new_body_html}
+
+
+class GetPostBody(AjaxServer):
+    """Gets the body of the given post.
+
+    Served URL: ``/get-post-body/<heap>/<post index>``"""
+
+    def __init__(self):
+        AjaxServer.__init__(self)
+
+    def execute(self, post_id, args):
+        # Unused argument 'postitem' # pylint: disable-msg=W0613
+        """Gets the post body.
+
+        **Argument:**
+
+        - `args` ({})
+
+        **Returns:** {'error': str} | {'body_html': str}
+        """
+
+        post = self._postdb.post(post_id)
+        if post is None:
+            return {'error': 'No such post: "%s"' % (post_id,)}
+
+        # Generating the HTML for the new body
+        generator = PostBodyGenerator(self._postdb)
+        new_body_html = generator.print_post_body(post_id)
+        new_body_html = hkutils.textstruct_to_str(new_body_html)
+
+        return {'body_html': new_body_html}
 
 
 class Fetch(object):

@@ -211,6 +211,21 @@ function setPostBodyRequest(postId, newPostBodyText, callback) {
         callback);
 }
 
+function getPostBodyRequest(postId, callback) {
+    // Gets the body of the given post.
+    //
+    // Arguments:
+    //
+    // - postId (PostId)
+    // - callback (fun(result)) -- Function to be called with the post body.
+    //   `result` is the information returned by the server.
+
+    ajaxQuery(
+        "/get-post-body/" + postIdToPostIdStr(postId),
+        {},
+        callback);
+}
+
 function editPostBody(postId) {
     // Lets the user edit the body of a post.
     //
@@ -242,7 +257,23 @@ function editPostBody(postId) {
         editButton.html('Save');
         editButton.unbind('click');
         editButton.bind('click', function() { savePostBody(postId); });
+
+        // Showing the "Cancel" button
+        setButtonVisibility($('#post-body-cancel-button-' + postId), 'show');
      });
+}
+
+function editPostBodyFinished(postId) {
+    // Should be called when editing the post body has been finished.
+
+    // Changing the "Save" button to "Edit"
+    var editButton = $('#post-body-edit-button-' + postId);
+    editButton.html('Edit');
+    editButton.unbind('click');
+    editButton.bind('click', function() { editPostBody(postId); });
+
+    // Hiding the "Cancel" button
+    setButtonVisibility($('#post-body-cancel-button-' + postId), 'hide');
 }
 
 function savePostBody(postId) {
@@ -270,11 +301,35 @@ function savePostBody(postId) {
         // box
         textArea.replaceWith(result.new_body_html);
 
-        // Changing the "Save" button to "Edit"
-        var editButton = $('#post-body-edit-button-' + postId);
-        editButton.html('Edit');
-        editButton.unbind('click');
-        editButton.bind('click', function() { editPostBody(postId); });
+        editPostBodyFinished(postId);
+     });
+}
+
+function cancelEditPostBody(postId) {
+    // Saves the contents of the post's textarea as the new post body.
+    //
+    // The textarea is replaced with the post-body-content box that contains
+    // the new body.
+    //
+    // Argument:
+    //
+    // - postId (PostId)
+
+    var postBodyContainer = $('#post-body-container-' + postId);
+    var textArea = $('textarea', postBodyContainer);
+
+    getPostBodyRequest(postId, function(result) {
+
+        if (result.error) {
+            window.alert('Error occured:\n' + result.error);
+            return;
+        }
+
+        // Replacing the textArea with the received post-body-container
+        // box
+        textArea.replaceWith(result.body_html);
+
+        editPostBodyFinished(postId);
      });
 }
 
@@ -304,6 +359,10 @@ $(document).ready(function() {
 
         $('#post-body-edit-button-' + postId).bind('click', function() {
             editPostBody(postId);
+        });
+
+        $('#post-body-cancel-button-' + postId).bind('click', function() {
+            cancelEditPostBody(postId);
         });
 
     });
