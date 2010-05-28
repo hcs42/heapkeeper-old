@@ -190,6 +190,53 @@ the two repositories will be completely separate.
 
 __ http://github.com/hcs42/hk-dev-utils
 
+Used libraries
+--------------
+
+web.py
+^^^^^^
+
+`web.py`__ is a simple but powerful Python web framework.
+
+It is not bundled with Heapkeeper. Unix users can download it with the
+following command::
+
+    $ sudo easy_install 'web.py==0.34'
+
+__ http://webpy.org/
+
+.. _jquery:
+
+jQuery
+^^^^^^
+
+jQuery__ is a JavaScript library that makes it easier to do DOM manipulation,
+event handling, AJAX etc. jQuery is included in Heapkeeper.
+
+__ http://jquery.com/
+
+.. _json2:
+
+json2.js
+^^^^^^^^
+
+`json2`__ is a JSON__ parser/stringifier. json2 is included in Heapkeeper.
+
+__ http://www.json.org/js.html
+__ http://www.json.org/
+
+.. _jsmin:
+
+jsmin
+^^^^^
+
+jsmin__ is a JavaScript minimizer implemented in multiple languages, e.g. in
+Python.
+
+__ http://javascript.crockford.com/jsmin.html
+
+.. _webpy:
+
 Communication
 -------------
 
