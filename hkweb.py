@@ -113,6 +113,8 @@ class PostPageGenerator(WebGenerator):
         post = self._postdb.post(post_id)
         if post is None:
             return 'No such post: "%s"' % (post_id,)
+        if post.is_deleted():
+            return 'The post was deleted: "%s"' % (post_id,)
         root = self._postdb.root(post)
         if root is None:
             return 'The post is in a cycle: "%s"' % (post_id,)
@@ -127,7 +129,9 @@ class PostPageGenerator(WebGenerator):
         self._post = post
 
     def print_post_page(self, post_id):
-        self.set_post_id(post_id)
+        result = self.set_post_id(post_id)
+        if result is not None:
+            return result
 
         # Post link example: /#post-summary-my_heap-12
         heap_id, post_index = self._post.post_id()
