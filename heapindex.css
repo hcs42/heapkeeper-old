@@ -64,7 +64,6 @@ a
     margin: 0;
     padding: 0.5em;
     border-bottom: 10px solid #080;
-    font-family: Arial, sans-serif;
     color: #006;
     background-color: #cc9;
 }
@@ -214,7 +213,7 @@ td
     background-color: #fff;
     border: 1px solid #080;
     color: #000;
-    font-family: Courier, monospace;
+    font-family: monospace;
     padding: 0.5em 0.5em 0.5em 0.5em;
 }
 
