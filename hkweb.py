@@ -545,4 +545,4 @@ def start(port=8080):
     options = hkshell.options
     options.web_server = Server(port)
     options.web_server.start()
-    hklib.log('Web service started.')
+    hkutils.log('Web service started.')
