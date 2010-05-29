@@ -347,6 +347,31 @@ function cancelEditPost(postId) {
      });
 }
 
+function confirmExit() {
+    // Asks confirmation before leaving the page if there are any post being
+    // edited.
+
+    var needToConfirm = false;
+    var postIdsStr = '';
+    var separator = '';
+
+    $.each(editState, function(postId, state) {
+
+        postIdsStr = postIdsStr + separator + postIdToPostIdStr(postId);
+
+        // This is the first postId
+        if (!needToConfirm) {
+            separator = ', ';
+            needToConfirm = true;
+        }
+    });
+
+    if (needToConfirm) {
+        return 'You have attempted to leave this page, but there are posts ' +
+               'being edited: ' + postIdsStr;
+    }
+}
+
 
 ///// Adding event handlers /////
 
@@ -397,4 +422,6 @@ $(document).ready(function() {
         var postId = this;
         addEventHandlersToPostSummary(postId);
     });
+
+    window.onbeforeunload = confirmExit;
 });
