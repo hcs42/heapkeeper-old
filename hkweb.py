@@ -74,6 +74,7 @@ class WebGenerator(hkgen.Generator):
     def __init__(self, postdb):
         hkgen.Generator.__init__(self, postdb)
         self.options.cssfiles.append("static/hkweb.css")
+        self.options.favicon = '/static/images/heap.png'
 
     def print_html_head_content(self):
         """Prints the content in the HTML header.
@@ -81,10 +82,15 @@ class WebGenerator(hkgen.Generator):
         **Returns:** |HtmlText|
         """
 
-        return \
+        stylesheets = \
             ['    <link rel="stylesheet" href="/%s" type="text/css" />\n' %
              (css,)
              for css in self.options.cssfiles]
+
+        favicon = ('    <link rel="shortcut icon" href="%s">\n' %
+                   (self.options.favicon))
+
+        return (stylesheets, favicon)
 
     def print_postitem_link(self, postitem):
         """Prints the thread link of the post item in hkweb-compatible form."""
