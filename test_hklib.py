@@ -588,7 +588,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         check_modified()
 
         p0.set_body('\n newbody \n \n')
-        self.assertEqual(p0.body(), 'newbody\n')
+        self.assertEqual(p0.body(), '\n newbody\n')
         check_modified()
 
         p0.delete()

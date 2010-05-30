@@ -1003,7 +1003,7 @@ class Post(object):
         - `body` (str)
         """
 
-        self._body = body.strip() + '\n'
+        self._body = body.rstrip() + '\n'
         self.touch()
 
     def body_contains(self, regexp):
