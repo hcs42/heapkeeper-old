@@ -1678,7 +1678,7 @@ class PostDB(object):
         """
 
         self._html_dir = html_dir
-        if not os.path.exists(html_dir):
+        if (html_dir is not None) and (not os.path.exists(html_dir)):
             hkutils.log('Warning: HTML directory does not exists: "%s"' %
                         (html_dir,))
             os.mkdir(html_dir)
@@ -2505,7 +2505,7 @@ class PostDB(object):
     def html_dir(self):
         """Return the directory in which the generator HTML files are stored.
 
-        **Returns:** str
+        **Returns:** str | ``None``
         """
 
         return self._html_dir
@@ -3357,12 +3357,12 @@ def unify_config(config):
 
     Format 3::
 
-        {'paths': {'html_dir': str},
-         'heaps': {HeapName: {'path': str,
+        {'heaps': {HeapName: {'path': str,
                               ['id': str,]
                               ['name': str,]
                               [Server,]
                               ['nicknames': Nicknames]}},
+         ['paths': {['html_dir': str]}],
          [Server,]
          ['nicknames': Nicknames]}
 
@@ -3379,7 +3379,7 @@ def unify_config(config):
 
     Unified format::
 
-        {'paths': {'html_dir': str},
+        {'paths': {'html_dir': (str | None)},
          'heaps': {HeapName: {'path': str,
                               'id': str,
                               'name': str,
@@ -3408,7 +3408,7 @@ def unify_config(config):
     **Returns:** |ConfigDict|
     """
 
-    path = config['paths']
+    path = config.get('paths', [])
     if 'heaps' in path:
         return unify_format_2(config)
     elif 'mail' in path:
@@ -3573,7 +3573,9 @@ def unify_format_3(config):
     **Returns:** |ConfigDict|
     """
 
-    assert isinstance(config['paths']['html_dir'], str)
+    # paths/html_dir
+    config.setdefault('paths', {})
+    config['paths'].setdefault('html_dir', None)
 
     # heaps/<heap name>
     for heap_name, heap_dict in config['heaps'].items():

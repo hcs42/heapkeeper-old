@@ -703,7 +703,10 @@ class PostPageListener(object):
                 # a file is missing; hopefully the HTML
                 return True
 
-        return self._postdb.all().collect(outdated)
+        if self._postdb.html_dir() is None:
+            return self._postdb.postset([])
+        else:
+            return self._postdb.all().collect(outdated)
 
     def close(self):
         """Closes the |PostPageListener|.

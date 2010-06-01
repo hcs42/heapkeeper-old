@@ -1384,11 +1384,19 @@ class Generator(object):
     # TODO test, doc
     def write_page(self, filename, html_body):
 
+        html_dir = self._postdb.html_dir()
+
+        if html_dir is None:
+            raise hkutils.HkException(
+                      'The "paths/html_dir" configuration item is not set in '
+                      'the configuration file. If you wish to generate static '
+                      'HTML pages, please set it.')
+
         self.settle_files_to_copy()
 
         # if the path is relative, put it into html_dir
         if os.path.abspath(filename) != filename:
-            filename = os.path.join(self._postdb.html_dir(), filename)
+            filename = os.path.join(html_dir, filename)
 
         # creating the directory
         dir = os.path.dirname(filename)
