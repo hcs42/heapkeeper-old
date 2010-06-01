@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
-# Copyright (C) 2009 Csaba Hoch
+# Copyright (C) 2009-2010 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
 """Tests the hkutils module.
@@ -220,6 +220,32 @@ class Test__logging(unittest.TestCase):
 class Test__Misc(unittest.TestCase):
 
     """Tests the miscellaneous functions in |hkutils|."""
+
+    def test_utf8(self):
+        """Tests the following functions:
+
+        - :func:`hkutils.utf8`
+        - :func:`hkutils.uutf8`
+        """
+
+        # The Hungarian "small u with double acute accent" (u") character is
+        # used for the tests.
+        #
+        # - latin2 code: \xfb
+        # - utf-8 code: \xc5\xb1
+
+        # Converting from latin2 to utf-8
+        self.assertEqual(hkutils.utf8('\xfb', 'latin2'), '\xc5\xb1')
+
+        # Converting from utf-8 to utf-8
+        self.assertEqual(hkutils.utf8('\xc5\xb1', 'utf-8'), '\xc5\xb1')
+
+        # When the encoding is not specified, it is assumed to be already in
+        # UTF-8
+        self.assertEqual(hkutils.utf8('\xc5\xb1', None), '\xc5\xb1')
+
+        # Converting a unicode object to utf-8
+        self.assertEqual(hkutils.uutf8(u'\u0171'), '\xc5\xb1')
 
     def test_calc_timestamp(self):
 

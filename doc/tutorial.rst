@@ -132,10 +132,9 @@ Start |hkshell|:
 
     >>>
 
-The output informs us that |hkshell| did not find the customization module
-(``hkrc``), but that is all right. The last line indicates that we got a Python
-prompt where we can type any Python statement. Actually, |hkshell| commands are
-Python functions imported into the global namespace.
+The ``>>>`` sign indicates that we got a Python prompt where we can type any
+Python statement. Actually, |hkshell| commands are Python functions imported
+into the global namespace.
 
 Let's list all the posts we have (of course we don't have any posts yet)::
 
@@ -326,12 +325,9 @@ have a Unix shell, you can create the post files in the same way we created
 Generating HTML pages
 ---------------------
 
-The posts and the threads can be visualized in HTML using the |g| command (it
-stands for "generate")::
+The posts and the threads can be visualized in HTML by starting a webserver::
 
     $ python hk.py
-    Importing hkrc...
-    Module not found: "hkrc"
 
     >>> g()
     Generating index.html...

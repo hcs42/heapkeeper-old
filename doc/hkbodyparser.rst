@@ -30,7 +30,9 @@ Parser functions
 ================
 
 .. autofunction:: segment_type_is
+.. autofunction:: segment_condition
 .. autofunction:: ensure_similar
-.. autofunction:: parse_text_line_part
+.. autofunction:: calc_quote_level
+.. autofunction:: parse_line_part
 .. autofunction:: parse_line
 .. autofunction:: parse

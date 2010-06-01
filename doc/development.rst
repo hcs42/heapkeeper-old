@@ -101,7 +101,7 @@ because there are some warnings we don't care about (or at least not now).
 
 Installation procedure for Unix users::
 
-    $ sudo easy_install 'pylint==0.18'
+    $ sudo easy_install 'pylint==0.19'
 
 It is recommended to use the ``hk_pylint`` wrapper (part of
 :ref:`hk-dev-utils`) to execute pylint on Heapkeeper::
@@ -190,12 +190,70 @@ the two repositories will be completely separate.
 
 __ http://github.com/hcs42/hk-dev-utils
 
+Used libraries
+--------------
+
+web.py
+^^^^^^
+
+`web.py`__ is a simple but powerful Python web framework.
+
+It is not bundled with Heapkeeper. Unix users can download it with the
+following command::
+
+    $ sudo easy_install 'web.py==0.34'
+
+__ http://webpy.org/
+
+.. _jquery:
+
+jQuery
+^^^^^^
+
+jQuery__ is a JavaScript library that makes it easier to do DOM manipulation,
+event handling, AJAX etc. jQuery is included in Heapkeeper.
+
+__ http://jquery.com/
+
+.. _json2:
+
+json2.js
+^^^^^^^^
+
+`json2`__ is a JSON__ parser/stringifier. json2 is included in Heapkeeper.
+
+__ http://www.json.org/js.html
+__ http://www.json.org/
+
+.. _jsmin:
+
+jsmin
+^^^^^
+
+jsmin__ is a JavaScript minimizer implemented in multiple languages, e.g. in
+Python.
+
+__ http://javascript.crockford.com/jsmin.html
+
+.. _webpy:
+
 Communication
 -------------
 
-We use a heap to communicate. It is called the Heapkeeper heap. It will become
-public when we Heapkeeper supports handling several heaps. Until then, you
-can contact us via email as described on the :doc:`index page <index-main>`.
+.. _heapkeeper_heap:
+
+Communication: Heapkeeper Heap
+------------------------------
+
+We use a heap to communicate. That heap is called the Heapkeeper Heap. The
+e-mail address of the traditional mailing list behind it is
+:email:`heapkeeper-heap@googlegroups.com`, so send an email to this address if
+you want to send a post to the Heapkeeper Heap. The post database of Heapkeeper
+Heap can be accessed here__. The generated HTML pages can be viewed here__.
+Check it out to see an example of Heapkeeper in action.
+
+__ http://github.com/hcs42/heapkeeper-heap
+__ http://heapkeeper-heap.github.com
 
 Workflow
 --------
@@ -343,8 +401,8 @@ Heapkeeper, it is something like ``0.3``.
 
 #. Execute the package maker script and push the package to the homepage::
 
-    $ scripts/make_package
-    $ scripts/pushrelease hcs@heapkeeper.org
+    $ hk-dev-utils/make_package
+    $ hk-dev-utils/pushrelease hcs@heapkeeper.org
 
 #. Download the uploaded package and perform the steps in the :doc:`tutorial`.
 
@@ -354,21 +412,20 @@ Heapkeeper, it is something like ``0.3``.
 
 #. Send an email to the Heapkeeper Heap. Let the others review the commits.
 
-#. If everybody is satisfied, tag the commit, push the tag and merge the
-   master::
+#. If everybody is satisfied, tag the commit, push the tag::
 
     $ git tag v<version>
     $ git push origin v<version>
-    $ git checkout master
-    $ git merge v<version>
-    $ git push origin master
-    $ git push origin :_v<version>
 
 #. Push the new documentation to the home page::
 
-    $ scripts/pushdoc hcs@heapkeeper.org
+    $ cd doc; make clean && make html; cd ..
+    $ hk-dev-utils/pushdoc hcs@heapkeeper.org
 
-#. Send an email to the Heapkeeper Heap. Make an announcement on Freshmeat__.
+#. Check out ``_master`` and fast forward it to the new release::
+
+    $ git checkout _master
+    $ git merge v<version>
 
 #. Change the new version string in the following files to ``<version>+`` (e.g.
    ``0.3+``):
@@ -377,10 +434,21 @@ Heapkeeper, it is something like ``0.3``.
    - ``hklib.py``
    - ``doc/conf.py``
 
-   Use the following commit message::
+#. Commit it into ``_master``, and use the following commit message::
 
     Heapkeeper v<version>+ first commit
 
     [v<version>]
 
-__ http://freshmeat.net/
+#. Fast forward ``master`` to ``_master``. Push both branches, and remove
+   branch ``_v<version>``::
+
+    $ git checkout master
+    $ git merge _master
+    $ git checkout _master
+    $ git push origin master _master
+    $ git push origin :_v<version>
+
+#. Send an email to the Heapkeeper Heap. Make an announcement on Freshmeat__.
+
+__ http://freshmeat.net/projects/heapkeeper

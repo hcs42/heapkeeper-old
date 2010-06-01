@@ -96,6 +96,7 @@ class Generator(object):
         self.options.shortsubject = True
         self.options.shorttags = True
         self.options.localtime_fun = time.localtime
+        self.options.html_body_attributes = ''
 
     # Printing general HTML
 
@@ -175,10 +176,10 @@ class Generator(object):
 
         return ('<!-- ', content, ' -->')
 
-    # TODO test: comment and closing_comment args
+    # TODO test: comment, closing_comment args
     def enclose(self, content, tag='span', class_=None, newlines=False,
                 id=None, comment=None, closing_comment=False, title=None,
-                skip_empty=False):
+                skip_empty=False, attributes=''):
         """Encloses the given content into a tag.
 
         **Arguments:**
@@ -204,6 +205,7 @@ class Generator(object):
           list: e.g. the ``[[], []]`` text structure will be converted to an
           empty string, but this function will not consider it as empty. This
           is due to efficiency reasons.)
+        - `attributes` (str) -- Additional attributes.
 
         **Returns:** |HtmlText|
 
@@ -245,7 +247,14 @@ class Generator(object):
         else:
             closing_comment_str = ''
 
-        return ('<', tag, classstr, idstr, title_str, '>',
+        # If attributes is not empty and does not begin with a space character,
+        # we have to add one.
+        if (attributes == '') or (attributes[0] == ' '):
+            attributes_str = attributes
+        else:
+            attributes_str = ' ' + attributes
+
+        return ('<', tag, classstr, idstr, title_str, attributes_str, '>',
                 comment_str, newline,
                 content,
                 '</', tag, '>', comment_str, closing_comment_str, newline)
@@ -487,7 +496,7 @@ class Generator(object):
 
         return self.enclose(
                    self.print_postitem_threadlink_core(postitem),
-                   class_='button',
+                   class_='image-button',
                    skip_empty=True)
 
     # TODO: test
@@ -540,15 +549,11 @@ class Generator(object):
             if parent is not None:
                 parent_postitem = hklib.PostItem('main', parent)
                 return \
-                    self.print_link(
-                        self.print_postitem_link(parent_postitem),
-                        ('&lt;&uarr;',
-                         self.escape(parent.post_id_str()),
-                         '&gt;'))
-            else:
-                return self.escape('<root>')
-        else:
-            return ''
+                    ('Parent: ',
+                     self.print_link(
+                         self.print_postitem_link(parent_postitem),
+                         self.escape(parent.post_id_str())))
+        return ''
 
     # TODO: test
     def print_postitem_parent_post_id(self, postitem):
@@ -563,7 +568,57 @@ class Generator(object):
 
         return self.enclose(
                    self.print_postitem_parent_post_id_core(postitem),
-                   class_='parent',
+                   class_='container-button post-summary-button',
+                   skip_empty=True)
+
+    # TODO: test
+    def print_postitem_children_post_id_core(self, postitem):
+        """Prints the core of the post id list of the children of the post.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        if (hasattr(postitem, 'print_children_post_id') and
+            postitem.print_children_post_id):
+
+            children = self._postdb.children(postitem.post)
+            children_printed = []
+            for child in children:
+                child_postitem = hklib.PostItem('main', child)
+                child_printed = \
+                    self.print_link(
+                        self.print_postitem_link(child_postitem),
+                        (self.escape(child.post_id_str())))
+                child_printed = hkutils.textstruct_to_str(child_printed)
+                children_printed.append(child_printed)
+
+            if children_printed == []:
+                children_printed_str = '-'
+            else:
+                children_printed_str = ', '.join(children_printed)
+
+            return ('Children: ', children_printed_str)
+
+        return ''
+
+    # TODO: test
+    def print_postitem_children_post_id(self, postitem):
+        """Prints the post ids of the children of the post.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
+
+        return self.enclose(
+                   self.print_postitem_children_post_id_core(postitem),
+                   class_='container-button post-summary-button',
                    skip_empty=True)
 
     # TODO test
@@ -629,9 +684,8 @@ class Generator(object):
             body_html = []
             for segment in postitem.post.body_object().segments:
                 s = self.escape(segment.text)
-                if segment.type == 'meta':
-                    s = self.enclose(s, class_='meta-text')
-                elif segment.type == 'link' and segment.protocol == 'http':
+
+                if segment.type == 'link' and segment.protocol == 'http':
                     s = self.print_link(segment.text, s)
                 elif segment.type == 'heap_link':
                     heap_id = postitem.post.heap_id()
@@ -644,6 +698,13 @@ class Generator(object):
                         s = self.print_link(
                                 self.print_postitem_link(target_postitem),
                                 s)
+
+                if segment.is_meta:
+                    s = self.enclose(s, class_='meta-text')
+
+                if segment.type == 'raw':
+                    s = self.enclose(s, class_='raw-block')
+
                 if segment.quote_level != 0:
 
                     # The following code prints the name of the author before
@@ -665,9 +726,7 @@ class Generator(object):
                     s = self.enclose(s, class_='quote')
 
                 body_html.append(s)
-            return self.enclose(body_html,
-                                'pre',
-                                'postbody')
+            return body_html
         else:
             return ''
 
@@ -684,10 +743,9 @@ class Generator(object):
 
         return self.enclose(
                    self.print_postitem_body_core(postitem),
-                   'div',
-                   'body',
-                   skip_empty=True,
-                   newlines=True)
+                   'pre',
+                   'post-body-content',
+                   skip_empty=True)
 
     # TODO: test
     def print_postitem_link(self, postitem):
@@ -705,9 +763,10 @@ class Generator(object):
         if root is None:
             return ('../', post.htmlfilebasename())
         else:
+
+            heap_id, post_index = post.post_id()
             return (('../', self._postdb.root(post).htmlthreadbasename()),
-                    '#post_',
-                    post.post_id_str())
+                    '#post-summary-', heap_id, '-', post_index)
 
     # TODO: test
     def print_postitem_begin(self, postitem):
@@ -721,7 +780,7 @@ class Generator(object):
         """
 
         post_id_str = postitem.post.post_id_str()
-        return ('\n<div class="postbox">',
+        return ('\n<div class="post-box">',
                 self.print_comment('post ' + post_id_str), '\n')
 
     # TODO: test
@@ -757,8 +816,9 @@ class Generator(object):
             self.print_postitem_subject,
             self.print_postitem_tags,
             self.print_postitem_post_id,
-            self.print_postitem_parent_post_id,
             self.print_postitem_date,
+            self.print_postitem_parent_post_id,
+            self.print_postitem_children_post_id,
         )
 
     # TODO test
@@ -806,11 +866,14 @@ class Generator(object):
              for fun in self.get_postsummary_fields_main(postitem)]
 
         body = self.print_postitem_body(postitem)
-        post_id_str = postitem.post.post_id_str()
+        heap_id, post_index = postitem.post.post_id()
+        id = ('post-summary-', heap_id, '-', post_index)
+
         return self.enclose(
                    (post_summary_fields, body),
-                   class_='postsummary',
-                   id=('post_', post_id_str),
+                   tag='div',
+                   class_='post-summary',
+                   id=id,
                    newlines=True,
                    closing_comment=True)
 
@@ -852,7 +915,7 @@ class Generator(object):
 
         return self.enclose(
                    (post_summary_str, body_str),
-                   class_='postsummary',
+                   class_='post-summary',
                    newlines=True)
 
     # TODO: test
@@ -1168,6 +1231,10 @@ class Generator(object):
             itertools.imap(
                 self.set_postitem_attr('print_parent_post_id'),
                 xpostitems)
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_children_post_id'),
+                xpostitems)
         return self.print_postitems(xpostitems)
 
     def print_post_page(self, post):
@@ -1192,7 +1259,7 @@ class Generator(object):
 
     # Printing HTML headers and footers
 
-    # TODO: test
+    # TODO: remove this function after releasing 0.6
     def print_html_header_info(self):
         """Prints the header info.
 
@@ -1205,12 +1272,9 @@ class Generator(object):
         **Returns:** |HtmlText|
         """
 
-        now = datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-        info = ('Generated by Heapkeeper v',
-                hklib.heapkeeper_version,
-                ' on ',
-                now)
-        return (self.print_comment(info), '\n')
+        hkutils.log("WARNING: hkgen.Generator.print_html_header_info is "
+                    "deprecated.")
+        return ''
 
     # TODO: test
     def print_html_head_content(self):
@@ -1220,7 +1284,8 @@ class Generator(object):
         """
 
         return \
-            ['    <link rel=stylesheet href="%s" type="text/css">\n' % (css,)
+            ['    <link rel="stylesheet" href="%s" type="text/css" />\n' %
+             (css,)
              for css in self.options.cssfiles]
 
     # TODO: test
@@ -1231,10 +1296,12 @@ class Generator(object):
         """
 
         meta_stuff = ('<meta http-equiv="Content-Type" '
-                      'content="text/html;charset=utf-8">')
+                      'content="text/html;charset=utf-8" />')
 
-        content = [(self.print_html_header_info(),
-                    '<html>\n'
+        content = [('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"'
+                    ' "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
+                    '<html xmlns="http://www.w3.org/1999/xhtml"'
+                    ' xml:lang="en" lang="en">\n'
                     '  <head>\n'
                     '    ', meta_stuff, '\n',
                     '    <title>', self.options.html_title, '</title>\n')]
@@ -1248,7 +1315,7 @@ class Generator(object):
 
         content.append(
             ('  </head>\n'
-             '  <body>\n'
+             '  <body ' + self.options.html_body_attributes + '>\n'
              '    <h1 id="header">', header_title, '</h1>\n\n'))
 
         return content
@@ -1319,11 +1386,19 @@ class Generator(object):
     # TODO test, doc
     def write_page(self, filename, html_body):
 
+        html_dir = self._postdb.html_dir()
+
+        if html_dir is None:
+            raise hkutils.HkException(
+                      'The "paths/html_dir" configuration item is not set in '
+                      'the configuration file. If you wish to generate static '
+                      'HTML pages, please set it.')
+
         self.settle_files_to_copy()
 
         # if the path is relative, put it into html_dir
         if os.path.abspath(filename) != filename:
-            filename = os.path.join(self._postdb.html_dir(), filename)
+            filename = os.path.join(html_dir, filename)
 
         # creating the directory
         dir = os.path.dirname(filename)

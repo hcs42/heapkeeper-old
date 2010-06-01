@@ -199,12 +199,23 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose('', skip_empty=False),
             '<span></span>')
 
+        # Testing the `attribute` parameter
+        self.assertTextStructsAreEqual(
+            g.enclose('mystuff', attributes='a="b" c="d"'),
+            '<span a="b" c="d">mystuff</span>')
+
+        # Testing the `attribute` parameter: no additional space is added
+        self.assertTextStructsAreEqual(
+            g.enclose('mystuff', attributes=' a="b"'),
+            '<span a="b">mystuff</span>')
+
         # All parameters have a value
         self.assertTextStructsAreEqual(
             g.enclose('mystuff\n', class_='myclass', tag='mytag',
                       newlines=True, id='myid', comment='my comment',
-                      closing_comment=True, title='mytitle'),
-            ('<mytag class="myclass" id="myid" title="mytitle">'
+                      closing_comment=True, title='mytitle',
+                      attributes='a="b" c="d"'),
+            ('<mytag class="myclass" id="myid" title="mytitle" a="b" c="d">'
              '<!-- my comment -->\n'
              'mystuff\n'
              '</mytag><!-- my comment --><!-- myclass -->\n'))
@@ -286,8 +297,9 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
-        post_link = g.print_link('../my_heap/thread_0.html#post_my_heap/0',
-                                 '&lt;my_heap/0&gt;')
+        post_link = \
+            g.print_link('../my_heap/thread_0.html#post-summary-my_heap-0',
+                         '&lt;my_heap/0&gt;')
         thread_link = g.print_link('../my_heap/thread_0.html',
                                    '<img src="../thread.png" />')
         expected_header = \
@@ -301,8 +313,9 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.print_postitem_main(postitem),
             g.enclose(
                 expected_header,
-                class_='postsummary',
-                id='post_my_heap/0',
+                tag='div',
+                class_='post-summary',
+                id='post-summary-my_heap-0',
                 newlines=True,
                 closing_comment=True))
 
@@ -311,20 +324,17 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem.print_post_body = True
         expected_body = \
             g.enclose(
-                g.enclose(
-                    'body0\n',
-                    'pre',
-                    'postbody'),
-                'div',
-                'body',
-                newlines=True)
+                'body0\n',
+                'pre',
+                'post-body-content')
 
         self.assertTextStructsAreEqual(
             g.print_postitem_main(postitem),
             g.enclose(
                 (expected_header, expected_body),
-                class_='postsummary',
-                id='post_my_heap/0',
+                tag='div',
+                class_='post-summary',
+                id='post-summary-my_heap-0',
                 newlines=True,
                 closing_comment=True))
 
@@ -345,8 +355,9 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
-        post_link = g.print_link('../my_heap/thread_0.html#post_my_heap/0',
-                                 '&lt;my_heap/0&gt;')
+        post_link = \
+            g.print_link('../my_heap/thread_0.html#post-summary-my_heap-0',
+                         '&lt;my_heap/0&gt;')
         expected_header = \
             g.enclose(
                 (enctd('author', 'author0', 'td'), '\n',
@@ -361,7 +372,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.print_postitem_flat(postitem),
             g.enclose(
                 expected_header,
-                class_='postsummary',
+                class_='post-summary',
                 newlines=True))
 
         # With post body
@@ -369,13 +380,9 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose(
                 g.enclose(
                     g.enclose(
-                        g.enclose(
-                            'body0\n',
-                            'pre',
-                            'postbody'),
-                        'div',
-                        'body',
-                        newlines=True),
+                        'body0\n',
+                        'pre',
+                        'post-body-content'),
                     'td colspan=5',
                     newlines=True),
                 'tr',
@@ -387,7 +394,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.enclose(
                 (expected_header, expected_body),
                 'span',
-                'postsummary',
+                'post-summary',
                 newlines=True))
 
         # Without post body and some other fields
@@ -402,8 +409,9 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         hkutils.add_method(g, 'print_postitem_date', print_postitem_date)
 
-        post_link = g.print_link('../my_heap/thread_0.html#post_my_heap/0',
-                                 '&lt;my_heap/0&gt;')
+        post_link = \
+            g.print_link('../my_heap/thread_0.html#post-summary-my_heap-0',
+                         '&lt;my_heap/0&gt;')
         expected_header = \
             [enctd('author', 'author0', 'td'), '\n',
              enctd('subject', 'subject0', 'td'), '\n',
@@ -418,7 +426,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                     expected_header,
                     'tr',
                     newlines=True),
-                class_='postsummary',
+                class_='post-summary',
                 newlines=True))
 
     def test_walk_postitems(self):

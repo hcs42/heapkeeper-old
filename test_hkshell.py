@@ -28,6 +28,8 @@ Usage:
 
 from __future__ import with_statement
 
+import calendar
+import datetime
 import os
 import time
 import unittest
@@ -512,7 +514,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # If we edit the file, a new post is created.
         hkshell.options.callbacks.edit_files = \
             lambda files: set(files) # As if everything were edited
-        post = hkshell.enew()
+        post = hkshell.enew(dt=0)
         self.assert_(
             hkshell.modification_listener.touched_posts().is_set([post]))
         self.assertEqual(self.pop_log(), 'Post created.')
@@ -520,7 +522,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # If we don't edit it, no new post is created.
         hkshell.options.callbacks.edit_files = \
             lambda files: set() # As if nothing were edited
-        post = hkshell.enew()
+        post = hkshell.enew(dt=0)
         self.assertEqual(self.pop_log(), 'No change in the data base.')
         self.assertEqual(post, None)
         self.assert_(hkshell.modification_listener.touched_posts().is_set([]))
@@ -539,13 +541,13 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # Calling enew with default arguments
         hkshell.options.callbacks.edit_files = \
             check_content('Author: \nSubject: \n\n\n')
-        post = hkshell.enew()
+        post = hkshell.enew(dt=0)
         self.assertEqual(self.pop_log(), 'Post created.')
 
         # Testing the `author` argument
         hkshell.options.callbacks.edit_files = \
             check_content('Author: author\nSubject: \n\n\n')
-        post = hkshell.enew(author='author')
+        post = hkshell.enew(author='author', dt=0)
         self.assertEqual(self.pop_log(), 'Post created.')
 
         # Testing the `parent` argument
@@ -557,14 +559,26 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
             check_content(
                 'Author: \nSubject: subject0\n'
                 'Tag: tag1\nTag: tag2\nParent: my_heap/0\n\n\n')
-        post = hkshell.enew(parent=self.p(0))
+        post = hkshell.enew(parent=self.p(0), dt=0)
         self.assertEqual(self.pop_log(), 'Post created.')
 
         # Testing the `prefix` argument
         hkshell.options.callbacks.edit_files = lambda files: set(files)
-        post = hkshell.enew(prefix='myprefix')
+        post = hkshell.enew(prefix='myprefix', dt=0)
         self.assert_(post.post_index().startswith('myprefix'))
         self.assertEqual(self.pop_log(), 'Post created.')
+
+        # Testing the `dt` argument
+        hkshell.options.callbacks.edit_files = lambda files: set(files)
+        dt = datetime.datetime(2000, 1, 1, 20, 0, 0)
+        post = hkshell.enew(prefix='myprefix', dt=dt)
+        self.assertEqual(self.pop_log(), 'Post created.')
+        self.assertEqual(
+            post.date(),
+            'Sat, 01 Jan 2000 20:00:00 +0000')
+        self.assertEqual(
+            post.timestamp(),
+            int(calendar.timegm(dt.timetuple())))
 
         # Calling enew_str
         post = hkshell.enew_str('Author: \nSubject: \n\n\n')

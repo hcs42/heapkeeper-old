@@ -43,7 +43,7 @@ class Test_Segment(unittest.TestCase):
         Segment = hkbodyparser.Segment
         self.assertEqual(Segment(), Segment())
         self.assertNotEqual(Segment(), Segment(text='a'))
-        self.assertNotEqual(Segment(), Segment(type='meta'))
+        self.assertNotEqual(Segment(), Segment(is_meta=True))
 
     def test_is_similar(self):
         """Tests :func:`hkbodyparser.Segment.is_similar`."""
@@ -51,7 +51,11 @@ class Test_Segment(unittest.TestCase):
         Segment = hkbodyparser.Segment
         self.assertTrue(Segment().is_similar(Segment()))
         self.assertTrue(Segment().is_similar(Segment(text='a')))
-        self.assertFalse(Segment().is_similar(Segment(type='meta')))
+        self.assertFalse(Segment().is_similar(Segment(is_meta=True)))
+
+        segment = Segment()
+        segment.new_attribute = True
+        self.assertFalse(segment.is_similar(Segment()))
 
     def test_str(self):
         """Tests :func:`hkbodyparser.Segment.__str__`."""
@@ -140,7 +144,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
 
         test(
             ('[key value text]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key value text]',
                   key='key',
                   value='value text'),
@@ -154,7 +158,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
              '[key value text]\n'
              'b\n'),
             [Segm(text='a\n'),
-             Segm(type='meta',
+             Segm(is_meta=True,
                   text='[key value text]',
                   key='key',
                   value='value text'),
@@ -164,7 +168,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         # only key, no value
         test(
             ('[a]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[a]',
                   key='a',
                   value=''),
@@ -174,7 +178,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         # no key, no value
         test(
             ('[]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[]',
                   key='',
                   value=''),
@@ -187,7 +191,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         test(
             ('[key value\n'
              'text]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key value\ntext]',
                   key='key',
                   value='value\ntext'),
@@ -198,7 +202,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         test(
             ('[key\n'
              'value text]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key\nvalue text]',
                   key='key',
                   value='\nvalue text'),
@@ -209,7 +213,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         test(
             ('[key\n'
              ']\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key\n]',
                   key='key',
                   value='\n'),
@@ -221,7 +225,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
             ('[\n'
              'value\n'
              'text]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[\nvalue\ntext]',
                   key='',
                   value='\nvalue\ntext'),
@@ -232,7 +236,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         test(
             ('[key\n'
              'value\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key\nvalue\n',
                   key='key',
                   value='\nvalue\n')]
@@ -243,7 +247,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         ## # '[]' can be a key
         ## test(
         ##     ('[[]]\n'),
-        ##     [Segm(type='meta',
+        ##     [Segm(is_meta=True,
         ##           text='[[]]',
         ##           key='[]',
         ##           value=''),
@@ -253,7 +257,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         ## # ']' can be a key
         ## test(
         ##     ('[]]\n'),
-        ##     [Segm(type='meta',
+        ##     [Segm(is_meta=True,
         ##           text='[]]',
         ##           key=']',
         ##           value=''),
@@ -263,7 +267,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
         # '[' can be a key
         test(
             ('[[]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[[]',
                   key='[',
                   value=''),
@@ -274,7 +278,7 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
 
         test(
             ('[key   value  text  ]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key   value  text  ]',
                   key='key',
                   value='value  text'),
@@ -285,17 +289,30 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
             ('[ key \n'
              ' value\t\n'
              ' text ] \n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[ key\n value\n text ]',
                   key='key',
                   value='\n value\n text'),
              Segm(text='\n')]
         )
 
+        test(
+            ('[key\n'
+             '\n'
+             'text\n'
+             '\n'
+             ']\n'),
+            [Segm(is_meta=True,
+                  text='[key\n\ntext\n\n]',
+                  key='key',
+                  value='\n\ntext\n\n'),
+             Segm(text='\n')]
+        )
+
         # Tab is a separator as well
         test(
             ('[key\tvalue]\n'),
-            [Segm(type='meta',
+            [Segm(is_meta=True,
                   text='[key\tvalue]',
                   key='key',
                   value='value'),
@@ -318,8 +335,8 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
 
         # normal text around the link
         test(
-            (' http://www.example.com x\n'),
-            [Segm(text=' '),
+            ('x http://www.example.com x\n'),
+            [Segm(text='x '),
              Segm(type='link',
                   text='http://www.example.com',
                   protocol='http'),
@@ -367,13 +384,72 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
              Segm(text='\n')]
         )
 
-        # no link within meta
+        # link within meta
         test(
-            ('[key http://x ]\n'),
-            [Segm(type='meta',
-                  text='[key http://x ]',
+            ('[key http://www.example.com]\n'),
+            [Segm(is_meta=True,
+                  text='[key ',
                   key='key',
-                  value='http://x'),
+                  value='http://www.example.com'),
+             Segm(type='link',
+                  is_meta=True,
+                  text='http://www.example.com',
+                  protocol='http'),
+             Segm(is_meta=True,
+                  text=']',
+                  key=None,
+                  value=None),
+             Segm(text='\n')]
+        )
+
+        # link within multi-line meta
+        test(
+            ('[key http://www.example.com\n'
+             'http://www.example.com]\n'),
+            [Segm(is_meta=True,
+                  text='[key ',
+                  key='key',
+                  value='http://www.example.com\nhttp://www.example.com'),
+             Segm(type='link',
+                  is_meta=True,
+                  text='http://www.example.com',
+                  protocol='http'),
+             Segm(is_meta=True,
+                  text='\n'),
+             Segm(type='link',
+                  is_meta=True,
+                  text='http://www.example.com',
+                  protocol='http'),
+             Segm(is_meta=True,
+                  text=']'),
+             Segm(text='\n')]
+        )
+
+        # heap link within meta
+        test(
+            ('[key heap://ums/12]\n'),
+            [Segm(is_meta=True,
+                  text='[key ',
+                  key='key',
+                  value='heap://ums/12'),
+             Segm(type='heap_link',
+                  is_meta=True,
+                  text='heap://ums/12',
+                  value='ums/12'),
+             Segm(is_meta=True,
+                  text=']',
+                  key=None,
+                  value=None),
+             Segm(text='\n')]
+        )
+
+        # link within a meta: the key is not interpreted as a link
+        test(
+            ('[http://www.example.com value]\n'),
+            [Segm(is_meta=True,
+                  text='[http://www.example.com value]',
+                  key='http://www.example.com',
+                  value='value'),
              Segm(text='\n')]
         )
 
@@ -432,22 +508,99 @@ class Test_Body(unittest.TestCase, test_hklib.PostDBHandler):
             [Segm(quote_level=1, text='> [not meta]\n')]
         )
 
-        ## ## verbatim - not implemented yet
-        ##
-        ## test(
-        ##     ('normal text\n'
-        ##      '\n'
-        ##      '    verbatim\n'
-        ##      '\n'
-        ##      '    still verbatim\n'
-        ##      '\n'
-        ##      'normal text\n'),
-        ##     [Segm(text='normal text\n\n'),
-        ##      Segm(text='    verbatim\n'
-        ##                '\n'
-        ##                '    still verbatim\n'),
-        ##      Segm(text='\nnormal text\n')]
-        ## )
+        ### Testing raw blocks
+
+        test(
+            ('normal text\n'
+             '\n'
+             '    verbatim\n'
+             '\n'
+             'normal text\n'),
+            [Segm(text='normal text\n\n'),
+             Segm(type='raw',
+                  text='    verbatim\n'),
+             Segm(text='\nnormal text\n')]
+        )
+
+        test(
+            ('normal text\n'
+             '\n'
+             '    verbatim\n'
+             '\n'
+             '    still verbatim\n'
+             '\n'
+             'normal text\n'),
+            [Segm(text='normal text\n\n'),
+             Segm(type='raw',
+                  text='    verbatim\n'
+                       '\n'
+                       '    still verbatim\n'),
+             Segm(text='\nnormal text\n')]
+        )
+
+        # Verbatim in quotes
+
+        test(
+            ('> normal text\n'
+             '> \n'
+             '>     verbatim\n'
+             '> \n'
+             '> normal text\n'),
+            [Segm(text='> normal text\n'
+                       '>\n',
+                  quote_level=1),
+             Segm(type='raw',
+                  text='>     verbatim\n',
+                  quote_level=1),
+             Segm(text='>\n'
+                       '> normal text\n',
+                  quote_level=1)]
+        )
+
+        test(
+            ('>     verbatim\n'
+             '> \n'
+             '>     still verbatim\n'
+             '> \n'
+             '> normal text\n'),
+            [Segm(type='raw',
+                  text='>     verbatim\n'
+                       '>\n'
+                       '>     still verbatim\n',
+                  quote_level=1),
+             Segm(text='>\n'
+                       '> normal text\n',
+                  quote_level=1)]
+        )
+
+        # Verbatim finished by different quote level
+        # Verbatim finished by end of body
+
+        test(
+            ('>> normal text\n'
+             '>> \n'
+             '>>     verbatim\n'
+             '>    other verbatim\n'),
+            [Segm(text='>> normal text\n'
+                       '>>\n',
+                  quote_level=2),
+             Segm(type='raw',
+                  text='>>     verbatim\n',
+                  quote_level=2),
+             Segm(type='raw',
+                  text='>    other verbatim\n',
+                  quote_level=1)]
+        )
+
+        # Not verbatim because of missing empty line
+
+        test(
+            ('normal text\n'
+             '    not verbatim\n'),
+            [Segm(text='normal text\n    not verbatim\n')]
+        )
+
+        ### Testing API
 
         p = self.p(0)
         p.set_body('a\nb\n')

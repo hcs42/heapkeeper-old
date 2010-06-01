@@ -237,7 +237,7 @@ def js_obfuscated_link(email, displayname=None):
     """
     if not displayname:
         displayname = email
-    return js_obfuscated_text("""<a href="%s">%s</a>""" % (
+    return js_obfuscated_text("""<a href="mailto:%s">%s</a>""" % (
         email, displayname
     ))
 

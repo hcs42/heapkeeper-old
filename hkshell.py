@@ -241,6 +241,7 @@ documentation.
 
 import code
 import ConfigParser
+import datetime
 import functools
 import optparse
 import os
@@ -703,7 +704,10 @@ class PostPageListener(object):
                 # a file is missing; hopefully the HTML
                 return True
 
-        return self._postdb.all().collect(outdated)
+        if self._postdb.html_dir() is None:
+            return self._postdb.postset([])
+        else:
+            return self._postdb.all().collect(outdated)
 
     def close(self):
         """Closes the |PostPageListener|.
@@ -1339,7 +1343,7 @@ def add_post_to_heap(post, prefix, heap_id):
     return post
 
 @hkshell_cmd(add_events=True, touching_command=True)
-def enew(prefix='', author='', parent=None, heap_id=None):
+def enew(prefix='', author='', parent=None, heap_id=None, dt=None):
     """Creates and edits a post.
 
     A temporary file with a post stub will be created and an editor will be
@@ -1355,6 +1359,9 @@ def enew(prefix='', author='', parent=None, heap_id=None):
       the subject of the parent is also copied.
     - `heap_id` (|HeapId| | ``None``) -- The id of the heap in which the post
       will be created. If ``None``, the value of |gh| is used.
+    - `dt` (datetime | ``None`` | ``0``) -- The UTC datetime of the post. If
+      ``None``, the current datetime will be used. If 0, no date will be added
+      to the post.
 
     **Returns:** |Post| | ``None`` -- The newly created post.
     """
@@ -1363,6 +1370,13 @@ def enew(prefix='', author='', parent=None, heap_id=None):
     try:
         post = hklib.Post.from_str('')
         post.set_author(author)
+
+        if dt is None:
+            dt = datetime.datetime.utcnow()
+        if dt != 0:
+            date_str = dt.strftime("%a, %d %b %Y %H:%M:%S +0000")
+            post.set_date(date_str)
+
         if parent != None:
             parent = p(parent)
             post.set_parent(parent.post_id_str())
@@ -1788,7 +1802,10 @@ def main(cmdl_options, args):
     cmdl_options.after_command += args
 
     if cmdl_options.hkrc == []:
-        to_import = ['hkrc']
+        if os.path.exists('hkrc'):
+            to_import = ['hkrc']
+        else:
+            to_import = []
     elif cmdl_options.hkrc == ['NONE']:
         to_import = []
     else:

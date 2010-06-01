@@ -270,10 +270,12 @@ def is_textstruct(text):
 
     - `text` (object)
 
-    **Returns:** True
+    **Returns:** bool
     """
 
-    if isinstance(text, str):
+    if isinstance(text, unicode):
+        return False
+    elif isinstance(text, str):
         return True
     else:
         try:
@@ -337,6 +339,7 @@ def log(*args):
 
 ##### Misc #####
 
+# Not tested
 def file_to_string(file_name, return_none=False):
     """Reads a file's content into a string.
 
@@ -356,6 +359,7 @@ def file_to_string(file_name, return_none=False):
         s = f.read()
     return s
 
+# Not tested
 def string_to_file(s, file_name):
     """Writes a string to a file.
 
@@ -371,7 +375,7 @@ def string_to_file(s, file_name):
         f.write(s)
 
 def utf8(s, charset):
-    """Encodes the given string in the charset into utf-8.
+    """Encodes a string in the given charset into utf-8.
 
     If the charset is ``None``, the original string will be returned.
 
@@ -381,10 +385,20 @@ def utf8(s, charset):
     - `charset` (str)
     """
 
-    if charset != None:
+    if charset is not None:
         return s.decode(charset).encode('utf-8')
     else:
         return s
+
+def uutf8(unicode_obj):
+    """Encodes a unicode object into a utf-8 string.
+
+    **Arguments:**
+
+    - `unicode_obj` (unicode)
+    """
+
+    return unicode_obj.encode('utf-8')
 
 def calc_timestamp(date):
     """Calculates a timestamp from a date.

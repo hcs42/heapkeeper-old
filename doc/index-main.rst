@@ -65,9 +65,12 @@ Quick information
   project's :doc:`Status <status>` page. Heapkeeper is under active
   development; look at the `commit history`__ or the `impact graph`__ of the
   repository.
-* **Contact**:
-  :email:`Csaba Hoch, <http://hcs42.github.com>`
-  :email:`Attila Nagy <mailto:nagy.attila.1984@gmail.com>`
+* **Contact**: We have a
+  :email:`mailing list, <heapkeeper-heap@googlegroups.com>` and a :ref:`heap
+  based on that mailing list <heapkeeper_heap>`.
+
+.. .. The :email:`...` object should not be broken into several lines, because
+.. .. then it does not work.
 
 .. _GPLv3: http://gplv3.fsf.org/
 .. _`Git`: http://git-scm.com/

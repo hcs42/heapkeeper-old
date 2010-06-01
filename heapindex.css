@@ -1,3 +1,22 @@
+/* This file is part of Heapkeeper.
+ *
+ * Heapkeeper is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * Heapkeeper is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright (C) 2009-2010 Csaba Hoch
+ * Copyright (C) 2009 Attila Nagy
+ */
+
 body, html
 {
     background-color: #fff;
@@ -45,7 +64,6 @@ a
     margin: 0;
     padding: 0.5em;
     border-bottom: 10px solid #080;
-    font-family: Arial, sans-serif;
     color: #006;
     background-color: #cc9;
 }
@@ -73,7 +91,7 @@ a
     margin-left: 1em;
 }
 
-.postbox
+.post-box
 {
     display: block;
     background-color: #eed;
@@ -82,7 +100,7 @@ a
     padding: 0.7em 0 0.7em 0.7em;
 }
 
-.postbox .postbox
+.post-box .post-box
 {
     background-color: #eed;
     border: none;
@@ -178,12 +196,7 @@ td
     font-style: italic;
 }
 
-pre
-{
-    margin: 1em;
-}
-
-.button a img
+.image-button a img
 {
     text-decoration: none;
     border: none;
@@ -194,40 +207,58 @@ pre
     color: gray;
 }
 
-.postbody
+.post-body-content
 {
+    margin: 1em;
     background-color: #fff;
     border: 1px solid #080;
     color: #000;
-    font-family: Courier, monospace;
-
-    padding-left: 0.5em;
-    padding-top: 0.5em;
-    padding-right: 0.5em;
-    padding-bottom: 0.5em;
+    font-family: monospace;
+    padding: 0.5em 0.5em 0.5em 0.5em;
 }
 
-.postbody .meta-text
+.post-body-content .meta-text
 {
     color: #f00;
 }
 
-.postbody .quote-2, .quote-4, .quote-6, .quote-8
+.post-body-content .raw-block
+{
+    color: #555;
+}
+
+.post-body-content .quote-2, .quote-4, .quote-6, .quote-8
 {
     color: #088;
 }
 
-.postbody .quote-1, .quote-3, .quote-5, .quote-7, .quote-9
+.post-body-content .quote-1, .quote-3, .quote-5, .quote-7, .quote-9
 {
     color: #00f;
 }
 
-.postbody a
+.post-body-content a
 {
     text-decoration: underline;
 }
 
-.author, .subject, .button, .tags, .index, .parent, .date
+.author, .subject, .button, .tags, .index, .date
 {
     margin-right: 1em;
+}
+
+.button, .container-button
+{
+    margin: 0px 0.5em 0px 0px;
+    background-color: #fff;
+    border: 1px dotted #080;
+    padding: 1px 5px 1px 5px;
+    cursor: pointer;
+    color: #006;
+}
+
+.container-button
+{
+    cursor: auto;
+    color: inherit;
 }
