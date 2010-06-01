@@ -1799,7 +1799,10 @@ def main(cmdl_options, args):
     cmdl_options.after_command += args
 
     if cmdl_options.hkrc == []:
-        to_import = ['hkrc']
+        if os.path.exists('hkrc'):
+            to_import = ['hkrc']
+        else:
+            to_import = []
     elif cmdl_options.hkrc == ['NONE']:
         to_import = []
     else:
