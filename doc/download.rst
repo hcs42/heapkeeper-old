@@ -23,6 +23,8 @@ Packaged releases
 | version  | date       | source      | HTML documentation |
 |          |            |             |                    |
 +==========+============+=============+====================+
+| `0.6`_   | 2010-06-01 | tgz__ zip__ | tgz__ zip__        |
++----------+------------+-------------+--------------------+
 | `0.5`_   | 2010-04-25 | tgz__ zip__ | tgz__ zip__        |
 +----------+------------+-------------+--------------------+
 | `0.4`_   | 2010-02-19 | tgz__ zip__ | tgz__ zip__        |
@@ -34,6 +36,10 @@ Packaged releases
 | `0.1`_   | 2008-10-16 | tgz__ zip__ |  --                |
 +----------+------------+-------------+--------------------+
 
+__ http://heapkeeper.org/releases/heapkeeper-0.6.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.6.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.6.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.6.zip
 __ http://heapkeeper.org/releases/heapkeeper-0.5.tar.gz
 __ http://heapkeeper.org/releases/heapkeeper-0.5.zip
 __ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.5.tar.gz
@@ -50,6 +56,42 @@ __ http://github.com/hcs42/heapkeeper/tarball/v0.2
 __ http://github.com/hcs42/heapkeeper/zipball/v0.2
 __ http://github.com/hcs42/heapkeeper/tarball/v0.1
 __ http://github.com/hcs42/heapkeeper/zipball/v0.1
+
+.. _`0.6`:
+
+Version 0.6
+^^^^^^^^^^^
+
+- **date:** 2010-06-01
+- **download:** tgz__, zip__
+- **download HTML documentation:** tgz__, zip__
+
+__ http://heapkeeper.org/releases/heapkeeper-0.6.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.6.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.6.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.6.zip
+
+The main improvement of this release is introducing Heapkeeper's web interface.
+
+Major new features:
+
+- Heapkeeper has a web interface called hkweb that displays posts and allows
+  editing them. Editing can be done either on the post bodies or on the raw
+  post text that includes the header attributes. hkweb supports folding (hiding
+  and showing the body of individual posts).
+- The enew() hkshell command adds dates to the created post automatically.
+- Raw blocks are recognized within post bodies and are shown in gray in the
+  HTML pages.
+- Links are parsed within meta text.
+- The title of the HTML thread page is now the subject of the root of the
+  thread.
+- Links to children are displayed in the HTML pages.
+- The generated HTML pages are valid XHTML pages.
+
+Major bugfixes:
+
+- Non-breakable space is converted to normal space in downloaded emails.
+- Leading whitespace is preserved in post bodies.
 
 .. _`0.5`:
 
