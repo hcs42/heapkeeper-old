@@ -51,16 +51,16 @@ Then download the latest version of Heapkeeper (either in `tar.gz`__ or in
 
 .. code-block:: sh
 
-    $ wget http://heapkeeper.org/releases/heapkeeper-0.5.tar.gz
+    $ wget http://heapkeeper.org/releases/heapkeeper-0.6.tar.gz
 
-__ http://heapkeeper.org/releases/heapkeeper-0.5.tar.gz
-__ http://heapkeeper.org/releases/heapkeeper-0.5.zip
+__ http://heapkeeper.org/releases/heapkeeper-0.6.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.6.zip
 
 Unzip the tar.gz or zip file. For Unix users:
 
 .. code-block:: sh
 
-    $ tar xzf heapkeeper-0.5.tar.gz
+    $ tar xzf heapkeeper-0.6.tar.gz
 
 Make Heapkeeper's directory the current one. Heapkeeper's shell (|hkshell|) can
 be started from here without any installation procedure. You can ask for
@@ -68,9 +68,9 @@ version information for example:
 
 .. code-block:: sh
 
-    $ cd heapkeeper-0.5
+    $ cd heapkeeper-0.6
     $ python hk.py --version
-    Heapkeeper version 0.5
+    Heapkeeper version 0.6
 
 Or you can execute the automatic test:
 
@@ -78,7 +78,7 @@ Or you can execute the automatic test:
 
     $ python test.py
     ----------------------------------------------------------------------
-    Ran 126 tests in 0.172s
+    Ran 126 tests in 0.379s
 
     OK
 
@@ -87,25 +87,20 @@ Or you can execute the automatic test:
 Configuration
 -------------
 
-First, we create two directories: ``posts`` and ``html``. ``posts`` will store
-the :ref:`heap <glossary_heap>`, i.e. the post database, which contains the
+First, we create a directory called ``posts``. ``posts`` will store the
+:ref:`heap <glossary_heap>`, i.e. the post database, which contains the
 :ref:`posts <glossary_post>` themselves in text files (so-called :ref:`post
-files <glossary_post_file>`). The ``html`` directory will contain the HTML
-pages that will be generated from the posts.
+files <glossary_post_file>`).
 
 .. code-block:: sh
 
     $ mkdir posts
-    $ mkdir html
 
 Heapkeeper needs a file called ``hk.cfg`` in which its settings are stored.
 We set the directories that we just created to be used as post database and
 HTML generation target.
 
 .. code-block:: ini
-
-    [paths]
-    html_dir=html
 
     # Heap for U.S. Robots and Mechanical Men, Inc.
     [heaps/usr]
@@ -127,8 +122,6 @@ Start |hkshell|:
 .. code-block:: sh
 
     $ python hk.py
-    Importing hkrc...
-    Module not found: "hkrc"
 
     >>>
 
@@ -325,15 +318,20 @@ have a Unix shell, you can create the post files in the same way we created
 Generating HTML pages
 ---------------------
 
-The posts and the threads can be visualized in HTML by starting a webserver::
+The posts and the threads can be visualized by either generating static HTML
+pages or by starting a webserver that will serve the HTML pages dynamically. We
+will use the latter because it is often more convenient and also allows editing
+the posts. ::
 
     $ python hk.py
 
-    >>> g()
-    Generating index.html...
-    Generating thread pages...
+    >>> import hkweb
+    >>> hkweb.start(8080)
+    Web service started.
+    http://0.0.0.0:8080/
+    >>>
 
-Open ``html/index/index.html`` in a browser. You will see something like this:
+Open ``localhost:8080`` in a browser. You will see something like this:
 
 .. image:: images/1.png
       :align: center
@@ -345,26 +343,27 @@ only one post. In the first box, the posts are ordered in a threaded structure:
 for example both post 3 and 4 are replies to post 2.
 
 A post summary shows the author, the subject, the tags and the id (so-called
-*heapid*) of the post. The heapids are links, so we can click on them to read
-the posts. If we click on the heapid of the second post, the following page
-will be shown to us:
+:ref:`post id <glossary_post_id>`) of the post. The post ids are links, so we
+can click on them to read the posts. If we click on the post id of the second
+post (``usr/2``), the following page will be shown to us:
 
 .. image:: images/2.png
       :align: center
 
-This page contains the thread in which post 2 is located. The parent of each
-post is written after its heapid after an arrow sign.
+This page contains the thread in which post ``usr/2`` is located, and the
+browser scrolls so that ``usr/2`` is at the top. The post id of the parent and
+children of each post is written after the post's post id.
 
 .. _manipulating_posts:
 
 Modifying the heap with |hkshell|
 ---------------------------------
 
-The collection of the posts is called the *heap*. One of Heapkeeper's aims is to
-make it easy to perform operations of large amount of posts. Theoretically, you
-can do anything you want with the post database that is stored in the post
-files: you can use text editors, Unix text processing tools to modify the heap,
-or even write own scripts and programs.
+One of Heapkeeper's aims is to make it easy to perform operations of large
+amount of posts. Theoretically, you can do anything you want with the post
+database that is stored in the post files: you can use text editors, Unix text
+processing tools to modify the managed heaps, or even write own scripts and
+programs.
 
 A more convenient way to do this is to use Heapkeeper's shell and API. We
 already used the former one to create a new post and to generate the HTML pages.
@@ -384,7 +383,7 @@ short names that are essentially mnemonics. See the list of |hkshell| commands
 ::::::::::::::
 
 First let's have a look at the |ls| command. It prints out the header of given
-post or posts, which can be specified for example by their heapid. If no posts
+post or posts, which can be specified for example by their post id. If no posts
 are specified, it prints the header of all posts. The posts in the output of
 |ls| have the same indentation as in the index page that we saw previously. ::
 
@@ -442,6 +441,9 @@ The default heap can be printed using |gh|::
 
     >>> gh()
     'usr
+
+Note: when there is only one heap in the configuration file (as now), that heap
+is automatically selected as the default heap.
 
 Manipulating the subject and tags
 :::::::::::::::::::::::::::::::::
@@ -504,21 +506,15 @@ works like |enew|, but receives the content of the post as an argument::
     ...          "Ashe\n")
     Post created.
     <post usr/9>
-    >>> g()
-    Generating index.html...
-    Generating thread pages...
 
-The generated page will look like this:
+If you refresh ``localhost:8080`` in your browser, it will look like this:
 
 .. image:: images/4.png
       :align: center
 
-Let's join post 8 and 9 and regenerate the index page::
+Let's join post 8 and 9::
 
     >>> j(8, 9)
-    >>> g()
-    Generating index.html...
-    Generating thread pages...
 
 On the new index page, we will see that the two "Cinema" posts are in one
 thread now, and post 8 is the parent of post 9:
@@ -591,7 +587,7 @@ Let's create a new post and change its content using |Post| methods! ::
     http://buyrobot99.com
 
 A post can be deleted either using the :class:`Post.delete <hklib.Post.delete>`
-method or the |d| command. After deletion, the heapid will remain occupied and
+method or the |d| command. After deletion, the post id will remain occupied and
 the |Post| object will still exist, but the post will not show up in either the
 generated HTML pages, or in the result of :func:`postdb().all()
 <hklib.PostDB.all>` or :func:`ls() <hkshell.ls>`. Its content will be replaced
@@ -737,9 +733,6 @@ download the emails from:
 
 .. code-block:: none
 
-    [paths]
-    html_dir=html
-
     [heaps/myheap]
     path=myheap_posts
 
@@ -755,10 +748,6 @@ Start Heapkeeper:
     $ ./hk.py
     Warning: post directory does not exists: "myheap_posts"
     Post directory has been created.
-    Warning: HTML directory does not exists: "myheap_html"
-    HTML directory has been created.
-    Importing hkrc...
-    Module not found: "hkrc"
 
     >>>
 
@@ -878,17 +867,12 @@ Modify the configuration file to manage the Heapkeeper Heap:
 
 .. code-block:: none
 
-    [paths]
-    html_dir=hh_html
-
     [heaps/hh]
     path=heapkeeper-heap/posts
 
 In this configuration file the ``heaps/my_heaps`` sections were removed, but
 they can be left as they were in the previous section, and then Heapkeeper will
-manage both heaps simultaneously. Note that only one ``html_dir`` can be
-specified, so the posts of the heaps will be handled as one data store
-[#post_index_collision]_; e.g. the index page will contains the posts of both heaps.
+manage both heaps simultaneously.
 
 After the configuration file contains the path to the Heapkeeper Heap's data
 store, you can start Heapkeeper and play around with the Heapkeeper Heap.
@@ -897,10 +881,3 @@ The web pages generated from the Heapkeeper Heap can be viewed online__.
 
 __ http://github.com/hcs42/heapkeeper-heap
 __ http://heapkeeper-heap.github.com
-
-.. rubric:: Footnotes
-
-.. [#post_index_collision] This does not mean that posts cannot have the same
-   post indices. If both heap contain a post file ``1.post``, they both will
-   have the post id ``"1"``, but Heapkeeper will differentiate them by the
-   heaps they are in.
