@@ -43,8 +43,8 @@ class MyGenerator(hkgen.Generator):
         super(MyGenerator, self).__init__(postdb)
         self.options.shortsubject = True
         self.options.shorttags = True
-        self.options.cssfiles.append('../issues.css')
-        self.options.files_to_copy.append('issues.css')
+        self.options.cssfiles.append('../static/css/issues.css')
+        self.options.files_to_copy.append('static/css/issues.css')
 
     def calc(self):
 

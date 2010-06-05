@@ -62,8 +62,8 @@ class Generator(hkgen.Generator):
         super(Generator, self).__init__(postdb)
         self.options.html_title = 'Heapkeeper issue tracker'
         self.options.html_h1 = 'Heapkeeper issue tracker'
-        self.options.cssfiles.append('../issues.css')
-        self.options.files_to_copy.append('issues.css')
+        self.options.cssfiles.append('../static/css/issues.css')
+        self.options.files_to_copy.append('static/css/issues.css')
 
     def red(self, s):
         return hkutils.textstruct_to_str(self.enclose(s, class_='important'))

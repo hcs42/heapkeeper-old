@@ -301,7 +301,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.print_link('../my_heap/thread_0.html#post-summary-my_heap-0',
                          '&lt;my_heap/0&gt;')
         thread_link = g.print_link('../my_heap/thread_0.html',
-                                   '<img src="../thread.png" />')
+                                   '<img src="../static/images/thread.png" />')
         expected_header = \
             [enc('author', 'author0'), '\n',
              enc('subject', 'subject0'), '\n',

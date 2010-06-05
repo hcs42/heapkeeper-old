@@ -3332,8 +3332,8 @@ class GeneratorOptions(object):
                  shorttags=False,
                  html_title='Heap index',
                  html_h1='Heap index',
-                 cssfiles=['heapindex.css'],
-                 files_to_copy=['heapindex.css']):
+                 cssfiles=['static/css/heapindex.css'],
+                 files_to_copy=['static/css/heapindex.css']):
 
         super(GeneratorOptions, self).__init__()
         hkutils.set_dict_items(self, locals())

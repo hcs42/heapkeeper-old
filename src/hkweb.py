@@ -50,10 +50,8 @@ import hkshell
 
 urls = (
     r'/', 'Index',
-    r'/([A-Za-z0-9_-]+\.css)', 'Fetch',
-    r'/(thread\\.png)', 'Fetch',
-    r'/(external/[A-Za-z0-9_-]+\.js)', 'Fetch',
-    r'/(static/[A-Za-z0-9_.-]+)', 'Fetch',
+    r'/(external/[A-Za-z0-9_./-]+)', 'Fetch',
+    r'/(static/[A-Za-z0-9_./-]+)', 'Fetch',
     r'/posts/(.*)', 'Post',
     r'/raw-post-bodies/(.*)', 'RawPostBody',
     r'/raw-post-text/(.*)', 'RawPostText',
@@ -73,7 +71,7 @@ class WebGenerator(hkgen.Generator):
 
     def __init__(self, postdb):
         hkgen.Generator.__init__(self, postdb)
-        self.options.cssfiles.append("static/hkweb.css")
+        self.options.cssfiles.append("static/css/hkweb.css")
         self.options.favicon = '/static/images/heap.png'
 
     def print_html_head_content(self):
@@ -162,7 +160,7 @@ class PostPageGenerator(WebGenerator):
 
         js_files = ('/external/jquery.js',
                     '/external/json2.js',
-                    '/static/hkweb.js')
+                    '/static/js/hkweb.js')
         js_links = \
             [('<script type="text/javascript" src="%s"></script>\n' %
               (js_file,)) for js_file in js_files]

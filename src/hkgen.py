@@ -87,8 +87,9 @@ class Generator(object):
         self._postdb = postdb
         self.options = hklib.GeneratorOptions()
 
-        self.options.cssfiles = ['../heapindex.css']
-        self.options.files_to_copy = ['heapindex.css', 'thread.png']
+        self.options.cssfiles = ['../static/css/heapindex.css']
+        self.options.files_to_copy = ['static/css/heapindex.css',
+                                      'static/images/thread.png']
 
         # html_h1 is the same as html_title by default
         self.options.html_h1 = None
@@ -479,7 +480,7 @@ class Generator(object):
         if self._postdb.parent(post) is None:
             return self.print_link(
                        ('../', post.htmlthreadbasename()),
-                       '<img src="../thread.png" />'),
+                       '<img src="../static/images/thread.png" />'),
         else:
             return ''
 
@@ -1355,6 +1356,11 @@ class Generator(object):
         for file in self.options.files_to_copy:
 
             target_file = os.path.join(self._postdb.html_dir(), file)
+
+            # We create the target directory if necessary
+            target_dir = os.path.dirname(target_file)
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
 
             # We try to copy the file from one of the heaps used by the post
             # database
