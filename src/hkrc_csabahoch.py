@@ -27,7 +27,7 @@ import itertools
 import hkutils
 import hkgen
 import hkshell
-import issue_tracker
+import hk_issue_tracker
 
 
 class MyGenerator(hkgen.Generator):
@@ -152,7 +152,7 @@ class MyGenerator(hkgen.Generator):
         self.write_my_pages()
 
 
-class MyIssueTrackerGenerator(issue_tracker.Generator):
+class MyIssueTrackerGenerator(hk_issue_tracker.Generator):
 
     def __init__(self, postdb):
         """Constructor.
@@ -177,14 +177,14 @@ class MyIssueTrackerGenerator(issue_tracker.Generator):
         return root.has_tag('idea')
 
     def calc(self):
-        issue_tracker.Generator.calc(self)
+        hk_issue_tracker.Generator.calc(self)
         open_idea_threads = \
             self.issue_threads.collect(self.is_thread_open_idea)
         self.open_idea_threads = open_idea_threads
 
     def enclose_issue_posts_core(self, posts):
         xpostitems = \
-            issue_tracker.Generator.enclose_issue_posts_core(self, posts)
+            hk_issue_tracker.Generator.enclose_issue_posts_core(self, posts)
 
         # We add 'open' spans around the threads that are open
         xpostitems = itertools.imap(

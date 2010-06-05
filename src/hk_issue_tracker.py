@@ -37,7 +37,7 @@ If you want to use it, the simplest way is to append its invocation to your
         # Issue tracker
         genopts = hklib.GeneratorOptions()
         genopts.postdb = postdb
-        generator = issue_tracker.create_generator(genopts)
+        generator = hk_issue_tracker.create_generator(genopts)
         generator.gen_indices(genopts)
 
     hkshell.options.callbacks.gen_indices = gen_indices
