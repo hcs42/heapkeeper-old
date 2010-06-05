@@ -42,7 +42,7 @@ Generator
     .. automethod:: print_postitem_link
     .. automethod:: print_postitem_begin
     .. automethod:: print_postitem_end
-    .. automethod:: print_postitem_main
+    .. automethod:: print_postitem_inner
     .. automethod:: print_postitem_flat
     .. automethod:: print_postitem
     .. automethod:: augment_postitem

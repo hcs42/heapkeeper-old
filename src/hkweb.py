@@ -169,9 +169,9 @@ class PostPageGenerator(WebGenerator):
                 self.print_thread_page(self._root),
                 js_links)
 
-    def get_postsummary_fields_main(self, postitem):
+    def get_postsummary_fields_inner(self, postitem):
         """Returns the fields of the post summary when the pos position is
-        ``"main"``.
+        ``"inner"``.
 
         The function gets the usual buttons from |Generator| and adds its own
         buttons.
@@ -184,7 +184,7 @@ class PostPageGenerator(WebGenerator):
         """
 
         old_fields = \
-            hkgen.Generator.get_postsummary_fields_main(self, postitem)
+            hkgen.Generator.get_postsummary_fields_inner(self, postitem)
         new_fields = [self.print_hkweb_summary_buttons]
         return tuple(list(old_fields) + new_fields)
 
@@ -270,7 +270,7 @@ class PostBodyGenerator(hkgen.Generator):
         if post is None:
             return 'No such post: "%s"' % (post_id,)
 
-        postitem = hklib.PostItem('main', post)
+        postitem = hklib.PostItem('inner', post)
         postitem.print_post_body = True
         body_str = self.print_postitem_body(postitem)
         return body_str
@@ -507,7 +507,7 @@ class SetRawPost(AjaxServer):
         # Generating the HTML for the new post text
         generator = PostPageGenerator(self._postdb)
         generator.set_post_id(post.post_id())
-        postitem = generator.augment_postitem(hklib.PostItem('main', post))
+        postitem = generator.augment_postitem(hklib.PostItem('inner', post))
         postitem.print_post_body = True
         postitem.print_parent_post_id = True
         postitem.print_children_post_id = True

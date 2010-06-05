@@ -284,8 +284,8 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             g.format_timestamp(p(0).timestamp()),
             '(2008-08-20)')
 
-    def test_print_postitem_main(self):
-        """Tests :func:`hkgen.Generator.print_postitem_main`."""
+    def test_print_postitem_inner(self):
+        """Tests :func:`hkgen.Generator.print_postitem_inner`."""
 
         postdb, g, p = self.get_ouv()
         def enc(class_, content):
@@ -310,7 +310,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
              enc('date', '(2008-08-20)'), '\n']
 
         self.assertTextStructsAreEqual(
-            g.print_postitem_main(postitem),
+            g.print_postitem_inner(postitem),
             g.enclose(
                 expected_header,
                 tag='div',
@@ -329,7 +329,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                 'post-body-content')
 
         self.assertTextStructsAreEqual(
-            g.print_postitem_main(postitem),
+            g.print_postitem_inner(postitem),
             g.enclose(
                 (expected_header, expected_body),
                 tag='div',
@@ -515,16 +515,16 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         postdb, g, p = self.get_ouv()
         pi_begin = hklib.PostItem('begin', p(0), 0)
-        pi_main = hklib.PostItem('main', p(0), 0)
+        pi_inner = hklib.PostItem('inner', p(0), 0)
         pi_end = hklib.PostItem('end', p(0), 0)
         pi_begin.print_post_body = True
-        pi_main.print_post_body = True
+        pi_inner.print_post_body = True
         g.options.html_title = 'subject0'
 
         expected_content = \
             (g.print_html_header(),
              g.print_postitem(pi_begin),
-             g.print_postitem(pi_main),
+             g.print_postitem(pi_inner),
              g.print_postitem(pi_end),
              g.print_html_footer())
 

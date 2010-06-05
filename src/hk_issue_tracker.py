@@ -179,7 +179,7 @@ class Generator(hkgen.Generator):
                    class_='meta-info',
                    skip_empty=True)
 
-    def get_postsummary_fields_main(self, postitem):
+    def get_postsummary_fields_inner(self, postitem):
         return (
             self.print_postitem_author,
             self.print_postitem_subject,

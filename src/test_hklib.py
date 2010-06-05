@@ -1873,7 +1873,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
                 "<PostItem: pos=end, post_id=my_heap/1, level=1>\n"
               "<PostItem: pos=end, post_id=my_heap/0, level=0>\n"))
 
-        # Testing the `yield_main` parameter
+        # Testing the `yield_inner` parameter
 
         def test(root, expected_result):
             # function already defined # pylint: disable-msg=E0102
@@ -1882,28 +1882,28 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
             postitem_strings = \
                 [ str(postitem) + '\n'
-                  for postitem in postdb.walk_thread(root, yield_main=True) ]
+                  for postitem in postdb.walk_thread(root, yield_inner=True) ]
             postitem_strings = ''.join(postitem_strings)
             self.assertEqual(postitem_strings, expected_result)
 
         test(None,
              ("<PostItem: pos=begin, post_id=my_heap/0, level=0>\n"
-              "<PostItem: pos=main, post_id=my_heap/0, level=0>\n"
+              "<PostItem: pos=inner, post_id=my_heap/0, level=0>\n"
                 "<PostItem: pos=begin, post_id=my_heap/1, level=1>\n"
-                "<PostItem: pos=main, post_id=my_heap/1, level=1>\n"
+                "<PostItem: pos=inner, post_id=my_heap/1, level=1>\n"
                   "<PostItem: pos=begin, post_id=my_heap/2, level=2>\n"
-                  "<PostItem: pos=main, post_id=my_heap/2, level=2>\n"
+                  "<PostItem: pos=inner, post_id=my_heap/2, level=2>\n"
                   "<PostItem: pos=end, post_id=my_heap/2, level=2>\n"
                 "<PostItem: pos=end, post_id=my_heap/1, level=1>\n"
                 "<PostItem: pos=begin, post_id=my_heap/3, level=1>\n"
-                "<PostItem: pos=main, post_id=my_heap/3, level=1>\n"
+                "<PostItem: pos=inner, post_id=my_heap/3, level=1>\n"
                 "<PostItem: pos=end, post_id=my_heap/3, level=1>\n"
               "<PostItem: pos=end, post_id=my_heap/0, level=0>\n"
               "<PostItem: pos=begin, post_id=my_other_heap/0, level=0>\n"
-              "<PostItem: pos=main, post_id=my_other_heap/0, level=0>\n"
+              "<PostItem: pos=inner, post_id=my_other_heap/0, level=0>\n"
               "<PostItem: pos=end, post_id=my_other_heap/0, level=0>\n"
               "<PostItem: pos=begin, post_id=my_heap/4, level=0>\n"
-              "<PostItem: pos=main, post_id=my_heap/4, level=0>\n"
+              "<PostItem: pos=inner, post_id=my_heap/4, level=0>\n"
               "<PostItem: pos=end, post_id=my_heap/4, level=0>\n"))
 
         # If the post is not in the postdb, AssertionError will be raised

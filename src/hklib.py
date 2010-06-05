@@ -2191,7 +2191,7 @@ class PostDB(object):
             for post2 in self.iter_thread(self.post(ch_post_id), threadstruct):
                 yield post2
 
-    def walk_thread(self, root, threadstruct=None, yield_main=False):
+    def walk_thread(self, root, threadstruct=None, yield_inner=False):
         """Walks a thread and yields its posts.
 
         `walk_thread` walks the thread indicated by `root` with deep walk and
@@ -2272,10 +2272,10 @@ class PostDB(object):
 
             if postitem.pos == 'begin':
 
-                if yield_main:
-                    postitem_main = postitem.copy()
-                    postitem_main.pos = 'main'
-                    yield postitem_main
+                if yield_inner:
+                    postitem_inner = postitem.copy()
+                    postitem_inner.pos = 'inner'
+                    yield postitem_inner
 
                 # pushing the closing pair of postitem into the stack
                 postitem_end = postitem.copy()
@@ -2536,7 +2536,7 @@ class PostItem(object):
         - `level` (int) -- Initializes the `level` data attribute.
         """
 
-        assert(pos in ['begin', 'end', 'main', 'flat'])
+        assert(pos in ['begin', 'end', 'inner', 'flat'])
         self.pos = pos
         self.post = post
         self.level = level

@@ -548,7 +548,7 @@ class Generator(object):
 
             parent = self._postdb.parent(postitem.post)
             if parent is not None:
-                parent_postitem = hklib.PostItem('main', parent)
+                parent_postitem = hklib.PostItem('inner', parent)
                 return \
                     ('Parent: ',
                      self.print_link(
@@ -589,7 +589,7 @@ class Generator(object):
             children = self._postdb.children(postitem.post)
             children_printed = []
             for child in children:
-                child_postitem = hklib.PostItem('main', child)
+                child_postitem = hklib.PostItem('inner', child)
                 child_printed = \
                     self.print_link(
                         self.print_postitem_link(child_postitem),
@@ -695,7 +695,7 @@ class Generator(object):
                                           heap_id)
                     if target_post is not None:
                         target_postitem = \
-                            hklib.PostItem(pos='main', post=target_post)
+                            hklib.PostItem(pos='inner', post=target_post)
                         s = self.print_link(
                                 self.print_postitem_link(target_postitem),
                                 s)
@@ -800,10 +800,10 @@ class Generator(object):
                 self.print_comment('postbox for post ' + post_id_str), '\n')
 
     # TODO test
-    def get_postsummary_fields_main(self, postitem):
+    def get_postsummary_fields_inner(self, postitem):
         # Unused argument 'postitem' # pylint: disable-msg=W0613
         """Returns the fields of the post summary when the pos position is
-        ``"main"``.
+        ``'inner'``.
 
         **Argument:**
 
@@ -843,8 +843,8 @@ class Generator(object):
             self.print_postitem_date,
         )
 
-    def print_postitem_main(self, postitem):
-        """Prints a ``'main'`` post item.
+    def print_postitem_inner(self, postitem):
+        """Prints a ``'inner'`` post item.
 
         **Argument:**
 
@@ -864,7 +864,7 @@ class Generator(object):
 
         post_summary_fields = \
             [append_newline(fun(postitem))
-             for fun in self.get_postsummary_fields_main(postitem)]
+             for fun in self.get_postsummary_fields_inner(postitem)]
 
         body = self.print_postitem_body(postitem)
         heap_id, post_index = postitem.post.post_id()
@@ -934,8 +934,8 @@ class Generator(object):
             return self.print_postitem_begin(postitem)
         elif postitem.pos == 'end':
             return self.print_postitem_end(postitem)
-        elif postitem.pos == 'main':
-            return self.print_postitem_main(postitem)
+        elif postitem.pos == 'inner':
+            return self.print_postitem_inner(postitem)
         elif postitem.pos == 'flat':
             return self.print_postitem_flat(postitem)
         else:
@@ -993,7 +993,7 @@ class Generator(object):
         """
 
         xpostitems = \
-            self._postdb.walk_thread(root, threadstruct, yield_main=True)
+            self._postdb.walk_thread(root, threadstruct, yield_inner=True)
         return self.walk_postitems(xpostitems)
 
     # TODO test
@@ -1028,9 +1028,9 @@ class Generator(object):
         print_fun = self.print_postitem
 
         for root in roots_list:
-            for postitem in self._postdb.walk_thread(root, yield_main=True):
+            for postitem in self._postdb.walk_thread(root, yield_inner=True):
                 if (postitem.post not in posts and
-                    postitem.pos in ['main', 'flat']):
+                    postitem.pos in ['inner', 'flat']):
                     def enclose_inactive(postitem):
                         return self.enclose(print_fun(postitem),
                                             class_='post_inactive',
@@ -1144,7 +1144,7 @@ class Generator(object):
             if post in posts:
                 post_id_str = post.post_id_str()
                 old_print_fun = postitem.print_fun
-                if postitem.pos == 'main':
+                if postitem.pos == 'inner':
                     postitem.print_fun = \
                         lambda postitem:\
                             self.enclose(
