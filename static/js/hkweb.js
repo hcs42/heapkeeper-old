@@ -119,6 +119,14 @@ function getPostIds() {
     });
 }
 
+function getRootPostId() {
+    // Returns the root of the thread that is displayed.
+    //
+    // Returns: str
+
+    return location.href.replace(/^.*\/([^\/]+)\/([^\/]+)$/, '$1-$2');
+}
+
 function hidePostBody(postId) {
     // Hides a post body and shows the "Show body" button.
     //
@@ -372,6 +380,54 @@ function confirmExit() {
     }
 }
 
+///// Adding new buttons /////
+
+function addGlobalButton(buttonText, buttonId, eventHandler) {
+    // Adds the specified kind of button to global buttons.
+    //
+    // Arguments:
+    //
+    // - buttonText (str) -- The text of the button.
+    // - buttonId (str) -- The button's HTML id.
+    // - eventHandler(function(postId)) -- Functions that will be called when
+    //   the button is clicked on.
+
+    var globalButtons = $('.global-buttons');
+    globalButtons.append(
+        '<span class="button global-button" id="' + buttonId + '">' +
+        buttonText +
+        '</span>');
+    $('#' + buttonId).bind('click', function() {
+        eventHandler();
+    });
+}
+
+function addBodyButtons(buttonText, buttonName, eventHandler) {
+    // Adds the specified kind of button to each post body container.
+    //
+    // Arguments:
+    //
+    // - buttonText (str) -- The text of the button.
+    // - buttonName (str) -- The button's HTML id will be
+    //   buttonName + '-' + postId
+    // - eventHandler(function(postId)) -- Functions that will be called when
+    //   the button is clicked on.
+
+    getPostIds().each(function(index) {
+        var postId = this;
+        var postBodyContainer = $('#post-body-container-' + postId);
+        var postBodyButtons = $('.post-body-buttons', postBodyContainer);
+        var buttonId = buttonName + '-' + postId;
+        postBodyButtons.append(
+            '<span class="button post-body-button" ' +
+            'id="' + buttonId + '">' +
+            buttonText +
+            '</span>');
+        $('#' + buttonId).bind('click', function() {
+            eventHandler(postId);
+        });
+    });
+}
 
 ///// Adding event handlers /////
 
