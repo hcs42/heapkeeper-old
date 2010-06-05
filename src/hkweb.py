@@ -48,17 +48,18 @@ import hkshell
 
 ##### Global variables #####
 
-urls = (
+urls = [
     r'/', 'Index',
     r'/(external/[A-Za-z0-9_./-]+)', 'Fetch',
     r'/(static/[A-Za-z0-9_./-]+)', 'Fetch',
+    r'/(plugins/[A-Za-z0-9_.-]+/static/[A-Za-z0-9_./-]+)', 'Fetch',
     r'/posts/(.*)', 'Post',
     r'/raw-post-bodies/(.*)', 'RawPostBody',
     r'/raw-post-text/(.*)', 'RawPostText',
     r'/set-post-body/(.*)', 'SetPostBody',
     r'/get-post-body/(.*)', 'GetPostBody',
     r'/set-raw-post/(.*)', 'SetRawPost',
-    )
+    ]
 
 log = []
 
@@ -112,6 +113,9 @@ class PostPageGenerator(WebGenerator):
 
     def __init__(self, postdb):
         WebGenerator.__init__(self, postdb)
+        self.js_files = ['/external/jquery.js',
+                         '/external/json2.js',
+                         '/static/js/hkweb.js']
 
     def set_post_id(self, post_id):
         post = self._postdb.post(post_id)
@@ -158,12 +162,9 @@ class PostPageGenerator(WebGenerator):
                 tag='div',
                 newlines=True)
 
-        js_files = ('/external/jquery.js',
-                    '/external/json2.js',
-                    '/static/js/hkweb.js')
         js_links = \
             [('<script type="text/javascript" src="%s"></script>\n' %
-              (js_file,)) for js_file in js_files]
+              (js_file,)) for js_file in self.js_files]
 
         return (buttons,
                 self.print_thread_page(self._root),
@@ -543,14 +544,38 @@ class Server(threading.Thread):
         # wrapper around sys would be the answer, which should be done anyway
         # to control logging (there sys.stderr should be diverted).
         sys.argv = (None, str(self._port),)
-        WebApp = webpy.application(urls, globals())
-        WebApp.run()
+        webapp = webpy.application(urls, globals())
+        self.webapp = webapp
+        webapp.run()
 
 
-##### hkshell commands #####
+##### Interface functions #####
 
 def start(port=8080):
+    """Starts the hkweb web server.
+
+    **Argument:**
+
+    - `port` (int) -- The port to listen on.
+    """
+
     options = hkshell.options
     options.web_server = Server(port)
     options.web_server.start()
     hkutils.log('Web service started.')
+
+def insert_urls(new_urls):
+    """Inserts the given urls before the already handles URLs.
+
+    **Argument:**
+
+    - `new_urls` ([str])
+
+    **Returns:**
+
+    **Example:** ::
+
+        >>> hkweb.insert_urls(['/myurl', 'mymodule.MyServer'])
+    """
+
+    urls[0:0] = new_urls
