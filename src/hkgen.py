@@ -45,7 +45,6 @@ types in the documentation so we can talk about them easily.
 
 from __future__ import with_statement
 
-import datetime
 import itertools
 import os
 import re
