@@ -149,7 +149,7 @@ class PostPageGenerator(WebGenerator):
             self.enclose(
                 (self.enclose(
                      self.print_link(post_link, 'Back to the index'),
-                     class_='button post-summary-button'), '\n',
+                     class_='button global-button'), '\n',
                  self.enclose(
                      'Hide all post bodies',
                      class_='button global-button',
