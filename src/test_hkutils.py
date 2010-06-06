@@ -425,6 +425,25 @@ class Test__Misc(unittest.TestCase):
             hkutils.configparser_to_configdict(configparser),
             {'': {'': {'key': 'value'}}})
 
+    def test_quote_shell_arg(self):
+        """Tests :func:`hkutils.quote_shell_arg`."""
+
+        self.assertEquals(
+            hkutils.quote_shell_arg('text'),
+            'text')
+
+        self.assertEquals(
+            hkutils.quote_shell_arg('te xt'),
+            "'te xt'")
+
+        self.assertEquals(
+            hkutils.quote_shell_arg('te "x" t'),
+            "'te \"x\" t'")
+
+        self.assertEquals(
+            hkutils.quote_shell_arg("te 'x' t"),
+            "'te '\"'\"'x'\"'\"' t'")
+
 
 if __name__ == '__main__':
     unittest.main()

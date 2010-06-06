@@ -58,5 +58,7 @@ Miscellaneous
 .. autofunction:: add_method
 .. autofunction:: insert_sep
 .. autofunction:: configparser_to_configdict
+.. autofunction:: quote_shell_arg
+.. autofunction:: call
 .. autoclass:: NOT_SET
 

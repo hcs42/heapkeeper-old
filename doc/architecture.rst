@@ -3,17 +3,7 @@ Architecture of Heapkeeper
 
 This section describes the architecture of Heapkeeper. First it gives a
 high-level overview of the system by summarizing the role of each module in a
-few sentences. Then the tasks of the most important classes and functions are
-explained. Finally it talks about the dependencies between the modules.
-
-This section does not contain a detailed descriptions of the modules, classes
-and functions: these descriptions can be found in the documentation of the
-modules.
-
-Content of the repository
--------------------------
-
-The main directories and files in `Heapkeeper's repository`__:
+main directories and files in `Heapkeeper's repository`__:
 
 __ http://github.com/hcs42/heapkeeper/
 

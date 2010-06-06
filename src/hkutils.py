@@ -78,7 +78,9 @@ import datetime
 import email.utils
 import inspect
 import os.path
+import re
 import shutil
+import subprocess
 import sys
 import types
 
@@ -565,6 +567,56 @@ def configparser_to_configdict(configparser):
             value = configparser.get(section, option)
             section_dict[option] = value
     return main_dict
+
+
+def quote_shell_arg(arg):
+    """Puts an argument that is to be passed as a shell argument between
+    quotes.
+
+    If `arg` is typed into bash as an argument to a program, then the invoked
+    program will get `arg` exactly as it was specified to
+    :func:`quote_shell_arg`.
+
+    **Argument:**
+
+    - `arg` (str)
+
+    **Returns:** str
+
+    **Examples:** ::
+
+        >>> print hkutils.quote_shell_arg('text')
+        text
+        >>> print hkutils.quote_shell_arg('te xt')
+        'te xt'
+        >>> print hkutils.quote_shell_arg('te "x" t')
+        'te "x" t'
+        >>> print hkutils.quote_shell_arg("te 'x' t")
+        'te '"'"'x'"'"' t'
+    """
+
+    # We put `arg` between quotes if contains any character like space that
+    # is not mentioned here
+    if re.match('^[-_a-zA-Z0-9./+=:]+$', arg):
+        return arg
+    else:
+        arg2 = re.sub("('+)", "'\"\\1\"'", arg)
+        return "'" + arg2 + "'"
+
+
+# Not tested
+def call(cmd):
+    """Executes the given command using `subprocess.call` after printing it.
+
+    **Argument:**
+
+    - `cmd` ([str]) -- The command to be executed.
+
+    **Returns:** Popen.returncode
+    """
+
+    log('cmd: ' + ' '.join([quote_shell_arg(arg) for arg in cmd]))
+    return subprocess.call(cmd)
 
 
 ##### Constants #####
