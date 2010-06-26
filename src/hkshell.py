@@ -1736,8 +1736,12 @@ def import_module(modname):
         hkutils.log('Importing %s...' % (modname,))
         __import__(modname)
         hkutils.log('Importing %s OK' % (modname,))
-    except ImportError:
-        hkutils.log('Module not found: "%s"' % (modname,))
+    except ImportError, e:
+        if str(e) == ('No module named ' + modname):
+            hkutils.log('Module not found: "%s"' % (modname,))
+        else:
+            exc_info = sys.exc_info()
+            raise exc_info[0], exc_info[1], exc_info[2]
 
 def parse_args(args=None):
     """Parses the given command line options.
