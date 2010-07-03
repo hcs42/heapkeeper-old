@@ -294,7 +294,7 @@ class Post(object):
         headers = {}
         line = f.readline()
         while line not in ['', '\n']:
-            m = re.match('([^:]+): (.*)', line)
+            m = re.match('([^:]+): ?(.*)', line)
             key = m.group(1)
             value = m.group(2)
             line = f.readline()
