@@ -674,7 +674,7 @@ class Post(object):
         """
 
         date = self.date()
-        return hkutils.calc_timestamp(date) if date != '' else 0
+        return int(hkutils.calc_timestamp(date)) if date != '' else 0
 
     # TODO test
     def datetime(self):
