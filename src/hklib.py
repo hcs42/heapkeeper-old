@@ -136,6 +136,7 @@ import os.path
 import quopri
 import re
 import StringIO
+import sys
 import time
 
 import hkutils
@@ -295,6 +296,10 @@ class Post(object):
         line = f.readline()
         while line not in ['', '\n']:
             m = re.match('([^:]+): ?(.*)', line)
+            if m is None:
+                error_msg = ('Error parsing the following line: "%s"' %
+                             (line.rstrip('\n'),))
+                raise hkutils.HkException(error_msg)
             key = m.group(1)
             value = m.group(2)
             line = f.readline()
@@ -409,9 +414,11 @@ class Post(object):
             self._meta_dict = None
             self._body_object = None
         except Exception, e:
-            raise hkutils.HkException, \
-                  ('Error parsing post "%s"\n%s' %
-                   (getattr(f, 'name', ''), e))
+            exc_info = sys.exc_info()
+            if (isinstance(e, hkutils.HkException) and hasattr(f, 'name')):
+                print exc_info[1]
+                exc_info[1].value += '\nwhile parsing post file "%s"' % f.name
+            raise exc_info[0], exc_info[1], exc_info[2]
 
     @staticmethod
     def from_str(s, post_id=None, postdb=None):
