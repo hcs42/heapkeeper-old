@@ -131,7 +131,11 @@ class HkException(Exception):
         **Returns:** str
         """
 
-        return repr(self.value)
+        value = self.value
+        if isinstance(value, str):
+            return value
+        else:
+            return repr(value)
 
 
 ##### Option handling (currently not used) #####

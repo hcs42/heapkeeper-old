@@ -266,7 +266,7 @@ class Test__Misc(unittest.TestCase):
             raise hkutils.HkException, 'description'
         except hkutils.HkException, h:
             self.assertEqual(h.value, 'description')
-            self.assertEqual(str(h), "'description'")
+            self.assertEqual(str(h), 'description')
 
     def test_plural(self):
 
