@@ -235,6 +235,8 @@ function getPostBodyRequest(postId, callback) {
 function editPostStarted(postId) {
     // Should be called when editing the post body has been started.
     //
+    // - postId (PostId)
+
     setButtonVisibility($('#post-body-edit-button-' + postId), 'hide');
     setButtonVisibility($('#post-raw-edit-button-' + postId), 'hide');
     setButtonVisibility($('#post-body-save-button-' + postId), 'show');
@@ -254,6 +256,8 @@ function editPostStarted(postId) {
 
 function editPostFinished(postId) {
     // Should be called when editing the post body has been finished.
+    //
+    // - postId (PostId)
 
     setButtonVisibility($('#post-body-edit-button-' + postId), 'show');
     setButtonVisibility($('#post-raw-edit-button-' + postId), 'show');
