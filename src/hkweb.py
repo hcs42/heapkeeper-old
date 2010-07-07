@@ -260,10 +260,10 @@ class PostPageGenerator(WebGenerator):
                    newlines=True,
                    id='post-body-container-' + post_id)
 
-class PostBodyGenerator(hkgen.Generator):
+class PostBodyGenerator(WebGenerator):
 
     def __init__(self, postdb):
-        hkgen.Generator.__init__(self, postdb)
+        WebGenerator.__init__(self, postdb)
 
     def print_post_body(self, post_id):
 
