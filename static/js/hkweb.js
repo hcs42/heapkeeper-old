@@ -239,6 +239,17 @@ function editPostStarted(postId) {
     setButtonVisibility($('#post-raw-edit-button-' + postId), 'hide');
     setButtonVisibility($('#post-body-save-button-' + postId), 'show');
     setButtonVisibility($('#post-body-cancel-button-' + postId), 'show');
+
+    var postBodyContainer = $('#post-body-container-' + postId);
+    var textArea = $('textarea', postBodyContainer);
+
+    // Save the post body for shift-enter
+    textArea.bind('keypress', function(e) {
+        if (e.which == 13 && e.shiftKey) {
+            e.preventDefault();
+            savePost(postId);
+        }
+    });
 }
 
 function editPostFinished(postId) {
