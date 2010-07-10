@@ -35,6 +35,7 @@ hkweb can be started from the |hkshell| in the following way:
 """
 
 
+import exceptions
 import json
 import sys
 import threading
@@ -62,6 +63,26 @@ urls = [
     ]
 
 log = []
+
+
+##### Utility functions #####
+
+def get_web_args():
+    """Gets the arguments transferred as a JSON object from the web.py module.
+
+    **Returns:** json_object -- It will contain UTF-8 encoded strings instead
+    of unicode objects.
+    """
+
+    result = {}
+    for key, value in webpy.input().items():
+        try:
+            result[key] = hkutils.json_uutf8(json.loads(value))
+        except exceptions.ValueError, e:
+            raise hkutils.HkException(
+                      'Error: the "%s" parameter is not a valid JSON object: '
+                      '%s' % (key, value))
+    return result
 
 
 ##### Generator classes #####
@@ -391,8 +412,10 @@ class AjaxServer(WebpyServer):
         webpy.header('Content-type','application/json')
         webpy.header('Transfer-Encoding','chunked')
         name = hkutils.uutf8(name_uni)
-        input = webpy.input()
-        args = json.loads(input.get('args'))
+        try:
+            args = get_web_args()
+        except hkutils.HkException, e:
+            return str(e)
         result = self.execute(name, args)
         return json.dumps(result)
 
@@ -422,8 +445,6 @@ class SetPostBody(AjaxServer):
         newPostBodyText = args.get('new_body_text')
         if newPostBodyText is None:
             return {'error': 'No post body specified'}
-        else:
-            newPostBodyText = hkutils.uutf8(newPostBodyText)
 
         post.set_body(newPostBodyText)
 
@@ -491,8 +512,6 @@ class SetRawPost(AjaxServer):
         new_post_text = args.get('new_post_text')
         if new_post_text is None:
             return {'error': 'No post text specified'}
-        else:
-            new_post_text = hkutils.uutf8(new_post_text)
 
         old_parent = post.parent()
 

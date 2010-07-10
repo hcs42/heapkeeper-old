@@ -47,10 +47,15 @@ function ajaxQuery(url, args, callback) {
     //   result. The server is expected to send a JSON text that will be
     //   converted to the `result` object.
 
+    data = {};
+    $.each(args, function(key, value) {
+        data[key] = JSON.stringify(value);
+    });
+
     $.ajax({
         url: url,
         dataType: 'json',
-        data: {'args': JSON.stringify(args)},
+        data: data,
         type: 'post',
         success: callback
     });
