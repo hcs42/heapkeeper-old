@@ -35,6 +35,8 @@ the file ``<module>.py``.
     The interactive interface of Heapkeeper.
 :mod:`hkbodyparser`
     It parses the body of the posts.
+:mod:`hksearch`
+    It searches in the post database.
 :mod:`hk`
     A small module whose only task is to invoke :mod:`hkshell`.
 :mod:`hkcustomlib`
