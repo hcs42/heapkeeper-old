@@ -1625,9 +1625,7 @@ def grep(pattern, pps=None):
     - `pattern` (str) -- Regular expression.
     - `pps` (|PrePostSet|)
 
-    **Returns:**
-
-    - `pps` (|PrePostSet|)
+    **Returns:** |PostSet|
 
     **Examples:**
 
