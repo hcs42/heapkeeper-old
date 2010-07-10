@@ -141,16 +141,14 @@ def start(review_command_name='r'):
     hkweb.insert_urls(['/set-post-reviewed/(.*)',
                        'hkp_review.SetPostReviewed'])
 
-    OldPostPageGenerator = hkweb.PostPageGenerator
+    old_init = hkweb.PostPageGenerator.__init__
 
-    class PostPageGenerator(OldPostPageGenerator):
+    def __init__(self, postdb):
 
-        def __init__(self, postdb):
+        # __init__ method from base class 'PostPageGenerator' is not called
+        # pylint: disable-msg=W0231
+        old_init(self, postdb)
 
-            # __init__ method from base class 'PostPageGenerator' is not called
-            # pylint: disable-msg=W0231
-            OldPostPageGenerator.__init__(self, postdb)
+        self.js_files.append('/plugins/review/static/js/hkp_review.js')
 
-            self.js_files.append('/plugins/review/static/js/hkp_review.js')
-
-    hkweb.PostPageGenerator = PostPageGenerator
+    hkweb.PostPageGenerator.__init__ = __init__
