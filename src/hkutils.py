@@ -402,6 +402,31 @@ def uutf8(unicode_obj):
 
     return unicode_obj.encode('utf-8')
 
+def json_uutf8(json_obj):
+    """Converts the unicode objects in a JSON data structure into UTF-8
+    strings.
+
+    **Argument:**
+
+    - `json_obj` (json_object) -- See the documentation of the json.JSONDecoder
+      function in the Python documentation for the definition of the JSon
+      objects.
+
+    **Returns:** json_object
+    """
+
+    if isinstance(json_obj, dict):
+        new_dict = {}
+        for key, value in json_obj.items():
+            new_dict[json_uutf8(key)] = json_uutf8(value)
+        return new_dict
+    elif isinstance(json_obj, list):
+        return [json_uutf8(item) for item in json_obj]
+    elif isinstance(json_obj, unicode):
+        return uutf8(json_obj)
+    else:
+        return json_obj
+
 def calc_timestamp(date):
     """Calculates a timestamp from a date.
 

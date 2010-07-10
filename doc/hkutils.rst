@@ -52,6 +52,8 @@ Miscellaneous
 .. autofunction:: file_to_string
 .. autofunction:: string_to_file
 .. autofunction:: utf8
+.. autofunction:: uutf8
+.. autofunction:: json_uutf8
 .. autofunction:: calc_timestamp
 .. autofunction:: copy_wo
 .. autofunction:: plural
