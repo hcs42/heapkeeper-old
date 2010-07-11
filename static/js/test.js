@@ -31,12 +31,59 @@ function test_PostIdStr() {
     assertEqual(postIdStrToPostId('my_heap/1'), 'my_heap-1');
 }
 
+function test_url_and_dict_to_http_query() {
+
+    // Test template:
+    //
+    // test(
+    //     <url>, <args>,
+    //     <escaped result>,
+    //     <unescaped result>)
+
+    function test_core(url, args, expected_escaped, expected_unescaped) {
+        actual_result = url_and_dict_to_http_query(url, args),
+        assertEqual(actual_result, expected_escaped);
+        assertEqual(unescape(actual_result), expected_unescaped);
+    }
+
+    // Basic test
+    test_core(
+        'myurl', {'key': 'value'},
+        'myurl?key=%22value%22',
+        'myurl?key="value"');
+
+    // Empty test
+    test_core(
+        'myurl', {},
+        'myurl',
+        'myurl');
+
+    // Testing multiple key-value pairs
+    test_core(
+        'myurl', {'key1': 'value1', 'key2': 'value2'},
+        'myurl?key1=%22value1%22&key2=%22value2%22',
+        'myurl?key1="value1"&key2="value2"');
+
+    // Testing a list as a value
+    test_core(
+        'myurl', {'key': [1, 1.0, true]},
+        'myurl?key=%5B1%2C1%2Ctrue%5D',
+        'myurl?key=[1,1,true]');
+
+    // Testing a dictionary as a value
+    test_core(
+        'myurl', {'key': {'key2': 42}},
+        'myurl?key=%7B%22key2%22%3A42%7D',
+        'myurl?key={"key2":42}');
+}
+
 var hk_unittest_result = '';
 
 function do_test() {
     // Executes the unit tests.
 
     test_PostIdStr();
+    test_url_and_dict_to_http_query();
 
     if (hk_unittest_result == '') {
         hk_unittest_result = 'All tests passed.';

@@ -36,6 +36,37 @@ function postIdStrToPostId(postId) {
 
 ///// Communication with the server: HTML queries and AJAX /////
 
+function url_and_dict_to_http_query(url, args) {
+    // Converts an URL and a dictionary into a HTTP query string.
+    //
+    // - url(str) - args(object) -- `args` will be converted to a HTTP query
+    //   string. The values in `args` will be converted to JSON.
+    //
+    // Returns: str -- it will look like this:
+    //
+    //     <url>?<key1>=<value1>&<key2>=<value2>&...
+    //
+    // where:
+    // - all keys are escaped
+    // - all values are converted to JSON and then escaped
+    //
+    // Example:
+
+    data = [url];
+    var first = true;
+    $.each(args, function(key, value) {
+        if (first) {
+            data.push('?');
+            first = false;
+        } else {
+            data.push('&');
+        }
+        data.push(escape(key) + '=' + escape(JSON.stringify(value)));
+    });
+
+    return data.join('');
+}
+
 function gotoURL(url, args) {
     // Goes to the specified URL; the query parameters will be created from
     // `args`.
@@ -44,26 +75,7 @@ function gotoURL(url, args) {
     //   'args' as query parameters) will be loaded.
     // - args(object) -- `args` will be converted to a JSON text and sent to
     //   the server as query parameters.
-
-    // `query_url` will look like this:
-    //
-    //     <url>?<key1>=<value1>&<key2>=<value2>&...
-    //
-    // where:
-    // - all keys are escaped
-    // - all values are converted to JSON and then escaped
-    data = [url + '?'];
-    var first = true;
-    $.each(args, function(key, value) {
-        if (first) {
-            first = false;
-        } else {
-            data.push('&');
-        }
-        data.push(escape(key) + '=' + escape(JSON.stringify(value)));
-    });
-    query_url = data.join('');
-
+    query_url = url_and_dict_to_http_query(url, args);
     $(location).attr('href', query_url);
 }
 
