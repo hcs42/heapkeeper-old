@@ -36,6 +36,7 @@ hkweb can be started from the |hkshell| in the following way:
 
 
 import exceptions
+import itertools
 import json
 import sys
 import threading
@@ -44,6 +45,7 @@ import web as webpy
 import hkutils
 import hklib
 import hkgen
+import hksearch
 import hkshell
 
 
@@ -61,6 +63,7 @@ urls = [
     r'/get-post-body/(.*)', 'GetPostBody',
     r'/set-raw-post/(.*)', 'SetRawPost',
     r'/show-json', 'ShowJSon',
+    r'/search.*', 'Search',
     ]
 
 log = []
@@ -282,6 +285,72 @@ class PostPageGenerator(WebGenerator):
                    newlines=True,
                    id='post-body-container-' + post_id)
 
+
+class SearchPageGenerator(PostPageGenerator):
+
+    def __init__(self, postdb, preposts):
+        PostPageGenerator.__init__(self, postdb)
+        self.posts = postdb.postset(preposts)
+        self.options.html_title = 'Search page'
+        self.js_files.append('/static/js/hksearch.js')
+
+    def print_search_page_core(self):
+        """Prints the core of a search page.
+
+        **Returns:** |HtmlText|
+        """
+
+        # Getting the posts in the interesting threads
+        xpostitems = self.walk_exp_posts(self.posts)
+
+        # Reversing the thread order
+        xpostitems = self.reverse_threads(xpostitems)
+
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_post_body'),
+                xpostitems)
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_parent_post_id'),
+                xpostitems)
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_children_post_id'),
+                xpostitems)
+
+        # Printing the page
+        return self.print_postitems(xpostitems)
+
+    def print_search_page(self):
+        """Prints the search page.
+
+        **Returns:** |HtmlText|
+        """
+
+        buttons = \
+            self.enclose(
+                (self.enclose(
+                     'Hide all post bodies',
+                     class_='button global-button',
+                     id='hide-all-post-bodies'), '\n',
+                 self.enclose(
+                     'Show all post bodies',
+                     class_='button global-button',
+                     id='show-all-post-bodies'), '\n'),
+                class_='global-buttons',
+                tag='div',
+                newlines=True)
+
+        return (buttons,
+                self.print_search_page_core())
+
+    def print_js_links(self):
+        return \
+            [('<script type="text/javascript" src="%s"></script>\n' %
+              (js_file,)) for js_file in self.js_files]
+
+
 class PostBodyGenerator(WebGenerator):
 
     def __init__(self, postdb):
@@ -357,6 +426,82 @@ class Post(HkPageServer):
         generator = PostPageGenerator(self._postdb)
         content = generator.print_post_page(post_id)
         return self.serve_html(content, generator)
+
+
+class Search(HkPageServer):
+    """Serves the search pages.
+
+    Served URL: ``/search``"""
+
+    def __init__(self):
+        HkPageServer.__init__(self)
+
+    def main(self):
+
+        try:
+            preposts = self.get_posts()
+        except hkutils.HkException, e:
+            return str(e)
+
+        if preposts is None:
+            # `preposts` is None if there was no search performed. However, in
+            # this function, we want to have `preposts` as a list of preposts,
+            # and we use `show` to store the information that no search was
+            # performed and thus no search result should be shown.
+            preposts = []
+            show = 'no_search'
+        else:
+            # 'normal' means here that a search was performed. Later we modify
+            # thsi to 'no_post_found' if it turns out that the query does not
+            # match any post.
+            show = 'normal'
+
+        generator = SearchPageGenerator(self._postdb, preposts)
+        if (show == 'normal' and len(generator.posts) == 0):
+            show = 'no_post_found'
+
+        if show == 'no_search':
+            main_content = ''
+        elif show == 'no_post_found':
+            main_content = 'No post found.'
+        elif show == 'normal':
+            main_content = generator.print_search_page()
+
+        content = (self.get_searchbar(),
+                   main_content,
+                   generator.print_js_links())
+        return self.serve_html(content, generator)
+
+    def get_posts(self):
+
+        args = get_web_args()
+
+        posts = args.get('posts')
+        if posts is not None:
+            return posts
+
+        term = args.get('term')
+        if term is not None:
+            return hksearch.search(term, self._postdb.all())
+
+        return None # only the search bar will be shown
+
+    def get_searchbar(self):
+        return ('<center>\n'
+                '<div class="searchbar-container">\n'
+                '  <!-- Note: this form is submitted using JavaScript. -->\n'
+                '  <form id="searchbar-container-form">\n'
+                '    <input id="searchbar-term" type="text" size="40"/>\n'
+                '    <input type="submit" value="Search the heaps" />\n'
+                '  </form>\n'
+                '</div>\n'
+                '</center>\n')
+
+    def GET(self):
+        return self.main()
+
+    def POST(self):
+        return self.main()
 
 
 class ShowJSon(HkPageServer):
