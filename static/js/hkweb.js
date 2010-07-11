@@ -34,7 +34,38 @@ function postIdStrToPostId(postId) {
 }
 
 
-///// AJAX /////
+///// Communication with the server: HTML queries and AJAX /////
+
+function gotoURL(url, args) {
+    // Goes to the specified URL; the query parameters will be created from
+    // `args`.
+    //
+    // - url(str) -- The URL to load. If empty string, the current URL (with
+    //   'args' as query parameters) will be loaded.
+    // - args(object) -- `args` will be converted to a JSON text and sent to
+    //   the server as query parameters.
+
+    // `query_url` will look like this:
+    //
+    //     <url>?<key1>=<value1>&<key2>=<value2>&...
+    //
+    // where:
+    // - all keys are escaped
+    // - all values are converted to JSON and then escaped
+    data = [url + '?'];
+    var first = true;
+    $.each(args, function(key, value) {
+        if (first) {
+            first = false;
+        } else {
+            data.push('&');
+        }
+        data.push(escape(key) + '=' + escape(JSON.stringify(value)));
+    });
+    query_url = data.join('');
+
+    $(location).attr('href', query_url);
+}
 
 function ajaxQuery(url, args, callback) {
     // Performs an AJAX query using JSON texts and calls the callback function
