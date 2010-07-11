@@ -60,6 +60,7 @@ urls = [
     r'/set-post-body/(.*)', 'SetPostBody',
     r'/get-post-body/(.*)', 'GetPostBody',
     r'/set-raw-post/(.*)', 'SetRawPost',
+    r'/show-json', 'ShowJSon',
     ]
 
 log = []
@@ -356,6 +357,29 @@ class Post(HkPageServer):
         generator = PostPageGenerator(self._postdb)
         content = generator.print_post_page(post_id)
         return self.serve_html(content, generator)
+
+
+class ShowJSon(HkPageServer):
+    """Serves the search pages.
+
+    Served URL: ``/showjson``"""
+
+    def __init__(self):
+        HkPageServer.__init__(self)
+
+    def GET(self):
+        input = webpy.input()
+        try:
+            args = get_web_args()
+        except hkutils.HkException, e:
+            return str(e)
+        generator = IndexGenerator(self._postdb)
+        content = ("JSon dictionary of the query parameters: ",
+                    generator.escape(repr(args)))
+        return self.serve_html(content, generator)
+
+    def POST(self):
+        return self.GET()
 
 
 class RawPostBody(WebpyServer):
