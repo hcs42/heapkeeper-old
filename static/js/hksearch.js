@@ -16,15 +16,5 @@
 // Copyright (C) 2010 Csaba Hoch
 
 
-function search() {
-    // Loads the search page with the contents of the #searchbar-term input
-    // text as the search term.
-    gotoURL('', {'term': $('#searchbar-term').val()});
-}
-
 $(document).ready(function() {
-    $('#searchbar-container-form').bind('submit', function() {
-        search();
-        return false; // don't execute the normal "submit"
-    });
 });

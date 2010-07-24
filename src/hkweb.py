@@ -502,9 +502,10 @@ class Search(HkPageServer):
     def get_searchbar(self):
         return ('<center>\n'
                 '<div class="searchbar-container">\n'
-                '  <!-- Note: this form is submitted using JavaScript. -->\n'
-                '  <form id="searchbar-container-form">\n'
-                '    <input id="searchbar-term" type="text" size="40"/>\n'
+                '  <form id="searchbar-container-form" action="search"'
+                ' method="get">\n'
+                '    <input id="searchbar-term" name="term" type="text"'
+                ' size="40"/>\n'
                 '    <input type="submit" value="Search the heaps" />\n'
                 '  </form>\n'
                 '</div>\n'
