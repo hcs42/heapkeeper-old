@@ -134,12 +134,28 @@ class WebGenerator(hkgen.Generator):
 
         return ('/posts/', postitem.post.post_id_str())
 
+    def print_searchbar(self):
+        return ('<center>\n'
+                '<div class="searchbar-container">\n'
+                '  <form id="searchbar-container-form" action="/search"'
+                ' method="get">\n'
+                '    <input id="searchbar-term" name="term" type="text"'
+                ' size="40"/>\n'
+                '    <input type="submit" value="Search the heaps" />\n'
+                '  </form>\n'
+                '</div>\n'
+                '</center>\n')
+
 
 class IndexGenerator(WebGenerator):
     """Generator that generates the index page."""
 
     def __init__(self, postdb):
         WebGenerator.__init__(self, postdb)
+
+    def print_main(self):
+        return (self.print_searchbar(),
+                self.print_main_index_page())
 
 
 class PostPageGenerator(WebGenerator):
@@ -298,6 +314,10 @@ class PostPageGenerator(WebGenerator):
                    newlines=True,
                    id='post-body-container-' + post_id)
 
+    def print_main(self, postid):
+        return (self.print_searchbar(),
+                self.print_post_page(postid))
+
 
 class SearchPageGenerator(PostPageGenerator):
 
@@ -421,7 +441,7 @@ class Index(HkPageServer):
 
     def GET(self):
         generator = IndexGenerator(self._postdb)
-        content = generator.print_main_index_page()
+        content = generator.print_main()
         return self.serve_html(content, generator)
 
 
@@ -436,7 +456,7 @@ class Post(HkPageServer):
     def GET(self, name):
         post_id = hkutils.uutf8(name)
         generator = PostPageGenerator(self._postdb)
-        content = generator.print_post_page(post_id)
+        content = generator.print_main(post_id)
         return self.serve_html(content, generator)
 
 
@@ -479,7 +499,7 @@ class Search(HkPageServer):
         elif show == 'normal':
             main_content = generator.print_search_page()
 
-        content = (self.get_searchbar(),
+        content = (generator.print_searchbar(),
                    main_content,
                    generator.print_js_links())
         return self.serve_html(content, generator)
@@ -497,18 +517,6 @@ class Search(HkPageServer):
             return hksearch.search(term, self._postdb.all())
 
         return None # only the search bar will be shown
-
-    def get_searchbar(self):
-        return ('<center>\n'
-                '<div class="searchbar-container">\n'
-                '  <form id="searchbar-container-form" action="search"'
-                ' method="get">\n'
-                '    <input id="searchbar-term" name="term" type="text"'
-                ' size="40"/>\n'
-                '    <input type="submit" value="Search the heaps" />\n'
-                '  </form>\n'
-                '</div>\n'
-                '</center>\n')
 
     def GET(self):
         return self.main()
