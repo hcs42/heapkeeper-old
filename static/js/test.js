@@ -49,8 +49,8 @@ function test_url_and_dict_to_http_query() {
     // Basic test
     test_core(
         'myurl', {'key': 'value'},
-        'myurl?key=%22value%22',
-        'myurl?key="value"');
+        'myurl?key=%00%22value%22',
+        'myurl?key=\x00"value"');
 
     // Empty test
     test_core(
@@ -61,20 +61,20 @@ function test_url_and_dict_to_http_query() {
     // Testing multiple key-value pairs
     test_core(
         'myurl', {'key1': 'value1', 'key2': 'value2'},
-        'myurl?key1=%22value1%22&key2=%22value2%22',
-        'myurl?key1="value1"&key2="value2"');
+        'myurl?key1=%00%22value1%22&key2=%00%22value2%22',
+        'myurl?key1=\x00"value1"&key2=\x00"value2"');
 
     // Testing a list as a value
     test_core(
         'myurl', {'key': [1, 1.0, true]},
-        'myurl?key=%5B1%2C1%2Ctrue%5D',
-        'myurl?key=[1,1,true]');
+        'myurl?key=%00%5B1%2C1%2Ctrue%5D',
+        'myurl?key=\x00[1,1,true]');
 
     // Testing a dictionary as a value
     test_core(
         'myurl', {'key': {'key2': 42}},
-        'myurl?key=%7B%22key2%22%3A42%7D',
-        'myurl?key={"key2":42}');
+        'myurl?key=%00%7B%22key2%22%3A42%7D',
+        'myurl?key=\x00{"key2":42}');
 }
 
 var hk_unittest_result = '';

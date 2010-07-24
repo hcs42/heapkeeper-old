@@ -71,6 +71,8 @@ log = []
 
 ##### Utility functions #####
 
+JSON_ESCAPE_CHAR = '\x00'
+
 def get_web_args():
     """Gets the arguments transferred as a JSON object from the web.py module.
 
@@ -81,7 +83,18 @@ def get_web_args():
     result = {}
     for key, value in webpy.input().items():
         try:
-            result[key] = hkutils.json_uutf8(json.loads(value))
+
+            # If `value` starts with the JSON escape character, a JSON object
+            # should be described after the escape character. (E.g. the value
+            # '\x00[1,2]' (given as '%00[1,2]' in the query parameter) will
+            # become [1, 2]). Otherwise `value` is a string.
+            if len(value) > 1 and value[0] == JSON_ESCAPE_CHAR:
+                json_value_unicode = json.loads(value[1:])
+            else:
+                json_value_unicode = value
+
+            json_value = hkutils.json_uutf8(json_value_unicode)
+            result[key] = json_value
         except exceptions.ValueError, e:
             raise hkutils.HkException(
                       'Error: the "%s" parameter is not a valid JSON object: '

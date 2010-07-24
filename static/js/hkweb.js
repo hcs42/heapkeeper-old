@@ -36,6 +36,23 @@ function postIdStrToPostId(postId) {
 
 ///// Communication with the server: HTML queries and AJAX /////
 
+var JSON_ESCAPE_CHAR = '\x00';
+
+function stringify_object(obj) {
+    // Converts the given object into a string.
+    //
+    // The result is either a string (e.g. "text") or the JSON escape character
+    // followed by a stringified JSON object (e.g. "\x00[1,2]").
+    //
+    // Argument:
+    // - obj (object)
+    //
+    // Returns: str
+
+    return '\x00' + JSON.stringify(obj);
+}
+
+
 function url_and_dict_to_http_query(url, args) {
     // Converts an URL and a dictionary into a HTTP query string.
     //
@@ -61,7 +78,8 @@ function url_and_dict_to_http_query(url, args) {
         } else {
             data.push('&');
         }
-        data.push(escape(key) + '=' + escape(JSON.stringify(value)));
+        value_param = stringify_object(value);
+        data.push(escape(key) + '=' + escape(value_param));
     });
 
     return data.join('');
@@ -92,7 +110,7 @@ function ajaxQuery(url, args, callback) {
 
     data = {};
     $.each(args, function(key, value) {
-        data[key] = JSON.stringify(value);
+        data[key] = stringify_object(value);
     });
 
     $.ajax({
@@ -137,7 +155,7 @@ function ObjectPosition(obj) {
         do {
             curleft += obj.offsetLeft;
             curtop += obj.offsetTop;
-        } while (obj = obj.offsetParent);
+        } while (obj == obj.offsetParent);
     }
     return [curleft, curtop];
 }
