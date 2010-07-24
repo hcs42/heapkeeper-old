@@ -305,7 +305,6 @@ class SearchPageGenerator(PostPageGenerator):
         PostPageGenerator.__init__(self, postdb)
         self.posts = postdb.postset(preposts)
         self.options.html_title = 'Search page'
-        self.js_files.append('/static/js/hksearch.js')
 
     def print_search_page_core(self):
         """Prints the core of a search page.
