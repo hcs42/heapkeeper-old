@@ -103,7 +103,7 @@ function ScrollTo(obj) {
 }
 
 function ScrollToId(id) {
-    ScrollTo(document.getElementById(id))
+    ScrollTo(document.getElementById(id));
 }
 
 
@@ -241,7 +241,7 @@ function editPostFinished(postId) {
     setButtonVisibility($('#post-body-save-button-' + postId), 'hide');
     setButtonVisibility($('#post-body-cancel-button-' + postId), 'hide');
 
-    delete editState[postId]
+    delete editState[postId];
 }
 
 function editPost(postId, mode) {
@@ -259,7 +259,7 @@ function editPost(postId, mode) {
         var postBodyContainer = $('#post-body-container-' + postId);
         var postBodyContentNode = $('.post-body-content', postBodyContainer);
 
-        editState[postId] = mode
+        editState[postId] = mode;
 
         // Replacing the post-body-content box with a textarea
         postBodyContentNode.after(
@@ -290,7 +290,7 @@ function savePost(postId) {
     var postBodyContainer = $('#post-body-container-' + postId);
     var textArea = $('textarea', postBodyContainer);
     var newPostText = textArea.val();
-    var mode = editState[postId]
+    var mode = editState[postId];
 
     setPostContentRequest(postId, newPostText, mode, function(result) {
 
