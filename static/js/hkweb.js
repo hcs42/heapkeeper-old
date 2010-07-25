@@ -16,6 +16,9 @@
 // Copyright (C) 2010 Csaba Hoch
 
 
+/*global $, escape, location, scroll, window, document */
+
+
 ///// Types /////
 
 // - postId: a string which contains a heap id and a post index, separated with
@@ -69,7 +72,7 @@ function url_and_dict_to_http_query(url, args) {
     //
     // Example:
 
-    data = [url];
+    var data = [url];
     var first = true;
     $.each(args, function(key, value) {
         if (first) {
@@ -78,7 +81,7 @@ function url_and_dict_to_http_query(url, args) {
         } else {
             data.push('&');
         }
-        value_param = stringify_object(value);
+        var value_param = stringify_object(value);
         data.push(escape(key) + '=' + escape(value_param));
     });
 
@@ -93,7 +96,7 @@ function gotoURL(url, args) {
     //   'args' as query parameters) will be loaded.
     // - args(object) -- `args` will be converted to a JSON text and sent to
     //   the server as query parameters.
-    query_url = url_and_dict_to_http_query(url, args);
+    var query_url = url_and_dict_to_http_query(url, args);
     $(location).attr('href', query_url);
 }
 
@@ -108,7 +111,7 @@ function ajaxQuery(url, args, callback) {
     //   result. The server is expected to send a JSON text that will be
     //   converted to the `result` object.
 
-    data = {};
+    var data = {};
     $.each(args, function(key, value) {
         data[key] = stringify_object(value);
     });
@@ -239,7 +242,7 @@ function showAllPostBodies() {
 // Keys: post ids that are being edited.
 // Values: mode of editing: either 'body' if the body is edited or 'raw' if the
 // raw post text is edited.
-var editState = {}
+var editState = {};
 
 function getRawPostRequest(postId, mode, callback) {
     // Gets the raw body of the given post and executes a callback function with
