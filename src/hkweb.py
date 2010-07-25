@@ -499,9 +499,15 @@ class Search(HkPageServer):
         elif show == 'normal':
             main_content = generator.print_search_page()
 
+        focus_searchbar_js = \
+            ('<script  type="text/javascript" language="JavaScript">\n'
+             '$("#searchbar-term").focus();\n'
+             '</script>\n')
+
         content = (generator.print_searchbar(),
                    main_content,
-                   generator.print_js_links())
+                   generator.print_js_links(),
+                   focus_searchbar_js)
         return self.serve_html(content, generator)
 
     def get_posts(self):
