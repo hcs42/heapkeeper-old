@@ -140,7 +140,7 @@ Major new features:
   overriding those that should behave differently.
 - Heapids with prefixes are calculated automatically.
 - Posts may have references (to other posts).
-- The post file format is now "forward compaible", i.e. an older version of
+- The post file format is now "forward compatible", i.e. an older version of
   Heapkeeper will be able to handle a post file created by a newer version of
   Heapkeeper without damaging it.
 - :mod:`hkshell.e` can edit several files.
