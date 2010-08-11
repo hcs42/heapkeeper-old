@@ -294,6 +294,10 @@ class PostPageGenerator(WebGenerator):
                      class_='button post-body-button',
                      id='post-raw-edit-button-' + post_id), '\n',
                  self.enclose(
+                     'Add child',
+                     class_='button post-body-button',
+                     id='post-body-addchild-button-' + post_id), '\n',
+                 self.enclose(
                      'Save',
                      class_='button post-body-button',
                      id='post-body-save-button-' + post_id,
@@ -629,12 +633,31 @@ class SetPostBody(AjaxServer):
 
         **Argument:**
 
-        - `args` ({'new_body_text': str})
+        - `args` ({'new_body_text': str, 'new_count': int})
 
-        **Returns:** {'error': str} | {'new_body_html': str}
+        **Returns:** {'error': str} | {'new': str}
         """
 
-        post = self._postdb.post(post_id)
+        postdb = self._postdb
+
+        new = args.get('new')
+        if new is None:
+            post = postdb.post(post_id)
+        else:
+            parent = postdb.post(post_id)
+
+            # Create new post, make it a child of the existing one.
+            post = hklib.Post.from_str('')
+            post.set_author(parent.author())
+            post.set_subject(parent.subject())
+            post.set_date(parent.date())
+            post.set_tags(parent.tags())
+            post.set_parent(parent.post_id_str())
+            heap = parent.heap_id()
+            prefix = 'hkweb_'
+            hkshell.add_post_to_heap(post, prefix, heap)
+            post_id = post.post_id()
+
         if post is None:
             return {'error': 'No such post: "%s"' % (post_id,)}
 
@@ -644,12 +667,27 @@ class SetPostBody(AjaxServer):
 
         post.set_body(newPostBodyText)
 
-        # Generating the HTML for the new body
-        generator = PostBodyGenerator(self._postdb)
-        new_body_html = generator.print_post_body(post_id)
-        new_body_html = hkutils.textstruct_to_str(new_body_html)
+        # Generating the HTML for the new body or new post summary.
+        if new is None:
+            generator = PostBodyGenerator(self._postdb)
+            new_body_html = generator.print_post_body(post_id)
+            new_body_html = hkutils.textstruct_to_str(new_body_html)
+            return {'new_body_html': new_body_html}
+        else:
+            generator = PostPageGenerator(self._postdb)
+            generator.set_post_id(post.post_id())
+            postitem = generator.augment_postitem(hklib.PostItem('inner', post))
+            postitem.print_post_body = True
+            postitem.print_parent_post_id = True
+            postitem.print_children_post_id = True
+            new_post_summary = generator.print_postitems([postitem])
+            new_post_summary = hkutils.textstruct_to_str(new_post_summary)
+            return \
+                {
+                    'new_post_summary': new_post_summary,
+                    'new_post_id': '-'.join(post.post_id())
+                }
 
-        return {'new_body_html': new_body_html}
 
 
 class GetPostBody(AjaxServer):

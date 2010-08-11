@@ -196,26 +196,61 @@ function getRootPostId() {
     return location.href.replace(/^.*\/([^\/]+)\/([^\/]+)$/, '$1-$2');
 }
 
-function hidePostBody(postId) {
-    // Hides a post body and shows the "Show body" button.
-    //
-    // Argument:
-    //
-    // - postId (postId)
 
-    $('#post-body-container-' + postId).hide('fast');
-    setButtonVisibility($('#post-body-show-button-' + postId), 'show');
-}
-
-function showPostBody(postId) {
+function showPostBody(postId, count) {
     // Shows a post body and hides the "Show body" button.
     //
     // Argument:
     //
     // - postId (PostId)
+    // - count (int)
 
-    $('#post-body-container-' + postId).show('fast');
-    setButtonVisibility($('#post-body-show-button-' + postId), 'hide');
+    if (count == undefined) {
+        var postBody = $('#post-body-container-' + postId);
+        var showButton = $('#post-body-show-button-' + postId);
+    } else {
+        var postBody = $('#new-' + count + '-post-body-container-' + postId);
+        var showButton = $('#new-' + count + '-post-body-show-button-' +
+            postId);
+    }
+        
+    postBody.show('fast');
+    setButtonVisibility(showButton, 'hide');
+}
+
+function hidePostBody(postId, count) {
+    // Hides a post body and shows the "Show body" button.
+    //
+    // Argument:
+    //
+    // - postId (postId)
+    // - count (int)
+
+    if (count == undefined) {
+        var postBody = $('#post-body-container-' + postId);
+        var showButton = $('#post-body-show-button-' + postId);
+    } else {
+        var postBody = $('#new-' + count + '-post-body-container-' + postId);
+        var showButton = $('#new-' + count + '-post-body-show-button-' +
+            postId);
+    }
+        
+    postBody.hide('fast');
+    setButtonVisibility(showButton, 'show');
+}
+
+function hideNewPostBody(postId) {
+    // Hides a new post body and shows the "Show body" button.
+    //
+    // Argument:
+    //
+    // - postId (postId)
+    // - count (int)
+
+    $('#new-' + count + '-post-body-container-' + postId).hide('fast');
+    setButtonVisibility(
+        $('#new-' + count + '-post-body-show-button-' + postId),
+        'show');
 }
 
 // High level funtions
@@ -262,16 +297,17 @@ function getRawPostRequest(postId, mode, callback) {
     }
 }
 
-function setPostContentRequest(postId, newPostText, mode, callback) {
+function setPostContentRequest(postId, newPostText, mode, callback, count) {
     // Sets the body of the given post in a raw format.
     //
     // Arguments:
     //
     // - postId (PostId)
     // - newPostText(str)
-    // - mode(str) -- Either 'body' or 'raw'.
+    // - mode(str) -- 'body', 'raw' or 'new'.
     // - callback (fun(result)) -- Function to be called after we set the post
     //   body. `result` is the information returned by the server.
+    // - count(int) -- Number of new post to save, if it is new.
 
     if (mode == 'body') {
         ajaxQuery(
@@ -282,6 +318,14 @@ function setPostContentRequest(postId, newPostText, mode, callback) {
         ajaxQuery(
             "/set-raw-post/" + postIdToPostIdStr(postId),
             {'new_post_text': newPostText},
+            callback);
+    } else if (mode == 'new') {
+        ajaxQuery(
+            "/set-post-body/" + postIdToPostIdStr(postId),
+            {
+                'new_body_text': newPostText,
+                'new': 1
+            },
             callback);
     }
 }
@@ -301,17 +345,25 @@ function getPostBodyRequest(postId, callback) {
         callback);
 }
 
-function editPostStarted(postId) {
+function editPostStarted(postId, count) {
     // Should be called when editing the post body has been started.
     //
     // - postId (PostId)
+    // - count (id)
 
-    setButtonVisibility($('#post-body-edit-button-' + postId), 'hide');
-    setButtonVisibility($('#post-raw-edit-button-' + postId), 'hide');
-    setButtonVisibility($('#post-body-save-button-' + postId), 'show');
-    setButtonVisibility($('#post-body-cancel-button-' + postId), 'show');
+    if (count == undefined)
+        var prefix = '#post-';
+    else
+        var prefix = '#new-' + count + '-post-';
 
-    var postBodyContainer = $('#post-body-container-' + postId);
+    var postBodyContainer = $(prefix + 'body-container-' + postId);
+
+    setButtonVisibility($(prefix + 'body-edit-button-' + postId), 'hide');
+    setButtonVisibility($(prefix + 'raw-edit-button-' + postId), 'hide');
+    setButtonVisibility($(prefix + 'body-addchild-button-' + postId), 'hide');
+    setButtonVisibility($(prefix + 'body-save-button-' + postId), 'show');
+    setButtonVisibility($(prefix + 'body-cancel-button-' + postId), 'show');
+
     var textArea = $('textarea', postBodyContainer);
 
     // Save the post body for shift-enter
@@ -330,6 +382,7 @@ function editPostFinished(postId) {
 
     setButtonVisibility($('#post-body-edit-button-' + postId), 'show');
     setButtonVisibility($('#post-raw-edit-button-' + postId), 'show');
+    setButtonVisibility($('#post-body-addchild-button-' + postId), 'show');
     setButtonVisibility($('#post-body-save-button-' + postId), 'hide');
     setButtonVisibility($('#post-body-cancel-button-' + postId), 'hide');
 
@@ -367,6 +420,127 @@ function editPost(postId, mode) {
 
         editPostStarted(postId);
      });
+}
+
+function isNewNameAvailable(postId, count)
+{
+    return !$('#new-' + count + '-post-summary-' + postId).length;
+}
+
+function findAvailableNewName(postId)
+{
+    count = 1;
+    while (!isNewNameAvailable(postId, count))
+        count++;
+    return count;
+}
+
+function renameToNew(clone, type, postId, count)
+{
+    if (type == 'summary')
+        var elem = clone;
+    else
+        var elem = clone.find('#' + 'post-' + type + '-' + postId);
+    var newID = 'new-' + count + '-post-' + type + '-' + postId;
+    elem.attr('id', newID);
+    elem.id = newID;
+
+    return elem;
+}
+
+function bindNewPost(newPostSummary, postId, count)
+{
+    // Hide
+    newPostSummary.find('#new-' + count + '-post-body-hide-button-' + postId).bind(
+        'click',
+        function() { hidePostBody(postId, count); }
+    );
+
+    // Show
+    newPostSummary.find('#new-' + count + '-post-body-show-button-' + postId).bind(
+        'click',
+        function() { showPostBody(postId, count); }
+    );
+
+    // Save
+    newPostSummary.find('#new-' + count + '-post-body-save-button-' +
+                        postId).bind(
+        'click',
+        function() { savePostNew(postId, count); }
+    );
+
+    // Cancel
+    newPostSummary.find('#new-' + count + '-post-body-cancel-button-' +
+                        postId).bind(
+        'click',
+        function() { cancelPostNew(postId, count); }
+    );
+}
+
+function addChildPost(postId) {
+    // Add a child to an existing post.
+    //
+    // The post doesn't exist on the Heap until it is saved (this is
+    // how hkshell's enew() works). This means that post summaries on
+    // the page either represent real posts or newly created, yet
+    // unsaved posts.
+    // 
+    // New posts are created by copying existing posts, changing their
+    // "id" attribute.
+
+    // The summary of the post for which a new child is being created.
+    var parentPostSummary = $('#post-summary-' + postId);
+
+    // Find the element after which the new post box will be added.
+    var beforePostBox = $('#post-summary-' + postId).add(
+                    '#post-summary-' + postId + ' ~ .post-box').last()
+
+    // Find new name for new post summary.
+    // `postId` and `count` will identify the new post. 
+    var count = findAvailableNewName(postId);
+
+    // Add new post box.
+    var newPostBoxID = 'new-' + count + '-post-box-' + postId;
+    var newPostBoxHTML = '<div class="post-box" id="' +
+        newPostBoxID + '"></div>';
+    beforePostBox.after(newPostBoxHTML);
+    var newPostBox = $('#' + newPostBoxID);
+
+    // Clone post summary and add to new post box.
+    var newPostSummary = parentPostSummary.clone();
+    newPostBox.append(newPostSummary);
+
+    // Change IDs in the clone for summary, container and buttons. 
+    renameToNew(newPostSummary, 'summary', postId, count);
+    renameToNew(newPostSummary, 'body-show-button', postId, count);
+    renameToNew(newPostSummary, 'body-container', postId, count);
+    renameToNew(newPostSummary, 'body-hide-button', postId, count);
+    renameToNew(newPostSummary, 'body-edit-button', postId, count);
+    renameToNew(newPostSummary, 'raw-edit-button', postId, count);
+    renameToNew(newPostSummary, 'body-addchild-button', postId, count);
+    renameToNew(newPostSummary, 'body-save-button', postId, count);
+    renameToNew(newPostSummary, 'body-cancel-button', postId, count);
+
+    // Switch clone into edit mode.
+    var newPostBodyContainer = newPostSummary.find('.post-body-container');
+    var newPostBodyContentNode = newPostSummary.find('.post-body-content');
+    newPostBodyContentNode.after(
+        '<textarea id="new-' + count + '-post-body-textarea-' + postId +
+        '"' + ' rows="10" cols="80">' +
+        '</textarea>').remove();
+
+    // Adding the text to the textarea
+    var textArea = $('textarea', newPostBodyContainer);
+    textArea.attr('class', 'post-body-content');
+    textArea.val('');
+    textArea.focus();
+
+    editPostStarted(postId, count);
+
+    // Alter clone.
+    var newPSIndex = newPostSummary.find('.index');
+    newPSIndex.html('&lt;new&gt;');
+    bindNewPost(newPostSummary, postId, count);
 }
 
 function savePost(postId) {
@@ -437,6 +611,48 @@ function cancelEditPost(postId) {
 
         editPostFinished(postId);
      });
+}
+
+function savePostNew(postId, count) {
+    // Saves the contents of the new post's textarea as the new post's body.
+    //
+    // The textarea is replaced with the post-body-content box that contains
+    // the body of the new post.
+    //
+    // Arguments:
+    //
+    // - postId (PostId)
+    // - count (int)
+    
+    var postBodyContainer = $('#new-' + count +
+        '-post-body-container-' + postId);
+    var textArea = $('textarea', postBodyContainer);
+    var newPostText = textArea.val();
+    var mode = 'new';
+
+    setPostContentRequest(postId, newPostText, mode, function(result) {
+
+        if (result.error) {
+            window.alert('Error occured:\n' + result.error);
+            return;
+        }
+
+        var newPostId = result.new_post_id;
+        var postSummary = $('#new-' + count + '-post-summary-' + postId);
+        postSummary.replaceWith(result.new_post_summary);
+        addEventHandlersToPostSummary(newPostId);
+
+        // TODO is this needed?
+        //editPostFinished(newPostId);
+     });
+}
+
+function cancelPostNew(postId, count) {
+    // Just throw the new post away
+
+    var postBox = $('#new-' + count +
+        '-post-box-' + postId);
+    postBox.remove();
 }
 
 function confirmExit() {
@@ -536,6 +752,10 @@ function addEventHandlersToPostSummary(postId) {
 
     $('#post-raw-edit-button-' + postId).bind('click', function() {
         editPost(postId, 'raw');
+    });
+
+    $('#post-body-addchild-button-' + postId).bind('click', function() {
+        addChildPost(postId);
     });
 
     $('#post-body-save-button-' + postId).bind('click', function() {
