@@ -86,7 +86,10 @@ class Generator(object):
         self._postdb = postdb
         self.options = hklib.GeneratorOptions()
 
+        # Here, path is relative to the to-be HTML
         self.options.cssfiles = ['../static/css/heapindex.css']
+
+        # Here it is relative to the current directory
         self.options.files_to_copy = ['static/css/heapindex.css',
                                       'static/images/thread.png']
 

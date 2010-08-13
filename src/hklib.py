@@ -3332,7 +3332,7 @@ class GeneratorOptions(object):
                  shorttags=False,
                  html_title='Heap index',
                  html_h1='Heap index',
-                 cssfiles=['static/css/heapindex.css'],
+                 cssfiles=['../static/css/heapindex.css'],
                  files_to_copy=['static/css/heapindex.css']):
 
         super(GeneratorOptions, self).__init__()
