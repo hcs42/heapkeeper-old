@@ -356,6 +356,13 @@ class Generator(object):
         return (postitem.pos != 'flat' and
                 getter() == parent_getter())
 
+    # Each field has a print_postitem_<field>_core and a print_postitem_<field>
+    # method. The responsibility of the latter is to call the former and
+    # encapsulate it into the appropriate span.
+    #
+    # The rationale behind this is to provide additional granularity when
+    # subclassing the generator.
+
     # TODO: test
     def print_postitem_author_core(self, postitem):
         """Prints the core of the author of the post item.
