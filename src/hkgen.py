@@ -559,7 +559,7 @@ class Generator(object):
             if parent is not None:
                 parent_postitem = hklib.PostItem('inner', parent)
                 return \
-                    ('Parent: ',
+                    ('Parent:&nbsp;',
                      self.print_link(
                          self.print_postitem_link(parent_postitem),
                          self.escape(parent.post_id_str())))
@@ -609,9 +609,9 @@ class Generator(object):
             if children_printed == []:
                 children_printed_str = '-'
             else:
-                children_printed_str = ', '.join(children_printed)
+                children_printed_str = ',&nbsp;'.join(children_printed)
 
-            return ('Children: ', children_printed_str)
+            return ('Children:&nbsp;', children_printed_str)
 
         return ''
 
