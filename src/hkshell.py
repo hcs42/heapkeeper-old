@@ -1720,7 +1720,7 @@ def init():
     postpage_listener = PostPageListener(postdb())
     listeners.append(postpage_listener)
 
-def import_module(modname):
+def import_module(modname, warning):
     """Imports the `modname` module.
 
     It prints whether it succeeded or not using :func:`hkutils.log`.
@@ -1728,6 +1728,7 @@ def import_module(modname):
     **Argument:**
 
     - `modname` (str)
+    - `warning` (bool): print warning if import fails
     """
 
     try:
@@ -1736,7 +1737,8 @@ def import_module(modname):
         hkutils.log('Importing %s OK' % (modname,))
     except ImportError, e:
         if str(e) == ('No module named ' + modname):
-            hkutils.log('Module not found: "%s"' % (modname,))
+            if warning:
+                hkutils.log('Module not found: "%s"' % (modname,))
         else:
             exc_info = sys.exc_info()
             raise exc_info[0], exc_info[1], exc_info[2]
@@ -1804,14 +1806,13 @@ def main(cmdl_options, args):
     cmdl_options.after_command += args
 
     if cmdl_options.hkrc == []:
-        if os.path.exists('hkrc'):
-            to_import = ['hkrc']
-        else:
-            to_import = []
+        # No warning if no hkrc module is present
+        to_import = [('hkrc', False)]
     elif cmdl_options.hkrc == ['NONE']:
         to_import = []
     else:
-        to_import = cmdl_options.hkrc
+        # Warn for all other missing modules
+        to_import = [(module, True) for module in cmdl_options.hkrc]
 
     # Executing "before" commands
     exec_commands(cmdl_options.before_command)
@@ -1823,8 +1824,8 @@ def main(cmdl_options, args):
     init()
 
     # Importing modules
-    for modname in to_import:
-        import_module(modname)
+    for modtuple in to_import:
+        import_module(*modtuple)
 
     # Executing "after" commands
     exec_commands(cmdl_options.after_command)
