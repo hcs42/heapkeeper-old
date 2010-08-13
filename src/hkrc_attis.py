@@ -33,6 +33,7 @@ import hk_issue_tracker
 def main():
     hkshell.options.callbacks.gen_indices = gen_indices
     #hkshell.options.callbacks.gen_posts = gen_posts
+    hkshell.options.save_on_ctrl_d = False
     hkshell.on('save')
     web = hkweb.start()
 
