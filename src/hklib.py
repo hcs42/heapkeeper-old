@@ -1926,7 +1926,7 @@ class PostDB(object):
     def post(self, prepost, default_heap=None, raise_exception=False):
         """Converts a |PrePost| into a |Post|.
 
-        It other words, it returns the post specified by its post id or message
+        In other words, it returns the post specified by its post id or message
         id or post index or the post itself. See the definition of |PrePost| on
         how the conversion happens.
 
