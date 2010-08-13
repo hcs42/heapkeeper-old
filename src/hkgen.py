@@ -953,8 +953,15 @@ class Generator(object):
 
     # Printing and walking several post items
 
+    # TODO: Remove this after releasing v0.7! {{{
+
     def augment_postitem(self, postitem):
-        """Returns the augmented versions of the given post item.
+        """Deprecated function.
+        
+        This is a placeholder for backwards compatibility. Please do not use in
+        new code. Here is the original docstring:
+
+        Returns the augmented versions of the given post item.
 
         The `print_fun` method of the post item is set to the
         :func:`print_postitem` method.
@@ -966,13 +973,18 @@ class Generator(object):
         **Returns:** |PostItem|
         """
 
-        postitem = postitem.copy()
-        if not hasattr(postitem, 'print_fun'):
-            postitem.print_fun = self.print_postitem
+        if not hasattr(self, 'warned_augment_postitem'):
+            self.warned_augment_postitem = True
+            hkutils.log('WARNING: augment_postitem is deprecated!')
         return postitem
 
     def walk_postitems(self, xpostitems):
-        """Walks the augmented versions of the given post items.
+        """Deprecated function.
+        
+        This is a placeholder for backwards compatibility. Please do not use in
+        new code. Here is the original docstring:
+        
+        Walks the augmented versions of the given post items.
 
         Refer to :func:`augment_postitem` for how the augmentation is done.
 
@@ -983,8 +995,12 @@ class Generator(object):
         **Returns:** iterable(|PostItem|)
         """
 
-        for postitem in xpostitems:
-            yield self.augment_postitem(postitem)
+        if not hasattr(self, 'warned_walk_postitems'):
+            self.warned_walk_postitems = True
+            hkutils.log('WARNING: walk_postitems is deprecated!')
+        return xpostitems
+
+    # }}} TODO: Remove until this line after releasing v0.7!
 
     # TODO: test
     def walk_thread(self, root=None, threadstruct=None):
@@ -1001,9 +1017,7 @@ class Generator(object):
         **Returns:** iterable(|PostItem|)
         """
 
-        xpostitems = \
-            self._postdb.walk_thread(root, threadstruct, yield_inner=True)
-        return self.walk_postitems(xpostitems)
+        return self._postdb.walk_thread(root, threadstruct, yield_inner=True)
 
     # TODO test
     def walk_exp_posts(self, posts):
@@ -1060,7 +1074,12 @@ class Generator(object):
         **Returns:** |HtmlText|
         """
 
-        return [ postitem.print_fun(postitem) for postitem in xpostitems ]
+        result = []
+        for postitem in xpostitems:
+            # Default to built-in printer function
+            print_fun = getattr(postitem, 'print_fun', self.print_postitem)
+            result.append(print_fun(postitem))
+        return result
 
     # Post item modifiers
 
@@ -1209,7 +1228,7 @@ class Generator(object):
 
         normal_postitems = self.walk_thread(None)
         if self._postdb.has_cycle():
-            cycle_postitems = self.walk_postitems(self._postdb.walk_cycles())
+            cycle_postitems = self._postdb.walk_cycles()
             return (
                 self.section(
                     '0', 'Posts in cycles',

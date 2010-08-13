@@ -507,7 +507,7 @@ class SetRawPost(AjaxServer):
         # Generating the HTML for the new post text
         generator = PostPageGenerator(self._postdb)
         generator.set_post_id(post.post_id())
-        postitem = generator.augment_postitem(hklib.PostItem('inner', post))
+        postitem = hklib.PostItem('inner', post)
         postitem.print_post_body = True
         postitem.print_parent_post_id = True
         postitem.print_children_post_id = True

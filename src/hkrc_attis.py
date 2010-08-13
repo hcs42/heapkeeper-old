@@ -54,7 +54,6 @@ class MyGenerator(hkgen.Generator):
                              for post in posts.sorted_list()]
             else:
                 postitems = self.walk_exp_posts(posts)
-            postitems = self.walk_postitems(postitems)
             content = self.print_postitems(postitems)
             n += 1
             output.append(self.section(n - 1, title, content, flat=is_flat))

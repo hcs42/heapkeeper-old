@@ -71,7 +71,7 @@ class MyGenerator(hkgen.Generator):
         normal_postitems = self.reverse_threads(normal_postitems)
 
         if self._postdb.has_cycle():
-            cycle_postitems = self.walk_postitems(self._postdb.walk_cycles())
+            cycle_postitems = self._postdb.walk_cycles()
             return (
                 self.section(
                     '0', 'Posts in cycles',
