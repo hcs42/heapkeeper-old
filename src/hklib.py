@@ -3214,7 +3214,11 @@ class EmailDownloader(object):
 
         # If the author has a nickname, we set it
         r = re.compile('[-._A-Za-z0-9]+@[-._A-Za-z0-9]+')
-        author_address = r.search(post.author()).group(0)
+        match = r.search(post.author())
+        if match is not None:
+            author_address = match.group(0)
+        else:
+            author_address = ''
 
         # We try to read the nickname from the
         # heaps/<heap id>/nicknames/<author address> configuration item
