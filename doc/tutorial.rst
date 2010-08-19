@@ -51,16 +51,16 @@ Then download the latest version of Heapkeeper (either in `tar.gz`__ or in
 
 .. code-block:: sh
 
-    $ wget http://heapkeeper.org/releases/heapkeeper-0.6.tar.gz
+    $ wget http://heapkeeper.org/releases/heapkeeper-0.7.tar.gz
 
-__ http://heapkeeper.org/releases/heapkeeper-0.6.tar.gz
-__ http://heapkeeper.org/releases/heapkeeper-0.6.zip
+__ http://heapkeeper.org/releases/heapkeeper-0.7.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.7.zip
 
 Unzip the tar.gz or zip file. For Unix users:
 
 .. code-block:: sh
 
-    $ tar xzf heapkeeper-0.6.tar.gz
+    $ tar xzf heapkeeper-0.7.tar.gz
 
 Make Heapkeeper's directory the current one. Heapkeeper's shell (|hkshell|) can
 be started from here without any installation procedure. You can ask for
@@ -68,17 +68,17 @@ version information for example:
 
 .. code-block:: sh
 
-    $ cd heapkeeper-0.6
-    $ python hk.py --version
-    Heapkeeper version 0.6
+    $ cd heapkeeper-0.7
+    $ python src/hk.py --version
+    Heapkeeper version 0.7
 
 Or you can execute the automatic test:
 
 .. code-block:: sh
 
-    $ python test.py
+    $ python src/test.py
     ----------------------------------------------------------------------
-    Ran 126 tests in 0.379s
+    Ran 130 tests in 0.379s
 
     OK
 
@@ -121,7 +121,7 @@ Start |hkshell|:
 
 .. code-block:: sh
 
-    $ python hk.py
+    $ python src/hk.py
 
     >>>
 
@@ -150,6 +150,7 @@ The editor will contain the following template:
 
     Author:
     Subject:
+    Date: <current date>
 
 Paste this in place of the template:
 
@@ -323,7 +324,7 @@ pages or by starting a webserver that will serve the HTML pages dynamically. We
 will use the latter because it is often more convenient and also allows editing
 the posts. ::
 
-    $ python hk.py
+    $ python src/hk.py
 
     >>> import hkweb
     >>> hkweb.start(8080)
@@ -745,7 +746,7 @@ Start Heapkeeper:
 
 .. code-block:: sh
 
-    $ ./hk.py
+    $ python src/hk.py
     Warning: post directory does not exists: "myheap_posts"
     Post directory has been created.
 
