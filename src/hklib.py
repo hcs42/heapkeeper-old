@@ -3417,9 +3417,14 @@ class EmailDownloader(object):
                 number = number_str[0:number_str.index(' ')]
                 text = result[i * 3][1]
                 header = result[i * 3 + 1][1]
-                post = self.create_post_from_email(header, text)
-                self._postdb.add_new_post(post, self._heap_id)
-                new_posts.append(post)
+                try:
+                    post = self.create_post_from_email(header, text)
+                    self._postdb.add_new_post(post, self._heap_id)
+                    new_posts.append(post)
+                except Exception, e:
+                    hkutils.log('Error while downloading: %s' % e)
+                    downloaded_msg_count += 1
+                    continue
                 if detailed_log:
                     hkutils.log('Post #%s (#%s in INBOX) downloaded.' %
                                 (post.post_index(), number))
