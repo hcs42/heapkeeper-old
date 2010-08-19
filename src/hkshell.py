@@ -1732,7 +1732,8 @@ def import_module(modname, warning):
     """
 
     try:
-        hkutils.log('Importing %s...' % (modname,))
+        if warning:
+            hkutils.log('Importing %s...' % (modname,))
         __import__(modname)
         hkutils.log('Importing %s OK' % (modname,))
     except ImportError, e:
