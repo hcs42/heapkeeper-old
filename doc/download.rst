@@ -23,6 +23,8 @@ Packaged releases
 | version  | date       | source      | HTML documentation |
 |          |            |             |                    |
 +==========+============+=============+====================+
+| `0.7`_   | 2010-08-20 | tgz__ zip__ | tgz__ zip__        |
++----------+------------+-------------+--------------------+
 | `0.6`_   | 2010-06-01 | tgz__ zip__ | tgz__ zip__        |
 +----------+------------+-------------+--------------------+
 | `0.5`_   | 2010-04-25 | tgz__ zip__ | tgz__ zip__        |
@@ -36,6 +38,10 @@ Packaged releases
 | `0.1`_   | 2008-10-16 | tgz__ zip__ |  --                |
 +----------+------------+-------------+--------------------+
 
+__ http://heapkeeper.org/releases/heapkeeper-0.7.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.7.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.7.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.7.zip
 __ http://heapkeeper.org/releases/heapkeeper-0.6.tar.gz
 __ http://heapkeeper.org/releases/heapkeeper-0.6.zip
 __ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.6.tar.gz
@@ -56,6 +62,44 @@ __ http://github.com/hcs42/heapkeeper/tarball/v0.2
 __ http://github.com/hcs42/heapkeeper/zipball/v0.2
 __ http://github.com/hcs42/heapkeeper/tarball/v0.1
 __ http://github.com/hcs42/heapkeeper/zipball/v0.1
+
+.. _`0.7`:
+
+Version 0.7
+^^^^^^^^^^^
+
+- **date:** 2010-08-20
+- **download:** tgz__, zip__
+- **download HTML documentation:** tgz__, zip__
+
+__ http://heapkeeper.org/releases/heapkeeper-0.7.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.7.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.7.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.7.zip
+
+The main improvement of this release are creating a plugin infrastructure and
+adding search functionality to hkweb.
+
+Major new features:
+
+- Creating a plugin infrastructure. Three plugins have been created so far: the
+  "Review" plugin, which can set posts to reviewed; the "Custom Heap Server"
+  plugin, which shows only posts in a specified heap; and the "Issue Tracker"
+  plugin, which displays the heap as a list of issues.
+- Searches can be performed via hkweb.
+- When editing a post in hkweb, pressing shift-enter will save the post.
+- Supporting IMAP without SSL.
+
+Major refactorings:
+
+- Moving the Python source code into the "src" subdirectory and moving the
+  CSS/JavaScript/PNG files into the "static" subdirectory.
+
+Other major improvements:
+
+- JavaScript unit tests were added.
+- IMAP queries are more efficient and comply with :rfc:`2683` / 3.2.1.5. (Long
+  Command Lines).
 
 .. _`0.6`:
 
