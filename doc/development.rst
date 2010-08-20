@@ -357,13 +357,14 @@ Pushing to your GitHub repository
 Creating a new module
 ^^^^^^^^^^^^^^^^^^^^^
 
-#. Create the source module (``<newmodule>.py``) and the test module
-   (``test_<newmodule>.py``). Copy the copyright notice into both.
+#. Create the source module (``src/<newmodule>.py``) and the test module
+   (``src/test_<newmodule>.py``). Copy the copyright notice into both.
+#. Add the new module to ``src/test.py``.
 #. Create the documentation page (``doc/<newmodule>.rst``).
 #. Update ``doc/defs.hrst`` with a macro for the new module.
 #. Update ``doc/modules.rst``.
-#. Update ``architecture.rst`` with the description of the new module and
-   ``module_deps.png``::
+#. Update ``doc/architecture.rst`` with the description of the new module and
+   ``doc/module_deps.png``::
 
     $ cd doc
     $ <your editor of choice> module_deps.dot

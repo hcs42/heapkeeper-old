@@ -131,6 +131,7 @@ import email
 import email.header
 import getpass
 import imaplib
+import itertools
 import os
 import os.path
 import quopri
@@ -3087,6 +3088,8 @@ class EmailDownloader(object):
         port = server['port']
         username = server['username']
         password = server.get('password')
+        # if imaps is omitted, default to True iff port is 993
+        imaps = server.get('imaps', (port == 993))
 
         # If no password was specified, ask it from the user
         if password is None:
@@ -3094,7 +3097,10 @@ class EmailDownloader(object):
             password = getpass.getpass()
 
         hkutils.log('Connecting...')
-        self._server = imaplib.IMAP4_SSL(host, port)
+        if imaps:
+            self._server = imaplib.IMAP4_SSL(host, port)
+        else:
+            self._server = imaplib.IMAP4(host, port)
         self._server.login(username, password)
         hkutils.log('Connected')
 
@@ -3153,7 +3159,9 @@ class EmailDownloader(object):
             content_type = message.get_content_type()
             if message.is_multipart():
                 if (content_type not in
-                    ('multipart/mixed', 'multipart/alternative')):
+                    ('multipart/mixed',
+                     'multipart/alternative',
+                     'multipart/signed')):
                     hkutils.log('WARNING: unknown type of multipart '
                                 'message: %s\n%s' %
                                 (content_type, header + text))
@@ -3215,7 +3223,11 @@ class EmailDownloader(object):
 
         # If the author has a nickname, we set it
         r = re.compile('[-._A-Za-z0-9]+@[-._A-Za-z0-9]+')
-        author_address = r.search(post.author()).group(0)
+        match = r.search(post.author())
+        if match is not None:
+            author_address = match.group(0)
+        else:
+            author_address = ''
 
         # We try to read the nickname from the
         # heaps/<heap id>/nicknames/<author address> configuration item
@@ -3235,6 +3247,70 @@ class EmailDownloader(object):
 
         return post
 
+    def imap_compact(self, messnum_strs):
+        """Expresses a list of message numbers in the shortest
+        possible form using IMAP sequence notation.
+
+        **Arguments:**
+
+        - `messnum_strs` ([str]) -- An ordered list of message number strings.
+
+        **Returns:** [str] -- A list of message numbers and sequence
+        notations.
+
+        **Example:** ::
+
+            >>> email_downloader.imap_compact((1, 2, 3, 5, 6, 7, 42))
+            ['1:3', '5:7', '42']
+        """
+
+        # Convert sequence of strings into sequence of ints
+        messnums = [int(messnum_str) for messnum_str in messnum_strs]
+
+        result = []
+        # Iterate over consecutive sequences
+        for _, group_iter in itertools.groupby(enumerate(messnums),
+                                               lambda (i, x): i - x):
+            group = list(group_iter)
+            start = str(group[0][1])
+            end = str(group[-1][1])
+            result.append(start + (':' + end if len(group) > 1 else ''))
+        return result
+
+    def fragment_list(self, strings, maxlen=500):
+        """Breaks a list of strings into a list of lists of strings where
+        the concatenated length of individual lists does not exceed a
+        given maximum.
+
+        **Arguments:**
+
+        - `strings` ([str]) -- The list of strings to be fragmented.
+        - `maxlen` (int) -- The maximum length of individual lists.
+
+        **Returns:** [[str]]
+
+        **Example:** ::
+
+            >>> email_downloader.fragment_list(
+                    ('lo', 'rem', 'ip', 'sum', 'dolor', 'sit'),
+                    maxlen=10)
+            [['lo', 'rem', 'ip'], ['sum', 'dolor'], ['sit']]
+        """
+
+        fragments = []
+        current_fragment = []
+        length_now = 0
+        for string in strings:
+            if length_now + len(string) + 1 > maxlen:
+                fragments.append(current_fragment)
+                current_fragment = [string]
+                length_now = len(string) + 1
+            else:
+                current_fragment.append(string)
+                length_now += len(string) + 1
+        fragments.append(current_fragment)
+        return fragments
+
     def download_new(self, lower_value=0, detailed_log=False):
         """Downloads the new emails from the INBOX of the IMAP server and adds
         them to the post database.
@@ -3251,24 +3327,43 @@ class EmailDownloader(object):
 
         assert self._postdb.has_heap_id(self._heap_id)
         self._server.select("INBOX")
-        result = self._server.search(None, '(ALL)')[1][0].strip()
-        if result == '':
-            hkutils.log('Message box is empty.')
-            return
-        all_emails = result.split(' ')
 
-        emails = [ em for em in all_emails if int(em) >= lower_value ]
-        emails_imap = ','.join(emails)
+        # Stage 1: checking for matching IDs
+        # Note: this is probably unnecessary
+
+        if lower_value == 0:
+            imap_crit = 'ALL'
+        else:
+            imap_crit = '(%d:*)' % (lower_value,)
+        result = self._server.search(None, imap_crit)[1][0].strip()
+        if result == '':
+            hkutils.log('No messages to download.')
+            return
+        emails = result.split(' ')
+
+        # The list has to be compacted to keep the IMAP command short.
+        # Plus we fragment the list into pieces not longer than
+        # a given amount that can be safely handled by all IMAP servers
+        # (this is now 500).
+        sequences = self.imap_compact(emails)
+        fragments = self.fragment_list(sequences)
+
+        # Stage 2: checking which messages we don't already have
+        # We do this because it can save a lot of time and bandwidth
 
         hkutils.log('Checking...')
 
-        result = self._server.fetch(emails_imap,
-                                    '(BODY[HEADER.FIELDS (MESSAGE-ID)])')[1]
-        raw_messids = [ result[2 * i][1] for i in range(len(emails)) ]
-        messids = [ email.message_from_string(s)['Message-Id']
-                    for s in raw_messids ]
+        messids = []
+        for fragment in fragments:
+            fragment_imap = ','.join(fragment)
+            param = '(BODY[HEADER.FIELDS (MESSAGE-ID)])'
+            result = self._server.fetch(fragment_imap, param)[1]
+            raw_messids = [result[2 * i][1] for i in range(len(result) / 2)]
+            # using the email lib to parse Message-Id headers
+            messids.extend([email.message_from_string(s)['Message-Id']
+                            for s in raw_messids])
 
-        # assembling a list of new messages
+        # Assembling a list of new messages
         download_list = []
         for index, messid in zip(emails, messids):
             post = self._postdb.post_by_messid(messid)
@@ -3276,35 +3371,82 @@ class EmailDownloader(object):
                 download_list.append(index)
             elif detailed_log:
                 hkutils.log('Post #%s (#%s in INBOX) found.' %
-                    (post.post_index(), int(index) + lower_value))
-        download_imap = ','.join(download_list)
-        num_new = len(download_list)
+                            (post.post_index(), int(index) + lower_value))
 
-        if num_new == 0:
+        # Stage 3: actually downloading the needed messages
+
+        new_msg_count = len(download_list)
+        if new_msg_count == 0:
             hkutils.log('No new messages.')
             return
         else:
             hkutils.log('%d new message%s found.' %
-                (num_new, hkutils.plural(num_new)))
+                        (new_msg_count, hkutils.plural(new_msg_count)))
 
         hkutils.log('Downloading...')
 
-        new_posts = []
+        # Compact & fragment this list too to keep IMAP commands short
+        sequences = self.imap_compact(download_list)
+        fragments = self.fragment_list(sequences)
 
-        result = self._server.fetch(download_imap,
-                                    '(BODY[TEXT] BODY[HEADER])')[1]
-        for i in range(num_new):
-            text = result[i * 3][1]
-            header = result[i * 3 + 1][1]
-            post = self.create_post_from_email(header, text)
-            self._postdb.add_new_post(post, self._heap_id)
-            new_posts.append(post)
-            if detailed_log:
-                hkutils.log('Post #%s (#%s in INBOX) downloaded.' %
-                            (post.post_index(), download_list[i]))
+        downloaded_msg_count = 0
+        for fragment in fragments:
+            fragment_imap = ','.join(fragment)
+            new_posts = []
+
+            result = self._server.fetch(fragment_imap,
+                                        '(BODY[TEXT] BODY[HEADER])')[1]
+            # `result` is formatted like this:
+            #
+            #    [ # First email:
+            #
+            #      # result[0]:
+            #      ('1 (BODY[TEXT] {123}',
+            #       'This is the body of the first result...'),
+            #
+            #      # result[1]:
+            #      (' BODY[HEADER] {456}',
+            #       'Headers-Of: first-email...'),
+            #
+            #      # result[2]:
+            #      ')'
+            #
+            #      # Second email:
+            #
+            #      # result[3]:
+            #      ('2 (BODY[TEXT] {789}',
+            #       'This is the body of the second result...'),
+            #      ... ]
+            #
+            # The final ')' element causes a single email to be represented
+            # by 3 elements in the list of results.
+
+            for i in range(len(result) / 3):
+                number_str = result[i * 3][0]
+                number = number_str[0:number_str.index(' ')]
+                text = result[i * 3][1]
+                header = result[i * 3 + 1][1]
+                try:
+                    post = self.create_post_from_email(header, text)
+                    self._postdb.add_new_post(post, self._heap_id)
+                    new_posts.append(post)
+                except Exception, e:
+                    hkutils.log('Error while downloading: %s' % e)
+                    downloaded_msg_count += 1
+                    continue
+                if detailed_log:
+                    hkutils.log('Post #%s (#%s in INBOX) downloaded.' %
+                                (post.post_index(), number))
+                downloaded_msg_count += 1
 
         hkutils.log('%d new message%s downloaded.' %
-                    (num_new, hkutils.plural(num_new)))
+                    (downloaded_msg_count,
+                     hkutils.plural(downloaded_msg_count)))
+
+        if new_msg_count != downloaded_msg_count:
+            hkutils.log('WARNING: number of new (%d) and'
+                        'downloaded (%d) messages not equal!' %
+                        (new_msg_count, downloaded_msg_count))
 
         return PostSet(self._postdb, new_posts)
 
@@ -3339,7 +3481,7 @@ class GeneratorOptions(object):
                  shorttags=False,
                  html_title='Heap index',
                  html_h1='Heap index',
-                 cssfiles=['static/css/heapindex.css'],
+                 cssfiles=['../static/css/heapindex.css'],
                  files_to_copy=['static/css/heapindex.css']):
 
         super(GeneratorOptions, self).__init__()

@@ -1,0 +1,74 @@
+.field_6,
+.field_7
+{
+    width: 50px;
+    overflow: hidden;
+}
+
+.field_3,
+.field_8
+{
+    width: 100px;
+    overflow: hidden;
+}
+
+/* Images that could be added. They are commented out because this way they
+ * would be retrieved from the launchpad website.
+
+#th_7
+{
+    background-image: url(https://bugs.launchpad.net/+icing/rev9329/icon-sprites);
+    background-position: 24px -3437px;
+    background-repeat: no-repeat
+}
+
+#th_6
+{
+    background-image: url(https://bugs.launchpad.net/+icing/rev9329/icon-sprites);
+    background-position: 24px -1801px;
+    background-repeat: no-repeat
+}
+
+#th_5
+{
+    background-image: url(https://bugs.launchpad.net/+icing/rev9329/icon-sprites);
+    background-position: 24px -10159px;
+    background-repeat: no-repeat
+}
+
+*/
+
+.review-needed-thread .postbox
+{
+    border: 4px solid #080;
+}
+
+.postbox .postbox
+{
+    border: none;
+}
+
+.review-needed-post > .postsummary
+{
+    border: 1px solid #080;
+}
+
+.open-issue .postbox
+{
+    background-color: #f88;
+}
+
+.tags
+{
+    color: #006;
+}
+
+.tags .important
+{
+    color: #f00;
+}
+
+.tags .important
+{
+    color: #f00;
+}

@@ -52,11 +52,15 @@ Miscellaneous
 .. autofunction:: file_to_string
 .. autofunction:: string_to_file
 .. autofunction:: utf8
+.. autofunction:: uutf8
+.. autofunction:: json_uutf8
 .. autofunction:: calc_timestamp
 .. autofunction:: copy_wo
 .. autofunction:: plural
 .. autofunction:: add_method
 .. autofunction:: insert_sep
 .. autofunction:: configparser_to_configdict
+.. autofunction:: quote_shell_arg
+.. autofunction:: call
 .. autoclass:: NOT_SET
 

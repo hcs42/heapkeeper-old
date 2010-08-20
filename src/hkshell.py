@@ -1803,6 +1803,13 @@ def main(cmdl_options, args):
     - `args` ([str]) -- Command line arguments.
     """
 
+    # Adding the plugins
+    if os.path.exists('plugins'):
+        for dir in os.listdir('plugins'):
+            src_dir = os.path.join('plugins', dir, 'src')
+            if os.path.exists(src_dir):
+                sys.path.insert(0, src_dir)
+
     # Processing the command line options
     cmdl_options.after_command += args
 

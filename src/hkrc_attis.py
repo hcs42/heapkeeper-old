@@ -33,6 +33,7 @@ import hk_issue_tracker
 def main():
     hkshell.options.callbacks.gen_indices = gen_indices
     #hkshell.options.callbacks.gen_posts = gen_posts
+    hkshell.options.save_on_ctrl_d = False
     hkshell.on('save')
     web = hkweb.start()
 
@@ -54,43 +55,78 @@ class MyGenerator(hkgen.Generator):
                              for post in posts.sorted_list()]
             else:
                 postitems = self.walk_exp_posts(posts)
-            postitems = self.walk_postitems(postitems)
             content = self.print_postitems(postitems)
             n += 1
             output.append(self.section(n - 1, title, content, flat=is_flat))
         return output
 
+def tidy(base=None):
+    """Returns the set of posts that need tidying."""
+    if base is None:
+        base = hkshell.postdb().all()
+    assert isinstance(base, hklib.PostSet)
+
+    # tidy
+    # we agreed that I (Attis) would primarily tidy UMS posts
+    # (that means anything that has no Heap-related tags)
+    # posts that belong here either:
+    # * contain quote introduction (like "xyz wrote:")
+    # * contain more quote lines than non-quote (may be OK)
+    # * signed (no need for them, esp. quoted signatures)
+    # * contain quoted lines, but have no parent or reference
+    # * subject starts with lowercase letter (may be OK)
+    # * contain obsolete metas
+    # * of course we ignore posts already marked as reviewed
+
+    regexp = '\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>'
+    ps_tidy = base.collect.body_contains(regexp)
+    ps_tidy |= base.collect.body_contains('wrote:\s*$')
+    ps_tidy |= base.collect.body_contains('írta:\s*$')
+    ps_tidy |= base.collect(overquoted)
+    ps_tidy |= base.collect.body_contains('^\s*Csabi\s*$')
+    ps_tidy |= base.collect.body_contains('^\s*Attis\s*$')
+    ps_tidy |= base.collect.body_contains('^\s*Josh\s*$')
+    ps_unheaded = base.collect(lambda p: not p.parent())
+    ps_tidy |= ps_unheaded.collect.body_contains('^>')
+    ps_tidy |= base.collect(
+        lambda p: p.subject().decode('utf-8')[0] in
+            u'abcdefghijklmnopqrstuvwxyzöüóőúéáűí')
+    ps_tidy |= base.collect.body_contains('<<<')
+    ps_tidy -= base.collect.has_tag('reviewed')
+    print '%d posts are problematic.' \
+        % len(ps_tidy)
+    return ps_tidy
+
 def sections(postdb):
     exp = False
-    eliminate = False
+    eliminate = True
 
-    # ps_all = összes levél
+    # ps_all = all mail
     ps_all = postdb.all().copy()
+    # ps_heap = Heap-related (scheduled to go to Hh)
+    ps_heap = ps_all.collect.has_tag_from(('heap', 'hh', 'hk'))
+    ps_nonheap = ps_all - ps_heap
 
-    # ps_attention = unanswered proposals
-    # ps_singles = all other mail w/o answers
+    # ps_singles = all mail w/o answers
     ps_singles = postdb.roots()
     for post in postdb.all():
         ps_singles -= hklib.PostSet(postdb, [postdb.parent(post)])
-    ps_attention = ps_singles.collect.has_tag('prop')
-    ps_singles -= ps_attention
 
-    # tidy
-    # posts that belong here either:
-    # * contain quote introduction (like "xyz wrote:")
-    # * contain more quote lines than non-quote
-    regexp = '\>*\s*2([0-9]+\/)+[0-9]+\s*.*\<[a-z.-]+@[a-z.-]+\>'
-    ps_tidy = ps_all.collect.body_contains(regexp)
-    ps_tidy |= ps_all.collect.body_contains('wrote:')
-    ps_tidy |= [post for post in postdb.all() if overquoted(post)]
-    ps_tidy -= ps_all.collect.has_tag('reviewed')
+    ps_tidy = tidy(ps_nonheap)
+
+    # we agreed that it would be illegal to reply to an UMS post on Hh
+    # so we are looking for Hh posts with non-Hh parents
+    ps_illegal = ps_heap.collect(
+        lambda p: postdb.parent(p) in ps_nonheap)
+    print '%d posts break the UMS—Hh relationship rule.' \
+        % len(ps_illegal)
 
     # todo
     ps_todo = ps_all.collect.has_tag('todo')
     ps_todo |= ps_all.collect.body_contains("^<<<\!*todo")
+    ps_todo |= ps_all.collect.body_contains("^\[\!*todo")
 
     # heap
-    ps_heap = ps_all.collect.has_tag('heap')
     if exp:
         ps_heap = ps_heap.exp()
     if eliminate:
@@ -124,7 +160,8 @@ def sections(postdb):
     if eliminate:
         ps_all -= ps_pol
 
-    res = [ ("Nyitott javaslatok", ps_attention, True),
+    res = [
+            ("Illegális Hh—UMS-viszony", ps_illegal, True),
             ("Takarítani", ps_tidy, True),
             ("Tennivalók", ps_todo, True),
             ("Cipősdoboz", ps_singles, True),
@@ -132,7 +169,8 @@ def sections(postdb):
             ("Programozás", ps_prog, False),
             ("C és C++", ps_ccpp, False),
             ("Python", ps_py, False),
-            ("Egyéb", ps_all, False)]
+            ("Egyéb", ps_all, False)
+        ]
     return res
 
 def overquoted(post):
@@ -153,12 +191,199 @@ def et(pps):
     for root in roots:
         for post in hkshell.postdb().iter_thread(root):
             hkshell.e(post.post_id())
-    hkshell.ga()
+    hkshell.g()
 
 @hkshell.hkshell_cmd()
 def lsr(pps):
     """Print a whole thread, ie. recursive ls."""
-    hkshell.ls(hkshell.ps(pps).exp())
+    hkshell.ls(hkshell.ps(pps).exp(), show_tags=True)
+
+def review_status(root):
+    """Returns the review status of a thread specified by its root."""
+    ps = hkshell.ps(root).expf()
+    has_reviewed = False
+    has_unreviewed = False
+    for p in ps:
+        if p.has_tag('reviewed'):
+            has_reviewed = True
+        else:
+            has_unreviewed = True
+        if has_reviewed and has_unreviewed:
+            return 'some'
+    assert has_reviewed or has_unreviewed
+    if not has_reviewed:
+        return 'no'
+    else:
+        return 'all'
+
+@hkshell.hkshell_cmd()
+def statrev(base=None):
+    """Prints some statistics on the review status of the Heap."""
+    if base is None:
+        base = hkshell.postdb().all()
+    assert isinstance(base, hklib.PostSet)
+
+    threads = base.expb().collect.is_root()
+    n_threads = len(threads)
+    n_posts = len(base)
+    n_reviewed = len(base.collect.has_tag('reviewed'))
+    p_reviewed = float(n_reviewed) / n_posts * 100
+    counter = {'all': 0, 'some': 0, 'no': 0}
+
+    for thread in threads:
+        counter[review_status(thread)] += 1
+
+    print 'Number of threads: %d' % (n_threads,)
+    for status in counter.keys():
+        n = counter[status]
+        p = float(n) / n_threads * 100
+        print 'Threads with %s posts reviewed: %d (%0.2f %%)' % \
+            (status, n, p)
+    print '\nNumber of posts: %d' % (n_posts,)
+    print 'Reviewed posts: %d (%0.2f %%)' % (n_reviewed, p_reviewed)
+
+def get_heap_time_bounds(base=None):
+    """Returns the timestamps of the first and last post in the heap
+    or a post set as a tuple of two `datetime.datetime` objects."""
+    if base is None:
+        base = hkshell.postdb().all()
+    assert isinstance(base, hklib.PostSet)
+
+    lall = list(base.collect(lambda x: x.datetime() is not None))
+    lall.sort()
+    first = lall[0].datetime()
+    last = lall[-1].datetime()
+    return (first, last)
+
+def get_heap_timeunits(unit='month'):
+    """Yields tuples of lower and upper timestamps for time units of
+    a given length covering.
+
+    Time units may be 'day's, 'month's, 'year's.
+
+    TODO: Support 'week's."""
+
+    def next_day(dt):
+        assert isinstance(dt, datetime.datetime)
+        n_dt = dt + datetime.timedelta(days=1)
+        return datetime.datetime(n_dt.year, n_dt.month, n_dt.day)
+
+    def next_year(dt):
+        assert isinstance(dt, datetime.datetime)
+        return datetime.datetime(dt.year+1, 1, 1)
+
+    def next_month(dt):
+        # months are slightly more tricky
+        assert isinstance(dt, datetime.datetime)
+        month = dt.month + 1
+        year = dt.year
+        while month > 12:
+            month -= 12
+            year += 1
+        return datetime.datetime(year, month, 1)
+
+    next_unit_dict = {
+            'day': next_day,
+            'month': next_month,
+            'year': next_year
+        }
+    next_unit = next_unit_dict[unit]
+
+    first, last = get_heap_time_bounds()
+    lower_bound = first
+    upper_bound = next_unit(first)
+    if upper_bound > last:
+        # the whole interval fits into one unit!
+        yield (first, last)
+    else:
+        while upper_bound < last:
+            yield (lower_bound, upper_bound)
+            lower_bound = upper_bound
+            upper_bound = next_unit(upper_bound)
+            if upper_bound > last:
+                yield (lower_bound, last)
+
+@hkshell.hkshell_cmd()
+def size(post, pure=True):
+    counter = 0
+    lines = post.body().split('\n')
+    for line in lines:
+        if pure:
+            if len(line) == 0 or line[0] == '>':
+                continue
+        counter += len(line.decode('utf-8'))
+    return counter
+
+@hkshell.hkshell_cmd()
+def statcontrib(base=None):
+    """Prints some statistics on contribution to the Heap."""
+    if base is None:
+        base = hkshell.postdb().all()
+    assert isinstance(base, hklib.PostSet)
+
+    n_posts = len(base)
+    first, last = get_heap_time_bounds(base)
+    n_days = (last - first).days
+
+    print 'Number of posts: %d' % (n_posts,)
+    print 'Time elapsed: %d days' % (n_days,)
+    avg_ppd = float(n_posts) / n_days
+    print 'Average posts per day: %0.3f\n' % (avg_ppd,)
+
+    names = ('anyone', 'Csabi', 'Josh', 'Attis')
+    for name in names:
+        if name == 'anyone':
+            posts = base
+        else:
+            posts = base.collect(lambda p: p.author() == name)
+        count = len(posts)
+        ratio = float(count) / n_posts * 100
+        avg_ppd = float(count) / n_days
+        print 'Posts by %s: %d (%0.2f %%, %0.3f posts per day)' \
+            % (name, count, ratio, avg_ppd)
+
+        size_pure = 0
+        size_full = 0
+        for p in posts:
+            size_pure += size(p,pure=True)
+            size_full += size(p,pure=False)
+        avg_cpp = float(size_pure) / count
+        avg_cpd = float(size_pure) / n_days
+        percent_quote = float(size_full - size_pure) / size_pure * 100
+        print 'Characters in all posts: %d' % (size_full,)
+        print 'Pure characters (excl. quotes): %d' % (size_pure,)
+        print 'Average pure characters per post: %0.2f' % (avg_cpp,)
+        print 'Average pure characters per day: %0.2f' % (avg_cpd,)
+        print 'Percent of quotes: %0.2f %%\n' % (percent_quote,)
+
+@hkshell.hkshell_cmd()
+def statmill(base=None):
+    """Prints statistics on contribution to the Heap.
+
+    In the past, I have done similar statistics. I plan to do this
+    every time the number of posts mod 1000 becomes 0."""
+
+    # note: soon these should be separate heaps
+    all = hkshell.postdb().all()
+    heap = all.collect.has_tag_from(('hh', 'heap', 'hk'))
+    nonheap = all - heap
+
+    print '== Statistics for the whole Heap ==\n'
+    statcontrib(all)
+    print '== Statistics for the Heapkeeper Heap ==\n'
+    statcontrib(heap)
+    print '== Statistics for the UMS Heap ==\n'
+    statcontrib(nonheap)
+
+@hkshell.hkshell_cmd()
+def n():
+    ps_all = hkshell.postdb().all().copy()
+    # ps_heap = Heap-related (scheduled to go to Hh)
+    ps_heap = ps_all.collect.has_tag_from(('heap', 'hh', 'hk'))
+    ps_nonheap = ps_all - ps_heap
+    l = list(tidy(ps_nonheap))
+    l.sort()
+    return l[0]
 
 main()
 

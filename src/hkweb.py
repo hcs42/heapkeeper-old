@@ -35,6 +35,8 @@ hkweb can be started from the |hkshell| in the following way:
 """
 
 
+import exceptions
+import itertools
 import json
 import sys
 import threading
@@ -43,24 +45,61 @@ import web as webpy
 import hkutils
 import hklib
 import hkgen
+import hksearch
 import hkshell
 
 
 ##### Global variables #####
 
-urls = (
+urls = [
     r'/', 'Index',
     r'/(external/[A-Za-z0-9_./-]+)', 'Fetch',
     r'/(static/[A-Za-z0-9_./-]+)', 'Fetch',
+    r'/(plugins/[A-Za-z0-9_.-]+/static/[A-Za-z0-9_./-]+)', 'Fetch',
     r'/posts/(.*)', 'Post',
     r'/raw-post-bodies/(.*)', 'RawPostBody',
     r'/raw-post-text/(.*)', 'RawPostText',
     r'/set-post-body/(.*)', 'SetPostBody',
     r'/get-post-body/(.*)', 'GetPostBody',
     r'/set-raw-post/(.*)', 'SetRawPost',
-    )
+    r'/show-json', 'ShowJSon',
+    r'/search.*', 'Search',
+    ]
 
 log = []
+
+
+##### Utility functions #####
+
+JSON_ESCAPE_CHAR = '\x00'
+
+def get_web_args():
+    """Gets the arguments transferred as a JSON object from the web.py module.
+
+    **Returns:** json_object -- It will contain UTF-8 encoded strings instead
+    of unicode objects.
+    """
+
+    result = {}
+    for key, value in webpy.input().items():
+        try:
+
+            # If `value` starts with the JSON escape character, a JSON object
+            # should be described after the escape character. (E.g. the value
+            # '\x00[1,2]' (given as '%00[1,2]' in the query parameter) will
+            # become [1, 2]). Otherwise `value` is a string.
+            if len(value) > 1 and value[0] == JSON_ESCAPE_CHAR:
+                json_value_unicode = json.loads(value[1:])
+            else:
+                json_value_unicode = value
+
+            json_value = hkutils.json_uutf8(json_value_unicode)
+            result[key] = json_value
+        except exceptions.ValueError, e:
+            raise hkutils.HkException(
+                      'Error: the "%s" parameter is not a valid JSON object: '
+                      '%s' % (key, value))
+    return result
 
 
 ##### Generator classes #####
@@ -95,12 +134,28 @@ class WebGenerator(hkgen.Generator):
 
         return ('/posts/', postitem.post.post_id_str())
 
+    def print_searchbar(self):
+        return ('<center>\n'
+                '<div class="searchbar-container">\n'
+                '  <form id="searchbar-container-form" action="/search"'
+                ' method="get">\n'
+                '    <input id="searchbar-term" name="term" type="text"'
+                ' size="40"/>\n'
+                '    <input type="submit" value="Search the heaps" />\n'
+                '  </form>\n'
+                '</div>\n'
+                '</center>\n')
+
 
 class IndexGenerator(WebGenerator):
     """Generator that generates the index page."""
 
     def __init__(self, postdb):
         WebGenerator.__init__(self, postdb)
+
+    def print_main(self):
+        return (self.print_searchbar(),
+                self.print_main_index_page())
 
 
 class PostPageGenerator(WebGenerator):
@@ -112,6 +167,9 @@ class PostPageGenerator(WebGenerator):
 
     def __init__(self, postdb):
         WebGenerator.__init__(self, postdb)
+        self.js_files = ['/external/jquery.js',
+                         '/external/json2.js',
+                         '/static/js/hkweb.js']
 
     def set_post_id(self, post_id):
         post = self._postdb.post(post_id)
@@ -145,7 +203,7 @@ class PostPageGenerator(WebGenerator):
             self.enclose(
                 (self.enclose(
                      self.print_link(post_link, 'Back to the index'),
-                     class_='button post-summary-button'), '\n',
+                     class_='button global-button'), '\n',
                  self.enclose(
                      'Hide all post bodies',
                      class_='button global-button',
@@ -158,12 +216,9 @@ class PostPageGenerator(WebGenerator):
                 tag='div',
                 newlines=True)
 
-        js_files = ('/external/jquery.js',
-                    '/external/json2.js',
-                    '/static/js/hkweb.js')
         js_links = \
             [('<script type="text/javascript" src="%s"></script>\n' %
-              (js_file,)) for js_file in js_files]
+              (js_file,)) for js_file in self.js_files]
 
         return (buttons,
                 self.print_thread_page(self._root),
@@ -259,10 +314,79 @@ class PostPageGenerator(WebGenerator):
                    newlines=True,
                    id='post-body-container-' + post_id)
 
-class PostBodyGenerator(hkgen.Generator):
+    def print_main(self, postid):
+        return (self.print_searchbar(),
+                self.print_post_page(postid))
+
+
+class SearchPageGenerator(PostPageGenerator):
+
+    def __init__(self, postdb, preposts):
+        PostPageGenerator.__init__(self, postdb)
+        self.posts = postdb.postset(preposts)
+        self.options.html_title = 'Search page'
+
+    def print_search_page_core(self):
+        """Prints the core of a search page.
+
+        **Returns:** |HtmlText|
+        """
+
+        # Getting the posts in the interesting threads
+        xpostitems = self.walk_exp_posts(self.posts)
+
+        # Reversing the thread order
+        xpostitems = self.reverse_threads(xpostitems)
+
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_post_body'),
+                xpostitems)
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_parent_post_id'),
+                xpostitems)
+        xpostitems = \
+            itertools.imap(
+                self.set_postitem_attr('print_children_post_id'),
+                xpostitems)
+
+        # Printing the page
+        return self.print_postitems(xpostitems)
+
+    def print_search_page(self):
+        """Prints the search page.
+
+        **Returns:** |HtmlText|
+        """
+
+        buttons = \
+            self.enclose(
+                (self.enclose(
+                     'Hide all post bodies',
+                     class_='button global-button',
+                     id='hide-all-post-bodies'), '\n',
+                 self.enclose(
+                     'Show all post bodies',
+                     class_='button global-button',
+                     id='show-all-post-bodies'), '\n'),
+                class_='global-buttons',
+                tag='div',
+                newlines=True)
+
+        return (buttons,
+                self.print_search_page_core())
+
+    def print_js_links(self):
+        return \
+            [('<script type="text/javascript" src="%s"></script>\n' %
+              (js_file,)) for js_file in self.js_files]
+
+
+class PostBodyGenerator(WebGenerator):
 
     def __init__(self, postdb):
-        hkgen.Generator.__init__(self, postdb)
+        WebGenerator.__init__(self, postdb)
 
     def print_post_body(self, post_id):
 
@@ -317,7 +441,7 @@ class Index(HkPageServer):
 
     def GET(self):
         generator = IndexGenerator(self._postdb)
-        content = generator.print_main_index_page()
+        content = generator.print_main()
         return self.serve_html(content, generator)
 
 
@@ -332,8 +456,102 @@ class Post(HkPageServer):
     def GET(self, name):
         post_id = hkutils.uutf8(name)
         generator = PostPageGenerator(self._postdb)
-        content = generator.print_post_page(post_id)
+        content = generator.print_main(post_id)
         return self.serve_html(content, generator)
+
+
+class Search(HkPageServer):
+    """Serves the search pages.
+
+    Served URL: ``/search``"""
+
+    def __init__(self):
+        HkPageServer.__init__(self)
+
+    def main(self):
+
+        try:
+            preposts = self.get_posts()
+        except hkutils.HkException, e:
+            return str(e)
+
+        if preposts is None:
+            # `preposts` is None if there was no search performed. However, in
+            # this function, we want to have `preposts` as a list of preposts,
+            # and we use `show` to store the information that no search was
+            # performed and thus no search result should be shown.
+            preposts = []
+            show = 'no_search'
+        else:
+            # 'normal' means here that a search was performed. Later we modify
+            # thsi to 'no_post_found' if it turns out that the query does not
+            # match any post.
+            show = 'normal'
+
+        generator = SearchPageGenerator(self._postdb, preposts)
+        if (show == 'normal' and len(generator.posts) == 0):
+            show = 'no_post_found'
+
+        if show == 'no_search':
+            main_content = ''
+        elif show == 'no_post_found':
+            main_content = 'No post found.'
+        elif show == 'normal':
+            main_content = generator.print_search_page()
+
+        focus_searchbar_js = \
+            ('<script  type="text/javascript" language="JavaScript">\n'
+             '$("#searchbar-term").focus();\n'
+             '</script>\n')
+
+        content = (generator.print_searchbar(),
+                   main_content,
+                   generator.print_js_links(),
+                   focus_searchbar_js)
+        return self.serve_html(content, generator)
+
+    def get_posts(self):
+
+        args = get_web_args()
+
+        posts = args.get('posts')
+        if posts is not None:
+            return posts
+
+        term = args.get('term')
+        if term is not None:
+            return hksearch.search(term, self._postdb.all())
+
+        return None # only the search bar will be shown
+
+    def GET(self):
+        return self.main()
+
+    def POST(self):
+        return self.main()
+
+
+class ShowJSon(HkPageServer):
+    """Serves the search pages.
+
+    Served URL: ``/showjson``"""
+
+    def __init__(self):
+        HkPageServer.__init__(self)
+
+    def GET(self):
+        input = webpy.input()
+        try:
+            args = get_web_args()
+        except hkutils.HkException, e:
+            return str(e)
+        generator = IndexGenerator(self._postdb)
+        content = ("JSon dictionary of the query parameters: ",
+                    generator.escape(repr(args)))
+        return self.serve_html(content, generator)
+
+    def POST(self):
+        return self.GET()
 
 
 class RawPostBody(WebpyServer):
@@ -382,13 +600,18 @@ class AjaxServer(WebpyServer):
     def __init__(self):
         WebpyServer.__init__(self)
 
+    def GET(self, name_uni):
+        return self.POST(name_uni)
+
     def POST(self, name_uni):
         # RFC4627: "The MIME media type for JSON text is application/json."
         webpy.header('Content-type','application/json')
         webpy.header('Transfer-Encoding','chunked')
         name = hkutils.uutf8(name_uni)
-        input = webpy.input()
-        args = json.loads(input.get('args'))
+        try:
+            args = get_web_args()
+        except hkutils.HkException, e:
+            return str(e)
         result = self.execute(name, args)
         return json.dumps(result)
 
@@ -418,8 +641,6 @@ class SetPostBody(AjaxServer):
         newPostBodyText = args.get('new_body_text')
         if newPostBodyText is None:
             return {'error': 'No post body specified'}
-        else:
-            newPostBodyText = hkutils.uutf8(newPostBodyText)
 
         post.set_body(newPostBodyText)
 
@@ -487,8 +708,6 @@ class SetRawPost(AjaxServer):
         new_post_text = args.get('new_post_text')
         if new_post_text is None:
             return {'error': 'No post text specified'}
-        else:
-            new_post_text = hkutils.uutf8(new_post_text)
 
         old_parent = post.parent()
 
@@ -507,7 +726,7 @@ class SetRawPost(AjaxServer):
         # Generating the HTML for the new post text
         generator = PostPageGenerator(self._postdb)
         generator.set_post_id(post.post_id())
-        postitem = generator.augment_postitem(hklib.PostItem('inner', post))
+        postitem = hklib.PostItem('inner', post)
         postitem.print_post_body = True
         postitem.print_parent_post_id = True
         postitem.print_children_post_id = True
@@ -543,14 +762,38 @@ class Server(threading.Thread):
         # wrapper around sys would be the answer, which should be done anyway
         # to control logging (there sys.stderr should be diverted).
         sys.argv = (None, str(self._port),)
-        WebApp = webpy.application(urls, globals())
-        WebApp.run()
+        webapp = webpy.application(urls, globals())
+        self.webapp = webapp
+        webapp.run()
 
 
-##### hkshell commands #####
+##### Interface functions #####
 
 def start(port=8080):
+    """Starts the hkweb web server.
+
+    **Argument:**
+
+    - `port` (int) -- The port to listen on.
+    """
+
     options = hkshell.options
     options.web_server = Server(port)
     options.web_server.start()
     hkutils.log('Web service started.')
+
+def insert_urls(new_urls):
+    """Inserts the given urls before the already handles URLs.
+
+    **Argument:**
+
+    - `new_urls` ([str])
+
+    **Returns:**
+
+    **Example:** ::
+
+        >>> hkweb.insert_urls(['/myurl', 'mymodule.MyServer'])
+    """
+
+    urls[0:0] = new_urls

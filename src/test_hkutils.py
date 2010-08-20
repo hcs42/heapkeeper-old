@@ -247,6 +247,34 @@ class Test__Misc(unittest.TestCase):
         # Converting a unicode object to utf-8
         self.assertEqual(hkutils.uutf8(u'\u0171'), '\xc5\xb1')
 
+    def test_json_uutf8(self):
+        """Tests :func:`hkutils.utf8`."""
+
+        # String
+        self.assertEqual(
+            hkutils.json_uutf8(u'\u0171aa'),
+            '\xc5\xb1aa')
+
+        # Dictionary
+        self.assertEqual(
+            hkutils.json_uutf8({u'\u0171': u'\u0171'}),
+            {'\xc5\xb1': '\xc5\xb1'})
+
+        # List
+        self.assertEqual(
+            hkutils.json_uutf8([u'\u0171', u'\u0171']),
+            ['\xc5\xb1', '\xc5\xb1'])
+
+        # Numbers, bools, null
+        self.assertEqual(
+            hkutils.json_uutf8([u'\u0171', 1, 1.1, True, None]),
+            ['\xc5\xb1', 1, 1.1, True, None])
+
+        # Embedded data structures
+        self.assertEqual(
+            hkutils.json_uutf8([{'key': [u'\u0171']}]),
+            [{'key': ['\xc5\xb1']}])
+
     def test_calc_timestamp(self):
 
         """Tests :func:`hkutils.calc_timestamp`."""
@@ -266,7 +294,7 @@ class Test__Misc(unittest.TestCase):
             raise hkutils.HkException, 'description'
         except hkutils.HkException, h:
             self.assertEqual(h.value, 'description')
-            self.assertEqual(str(h), "'description'")
+            self.assertEqual(str(h), 'description')
 
     def test_plural(self):
 
@@ -424,6 +452,25 @@ class Test__Misc(unittest.TestCase):
         self.assertEqual(
             hkutils.configparser_to_configdict(configparser),
             {'': {'': {'key': 'value'}}})
+
+    def test_quote_shell_arg(self):
+        """Tests :func:`hkutils.quote_shell_arg`."""
+
+        self.assertEquals(
+            hkutils.quote_shell_arg('text'),
+            'text')
+
+        self.assertEquals(
+            hkutils.quote_shell_arg('te xt'),
+            "'te xt'")
+
+        self.assertEquals(
+            hkutils.quote_shell_arg('te "x" t'),
+            "'te \"x\" t'")
+
+        self.assertEquals(
+            hkutils.quote_shell_arg("te 'x' t"),
+            "'te '\"'\"'x'\"'\"' t'")
 
 
 if __name__ == '__main__':

@@ -78,7 +78,9 @@ import datetime
 import email.utils
 import inspect
 import os.path
+import re
 import shutil
+import subprocess
 import sys
 import types
 
@@ -131,7 +133,11 @@ class HkException(Exception):
         **Returns:** str
         """
 
-        return repr(self.value)
+        value = self.value
+        if isinstance(value, str):
+            return value
+        else:
+            return repr(value)
 
 
 ##### Option handling (currently not used) #####
@@ -400,6 +406,31 @@ def uutf8(unicode_obj):
 
     return unicode_obj.encode('utf-8')
 
+def json_uutf8(json_obj):
+    """Converts the unicode objects in a JSON data structure into UTF-8
+    strings.
+
+    **Argument:**
+
+    - `json_obj` (json_object) -- See the documentation of the json.JSONDecoder
+      function in the Python documentation for the definition of the JSon
+      objects.
+
+    **Returns:** json_object
+    """
+
+    if isinstance(json_obj, dict):
+        new_dict = {}
+        for key, value in json_obj.items():
+            new_dict[json_uutf8(key)] = json_uutf8(value)
+        return new_dict
+    elif isinstance(json_obj, list):
+        return [json_uutf8(item) for item in json_obj]
+    elif isinstance(json_obj, unicode):
+        return uutf8(json_obj)
+    else:
+        return json_obj
+
 def calc_timestamp(date):
     """Calculates a timestamp from a date.
 
@@ -565,6 +596,56 @@ def configparser_to_configdict(configparser):
             value = configparser.get(section, option)
             section_dict[option] = value
     return main_dict
+
+
+def quote_shell_arg(arg):
+    """Puts an argument that is to be passed as a shell argument between
+    quotes.
+
+    If `arg` is typed into bash as an argument to a program, then the invoked
+    program will get `arg` exactly as it was specified to
+    :func:`quote_shell_arg`.
+
+    **Argument:**
+
+    - `arg` (str)
+
+    **Returns:** str
+
+    **Examples:** ::
+
+        >>> print hkutils.quote_shell_arg('text')
+        text
+        >>> print hkutils.quote_shell_arg('te xt')
+        'te xt'
+        >>> print hkutils.quote_shell_arg('te "x" t')
+        'te "x" t'
+        >>> print hkutils.quote_shell_arg("te 'x' t")
+        'te '"'"'x'"'"' t'
+    """
+
+    # We put `arg` between quotes if contains any character like space that
+    # is not mentioned here
+    if re.match('^[-_a-zA-Z0-9./+=:]+$', arg):
+        return arg
+    else:
+        arg2 = re.sub("('+)", "'\"\\1\"'", arg)
+        return "'" + arg2 + "'"
+
+
+# Not tested
+def call(cmd):
+    """Executes the given command using `subprocess.call` after printing it.
+
+    **Argument:**
+
+    - `cmd` ([str]) -- The command to be executed.
+
+    **Returns:** Popen.returncode
+    """
+
+    log('cmd: ' + ' '.join([quote_shell_arg(arg) for arg in cmd]))
+    return subprocess.call(cmd)
 
 
 ##### Constants #####

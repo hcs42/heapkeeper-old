@@ -3,6 +3,8 @@ digraph {
     hkbodyparser -> hkutils;
     hklib -> hkbodyparser;
     hklib -> hkutils;
+    hksearch -> hkutils;
+    hksearch -> hklib;
     hkgen -> hkutils;
     hkgen -> hkbodyparser;
     hkgen -> hklib;
@@ -11,6 +13,7 @@ digraph {
     hkcustomlib -> hkgen;
     hkshell -> hkutils;
     hkshell -> hklib;
+    hkshell -> hksearch;
     hkshell -> hkgen;
     hkshell -> hkcustomlib;
     hk -> hkshell;

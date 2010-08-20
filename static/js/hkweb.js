@@ -16,6 +16,9 @@
 // Copyright (C) 2010 Csaba Hoch
 
 
+/*global $, escape, location, scroll, window, document */
+
+
 ///// Types /////
 
 // - postId: a string which contains a heap id and a post index, separated with
@@ -34,7 +37,68 @@ function postIdStrToPostId(postId) {
 }
 
 
-///// AJAX /////
+///// Communication with the server: HTML queries and AJAX /////
+
+var JSON_ESCAPE_CHAR = '\x00';
+
+function stringify_object(obj) {
+    // Converts the given object into a string.
+    //
+    // The result is either a string (e.g. "text") or the JSON escape character
+    // followed by a stringified JSON object (e.g. "\x00[1,2]").
+    //
+    // Argument:
+    // - obj (object)
+    //
+    // Returns: str
+
+    return '\x00' + JSON.stringify(obj);
+}
+
+
+function url_and_dict_to_http_query(url, args) {
+    // Converts an URL and a dictionary into a HTTP query string.
+    //
+    // - url(str) - args(object) -- `args` will be converted to a HTTP query
+    //   string. The values in `args` will be converted to JSON.
+    //
+    // Returns: str -- it will look like this:
+    //
+    //     <url>?<key1>=<value1>&<key2>=<value2>&...
+    //
+    // where:
+    // - all keys are escaped
+    // - all values are converted to JSON and then escaped
+    //
+    // Example:
+
+    var data = [url];
+    var first = true;
+    $.each(args, function(key, value) {
+        if (first) {
+            data.push('?');
+            first = false;
+        } else {
+            data.push('&');
+        }
+        var value_param = stringify_object(value);
+        data.push(escape(key) + '=' + escape(value_param));
+    });
+
+    return data.join('');
+}
+
+function gotoURL(url, args) {
+    // Goes to the specified URL; the query parameters will be created from
+    // `args`.
+    //
+    // - url(str) -- The URL to load. If empty string, the current URL (with
+    //   'args' as query parameters) will be loaded.
+    // - args(object) -- `args` will be converted to a JSON text and sent to
+    //   the server as query parameters.
+    var query_url = url_and_dict_to_http_query(url, args);
+    $(location).attr('href', query_url);
+}
 
 function ajaxQuery(url, args, callback) {
     // Performs an AJAX query using JSON texts and calls the callback function
@@ -47,10 +111,15 @@ function ajaxQuery(url, args, callback) {
     //   result. The server is expected to send a JSON text that will be
     //   converted to the `result` object.
 
+    var data = {};
+    $.each(args, function(key, value) {
+        data[key] = stringify_object(value);
+    });
+
     $.ajax({
         url: url,
         dataType: 'json',
-        data: {'args': JSON.stringify(args)},
+        data: data,
         type: 'post',
         success: callback
     });
@@ -89,7 +158,7 @@ function ObjectPosition(obj) {
         do {
             curleft += obj.offsetLeft;
             curtop += obj.offsetTop;
-        } while (obj = obj.offsetParent);
+        } while (obj == obj.offsetParent);
     }
     return [curleft, curtop];
 }
@@ -117,6 +186,14 @@ function getPostIds() {
     return $('.post-body-container').map(function(index) {
         return $(this).attr('id').replace(/post-body-container-/, '');
     });
+}
+
+function getRootPostId() {
+    // Returns the root of the thread that is displayed.
+    //
+    // Returns: str
+
+    return location.href.replace(/^.*\/([^\/]+)\/([^\/]+)$/, '$1-$2');
 }
 
 function hidePostBody(postId) {
@@ -165,7 +242,7 @@ function showAllPostBodies() {
 // Keys: post ids that are being edited.
 // Values: mode of editing: either 'body' if the body is edited or 'raw' if the
 // raw post text is edited.
-var editState = {}
+var editState = {};
 
 function getRawPostRequest(postId, mode, callback) {
     // Gets the raw body of the given post and executes a callback function with
@@ -227,14 +304,29 @@ function getPostBodyRequest(postId, callback) {
 function editPostStarted(postId) {
     // Should be called when editing the post body has been started.
     //
+    // - postId (PostId)
+
     setButtonVisibility($('#post-body-edit-button-' + postId), 'hide');
     setButtonVisibility($('#post-raw-edit-button-' + postId), 'hide');
     setButtonVisibility($('#post-body-save-button-' + postId), 'show');
     setButtonVisibility($('#post-body-cancel-button-' + postId), 'show');
+
+    var postBodyContainer = $('#post-body-container-' + postId);
+    var textArea = $('textarea', postBodyContainer);
+
+    // Save the post body for shift-enter
+    textArea.bind('keypress', function(e) {
+        if (e.which == 13 && e.shiftKey) {
+            e.preventDefault();
+            savePost(postId);
+        }
+    });
 }
 
 function editPostFinished(postId) {
     // Should be called when editing the post body has been finished.
+    //
+    // - postId (PostId)
 
     setButtonVisibility($('#post-body-edit-button-' + postId), 'show');
     setButtonVisibility($('#post-raw-edit-button-' + postId), 'show');
@@ -372,6 +464,54 @@ function confirmExit() {
     }
 }
 
+///// Adding new buttons /////
+
+function addGlobalButton(buttonText, buttonId, eventHandler) {
+    // Adds the specified kind of button to global buttons.
+    //
+    // Arguments:
+    //
+    // - buttonText (str) -- The text of the button.
+    // - buttonId (str) -- The button's HTML id.
+    // - eventHandler(function(postId)) -- Functions that will be called when
+    //   the button is clicked on.
+
+    var globalButtons = $('.global-buttons');
+    globalButtons.append(
+        '<span class="button global-button" id="' + buttonId + '">' +
+        buttonText +
+        '</span>');
+    $('#' + buttonId).bind('click', function() {
+        eventHandler();
+    });
+}
+
+function addBodyButtons(buttonText, buttonName, eventHandler) {
+    // Adds the specified kind of button to each post body container.
+    //
+    // Arguments:
+    //
+    // - buttonText (str) -- The text of the button.
+    // - buttonName (str) -- The button's HTML id will be
+    //   buttonName + '-' + postId
+    // - eventHandler(function(postId)) -- Functions that will be called when
+    //   the button is clicked on.
+
+    getPostIds().each(function(index) {
+        var postId = this;
+        var postBodyContainer = $('#post-body-container-' + postId);
+        var postBodyButtons = $('.post-body-buttons', postBodyContainer);
+        var buttonId = buttonName + '-' + postId;
+        postBodyButtons.append(
+            '<span class="button post-body-button" ' +
+            'id="' + buttonId + '">' +
+            buttonText +
+            '</span>');
+        $('#' + buttonId).bind('click', function() {
+            eventHandler(postId);
+        });
+    });
+}
 
 ///// Adding event handlers /////
 

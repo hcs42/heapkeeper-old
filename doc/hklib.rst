@@ -207,6 +207,8 @@ EmailDownloader
     .. automethod:: close
     .. automethod:: parse_email
     .. automethod:: create_post_from_email
+    .. automethod:: imap_compact
+    .. automethod:: fragment_list
     .. automethod:: download_new
 
 Generator

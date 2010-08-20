@@ -294,7 +294,6 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         # Without post body
 
         postitem = hklib.PostItem('begin', p(0), 0)
-        postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
         post_link = \
@@ -352,7 +351,6 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         # Without post body
 
         postitem = hklib.PostItem('flat', p(0), 0)
-        postitem = g.augment_postitem(postitem)
         postitem.post.set_tags(['tag1', 'tag2'])
 
         post_link = \
@@ -429,32 +427,11 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                 class_='post-summary',
                 newlines=True))
 
-    def test_walk_postitems(self):
-        """Tests the following functions:
-
-        - :func:`hkgen.Generator.augment_postitem`
-        - :func:`hkgen.Generator.walk_postitems`
-        """
-
-        postdb, g, p = self.get_ouv()
-        postitems = list(g.walk_postitems(self.postitems))
-
-        # We check that postitems[0] is only a copy of self.postitems
-        self.assert_(postitems[0] is not self.postitems[0])
-
-        # We check that every field was of the post item copied
-        self.assertEqual(postitems[0].pos, self.postitems[0].pos)
-        self.assertEqual(postitems[0].post, self.postitems[0].post)
-        self.assertEqual(postitems[0].level, self.postitems[0].level)
-
-        # We check that the `print_fun` field was added
-        self.assertEqual(postitems[0].print_fun, g.print_postitem)
-
     def test_print_postitems(self):
         """Tests :func:`hkgen.Generator.print_postitem`."""
 
         postdb, g, p = self.get_ouv()
-        postitems = list(g.walk_postitems(self.postitems))
+        postitems = list(self.postitems)
         self.assertTextStructsAreEqual(
             g.print_postitems(postitems),
             [g.print_postitem(postitems[0]),
@@ -495,7 +472,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                  flat=True,
                  content=
                      g.print_postitems(
-                         g.walk_postitems(g._postdb.walk_cycles()))),
+                         g._postdb.walk_cycles())),
              g.section( # section of posts not in cycles
                  '1', 'Other posts',
                   g.print_postitems(g.walk_thread(None))),
@@ -538,7 +515,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertTextStructsAreEqual(
              [g.print_postitem(pi_begin),
               g.print_postitem(pi_end)],
-             g.print_postitems(g.walk_postitems(postitems)))
+             g.print_postitems(postitems))
 
         self.assertEqual(
             self.pop_log(),

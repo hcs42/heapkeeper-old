@@ -6,6 +6,7 @@ Module documentation
    hkutils
    hklib
    hkbodyparser
+   hksearch
    hkgen
    hkcustomlib
    hkshell

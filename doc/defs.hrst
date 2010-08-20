@@ -33,6 +33,7 @@
 .. |hkcustomlib| replace:: :mod:`hkcustomlib`
 .. |hkgen| replace:: :mod:`hkgen`
 .. |hklib| replace:: :mod:`hklib`
+.. |hksearch| replace:: :mod:`hksearch`
 .. |hkshell| replace:: :mod:`hkshell`
 .. |hkutils| replace:: :mod:`hkutils`
 .. |HtmlStr| replace:: :ref:`HtmlStr <hklib_HtmlStr>`
