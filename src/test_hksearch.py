@@ -53,6 +53,8 @@ class Test_Search(unittest.TestCase, test_hklib.PostDBHandler):
 
         # Note: the body of post <i> is 'body<i>'
 
+        ### Testing the target type 'whole'
+
         ## Testing searching in the body
 
         self.assertEqual(
@@ -88,6 +90,54 @@ class Test_Search(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEqual(
             hksearch.search('my_heap body0', all_posts),
             postdb.postset([self.p(0)]))
+
+        ### Testing other target types
+
+        ## Testing target type 'heap'
+
+        # Result: only my_other_heap/0
+        self.assertEqual(
+            hksearch.search('heap:^my_other_heap$', all_posts),
+            postdb.postset([self.po(0)]))
+
+        # Result: only my_other_heap/0
+        self.assertEqual(
+            hksearch.search('heap:o', all_posts),
+            postdb.postset([self.po(0)]))
+
+        ## Testing target type 'author'
+
+        self.assertEqual(
+            hksearch.search('author:author0', all_posts),
+            postdb.postset([self.p(0), self.po(0)]))
+
+        ## Testing target type 'subject'
+
+        self.assertEqual(
+            hksearch.search('subject:subject0', all_posts),
+            postdb.postset([self.p(0), self.po(0)]))
+
+        ## Testing target type 'tag'
+
+        self.p(0).add_tag('tag0')
+        self.p(0).add_tag('tag1')
+        self.po(0).add_tag('tag0')
+
+        self.assertEqual(
+            hksearch.search('tag:tag0', all_posts),
+            postdb.postset([self.p(0), self.po(0)]))
+
+        ## Testing target type 'message-id'
+
+        self.assertEqual(
+            hksearch.search('message-id:0@', all_posts),
+            postdb.postset([self.p(0), self.po(0)]))
+
+        ## Testing target type 'body'
+
+        self.assertEqual(
+            hksearch.search('body:0', all_posts),
+            postdb.postset([self.p(0), self.po(0)]))
 
 
 if __name__ == '__main__':
