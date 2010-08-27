@@ -471,7 +471,8 @@ class Search(HkPageServer):
     def main(self):
 
         try:
-            preposts = self.get_posts()
+            args = get_web_args()
+            preposts = self.get_posts(args)
         except hkutils.HkException, e:
             return str(e)
 
@@ -499,20 +500,32 @@ class Search(HkPageServer):
         elif show == 'normal':
             main_content = generator.print_search_page()
 
-        focus_searchbar_js = \
-            ('<script  type="text/javascript" language="JavaScript">\n'
-             '$("#searchbar-term").focus();\n'
+        term = args.get('term')
+        if term is not None:
+            # We use json to make sure that `term` is represented in a format
+            # readable by JavaScript
+            fill_searchbar_js = \
+                ('$("#searchbar-term").val(' +
+                 json.dumps(term) +
+                 ');\n')
+        else:
+            fill_searchbar_js = ''
+
+        focus_searchbar_js = '$("#searchbar-term").focus();\n'
+
+        js_code = \
+            ('<script  type="text/javascript" language="JavaScript">\n',
+            fill_searchbar_js,
+            focus_searchbar_js,
              '</script>\n')
 
         content = (generator.print_searchbar(),
                    main_content,
                    generator.print_js_links(),
-                   focus_searchbar_js)
+                   js_code)
         return self.serve_html(content, generator)
 
-    def get_posts(self):
-
-        args = get_web_args()
+    def get_posts(self, args):
 
         posts = args.get('posts')
         if posts is not None:
