@@ -30,6 +30,8 @@ Afterwards the index page of the 'myheap' heap will be displayed at
 """
 
 
+import json
+
 import hkweb
 
 
@@ -78,7 +80,19 @@ def start(heap_id, url=None):
 
         def GET(self):
             generator = CustomHeapGenerator(self._postdb, heap_id)
-            content = generator.print_main_index_page()
+            content = generator.print_main()
+
+            # Inserting "heap:<heap_id>" into the search bar
+            fill_searchbar_js = \
+                ('$("#searchbar-term").val(' +
+                 json.dumps("heap:" + heap_id + " ") +
+                 ');\n')
+            js_code = \
+                ('<script  type="text/javascript" language="JavaScript">\n',
+                fill_searchbar_js,
+                 '</script>\n')
+
+            content = (content, js_code)
             return self.serve_html(content, generator)
 
     hkweb.insert_urls([url, CustomHeapServer])
