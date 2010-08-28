@@ -3517,11 +3517,16 @@ def unify_config(config):
                               ['nicknames': Nicknames]}},
          ['paths': {['html_dir': str]}],
          [Server,]
-         ['nicknames': Nicknames]}
+         ['nicknames': Nicknames],
+         ['accounts': Accounts]}
 
         Nicknames:
 
             {EmailAddress: str(nickname)}
+
+        Accounts:
+
+            {str(username): str(password)}
 
         Server:
 
@@ -3539,7 +3544,8 @@ def unify_config(config):
                               [Server,]
                               'nicknames': Nicknames}},
          [Server,]
-         'nicknames': Nicknames}
+         'nicknames': Nicknames,
+         'accounts': Accounts},
 
         Server:
 
@@ -3681,21 +3687,20 @@ def unify_format_2(config):
     # Unify format 3
     return unify_format_3(config)
 
-def unify_nicknames(nicknames):
-    """Converts the `nicknames` dictionary given in format 3 to the unified
-    format.
+def unify_str_to_str_dict(dictionary):
+    """Checks if a dict assigns strings to strings.
 
-    Actually, it does not do any modification to `nicknames`, it just checks
-    it.
+    In format 3, both the `nicknames` and the `accounts` dict is of
+    this form.
 
     **Argument:**
 
-    - `nicknames` ({str: str})
+    - `dictionary` ({str: str})
     """
 
-    for email, author in nicknames.items():
-        assert isinstance(email, str)
-        assert isinstance(author, str)
+    for key, value in dictionary.items():
+        assert isinstance(key, str)
+        assert isinstance(value, str)
 
 def unify_server(server):
     """Converts the `server` dictionary given in format 3 to the unified
@@ -3741,13 +3746,17 @@ def unify_format_3(config):
 
         # heaps/<heap name>/nicknames
         heap_dict.setdefault('nicknames', {})
-        unify_nicknames(heap_dict['nicknames'])
+        unify_str_to_str_dict(heap_dict['nicknames'])
 
     # server
     unify_server(config.get('server'))
 
     # nicknames
     config.setdefault('nicknames', {})
-    unify_nicknames(config['nicknames'])
+    unify_str_to_str_dict(config['nicknames'])
+
+    # accounts
+    config.setdefault('accounts', {})
+    unify_str_to_str_dict(config['accounts'])
 
     return config

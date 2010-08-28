@@ -2833,7 +2833,8 @@ class Test__config(unittest.TestCase):
                                         'id': 'defaultheap',
                                         'name': 'defaultheap',
                                         'nicknames': {}}},
-              'nicknames': {}})
+              'nicknames': {},
+              'accounts': {}})
 
         # Specifying all fields
         self.assertEqual(
@@ -2846,7 +2847,9 @@ class Test__config(unittest.TestCase):
                              'username': '-username',
                              'password': '-password'},
                   'nicknames': {0: 'nick1 email1',
-                                1: 'nick2 email2'}}),
+                                1: 'nick2 email2'},
+                  'accounts': {'user1': 'pass1',
+                               'user2': 'pass2'}}),
              {'paths': {'html_dir': '-html'},
               'heaps': {'defaultheap': {'path': 'dir1',
                                         'id': 'defaultheap',
@@ -2858,7 +2861,9 @@ class Test__config(unittest.TestCase):
                          'username': '-username',
                          'password': '-password'},
               'nicknames': {'email1': 'nick1',
-                            'email2': 'nick2'}})
+                            'email2': 'nick2'},
+              'accounts': {'user1': 'pass1',
+                           'user2': 'pass2'}})
 
         # Not specifying all mandatory fields
         self.assertRaises(
@@ -2888,7 +2893,8 @@ class Test__config(unittest.TestCase):
                                   'id': 'heap2',
                                   'name': 'heap2',
                                   'nicknames': {}}},
-              'nicknames': {}})
+              'nicknames': {},
+              'accounts': {}})
 
         # Specifying all fields
         self.assertEqual(
@@ -2901,7 +2907,9 @@ class Test__config(unittest.TestCase):
                              'username': '-username',
                              'password': '-password'},
                   'nicknames': {0: 'nick1 email1',
-                                1: 'nick2 email2'}}),
+                                1: 'nick2 email2'},
+                  'accounts': {'user1': 'pass1',
+                               'user2': 'pass2'}}),
              {'paths': {'html_dir': '-html'},
               'heaps': {'heap1': {'path': 'dir1',
                                   'id': 'heap1',
@@ -2917,7 +2925,9 @@ class Test__config(unittest.TestCase):
                          'username': '-username',
                          'password': '-password'},
               'nicknames': {'email1': 'nick1',
-                            'email2': 'nick2'}})
+                            'email2': 'nick2'},
+              'accounts': {'user1': 'pass1',
+                           'user2': 'pass2'}})
 
         # Testing several heaps
         self.assertRaises(
@@ -2930,7 +2940,7 @@ class Test__config(unittest.TestCase):
 
         - :func:`hklib:unify_format`
         - :func:`hklib:unify_format_3`
-        - :func:`hklib:unify_nicknames`
+        - :func:`hklib:unify_str_to_str_dict`
         - :func:`hklib:unify_server`
         """
 
@@ -2944,7 +2954,8 @@ class Test__config(unittest.TestCase):
                                   'id': '-heap',
                                   'name': '-heap',
                                   'nicknames': {}}},
-              'nicknames': {}})
+              'nicknames': {},
+              'accounts': {}})
 
         # Specifying all fields
         self.assertEqual(
@@ -2964,7 +2975,9 @@ class Test__config(unittest.TestCase):
                              'imaps': 'false',
                              'username': '-username',
                              'password': '-password'},
-                  'nicknames': {'c': 'd'}}),
+                  'nicknames': {'c': 'd'},
+                  'accounts': {'user1': 'pass1',
+                               'user2': 'pass2'}}),
              {'paths': {'html_dir': '-html_dir'},
               'heaps': {'-heap': {'path': '-path',
                                   'id': '-id',
@@ -2980,7 +2993,9 @@ class Test__config(unittest.TestCase):
                          'imaps': 'false',
                          'username': '-username',
                          'password': '-password'},
-              'nicknames': {'c': 'd'}})
+              'nicknames': {'c': 'd'},
+              'accounts': {'user1': 'pass1',
+                           'user2': 'pass2'}})
 
         # Testing when server/password is not specified
         self.assertEqual(
@@ -2998,7 +3013,8 @@ class Test__config(unittest.TestCase):
               'server': {'host': '-host',
                          'port': 1111,
                          'username': '-username'},
-              'nicknames': {}})
+              'nicknames': {},
+              'accounts': {}})
 
         # Testing several heaps
         self.assertEqual(
@@ -3015,7 +3031,8 @@ class Test__config(unittest.TestCase):
                                    'id': '-heap2',
                                    'name': '-heap2',
                                    'nicknames': {}}},
-              'nicknames': {}})
+              'nicknames': {},
+              'accounts': {}})
 
         # Testing several heaps
         self.assertRaises(
