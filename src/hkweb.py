@@ -112,6 +112,9 @@ class WebGenerator(hkgen.Generator):
         hkgen.Generator.__init__(self, postdb)
         self.options.cssfiles.append("static/css/hkweb.css")
         self.options.favicon = '/static/images/heap.png'
+        self.js_files = ['/external/jquery.js',
+                         '/external/json2.js',
+                         '/static/js/hkweb.js']
 
     def print_html_head_content(self):
         """Prints the content in the HTML header.
@@ -146,6 +149,11 @@ class WebGenerator(hkgen.Generator):
                 '</div>\n'
                 '</center>\n')
 
+    def print_js_links(self):
+        return \
+            [('<script type="text/javascript" src="%s"></script>\n' %
+              (js_file,)) for js_file in self.js_files]
+
 
 class IndexGenerator(WebGenerator):
     """Generator that generates the index page."""
@@ -155,7 +163,8 @@ class IndexGenerator(WebGenerator):
 
     def print_main(self):
         return (self.print_searchbar(),
-                self.print_main_index_page())
+                self.print_main_index_page(),
+                self.print_js_links())
 
 
 class PostPageGenerator(WebGenerator):
@@ -167,9 +176,6 @@ class PostPageGenerator(WebGenerator):
 
     def __init__(self, postdb):
         WebGenerator.__init__(self, postdb)
-        self.js_files = ['/external/jquery.js',
-                         '/external/json2.js',
-                         '/static/js/hkweb.js']
 
     def set_post_id(self, post_id):
         post = self._postdb.post(post_id)
@@ -216,13 +222,9 @@ class PostPageGenerator(WebGenerator):
                 tag='div',
                 newlines=True)
 
-        js_links = \
-            [('<script type="text/javascript" src="%s"></script>\n' %
-              (js_file,)) for js_file in self.js_files]
-
         return (buttons,
                 self.print_thread_page(self._root),
-                js_links)
+                self.print_js_links())
 
     def get_postsummary_fields_inner(self, postitem):
         """Returns the fields of the post summary when the pos position is
@@ -376,11 +378,6 @@ class SearchPageGenerator(PostPageGenerator):
 
         return (buttons,
                 self.print_search_page_core())
-
-    def print_js_links(self):
-        return \
-            [('<script type="text/javascript" src="%s"></script>\n' %
-              (js_file,)) for js_file in self.js_files]
 
 
 class PostBodyGenerator(WebGenerator):
