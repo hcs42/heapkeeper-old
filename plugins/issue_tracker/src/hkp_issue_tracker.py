@@ -81,9 +81,8 @@ class IssueTrackerGenerator(hk_issue_tracker.Generator, hkweb.WebGenerator):
 
         return \
            self.reverse_threads(
-               [self.augment_postitem(
-                    hklib.PostItem(pos='flat', post=post))
-               for post in posts.collect.is_root().sorted_list()])
+               [hklib.PostItem(pos='flat', post=post)
+                for post in posts.collect.is_root().sorted_list()])
 
     def get_postsummary_fields_flat(self, postitem):
 
