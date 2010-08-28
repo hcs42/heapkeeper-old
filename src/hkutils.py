@@ -449,6 +449,58 @@ def calc_timestamp(date):
 
     return email.utils.mktime_tz(email.utils.parsedate_tz(date))
 
+def parse_date(date_str):
+    """Parses a date.
+
+    **Argument:**
+
+    - `date_str` (str) -- The date string to be parsed. It should have the
+      following format: ``yyyy[-mm[-dd[_HH[:MM[:SS]]]]]``. The brackets mean
+      "optional part". A space character can be used instead of the underscore.
+      When the "month" or "day" field is not given, it is set to 1. When the
+      "hour", "minute" or "second" field is not given, it is set to 0.
+
+    **Returns:** (int, int, int, int, int, int) -- A tuple with the following
+    fields: year, month, day, hour, minute, second. It can be given to the
+    constructor of the datetime.datetime class.
+
+    **Examples:**
+
+    >>> hkutils.parse_date('2009')
+    (2009, 1, 1, 0, 0, 0)
+    >>> hkutils.parse_date('2009-02')
+    (2009, 2, 1, 0, 0, 0)
+    >>> hkutils.parse_date('2009-02-03')
+    (2009, 2, 3, 0, 0, 0)
+    >>> hkutils.parse_date('2009-02-03_04')
+    (2009, 2, 3, 4, 0, 0)
+    >>> hkutils.parse_date('2009-02-03_04:05')
+    (2009, 2, 3, 4, 5, 0)
+    >>> hkutils.parse_date('2009-02-03_04:05:06')
+    (2009, 2, 3, 4, 5, 6)
+    >>> hkutils.parse_date('2009-02-03 04:05:06')
+    (2009, 2, 3, 4, 5, 6)
+    """
+
+    r = re.match('^(?P<year>\d\d\d\d)'
+                 '(-?(?P<month>\d\d)'
+                 '(-?(?P<day>\d\d)'
+                 '([_ ]?(?P<hour>\d\d)'
+                 '(:?(?P<minute>\d\d)'
+                 '(:?(?P<second>\d\d)'
+                 ')?)?)?)?)?$', date_str)
+    if r is None:
+        msg = ('Incorrect date specification: %s\n'
+               'Use the following format: yyyy[-mm[-dd[_HH[:MM[:SS]]]]]')
+        raise HkException(msg % (repr(date_str),))
+    year = int(r.group('year'))
+    month = int(r.group('month') or 1)
+    day = int(r.group('day') or 1)
+    hour = int(r.group('hour') or 0)
+    minute = int(r.group('minute') or 0)
+    second = int(r.group('second') or 0)
+    return year, month, day, hour, minute, second
+
 def copy_wo(src, dst):
     """Copy without overwriting.
 

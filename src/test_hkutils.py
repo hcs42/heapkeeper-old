@@ -282,6 +282,49 @@ class Test__Misc(unittest.TestCase):
         ts = hkutils.calc_timestamp('Wed, 20 Aug 2008 17:41:30 +0200')
         self.assertEqual(ts, 1219246890.0)
 
+    def test_parse_date(self):
+
+        """Tests :func:`hkutils.parse_date`."""
+
+        # Fields
+
+        self.assertEqual(
+            hkutils.parse_date('2009'),
+            (2009, 1, 1, 0, 0, 0))
+
+        self.assertEqual(
+            hkutils.parse_date('2009-02'),
+            (2009, 2, 1, 0, 0, 0))
+
+        self.assertEqual(
+            hkutils.parse_date('2009-02-03'),
+            (2009, 2, 3, 0, 0, 0))
+
+        self.assertEqual(
+            hkutils.parse_date('2009-02-03_04'),
+            (2009, 2, 3, 4, 0, 0))
+
+        self.assertEqual(
+            hkutils.parse_date('2009-02-03_04:05'),
+            (2009, 2, 3, 4, 5, 0))
+
+        self.assertEqual(
+            hkutils.parse_date('2009-02-03_04:05:06'),
+            (2009, 2, 3, 4, 5, 6))
+
+        # Space instead of underscore
+
+        self.assertEqual(
+            hkutils.parse_date('2009-02-03 04:05:06'),
+            (2009, 2, 3, 4, 5, 6))
+
+        # Wrong format
+
+        self.assertRaises(
+            hkutils.HkException,
+            lambda: hkutils.parse_date('200'))
+
+
     def test_HkException(self):
 
         """Tests :class:`hkutils.HkException`."""
