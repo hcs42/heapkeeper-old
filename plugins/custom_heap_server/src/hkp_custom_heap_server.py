@@ -23,7 +23,7 @@ This plugin serves the index page of the given heap.
 Example usage:
 
     >>> import hkp_custom_heap_server
-    >>> hkp_custom_heap_server.start('myheap')
+    >>> hkp_custom_heap_server.start_for_all_heaps(postdb())
 
 Afterwards the index page of the 'myheap' heap will be displayed at
 <hostname>:<port>/myheap.
@@ -96,3 +96,17 @@ def start(heap_id, url=None):
             return self.serve_html(content, generator)
 
     hkweb.insert_urls([url, CustomHeapServer])
+
+
+def start_for_all_heaps(postdb):
+    """Starts a web server for all heap.
+
+    The created web servers will be located at <hostname>:<port>/<heap_id>.
+
+    **Argument:**
+
+    - `postdb` (|PostDB|)
+    """
+
+    for heap_id in postdb.heap_ids():
+        start(heap_id)
