@@ -45,8 +45,6 @@ Generator
     .. automethod:: print_postitem_inner
     .. automethod:: print_postitem_flat
     .. automethod:: print_postitem
-    .. automethod:: augment_postitem
-    .. automethod:: walk_postitems
     .. automethod:: walk_thread
     .. automethod:: walk_exp_posts
     .. automethod:: print_postitems

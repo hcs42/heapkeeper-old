@@ -953,55 +953,6 @@ class Generator(object):
 
     # Printing and walking several post items
 
-    # TODO: Remove this after releasing v0.7! {{{
-
-    def augment_postitem(self, postitem):
-        """Deprecated function.
-        
-        This is a placeholder for backwards compatibility. Please do not use in
-        new code. Here is the original docstring:
-
-        Returns the augmented versions of the given post item.
-
-        The `print_fun` method of the post item is set to the
-        :func:`print_postitem` method.
-
-        **Argument:**
-
-        - `postitem` (|PostItem|)
-
-        **Returns:** |PostItem|
-        """
-
-        if not hasattr(self, 'warned_augment_postitem'):
-            self.warned_augment_postitem = True
-            hkutils.log('WARNING: augment_postitem is deprecated!')
-        return postitem
-
-    def walk_postitems(self, xpostitems):
-        """Deprecated function.
-        
-        This is a placeholder for backwards compatibility. Please do not use in
-        new code. Here is the original docstring:
-        
-        Walks the augmented versions of the given post items.
-
-        Refer to :func:`augment_postitem` for how the augmentation is done.
-
-        **Argument:**
-
-        - `xpostitems` (iterable(|PostItem|))
-
-        **Returns:** iterable(|PostItem|)
-        """
-
-        if not hasattr(self, 'warned_walk_postitems'):
-            self.warned_walk_postitems = True
-            hkutils.log('WARNING: walk_postitems is deprecated!')
-        return xpostitems
-
-    # }}} TODO: Remove until this line after releasing v0.7!
-
     # TODO: test
     def walk_thread(self, root=None, threadstruct=None):
         """Walks the given thread.
