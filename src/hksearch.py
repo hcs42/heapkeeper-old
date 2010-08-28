@@ -33,9 +33,10 @@ def post_matches(post, target_type, target_content):
     - `target_type` (str) -- This parameter specifies the type of the target.
       Currently it means where the target should be searched for. It is one of
       the following strings: ``'whole'``, ``'heap'``, ``'author'``,
-      ``'subject'``, ``'tag'``, ``'message-id'``, ``'body'``. ``'whole'`` means
-      that the whole post (all attributes and body included) are searched for;
-      ``'heap'`` means that the name of the heap is examined; etc.
+      ``'subject'``, ``'tag'``, ``'message-id'``, ``'body'``, ``'before'``,
+      ``'after'``. ``'whole'`` means that the whole post (all attributes and
+      body included) are searched for; ``'heap'`` means that the name of the
+      heap is examined; etc.
     - `target_content` (str | regexp) -- This parameter is considered to be a
       regular expression and it is search in the strings specified by the
       `target_type` parameter.
@@ -72,6 +73,13 @@ def post_matches(post, target_type, target_content):
         return bool(re.search(t, post.messid()))
     elif target_type == 'body':
         return bool(re.search(t, post.body()))
+    elif target_type in ['before', 'after']:
+        dt_args = hkutils.parse_date(target_content)
+        try:
+            return getattr(post, target_type)(*dt_args)
+        except Exception, e:
+            msg = 'Incorrect date: %s\n%s' % (repr(target_content), str(e))
+            raise hkutils.HkException(msg)
     else:
         msg = 'Unknown target type: %s'
         raise hkutils.HkException(msg % repr(target_type))
@@ -97,24 +105,34 @@ def search(term, postset):
     for str_target in str_targets:
         new_target_type = None
         new_target_content = None
+        is_regexp = None # is_regexp should be true if new_target_content
+                         # shall be a regexp
 
         # If str_target has the form of "<target_type>:<str>", then we will put
         # (<target_type>, <regexp for str>) into `new_target`
         for target_type in ('heap', 'author', 'subject', 'tag', 'message-id',
-                            'body'):
+                            'body', 'before', 'after'):
             if str_target.startswith(target_type + ':'):
                 # We found the target type of the current target
                 new_target_type = target_type
                 new_target_content = str_target[(len(target_type) + 1):]
+                if target_type in ('before', 'after'):
+                    is_regexp = False
+                else:
+                    is_regexp = True
                 break
 
         # Otherwise the target should be searched in the whole post
         if new_target_type is None:
             new_target_type = 'whole'
             new_target_content = str_target
+            is_regexp = True
 
-        regexp = re.compile(new_target_content, (re.MULTILINE | re.IGNORECASE))
-        targets.append((new_target_type, regexp))
+        if is_regexp:
+            new_target_content = \
+                re.compile(new_target_content, (re.MULTILINE | re.IGNORECASE))
+
+        targets.append((new_target_type, new_target_content))
 
     def post_matches_any(post):
         """Returns whether the given post matches any regexp in the `regexps`

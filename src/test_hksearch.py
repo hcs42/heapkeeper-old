@@ -27,8 +27,10 @@ Usage:
 
 from __future__ import with_statement
 
+import time
 import unittest
 
+import hkutils
 import hklib
 import hksearch
 import test_hklib
@@ -39,6 +41,7 @@ class Test_Search(unittest.TestCase, test_hklib.PostDBHandler):
     """Tests :func:`hksearch.search`."""
 
     def setUp(self):
+        hklib.localtime_fun = time.gmtime
         self.setUpDirs()
         self.create_postdb()
         self.create_threadst()
@@ -138,6 +141,24 @@ class Test_Search(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEqual(
             hksearch.search('body:0', all_posts),
             postdb.postset([self.p(0), self.po(0)]))
+
+        ## Testing target type 'before' and 'after'
+
+        self.assertEqual(
+            hksearch.search('before:2008-08-20_15:41:01', all_posts),
+            postdb.postset([self.p(0), self.po(0)]))
+
+        self.assertEqual(
+            hksearch.search('after:2008-08-20_15:41:04', all_posts),
+            postdb.postset([self.p(4)]))
+
+        self.assertRaises(
+            hkutils.HkException,
+            lambda: hksearch.search('after:xx', all_posts))
+
+        self.assertRaises(
+            hkutils.HkException,
+            lambda: hksearch.search('after:2009-00', all_posts))
 
 
 if __name__ == '__main__':
