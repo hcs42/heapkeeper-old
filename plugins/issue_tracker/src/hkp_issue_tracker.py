@@ -44,8 +44,9 @@ class IssueTrackerGenerator(hk_issue_tracker.Generator, hkweb.WebGenerator):
         # "hk_issue_tracker.Generator.__init__" is not called
         hkweb.WebGenerator.__init__(self, postdb)
         self._heap_id = heap_id
-        self.options.cssfiles.append(
-            "plugins/issue_tracker/static/css/issues.css")
+        static_dir = 'plugins/issue_tracker/static'
+        self.options.cssfiles.append(static_dir + '/css/issues.css')
+        self.options.favicon = static_dir + '/images/it.png'
 
     def section(self, id, title, content, flat=False):
         assert hkutils.is_textstruct(content), \
