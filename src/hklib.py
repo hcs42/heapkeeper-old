@@ -700,7 +700,8 @@ class Post(object):
             if timestamp == 0:
                 self._datetime = None
             else:
-                self._datetime = datetime.datetime.fromtimestamp(timestamp)
+                struct_time = localtime_fun(timestamp)
+                self._datetime = datetime.datetime(*list(struct_time)[0:6])
 
     # TODO test
     def date_str(self):
