@@ -19,11 +19,11 @@
 
 If executed without arguments, it runs all tests:
 
-    $ python test.py
+    $ python src/test.py
 
 It can be used to run a specific test:
 
-    $ python test.py test_hklib TestPostDB2 testThreadstructCycle1
+    $ python src/test.py test_hklib TestPostDB2 testThreadstructCycle1
 """
 
 import sys
