@@ -309,7 +309,9 @@ class Options(object):
                  config=hkutils.NOT_SET,
                  output=sys.stdout,
                  callbacks=hkutils.NOT_SET,
-                 shell_banner='',
+                 shell_banner=("This is Heapkeeper's shell.\n"
+                               "Type h() to get help.\n"
+                               "Type q() to quit without saving."),
                  save_on_ctrl_d=None):
 
         super(Options, self).__init__()
