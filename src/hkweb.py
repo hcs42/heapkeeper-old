@@ -495,7 +495,12 @@ class Search(HkPageServer):
         elif show == 'no_post_found':
             main_content = 'No post found.'
         elif show == 'normal':
-            main_content = generator.print_search_page()
+            active = len(generator.posts)
+            all = len(generator.posts.exp())
+            numbers = ('Posts found: %d.<br/>'
+                       'All posts shown: %d' % (active, all))
+            numbers_box = generator.enclose(numbers, 'div', 'info-box')
+            main_content = (numbers_box, generator.print_search_page())
 
         term = args.get('term')
         if term is not None:
