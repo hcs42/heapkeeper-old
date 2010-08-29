@@ -223,17 +223,15 @@ function showPostBody(postId) {
 function hideAllPostBodies() {
     // Turns off the visibility for all visible post bodies.
 
-    getPostIds().each(function(index) {
-        hidePostBody(this);
-    });
+    $('[id|=post-body-container]').hide();
+    $('[id|=post-body-show-button]').show();
 }
 
 function showAllPostBodies() {
     // Turns on the visibility for all hidden post bodies.
 
-    getPostIds().each(function(index) {
-        showPostBody(this);
-    });
+    $('[id|=post-body-container]').show();
+    $('[id|=post-body-show-button]').hide();
 }
 
 
@@ -548,6 +546,8 @@ function addEventHandlersToPostSummary(postId) {
 }
 
 $(document).ready(function() {
+
+    $('[id|=post-body-show-button]').hide();
 
     $('#hide-all-post-bodies').bind('click', function() {
         hideAllPostBodies();
