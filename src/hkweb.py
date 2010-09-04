@@ -113,6 +113,13 @@ def make_auth(verifier, realm="Heapkeeper",
                 pass
             if verifier(username, password, realm):
                 last_access[username] = datetime.datetime.now()
+                # Attach the user's name to the server. The way to
+                # find the server depends on whether the function is a
+                # bound method.
+                if hasattr(func, 'im_self'):
+                    func.im_self.user = username
+                else:
+                    args[0].user = username
                 return func(*args, **keywords)
             else:
                 webpy.ctx.status = '401 UNAUTHORIZED'
