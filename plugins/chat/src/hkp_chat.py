@@ -31,6 +31,7 @@ import re
 import threading
 import web as webpy
 
+import hkshell
 import hkweb
 
 
@@ -48,11 +49,12 @@ class SendChatMessage:
     @hkweb.auth
     def POST(self):
         line = webpy.input()['l']
+        channel = webpy.input()['channel']
         user = getattr(self, 'user', '???')
-        messages.append((user, line))
+        messages.append((channel, user, line))
         for thread in thread_lock:
             thread_lock[thread].set()
-        return "Line '%s' accepted." % line
+        return "Line '%s' accepted in channel '%s'." % (line, channel)
 
 class PollChatMessage:
     # "Class has no __init__ method" # pylint: disable-msg=W0232
@@ -60,6 +62,7 @@ class PollChatMessage:
     @hkweb.auth
     def GET(self, session_id):
         webpy.header('Content-type', 'text/html')
+        channel = webpy.input()['channel']
         thread_id = str(threading.current_thread())
         if session_id not in session_pos:
             session_pos[session_id] = 0
@@ -68,7 +71,11 @@ class PollChatMessage:
             thread_lock[thread_id].clear()
             thread_lock[thread_id].wait()
         while session_pos[session_id] < len(messages):
-            msg_author, msg_text = messages[session_pos[session_id]]
+            msg_channel, msg_author, msg_text = \
+                messages[session_pos[session_id]]
+            if msg_channel != channel:
+                session_pos[session_id] += 1
+                continue
             esc_msg = re.sub(r'[<>&]',
                           lambda m: {'<': '&lt;',
                                      '>': '&gt;',
@@ -103,6 +110,14 @@ def add_chat(self):
             """,
             '</div>\n')
 
+def threadid_js(post_id=None):
+    if post_id is None:
+        thread_id = ''
+    else:
+        thread_id = hkshell.postdb().root(hkshell.p(post_id)).post_id_str()
+    return ("""<script type="text/javascript">var thread_id='%s';</script>""" %
+            thread_id)
+
 def index_print_main(self):
     js_links = \
             [('<script type="text/javascript" src="%s"></script>\n' %
@@ -110,11 +125,13 @@ def index_print_main(self):
     return (self.print_searchbar(),
             add_chat(self),
             self.print_main_index_page(),
+            threadid_js(),
             js_links)
 
 def postpage_print_main(self, postid):
     return (self.print_searchbar(),
             add_chat(self),
+            threadid_js(postid),
             self.print_post_page(postid))
 
 def start():

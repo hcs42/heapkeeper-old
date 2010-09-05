@@ -23,13 +23,14 @@ $('#chattextinput').keypress(function(event) {
 function sendMsg() {
     var text = $('#chattextinput');
     var msg = text.val();
-    $.post('/chat-send', {'l': msg});
+    $.post('/chat-send', {'l': msg, 'channel': thread_id});
     text.val('');
 }
 
 function getMsg() {
     $.ajax({
         url: '/chat-poll/' + session,
+        data: {'channel': thread_id},
         dataType: 'text',
         type: 'get',
         success: function(line) {
@@ -42,5 +43,4 @@ function getMsg() {
 }
 
 session = Math.floor(Math.random()*1000000);
-
 getMsg();
