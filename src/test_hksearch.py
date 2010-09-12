@@ -160,6 +160,56 @@ class Test_Search(unittest.TestCase, test_hklib.PostDBHandler):
             hkutils.HkException,
             lambda: hksearch.search('after:2009-00', all_posts))
 
+        ### Testing unicode
+
+        # The Hungarian "small u with double acute accent" (unicode \u0171,
+        # utf-8 code '\xc5\xb1') character is used for the test.
+
+        # Specifying the unicode character directly
+
+        self.p(0).set_body('A\xc5\xb1B')
+        self.assertEqual(
+            hksearch.search('body:A\xc5\xb1B', all_posts),
+            postdb.postset([self.p(0)]))
+
+        # Specifying the unicode character as an UTF-8 character
+
+        self.p(0).set_body('A\xc5\xb1B')
+        self.assertEqual(
+            hksearch.search('body:A\\xc5\\xb1B', all_posts),
+            postdb.postset([self.p(0)]))
+
+        # Specifying the unicode character as a unicode character
+        #
+        # After rewriting hklib to use unicode objects instead of UTF-8 encoded
+        # strings, the expected result should be postdb.postset([self.p(0)])).
+
+        self.p(0).set_body('A\xc5\xb1B')
+        self.assertEqual(
+            hksearch.search('body:A\u0171B', all_posts),
+            postdb.postset([]))
+
+        # Specifying the unicode character as a unicode character
+        #
+        # After rewriting hklib to use unicode objects instead of UTF-8 encoded
+        # strings, the expected result should be postdb.postset([self.p(0)])).
+
+        self.p(0).set_body('A\xc5\xb1B')
+        self.assertEqual(
+            hksearch.search('body:A\\u0171B', all_posts),
+            postdb.postset([]))
+
+        # Testing \b
+        #
+        # \b matches the word boundary. This test case tests that Heapkeeper
+        # takes unicode characters into account, which is achieved by compiling
+        # the regexp with the re.UNICODE option.
+
+        self.p(0).set_body('A\xc5\xb1B')
+        self.assertEqual(
+            hksearch.search('body:\\b\xc5\xb1', all_posts),
+            postdb.postset([]))
+
 
 if __name__ == '__main__':
     hkutils.set_log(False)

@@ -129,8 +129,8 @@ def search(term, postset):
             is_regexp = True
 
         if is_regexp:
-            new_target_content = \
-                re.compile(new_target_content, (re.MULTILINE | re.IGNORECASE))
+            options = (re.MULTILINE | re.IGNORECASE | re.UNICODE)
+            new_target_content = re.compile(new_target_content, options)
 
         targets.append((new_target_type, new_target_content))
 
