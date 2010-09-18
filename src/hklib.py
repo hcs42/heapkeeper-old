@@ -3489,6 +3489,9 @@ class GeneratorOptions(object):
 
 ##### PostDB configuration object #####
 
+# TODO The support for configuration file format 1 and 2 can be removed after
+# releasing 0.8.
+
 def unify_config(config):
     """Modifies the configuration object to conform to a unified format.
 
@@ -3563,8 +3566,10 @@ def unify_config(config):
 
     path = config.get('paths', [])
     if 'heaps' in path:
+        hkutils.log("WARNING: the used config file format is deprecated.")
         return unify_format_2(config)
     elif 'mail' in path:
+        hkutils.log("WARNING: the used config file format is deprecated.")
         return unify_format_1(config)
     else:
         return unify_format_3(config)

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
-# Copyright (C) 2009 Csaba Hoch
+# Copyright (C) 2009-2010 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
 """Tests the hkshell module.
@@ -706,6 +706,7 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
 
         self.assertEqual(
             self.pop_log(),
+            'WARNING: the used config file format is deprecated.\n'
             'Warning: post directory does not exists: "my_heap_dir"\n'
             'Post directory has been created.\n'
             'Warning: HTML directory does not exists: "my_html_dir"\n'
@@ -729,6 +730,7 @@ class Test_main(unittest.TestCase, test_hklib.PostDBHandler):
 
         self.assertEqual(
             self.pop_log(),
+            'WARNING: the used config file format is deprecated.\n'
             'Warning: post directory does not exists: "my_heap_dir"\n'
             'Post directory has been created.\n'
             'Warning: HTML directory does not exists: "my_html_dir"\n'
