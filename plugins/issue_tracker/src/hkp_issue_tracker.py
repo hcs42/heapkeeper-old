@@ -32,6 +32,8 @@ at <hostname>:<port>/myheap-issue-tracker.
 
 import hklib
 import hkutils
+import hkshell
+import hksearch
 import hkweb
 import hk_issue_tracker
 
@@ -231,3 +233,16 @@ def start(heap_id, url=None):
             return self.serve_html(content, generator)
 
     hkweb.insert_urls([url, CustomHeapServer])
+
+    def issue_target(post, pattern):
+        postdb = post._postdb
+        root = postdb.root(post)
+        gen = hk_issue_tracker.Generator(postdb)
+        if pattern == 'issue':
+            return gen.is_thread_issue(root)
+        elif pattern == 'open':
+            return gen.is_thread_open(root)
+        else:
+            return False
+
+    hksearch.add_target_type('issue', issue_target)
