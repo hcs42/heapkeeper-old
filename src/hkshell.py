@@ -81,8 +81,8 @@ ones without ``-<character>`` and ``--<word>``) will be executed as commands::
 
     $ python hk.py 'dl()' 'g()' 'x()'
 
-Do use this in scripts that you want to keep, because this behaviour may be
-changed in the future if we want to use positional arguments for something
+Always use ``-c`` in scripts that you want to keep, because this behaviour may
+be changed in the future if we want to use positional arguments for something
 else.
 
 .. highlight:: python
