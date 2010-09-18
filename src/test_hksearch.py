@@ -210,6 +210,17 @@ class Test_Search(unittest.TestCase, test_hklib.PostDBHandler):
             hksearch.search('body:\\b\xc5\xb1', all_posts),
             postdb.postset([]))
 
+        ## Testing negation
+
+        self.assertEqual(
+            hksearch.search('-body1', all_posts),
+            postdb.postset([self.p(0), self.p(2), self.p(3), self.p(4),
+                            self.po(0)]))
+
+        self.assertEqual(
+            hksearch.search('heap:-my_heap', all_posts),
+            postdb.postset([self.po(0)]))
+
 
 if __name__ == '__main__':
     hkutils.set_log(False)
