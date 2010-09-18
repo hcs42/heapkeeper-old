@@ -1266,8 +1266,11 @@ class Generator(object):
                 xpostitems)
         return self.print_postitems(xpostitems)
 
+    # TODO: remove this function after releasing 0.8
     def print_post_page(self, post):
-        """Prints a post page.
+        """This function is deprecated.
+
+        Prints a post page.
 
         **Argument:**
 
@@ -1275,6 +1278,9 @@ class Generator(object):
 
         **Returns:** |HtmlText|
         """
+
+        hkutils.log("WARNING: hkgen.Generator.print_post_page is "
+                    "deprecated.")
 
         # We create a thread structure that contains only out post.
         threadst = {None: [post.post_id()]}
@@ -1552,9 +1558,11 @@ class Generator(object):
                 filename=post.htmlthreadbasename(),
                 html_body=self.print_thread_page(post))
 
-    # TODO: better test
+    # TODO: remove this function after releasing 0.8
     def write_post_pages(self, write_all=False):
-        """Writes the post pages into ``'<heap_id>/<post_index>.html'``.
+        """This function is deprecated.
+
+        Writes the post pages into ``'<heap_id>/<post_index>.html'``.
 
         **Argument:**
 
@@ -1562,6 +1570,9 @@ class Generator(object):
           pages. Otherwise it writes only those whose posts are in cycles and
           were modified.
         """
+
+        hkutils.log("WARNING: hkgen.Generator.write_post_pages is "
+                    "deprecated.")
 
         hkutils.log('Generating post pages...')
 
