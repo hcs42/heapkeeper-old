@@ -1064,6 +1064,19 @@ class Generator(object):
                     postitem.print_fun = print_fun
                 yield postitem
 
+    def get_print_fun(self, postitem):
+        """Gets the print function of a postitem.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** fun(|PostItem|)
+        """
+
+        # Default to built-in printer function
+        return getattr(postitem, 'print_fun', self.print_postitem)
+
     def print_postitems(self, xpostitems):
         """Prints the given post items using their `print_fun` method.
 
@@ -1076,8 +1089,7 @@ class Generator(object):
 
         result = []
         for postitem in xpostitems:
-            # Default to built-in printer function
-            print_fun = getattr(postitem, 'print_fun', self.print_postitem)
+            print_fun = self.get_print_fun(postitem)
             result.append(print_fun(postitem))
         return result
 
@@ -1171,7 +1183,7 @@ class Generator(object):
             post = postitem.post
             if post in posts:
                 post_id_str = post.post_id_str()
-                old_print_fun = postitem.print_fun
+                old_print_fun = self.get_print_fun(postitem)
                 if postitem.pos == 'inner':
                     postitem.print_fun = \
                         lambda postitem:\
@@ -1201,7 +1213,7 @@ class Generator(object):
             post = postitem.post
             if post in posts:
                 post_id_str = post.post_id_str()
-                old_print_fun = postitem.print_fun
+                old_print_fun = self.get_print_fun(postitem)
                 if postitem.pos == 'begin':
                     postitem.print_fun = \
                         lambda postitem:\

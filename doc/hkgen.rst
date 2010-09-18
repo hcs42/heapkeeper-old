@@ -49,6 +49,7 @@ Generator
     .. automethod:: walk_postitems
     .. automethod:: walk_thread
     .. automethod:: walk_exp_posts
+    .. automethod:: get_print_fun
     .. automethod:: print_postitems
     .. automethod:: set_postitem_attr
     .. automethod:: reverse_threads
