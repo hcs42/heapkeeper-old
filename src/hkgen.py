@@ -695,7 +695,8 @@ class Generator(object):
             for segment in postitem.post.body_object().segments:
                 s = self.escape(segment.text)
 
-                if segment.type == 'link' and segment.protocol == 'http':
+                if (segment.type == 'link' and
+                    segment.protocol in ('http', 'https')):
                     s = self.print_link(segment.text, s)
                 elif segment.type == 'heap_link':
                     heap_id = postitem.post.heap_id()

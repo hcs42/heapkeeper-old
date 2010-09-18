@@ -321,7 +321,7 @@ def parse_line_part(text, segments, sample_segment):
     if text == '':
         return
 
-    urlregexp = r"^(.*)((http|ftp|heap)://([^ \t]*))(.*)$"
+    urlregexp = r"^(.*)((http|https|ftp|heap)://([^ \t]*))(.*)$"
     match = re.match(urlregexp, text)
 
     # If the text contains a URL, we first parse the left side of the URL,
@@ -339,7 +339,7 @@ def parse_line_part(text, segments, sample_segment):
             after = address[-1] + after
             address = address[:-1]
 
-        if protocol in ('http', 'ftp'):
+        if protocol in ('http', 'https', 'ftp'):
             link_segment = \
                 Segment(type='link',
                         text=address,
