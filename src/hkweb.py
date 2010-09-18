@@ -337,9 +337,6 @@ class SearchPageGenerator(PostPageGenerator):
         # Getting the posts in the interesting threads
         xpostitems = self.walk_exp_posts(self.posts)
 
-        # Reversing the thread order
-        xpostitems = self.reverse_threads(xpostitems)
-
         xpostitems = \
             itertools.imap(
                 self.set_postitem_attr('print_post_body'),
