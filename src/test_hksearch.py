@@ -29,7 +29,7 @@ from __future__ import with_statement
 
 import unittest
 
-import hklib
+import hkutils
 import hksearch
 import test_hklib
 

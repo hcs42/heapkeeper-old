@@ -20,8 +20,6 @@
 
 import re
 
-import hklib
-
 
 def post_matches(post, regexp):
     """Returns whether a regexp can be found in a post.

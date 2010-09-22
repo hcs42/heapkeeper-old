@@ -406,6 +406,7 @@ class Post(object):
 
         assert(postdb is None or Post.is_post_id(post_id))
         super(Post, self).__init__()
+        # Catch "Exception" # pylint: disable-msg=W0703
         try:
             self._header, self._body = Post.parse(f, post_id)
             self._post_id = Post.unify_post_id(post_id)
@@ -3426,6 +3427,7 @@ class EmailDownloader(object):
                 number = number_str[0:number_str.index(' ')]
                 text = result[i * 3][1]
                 header = result[i * 3 + 1][1]
+                # Catch "Exception" # pylint: disable-msg=W0703
                 try:
                     post = self.create_post_from_email(header, text)
                     self._postdb.add_new_post(post, self._heap_id)

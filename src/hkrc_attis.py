@@ -22,6 +22,7 @@
 
 
 import re
+import datetime
 
 import hklib
 import hkgen
@@ -314,6 +315,7 @@ def size(post, pure=True):
         counter += len(line.decode('utf-8'))
     return counter
 
+# Usuned argument # pylint: disable-msg=W0613
 @hkshell.hkshell_cmd()
 def statcontrib(base=None):
     """Prints some statistics on contribution to the Heap."""
@@ -345,8 +347,8 @@ def statcontrib(base=None):
         size_pure = 0
         size_full = 0
         for p in posts:
-            size_pure += size(p,pure=True)
-            size_full += size(p,pure=False)
+            size_pure += size(p, pure=True)
+            size_full += size(p, pure=False)
         avg_cpp = float(size_pure) / count
         avg_cpd = float(size_pure) / n_days
         percent_quote = float(size_full - size_pure) / size_pure * 100

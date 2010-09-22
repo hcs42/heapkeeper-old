@@ -42,6 +42,7 @@ class IssueTrackerGenerator(hk_issue_tracker.Generator, hkweb.WebGenerator):
 
     def __init__(self, postdb, heap_id):
         # "hk_issue_tracker.Generator.__init__" is not called
+        # pylint: disable-msg=W0231
         hkweb.WebGenerator.__init__(self, postdb)
         self._heap_id = heap_id
         self.options.cssfiles.append(
@@ -154,7 +155,7 @@ class IssueTrackerGenerator(hk_issue_tracker.Generator, hkweb.WebGenerator):
     def print_postitem_type_core(self, postitem):
         post = postitem.post
         post_tags = set(post.tags())
-        type,_ = self.separate_type_and_tags(post_tags)
+        type, _ = self.separate_type_and_tags(post_tags)
 
         if len(type) == 0:
             return ''
