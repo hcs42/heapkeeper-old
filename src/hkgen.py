@@ -1653,4 +1653,3 @@ class GivenPostsGenerator(Generator):
         """Writes the "given post" page."""
 
         self.write_given_posts_page()
-

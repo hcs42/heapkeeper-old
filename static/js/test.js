@@ -95,4 +95,3 @@ function do_test() {
 $(document).ready(function() {
     do_test();
 });
-

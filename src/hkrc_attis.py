@@ -492,4 +492,3 @@ main()
 #
 #    # Generating the posts
 #    hklib.Generator(postdb).gen_posts(genopts, posts)
-

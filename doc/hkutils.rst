@@ -63,4 +63,3 @@ Miscellaneous
 .. autofunction:: quote_shell_arg
 .. autofunction:: call
 .. autoclass:: NOT_SET
-
