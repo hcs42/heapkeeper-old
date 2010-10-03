@@ -26,25 +26,44 @@ It can be used to run a specific test:
     $ python src/test.py test_hklib TestPostDB2 testThreadstructCycle1
 """
 
+import os
 import sys
 import unittest
 
 import hkutils
 
 
-testmodules = ['test_hkutils',
-               'test_hklib',
-               'test_hkbodyparser',
-               'test_hksearch',
-               'test_hkgen',
-               'test_hkshell',
-               'test_hkcustomlib']
+def collect_testmodules_from_dir(dir):
+    """Collects the list of modules that are test modules from a given
+    directory.
+
+    **Returns:** [str]
+    """
+
+    testmodules = []
+    for filename in os.listdir(dir):
+        if filename.startswith('test_') and filename.endswith('.py'):
+            testmodules.append(filename[:-3])
+    return testmodules
+
+def collect_testmodules():
+    """Collects the list of modules that are test modules.
+
+    **Returns:** [str]
+    """
+
+    return [testmodule
+            for src_dir in ['src'] + hkutils.plugin_src_dirs()
+            for testmodule in collect_testmodules_from_dir(src_dir)]
+
 
 def main(args):
+
     hkutils.set_log(False)
     if len(args) > 0 and args[0] in ['-h', '--help']:
         sys.stdout.write(__doc__)
     elif args == []:
+        testmodules = collect_testmodules()
         suites = \
             [ unittest.TestLoader().loadTestsFromModule(__import__(modname))
               for modname in testmodules ]
@@ -61,4 +80,7 @@ def main(args):
               'Run "python test.py --help" for help.'
 
 if __name__ == '__main__':
+    if not os.path.isfile(os.path.join('src', 'test.py')):
+        hkutils.log('Error: You are not in the Heapkeeper main directory.')
+        sys.exit(1)
     main(sys.argv[1:])
