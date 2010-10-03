@@ -85,6 +85,38 @@ import sys
 import types
 
 
+##### Adding the 'plugins' directory to the path #####
+
+def plugin_dirs():
+    """Returns the directories in the ``'plugins'`` directory.
+
+    **Returns:** [str]
+    """
+
+    if os.path.isdir('plugins'):
+        return [os.path.join('plugins', dir)
+                for dir in sorted(os.listdir('plugins'))]
+    else:
+        return []
+
+def plugin_src_dirs():
+    """Returns the ``'src'`` directories in the plugin directory.
+
+    **Returns:** [str]
+    """
+
+    return [os.path.join(dir, 'src')
+            for dir in plugin_dirs()
+            if os.path.exists(os.path.join(dir, 'src'))]
+
+def update_path_with_plugin_src_dirs():
+    """Adds the ``'src'`` directories in the ``'plugin'`` directory to the
+    Python path."""
+    for src_dir in plugin_src_dirs():
+        sys.path.insert(0, src_dir)
+
+update_path_with_plugin_src_dirs()
+
 ##### Performance measurement #####
 
 pm_last_time = datetime.datetime.now()

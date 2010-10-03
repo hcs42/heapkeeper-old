@@ -5,6 +5,13 @@
 
 .. automodule:: hkutils
 
+Directory structure
+-------------------
+
+.. autofunction:: plugin_dirs
+.. autofunction:: plugin_src_dirs
+.. autofunction:: update_path_with_plugin_src_dirs
+
 Performance measurement
 -----------------------
 
