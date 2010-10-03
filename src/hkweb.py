@@ -40,6 +40,7 @@ import exceptions
 import itertools
 import json
 import sys
+import datetime
 import threading
 import web as webpy
 
@@ -111,6 +112,7 @@ def make_auth(verifier, realm="Heapkeeper",
                 # colon in plaintext.
                 pass
             if verifier(username, password, realm):
+                last_access[username] = datetime.datetime.now()
                 return func(*args, **keywords)
             else:
                 webpy.ctx.status = '401 UNAUTHORIZED'
@@ -165,6 +167,9 @@ def enable_authentication(username=None, password=None):
 
 auth = lambda f: f
 
+# This dict keeps track of the time of the last access by users.
+last_access = {}
+
 def add_auth(server, auth_decorator):
     """Add authentication to a web.py server class."""
 
@@ -175,6 +180,20 @@ def add_auth(server, auth_decorator):
         server.GET = auth_decorator(server.original_GET)
     if server.original_POST:
         server.POST = auth_decorator(server.original_POST)
+
+def last():
+    """Display the time of the last access in a conveniently
+    interpretable ("human-readable") format."""
+
+    access_datetimes = last_access.values()
+    if len(access_datetimes) == 0:
+        print "Access list is empty."
+        return
+    access_datetimes.sort()
+    last_datetime = access_datetimes[-1]
+    now_datetime = datetime.datetime.now()
+    last_str = hkutils.humanize_timedelta(now_datetime - last_datetime)
+    print "Last access was %s ago." % (last_str,)
 
 
 ##### Utility functions #####

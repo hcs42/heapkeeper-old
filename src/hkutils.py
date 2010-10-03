@@ -449,6 +449,21 @@ def calc_timestamp(date):
 
     return email.utils.mktime_tz(email.utils.parsedate_tz(date))
 
+def humanize_timedelta(delta):
+    """Convert a timedelta to a "human-readable" representation."""
+
+    minute = datetime.timedelta(0, 60)
+    hour = datetime.timedelta(0, 3600)
+    day = datetime.timedelta(1)
+
+    if delta < minute:
+        return "%d seconds" % (delta.seconds,)
+    if delta < hour:
+        return "%d minutes" % (delta.seconds / 60,)
+    if delta < day:
+        return "%d hours" % (delta.seconds / 3600,)
+    return "%d days" % (delta.days)
+
 def copy_wo(src, dst):
     """Copy without overwriting.
 
