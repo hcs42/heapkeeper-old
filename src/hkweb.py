@@ -120,12 +120,50 @@ def make_auth(verifier, realm="Heapkeeper",
         return f
     return decorator
 
-def minimal_verifier(username, password, realm):
+def make_minimal_verifier(correct_username, correct_password):
     # Unused argument 'realm' # pylint: disable-msg=W0613
-    """A minimalistic verifier with a hardcoded user/password pair."""
-    return (username == "hk" and password == "hk")
+    def minimal_verifier(username, password, realm):
+        """A minimalistic verifier with a hardcoded user/password pair."""
+        return (username == correct_username and
+                password == correct_password)
+    return minimal_verifier
 
-auth = make_auth(verifier = minimal_verifier)
+def account_verifier(username, password, realm):
+    # Unused argument 'realm' # pylint: disable-msg=W0613
+    """A verifier that uses the account list in the config file."""
+    accounts = hkshell.options.config['accounts']
+    if username in accounts:
+        correct_password = accounts[username]
+        return correct_password == password
+    return False
+
+def enable_authentication(username=None, password=None):
+    """Enables authentication with single or account-based
+    username/password pair.
+
+    If username is omitted, authentication will be based on account
+    data specified in the config file. If both username and password
+    are specified, these will be the only acceptable username/password
+    pair. If password is omitted, it will be the same as the username
+    (not recommended).
+
+    **Argument:**
+
+    - `username` (str)
+    - `password` (str)
+    """
+    global auth
+    if username is None:
+        auth = make_auth(verifier=account_verifier)
+    else:
+        if password is None:
+            password = username
+        auth = make_auth(verifier=make_minimal_verifier(username, password))
+
+# By default, auth is an identity decorator, that is, authentication
+# is disabled. Enable it using `hkweb.enable_authentication()`.
+
+auth = lambda f: f
 
 def add_auth(server, auth_decorator):
     """Add authentication to a web.py server class."""

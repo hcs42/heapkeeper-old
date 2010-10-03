@@ -35,6 +35,7 @@ def main():
     #hkshell.options.callbacks.gen_posts = gen_posts
     hkshell.options.save_on_ctrl_d = False
     hkshell.on('save')
+    hkweb.enable_authentication()
     web = hkweb.start()
 
 def gen_indices(postdb):
