@@ -44,15 +44,20 @@ session_pos = {}
 
 class SendChatMessage:
     # "Class has no __init__ method" # pylint: disable-msg=W0232
+
+    @hkweb.auth
     def POST(self):
         line = webpy.input()['l']
-        messages.append(line)
+        user = getattr(self, 'user', '???')
+        messages.append((user, line))
         for thread in thread_lock:
             thread_lock[thread].set()
         return "Line '%s' accepted." % line
 
 class PollChatMessage:
     # "Class has no __init__ method" # pylint: disable-msg=W0232
+
+    @hkweb.auth
     def GET(self, session_id):
         webpy.header('Content-type', 'text/html')
         thread_id = str(threading.current_thread())
@@ -63,12 +68,16 @@ class PollChatMessage:
             thread_lock[thread_id].clear()
             thread_lock[thread_id].wait()
         while session_pos[session_id] < len(messages):
+            msg_author, msg_text = messages[session_pos[session_id]]
             esc_msg = re.sub(r'[<>&]',
                           lambda m: {'<': '&lt;',
                                      '>': '&gt;',
                                      '&': '&amp;'}[m.group(0)],
-                          messages[session_pos[session_id]])
-            yield '<div class="chatmessage">%s</div>\n' % esc_msg
+                          msg_text)
+            yield """<div class="chatmessage">
+                <span class="chatmessagename">%s</span>
+                <span class="chatmessagetext">%s</span>
+            </div>""" % (msg_author, esc_msg)
             session_pos[session_id] += 1
 
 postpage_old_init = hkweb.PostPageGenerator.__init__

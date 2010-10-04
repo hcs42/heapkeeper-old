@@ -17,6 +17,12 @@
     font-family: Helvetica, Arial, sans-serif;
 }
 
+.chatmessagename
+{
+    font-weight: bold;
+    margin-right: 1em;
+}
+
 #chattextinput 
 {
     width: 98%;
