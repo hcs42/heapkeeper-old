@@ -133,6 +133,7 @@ def make_minimal_verifier(correct_username, correct_password):
     # Unused argument 'realm' # pylint: disable-msg=W0613
     def minimal_verifier(username, password, realm):
         """A minimalistic verifier with a hardcoded user/password pair."""
+
         return (username == correct_username and
                 password == correct_password)
     return minimal_verifier
@@ -140,6 +141,7 @@ def make_minimal_verifier(correct_username, correct_password):
 def account_verifier(username, password, realm):
     # Unused argument 'realm' # pylint: disable-msg=W0613
     """A verifier that uses the account list in the config file."""
+
     accounts = hkshell.options.config['accounts']
     if username in accounts:
         correct_password = accounts[username]
@@ -161,6 +163,7 @@ def enable_authentication(username=None, password=None):
     - `username` (str)
     - `password` (str)
     """
+
     global auth
     if username is None:
         auth = make_auth(verifier=account_verifier)
