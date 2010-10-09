@@ -55,6 +55,7 @@ Miscellaneous
 .. autofunction:: uutf8
 .. autofunction:: json_uutf8
 .. autofunction:: calc_timestamp
+.. autofunction:: humanize_timedelta
 .. autofunction:: copy_wo
 .. autofunction:: plural
 .. autofunction:: add_method

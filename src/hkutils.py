@@ -450,19 +450,34 @@ def calc_timestamp(date):
     return email.utils.mktime_tz(email.utils.parsedate_tz(date))
 
 def humanize_timedelta(delta):
-    """Convert a timedelta to a "human-readable" representation."""
+    """Convert a timedelta to a "human-readable" representation.
+
+    This is done by displaying the interval rounded down to the
+    nearest whole second, minute, hour or day, depending on the
+    magnitude.
+
+    **Example**::
+
+        >>> hkutils.humanize_timedelta(datetime.timedelta(0,1))
+        '1 second'
+        >>> hkutils.humanize_timedelta(datetime.timedelta(0,2))
+        '2 seconds'
+        >>> hkutils.humanize_timedelta(datetime.timedelta(0,30000))
+        '8 hours'
+    """
 
     minute = datetime.timedelta(0, 60)
     hour = datetime.timedelta(0, 3600)
     day = datetime.timedelta(1)
 
     if delta < minute:
-        return "%d seconds" % (delta.seconds,)
+        return "%d second%s" % (delta.seconds, plural(delta.seconds))
     if delta < hour:
-        return "%d minutes" % (delta.seconds / 60,)
+        return "%d minute%s" % (delta.seconds / 60, plural(delta.seconds / 60))
     if delta < day:
-        return "%d hours" % (delta.seconds / 3600,)
-    return "%d days" % (delta.days)
+        return "%d hour%s" % (delta.seconds / 3600,
+                              plural(delta.seconds / 3600))
+    return "%d day%s" % (delta.days, plural(delta.days))
 
 def copy_wo(src, dst):
     """Copy without overwriting.
