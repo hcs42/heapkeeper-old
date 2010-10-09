@@ -197,13 +197,13 @@ def last():
 
     access_datetimes = last_access.values()
     if len(access_datetimes) == 0:
-        print "Access list is empty."
+        hkutils.log("Access list is empty.")
         return
     access_datetimes.sort()
     last_datetime = access_datetimes[-1]
     now_datetime = datetime.datetime.now()
     last_str = hkutils.humanize_timedelta(now_datetime - last_datetime)
-    print "Last access was %s ago." % (last_str,)
+    hkutils.log("Last access was %s ago." % (last_str,))
 
 
 ##### Utility functions #####
