@@ -87,8 +87,6 @@ class PollChatMessage:
             </div>""" % (msg_author, esc_msg)
             session_pos[session_id] += 1
 
-postpage_old_init = hkweb.PostPageGenerator.__init__
-index_old_init = hkweb.IndexGenerator.__init__
 
 def postpage_new_init(self, postdb):
     postpage_old_init(self, postdb)
@@ -97,11 +95,10 @@ def postpage_new_init(self, postdb):
 
 def index_new_init(self, postdb):
     index_old_init(self, postdb)
-    self.js_files = ['/external/jquery.js',
-                     '/plugins/chat/static/js/hkp_chat.js']
+    self.js_files.append('/plugins/chat/static/js/hkp_chat.js')
     self.options.cssfiles.append('plugins/chat/static/css/chat.css')
 
-def add_chat(self):
+def print_chat(self):
     # Unused argument 'self' # pylint: disable-msg=W0613
     return ('<div id="chatbox">\n',
             """
@@ -118,30 +115,47 @@ def threadid_js(post_id=None):
     return ("""<script type="text/javascript">var thread_id='%s';</script>""" %
             thread_id)
 
-def index_print_main(self):
-    js_links = \
-            [('<script type="text/javascript" src="%s"></script>\n' %
-              (js_file,)) for js_file in self.js_files]
-    return (self.print_searchbar(),
-            add_chat(self),
-            self.print_main_index_page(),
-            threadid_js(),
-            js_links)
+#def index_print_main(self):
+#    #js_links = \
+#    #        [('<script type="text/javascript" src="%s"></script>\n' %
+#    #          (js_file,)) for js_file in self.js_files]
+#    return (self.print_searchbar(),
+#            print_additional(self),
+#            self.print_main_index_page(),
+#            threadid_js(),
+#            print_js_links)
 
-def postpage_print_main(self, postid):
-    return (self.print_searchbar(),
-            add_chat(self),
+def postpage_print_additional_header(self, postid):
+    return (postpage_old_print_additional_header(self, postid),
             threadid_js(postid),
-            self.print_post_page(postid))
+            print_chat(self))
+
+def index_print_additional_header(self):
+    return (index_old_print_additional_header(self),
+            threadid_js(),
+            print_chat(self))
 
 def start():
     """Starts the plugin."""
 
+    global postpage_old_init
+    global index_old_init
+    global postpage_old_print_additional_header
+    global index_old_print_additional_header
+
+    postpage_old_init = hkweb.PostPageGenerator.__init__
+    index_old_init = hkweb.IndexGenerator.__init__
+    postpage_old_print_additional_header = \
+        hkweb.PostPageGenerator.print_additional_header
+    index_old_print_additional_header = \
+        hkweb.IndexGenerator.print_additional_header
+
     hkweb.IndexGenerator.__init__ = index_new_init
     hkweb.PostPageGenerator.__init__ = postpage_new_init
-
-    hkweb.IndexGenerator.print_main = index_print_main
-    hkweb.PostPageGenerator.print_main = postpage_print_main
+    hkweb.IndexGenerator.print_additional_header = \
+        index_print_additional_header
+    hkweb.PostPageGenerator.print_additional_header = \
+        postpage_print_additional_header
 
     hkweb.insert_urls(('/chat-send', SendChatMessage))
     hkweb.insert_urls(('/chat-poll/(.*)', PollChatMessage))

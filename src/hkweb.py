@@ -287,9 +287,32 @@ class WebGenerator(hkgen.Generator):
                 '</center>\n')
 
     def print_js_links(self):
+        print "x"
         return \
             [('<script type="text/javascript" src="%s"></script>\n' %
               (js_file,)) for js_file in self.js_files]
+
+    def print_additional_header(self, post_id=None):
+        # Unused arguments 'self', 'post_id' # pylint: disable-msg=W0613
+        """Provided as a hook to be used by plugins.
+
+        This is the method to overwrite when altering the generator to
+        add something before the main content of the page. Always call
+        the original function when overwriting this function to
+        preserve the functionality of any previously started plugins.
+        """
+
+        return ''
+
+    def print_additional_footer(self, post_id=None):
+        # Unused arguments 'self', 'post_id' # pylint: disable-msg=W0613
+        """Provided as a hook to be used by plugins.
+
+        See docstring of `print_additional_header` for notes on how to
+        use this.
+        """
+
+        return ''
 
 
 class IndexGenerator(WebGenerator):
@@ -300,7 +323,9 @@ class IndexGenerator(WebGenerator):
 
     def print_main(self):
         return (self.print_searchbar(),
+                self.print_additional_header(),
                 self.print_main_index_page(),
+                self.print_additional_footer(),
                 self.print_js_links())
 
 
@@ -360,8 +385,7 @@ class PostPageGenerator(WebGenerator):
                 newlines=True)
 
         return (buttons,
-                self.print_thread_page(self._root),
-                self.print_js_links())
+                self.print_thread_page(self._root))
 
     def get_postsummary_fields_inner(self, postitem):
         """Returns the fields of the post summary when the pos position is
@@ -459,7 +483,10 @@ class PostPageGenerator(WebGenerator):
 
     def print_main(self, postid):
         return (self.print_searchbar(),
-                self.print_post_page(postid))
+                self.print_additional_header(postid),
+                self.print_post_page(postid),
+                self.print_additional_footer(postid),
+                self.print_js_links())
 
 
 class SearchPageGenerator(PostPageGenerator):

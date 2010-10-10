@@ -33,9 +33,6 @@ import hkutils
 import hkweb
 
 
-postpage_old_init = hkweb.PostPageGenerator.__init__
-index_old_init = hkweb.IndexGenerator.__init__
-
 def postpage_new_init(self, postdb):
     postpage_old_init(self, postdb)
     self.options.cssfiles.append('plugins/users/static/css/users.css')
@@ -57,21 +54,32 @@ def print_userlist(self):
     return ('<div id="userlist">\n', 'Active users:\n',
             '<ul>\n', userlist, '</ul>\n', '</div>\n')
 
-def index_print_main(self):
-    return (self.print_searchbar(),
-            print_userlist(self),
-            self.print_main_index_page())
+def index_print_additional_header(self):
+    return (index_old_print_additional_header(self),
+            print_userlist(self))
 
-def postpage_print_main(self, postid):
-    return (self.print_searchbar(),
-            print_userlist(self),
-            self.print_post_page(postid))
+def postpage_print_additional_header(self, postid):
+    return (postpage_old_print_additional_header(self, postid),
+            print_userlist(self))
 
 def start():
     """Starts the plugin."""
 
+    global postpage_old_init
+    global index_old_init
+    global postpage_old_print_additional_header
+    global index_old_print_additional_header
+
+    postpage_old_init = hkweb.PostPageGenerator.__init__
+    index_old_init = hkweb.IndexGenerator.__init__
+    postpage_old_print_additional_header = \
+        hkweb.PostPageGenerator.print_additional_header
+    index_old_print_additional_header = \
+        hkweb.IndexGenerator.print_additional_header
+
     hkweb.IndexGenerator.__init__ = index_new_init
     hkweb.PostPageGenerator.__init__ = postpage_new_init
-
-    hkweb.IndexGenerator.print_main = index_print_main
-    hkweb.PostPageGenerator.print_main = postpage_print_main
+    hkweb.IndexGenerator.print_additional_header = \
+        index_print_additional_header
+    hkweb.PostPageGenerator.print_additional_header = \
+        postpage_print_additional_header
