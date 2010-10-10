@@ -81,8 +81,8 @@ ones without ``-<character>`` and ``--<word>``) will be executed as commands::
 
     $ python hk.py 'dl()' 'g()' 'x()'
 
-Do use this in scripts that you want to keep, because this behaviour may be
-changed in the future if we want to use positional arguments for something
+Always use ``-c`` in scripts that you want to keep, because this behaviour may
+be changed in the future if we want to use positional arguments for something
 else.
 
 .. highlight:: python
@@ -309,7 +309,9 @@ class Options(object):
                  config=hkutils.NOT_SET,
                  output=sys.stdout,
                  callbacks=hkutils.NOT_SET,
-                 shell_banner='',
+                 shell_banner=("This is Heapkeeper's shell.\n"
+                               "Type h() to get help.\n"
+                               "Type q() to quit without saving."),
                  save_on_ctrl_d=None):
 
         super(Options, self).__init__()
@@ -1802,13 +1804,6 @@ def main(cmdl_options, args):
       of strings that contain the values of the command line arguments.
     - `args` ([str]) -- Command line arguments.
     """
-
-    # Adding the plugins
-    if os.path.exists('plugins'):
-        for dir in os.listdir('plugins'):
-            src_dir = os.path.join('plugins', dir, 'src')
-            if os.path.exists(src_dir):
-                sys.path.insert(0, src_dir)
 
     # Processing the command line options
     cmdl_options.after_command += args

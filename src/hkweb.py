@@ -35,10 +35,12 @@ hkweb can be started from the |hkshell| in the following way:
 """
 
 
+import base64
 import exceptions
 import itertools
 import json
 import sys
+import datetime
 import threading
 import web as webpy
 
@@ -67,6 +69,141 @@ urls = [
     ]
 
 log = []
+
+
+##### HTTP basic authentication #####
+
+def default_deny(realm, username, password, redirect_url):
+    # Unused arguments 'password', 'realm', 'redirect_url'
+    # pylint: disable-msg=W0613
+    hkutils.log('Access denied for user %s.' % username)
+    return 'Authentication needed!'
+
+def make_auth(verifier, realm="Heapkeeper",
+              deny=default_deny, redirect_url="/"):
+    """Creates a decorator that allows the decorated function to run
+    only after a successful HTTP basic authentication. The
+    authentication is performed by a supplied verifier function.
+
+    **Arguments:**
+
+    - `verifier` (fun(str, str, str)) -- Verifies if the
+      authentication is valid and returns the result as bool.
+    - `realm` (str) -- The user will see this in the login box.
+    - `deny` (fun(str, str, str, str)) -- Function called on failure.
+    - `redirect_url` (str) -- Unsuccessful auth throws the user here.
+    """
+
+    def decorator(func, *args, **keywords):
+        # Unused arguments 'args', 'keywords'
+        # pylint: disable-msg=W0613
+        def f(*args, **keywords):
+            username = None
+            password = None
+            try:
+                b64text = webpy.ctx.env['HTTP_AUTHORIZATION'][6:]
+                plaintext = base64.b64decode(b64text)
+                colonpos = plaintext.index(':')
+                username = plaintext[:colonpos]
+                password = plaintext[colonpos + 1:]
+            except:
+                # TODO: handle absent HTTP_AUTHORIZATION field
+                # separately from failed base64 decoding or missing
+                # colon in plaintext.
+                pass
+            if verifier(username, password, realm):
+                last_access[username] = datetime.datetime.now()
+                # Attach the user's name to the server. The way to
+                # find the server depends on whether the function is a
+                # bound method.
+                if hasattr(func, 'im_self'):
+                    func.im_self.user = username
+                else:
+                    args[0].user = username
+                return func(*args, **keywords)
+            else:
+                webpy.ctx.status = '401 UNAUTHORIZED'
+                webpy.header('WWW-Authenticate',
+                             'Basic realm="%s"'  % webpy.websafe(realm))
+                return deny(realm, username, password, redirect_url)
+        return f
+    return decorator
+
+def make_minimal_verifier(correct_username, correct_password):
+    # Unused argument 'realm' # pylint: disable-msg=W0613
+    def minimal_verifier(username, password, realm):
+        """A minimalistic verifier with a hardcoded user/password pair."""
+
+        return (username == correct_username and
+                password == correct_password)
+    return minimal_verifier
+
+def account_verifier(username, password, realm):
+    # Unused argument 'realm' # pylint: disable-msg=W0613
+    """A verifier that uses the account list in the config file."""
+
+    accounts = hkshell.options.config['accounts']
+    if username in accounts:
+        correct_password = accounts[username]
+        return correct_password == password
+    return False
+
+def enable_authentication(username=None, password=None):
+    """Enables authentication with single or account-based
+    username/password pair.
+
+    If username is omitted, authentication will be based on account
+    data specified in the config file. If both username and password
+    are specified, these will be the only acceptable username/password
+    pair. If password is omitted, it will be the same as the username
+    (not recommended).
+
+    **Argument:**
+
+    - `username` (str)
+    - `password` (str)
+    """
+
+    global auth
+    if username is None:
+        auth = make_auth(verifier=account_verifier)
+    else:
+        if password is None:
+            password = username
+        auth = make_auth(verifier=make_minimal_verifier(username, password))
+
+# By default, auth is an identity decorator, that is, authentication
+# is disabled. Enable it using `hkweb.enable_authentication()`.
+
+auth = lambda f: f
+
+# This dict keeps track of the time of the last access by users.
+last_access = {}
+
+def add_auth(server, auth_decorator):
+    """Add authentication to a web.py server class."""
+
+    server._postdb = hkshell.postdb()
+    server.original_GET = getattr(server, 'GET', None)
+    server.original_POST = getattr(server, 'POST', None)
+    if server.original_GET:
+        server.GET = auth_decorator(server.original_GET)
+    if server.original_POST:
+        server.POST = auth_decorator(server.original_POST)
+
+def last():
+    """Display the time of the last access in a conveniently
+    interpretable ("human-readable") format."""
+
+    access_datetimes = last_access.values()
+    if len(access_datetimes) == 0:
+        hkutils.log("Access list is empty.")
+        return
+    access_datetimes.sort()
+    last_datetime = access_datetimes[-1]
+    now_datetime = datetime.datetime.now()
+    last_str = hkutils.humanize_timedelta(now_datetime - last_datetime)
+    hkutils.log("Last access was %s ago." % (last_str,))
 
 
 ##### Utility functions #####
@@ -112,6 +249,9 @@ class WebGenerator(hkgen.Generator):
         hkgen.Generator.__init__(self, postdb)
         self.options.cssfiles.append("static/css/hkweb.css")
         self.options.favicon = '/static/images/heap.png'
+        self.js_files = ['/external/jquery.js',
+                         '/external/json2.js',
+                         '/static/js/hkweb.js']
 
     def print_html_head_content(self):
         """Prints the content in the HTML header.
@@ -146,6 +286,11 @@ class WebGenerator(hkgen.Generator):
                 '</div>\n'
                 '</center>\n')
 
+    def print_js_links(self):
+        return \
+            [('<script type="text/javascript" src="%s"></script>\n' %
+              (js_file,)) for js_file in self.js_files]
+
 
 class IndexGenerator(WebGenerator):
     """Generator that generates the index page."""
@@ -155,7 +300,8 @@ class IndexGenerator(WebGenerator):
 
     def print_main(self):
         return (self.print_searchbar(),
-                self.print_main_index_page())
+                self.print_main_index_page(),
+                self.print_js_links())
 
 
 class PostPageGenerator(WebGenerator):
@@ -167,9 +313,6 @@ class PostPageGenerator(WebGenerator):
 
     def __init__(self, postdb):
         WebGenerator.__init__(self, postdb)
-        self.js_files = ['/external/jquery.js',
-                         '/external/json2.js',
-                         '/static/js/hkweb.js']
 
     def set_post_id(self, post_id):
         post = self._postdb.post(post_id)
@@ -216,13 +359,9 @@ class PostPageGenerator(WebGenerator):
                 tag='div',
                 newlines=True)
 
-        js_links = \
-            [('<script type="text/javascript" src="%s"></script>\n' %
-              (js_file,)) for js_file in self.js_files]
-
         return (buttons,
                 self.print_thread_page(self._root),
-                js_links)
+                self.print_js_links())
 
     def get_postsummary_fields_inner(self, postitem):
         """Returns the fields of the post summary when the pos position is
@@ -294,6 +433,10 @@ class PostPageGenerator(WebGenerator):
                      class_='button post-body-button',
                      id='post-raw-edit-button-' + post_id), '\n',
                  self.enclose(
+                     'Add child',
+                     class_='button post-body-button',
+                     id='post-body-addchild-button-' + post_id), '\n',
+                 self.enclose(
                      'Save',
                      class_='button post-body-button',
                      id='post-body-save-button-' + post_id,
@@ -335,9 +478,6 @@ class SearchPageGenerator(PostPageGenerator):
         # Getting the posts in the interesting threads
         xpostitems = self.walk_exp_posts(self.posts)
 
-        # Reversing the thread order
-        xpostitems = self.reverse_threads(xpostitems)
-
         xpostitems = \
             itertools.imap(
                 self.set_postitem_attr('print_post_body'),
@@ -377,11 +517,6 @@ class SearchPageGenerator(PostPageGenerator):
         return (buttons,
                 self.print_search_page_core())
 
-    def print_js_links(self):
-        return \
-            [('<script type="text/javascript" src="%s"></script>\n' %
-              (js_file,)) for js_file in self.js_files]
-
 
 class PostBodyGenerator(WebGenerator):
 
@@ -407,14 +542,15 @@ class WebpyServer(object):
     """Base class for webservers."""
 
     def __init__(self):
+        add_auth(self, auth)
         self._postdb = hkshell.postdb()
-
 
 class HkPageServer(object):
     """Base class for webservers that serve a "usual" HTML page that is
     generated by a Heapkeeper generator."""
 
     def __init__(self):
+        add_auth(self, auth)
         self._postdb = hkshell.postdb()
 
     def serve_html(self, content, generator):
@@ -471,7 +607,8 @@ class Search(HkPageServer):
     def main(self):
 
         try:
-            preposts = self.get_posts()
+            args = get_web_args()
+            preposts = self.get_posts(args)
         except hkutils.HkException, e:
             return str(e)
 
@@ -497,22 +634,39 @@ class Search(HkPageServer):
         elif show == 'no_post_found':
             main_content = 'No post found.'
         elif show == 'normal':
-            main_content = generator.print_search_page()
+            active = len(generator.posts)
+            all = len(generator.posts.exp())
+            numbers = ('Posts found: %d<br/>'
+                       'All posts shown: %d' % (active, all))
+            numbers_box = generator.enclose(numbers, 'div', 'info-box')
+            main_content = (numbers_box, generator.print_search_page())
 
-        focus_searchbar_js = \
-            ('<script  type="text/javascript" language="JavaScript">\n'
-             '$("#searchbar-term").focus();\n'
+        term = args.get('term')
+        if term is not None:
+            # We use json to make sure that `term` is represented in a format
+            # readable by JavaScript
+            fill_searchbar_js = \
+                ('$("#searchbar-term").val(' +
+                 json.dumps(term) +
+                 ');\n')
+        else:
+            fill_searchbar_js = ''
+
+        focus_searchbar_js = '$("#searchbar-term").focus();\n'
+
+        js_code = \
+            ('<script  type="text/javascript" language="JavaScript">\n',
+            fill_searchbar_js,
+            focus_searchbar_js,
              '</script>\n')
 
         content = (generator.print_searchbar(),
                    main_content,
                    generator.print_js_links(),
-                   focus_searchbar_js)
+                   js_code)
         return self.serve_html(content, generator)
 
-    def get_posts(self):
-
-        args = get_web_args()
+    def get_posts(self, args):
 
         posts = args.get('posts')
         if posts is not None:
@@ -629,12 +783,31 @@ class SetPostBody(AjaxServer):
 
         **Argument:**
 
-        - `args` ({'new_body_text': str})
+        - `args` ({'new_body_text': str, 'new_count': int})
 
-        **Returns:** {'error': str} | {'new_body_html': str}
+        **Returns:** {'error': str} | {'new': str}
         """
 
-        post = self._postdb.post(post_id)
+        postdb = self._postdb
+
+        new = args.get('new')
+        if new is None:
+            post = postdb.post(post_id)
+        else:
+            parent = postdb.post(post_id)
+
+            # Create new post, make it a child of the existing one.
+            post = hklib.Post.from_str('')
+            post.set_author(parent.author())
+            post.set_subject(parent.subject())
+            post.set_date(parent.date())
+            post.set_tags(parent.tags())
+            post.set_parent(parent.post_id_str())
+            heap = parent.heap_id()
+            prefix = 'hkweb_'
+            hkshell.add_post_to_heap(post, prefix, heap)
+            post_id = post.post_id()
+
         if post is None:
             return {'error': 'No such post: "%s"' % (post_id,)}
 
@@ -644,12 +817,27 @@ class SetPostBody(AjaxServer):
 
         post.set_body(newPostBodyText)
 
-        # Generating the HTML for the new body
-        generator = PostBodyGenerator(self._postdb)
-        new_body_html = generator.print_post_body(post_id)
-        new_body_html = hkutils.textstruct_to_str(new_body_html)
+        # Generating the HTML for the new body or new post summary.
+        if new is None:
+            generator = PostBodyGenerator(self._postdb)
+            new_body_html = generator.print_post_body(post_id)
+            new_body_html = hkutils.textstruct_to_str(new_body_html)
+            return {'new_body_html': new_body_html}
+        else:
+            generator = PostPageGenerator(self._postdb)
+            generator.set_post_id(post.post_id())
+            postitem = hklib.PostItem('inner', post)
+            postitem.print_post_body = True
+            postitem.print_parent_post_id = True
+            postitem.print_children_post_id = True
+            new_post_summary = generator.print_postitems([postitem])
+            new_post_summary = hkutils.textstruct_to_str(new_post_summary)
+            return \
+                {
+                    'new_post_summary': new_post_summary,
+                    'new_post_id': '-'.join(post.post_id())
+                }
 
-        return {'new_body_html': new_body_html}
 
 
 class GetPostBody(AjaxServer):

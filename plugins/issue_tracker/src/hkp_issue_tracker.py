@@ -32,6 +32,7 @@ at <hostname>:<port>/myheap-issue-tracker.
 
 import hklib
 import hkutils
+import hksearch
 import hkweb
 import hk_issue_tracker
 
@@ -42,10 +43,12 @@ class IssueTrackerGenerator(hk_issue_tracker.Generator, hkweb.WebGenerator):
 
     def __init__(self, postdb, heap_id):
         # "hk_issue_tracker.Generator.__init__" is not called
+        # pylint: disable-msg=W0231
         hkweb.WebGenerator.__init__(self, postdb)
         self._heap_id = heap_id
-        self.options.cssfiles.append(
-            "plugins/issue_tracker/static/css/issues.css")
+        static_dir = 'plugins/issue_tracker/static'
+        self.options.cssfiles.append(static_dir + '/css/issues.css')
+        self.options.favicon = static_dir + '/images/it.png'
 
     def section(self, id, title, content, flat=False):
         assert hkutils.is_textstruct(content), \
@@ -81,9 +84,8 @@ class IssueTrackerGenerator(hk_issue_tracker.Generator, hkweb.WebGenerator):
 
         return \
            self.reverse_threads(
-               [self.augment_postitem(
-                    hklib.PostItem(pos='flat', post=post))
-               for post in posts.collect.is_root().sorted_list()])
+               [hklib.PostItem(pos='flat', post=post)
+                for post in posts.collect.is_root().sorted_list()])
 
     def get_postsummary_fields_flat(self, postitem):
 
@@ -154,7 +156,7 @@ class IssueTrackerGenerator(hk_issue_tracker.Generator, hkweb.WebGenerator):
     def print_postitem_type_core(self, postitem):
         post = postitem.post
         post_tags = set(post.tags())
-        type,_ = self.separate_type_and_tags(post_tags)
+        type, _ = self.separate_type_and_tags(post_tags)
 
         if len(type) == 0:
             return ''
@@ -231,3 +233,16 @@ def start(heap_id, url=None):
             return self.serve_html(content, generator)
 
     hkweb.insert_urls([url, CustomHeapServer])
+
+    def issue_target(post, pattern):
+        postdb = post._postdb
+        root = postdb.root(post)
+        gen = hk_issue_tracker.Generator(postdb)
+        if pattern == 'issue':
+            return gen.is_thread_issue(root)
+        elif pattern == 'open':
+            return gen.is_thread_open(root)
+        else:
+            return False
+
+    hksearch.add_target_type('issue', issue_target)

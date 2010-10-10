@@ -483,20 +483,21 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             ('Generating index.html...\n'
              'Generating index.html...'))
 
-    def test_write_post_pages(self):
+    def test_write_thread_pages(self):
         """Tests the following functions:
 
-        - :func:`hkgen.Generator.print_post_page`
-        - :func:`hkgen.Generator.write_post_pages`
+        - :func:`hkgen.Generator.print_thread_page`
+        - :func:`hkgen.Generator.write_thread_pages`
         """
 
         postdb, g, p = self.get_ouv()
-        pi_begin = hklib.PostItem('begin', p(0), 0)
-        pi_inner = hklib.PostItem('inner', p(0), 0)
-        pi_end = hklib.PostItem('end', p(0), 0)
+        pi_begin = hklib.PostItem('begin', p(4), 4)
+        pi_inner = hklib.PostItem('inner', p(4), 4)
+        pi_end = hklib.PostItem('end', p(4), 4)
         pi_begin.print_post_body = True
         pi_inner.print_post_body = True
-        g.options.html_title = 'subject0'
+        pi_inner.print_children_post_id = True
+        g.options.html_title = 'subject4'
 
         expected_content = \
             (g.print_html_header(),
@@ -505,13 +506,13 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
              g.print_postitem(pi_end),
              g.print_html_footer())
 
-        g.write_post_pages(write_all=True)
+        g.write_thread_pages(write_all=True)
         self.assertTextStructsAreEqual(
-            self.file_content('my_heap/0.html'),
+            self.file_content('my_heap/thread_4.html'),
             expected_content)
 
         postitems = [pi_begin, pi_end]
-        g.write_post_pages()
+        g.write_thread_pages()
         self.assertTextStructsAreEqual(
              [g.print_postitem(pi_begin),
               g.print_postitem(pi_end)],
@@ -519,8 +520,8 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
 
         self.assertEqual(
             self.pop_log(),
-            ('Generating post pages...\n'
-             'Generating post pages...'))
+            ('Generating thread pages...\n'
+             'Generating thread pages...'))
 
 
 if __name__ == '__main__':

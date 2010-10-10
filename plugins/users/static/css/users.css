@@ -1,0 +1,12 @@
+#userlist
+{
+    position: fixed;
+    width: 100px;
+    top: 10px;
+    right: 10px;
+    margin-left: 24px;
+    padding: 1em;
+    padding-right: 2em;
+    background-color: #cc9;
+    border: 1px solid #080;
+}

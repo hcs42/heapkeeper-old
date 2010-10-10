@@ -5,6 +5,13 @@
 
 .. automodule:: hkutils
 
+Directory structure
+-------------------
+
+.. autofunction:: plugin_dirs
+.. autofunction:: plugin_src_dirs
+.. autofunction:: update_path_with_plugin_src_dirs
+
 Performance measurement
 -----------------------
 
@@ -55,6 +62,8 @@ Miscellaneous
 .. autofunction:: uutf8
 .. autofunction:: json_uutf8
 .. autofunction:: calc_timestamp
+.. autofunction:: humanize_timedelta
+.. autofunction:: parse_date
 .. autofunction:: copy_wo
 .. autofunction:: plural
 .. autofunction:: add_method
@@ -63,4 +72,3 @@ Miscellaneous
 .. autofunction:: quote_shell_arg
 .. autofunction:: call
 .. autoclass:: NOT_SET
-

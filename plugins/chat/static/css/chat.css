@@ -1,0 +1,29 @@
+#chatbox
+{
+    position: fixed;
+    width: 250px;
+    bottom: 0;
+    right: 15px;
+    margin-left: 24px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #080;
+}
+
+#chatmessages
+{   height: 160px;
+    overflow-x: hidden;
+    overflow: auto;
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+.chatmessagename
+{
+    font-weight: bold;
+    margin-right: 1em;
+}
+
+#chattextinput
+{
+    width: 98%;
+}

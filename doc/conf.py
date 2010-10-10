@@ -16,7 +16,6 @@ import sys
 import os
 import docutils
 import re
-import string
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -243,11 +242,14 @@ def js_obfuscated_link(email, displayname=None):
 
 # -- end bud.nospam
 
+# Line too long # pylint: disable-msg=C0301
+
 # The following code was taken from Stéfan van der Walt <stefan at sun ac za>,
 # who sent it to the Sphinx mailing list:
 #
 # http://groups.google.com/group/sphinx-dev/browse_thread/thread/c03f6cee47d949ff
 
+# Unused arguments # pylint: disable-msg=W0613
 def email_role(typ, rawtext, text, lineno, inliner, options={}, content=[]):
     """
     Role to obfuscate e-mail addresses.

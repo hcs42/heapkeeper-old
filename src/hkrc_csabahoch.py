@@ -68,7 +68,7 @@ class MyGenerator(hkgen.Generator):
         """
 
         normal_postitems = self.walk_thread(None)
-        normal_postitems = self.reverse_threads(normal_postitems)
+        #normal_postitems = self.reverse_threads(normal_postitems)
 
         if self._postdb.has_cycle():
             cycle_postitems = self._postdb.walk_cycles()
@@ -93,7 +93,7 @@ class MyGenerator(hkgen.Generator):
         xpostitems = self.walk_exp_posts(xpostitems)
 
         # Reverse the post items
-        xpostitems = self.reverse_threads(xpostitems)
+        #xpostitems = self.reverse_threads(xpostitems)
 
         # We add 'review-needed' spans around the posts that need review
         xpostitems = itertools.imap(

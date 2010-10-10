@@ -85,6 +85,38 @@ import sys
 import types
 
 
+##### Adding the 'plugins' directory to the path #####
+
+def plugin_dirs():
+    """Returns the directories in the ``'plugins'`` directory.
+
+    **Returns:** [str]
+    """
+
+    if os.path.isdir('plugins'):
+        return [os.path.join('plugins', dir)
+                for dir in sorted(os.listdir('plugins'))]
+    else:
+        return []
+
+def plugin_src_dirs():
+    """Returns the ``'src'`` directories in the plugin directory.
+
+    **Returns:** [str]
+    """
+
+    return [os.path.join(dir, 'src')
+            for dir in plugin_dirs()
+            if os.path.exists(os.path.join(dir, 'src'))]
+
+def update_path_with_plugin_src_dirs():
+    """Adds the ``'src'`` directories in the ``'plugin'`` directory to the
+    Python path."""
+    for src_dir in plugin_src_dirs():
+        sys.path.insert(0, src_dir)
+
+update_path_with_plugin_src_dirs()
+
 ##### Performance measurement #####
 
 pm_last_time = datetime.datetime.now()
@@ -448,6 +480,88 @@ def calc_timestamp(date):
     """
 
     return email.utils.mktime_tz(email.utils.parsedate_tz(date))
+
+def humanize_timedelta(delta):
+    """Convert a timedelta to a "human-readable" representation.
+
+    This is done by displaying the interval rounded down to the
+    nearest whole second, minute, hour or day, depending on the
+    magnitude.
+
+    **Example**::
+
+        >>> hkutils.humanize_timedelta(datetime.timedelta(0,1))
+        '1 second'
+        >>> hkutils.humanize_timedelta(datetime.timedelta(0,2))
+        '2 seconds'
+        >>> hkutils.humanize_timedelta(datetime.timedelta(0,30000))
+        '8 hours'
+    """
+
+    minute = datetime.timedelta(0, 60)
+    hour = datetime.timedelta(0, 3600)
+    day = datetime.timedelta(1)
+
+    if delta < minute:
+        return "%d second%s" % (delta.seconds, plural(delta.seconds))
+    if delta < hour:
+        return "%d minute%s" % (delta.seconds / 60, plural(delta.seconds / 60))
+    if delta < day:
+        return "%d hour%s" % (delta.seconds / 3600,
+                              plural(delta.seconds / 3600))
+    return "%d day%s" % (delta.days, plural(delta.days))
+
+def parse_date(date_str):
+    """Parses a date.
+
+    **Argument:**
+
+    - `date_str` (str) -- The date string to be parsed. It should have the
+      following format: ``yyyy[-mm[-dd[_HH[:MM[:SS]]]]]``. The brackets mean
+      "optional part". A space character can be used instead of the underscore.
+      When the "month" or "day" field is not given, it is set to 1. When the
+      "hour", "minute" or "second" field is not given, it is set to 0.
+
+    **Returns:** (int, int, int, int, int, int) -- A tuple with the following
+    fields: year, month, day, hour, minute, second. It can be given to the
+    constructor of the datetime.datetime class.
+
+    **Examples:**
+
+    >>> hkutils.parse_date('2009')
+    (2009, 1, 1, 0, 0, 0)
+    >>> hkutils.parse_date('2009-02')
+    (2009, 2, 1, 0, 0, 0)
+    >>> hkutils.parse_date('2009-02-03')
+    (2009, 2, 3, 0, 0, 0)
+    >>> hkutils.parse_date('2009-02-03_04')
+    (2009, 2, 3, 4, 0, 0)
+    >>> hkutils.parse_date('2009-02-03_04:05')
+    (2009, 2, 3, 4, 5, 0)
+    >>> hkutils.parse_date('2009-02-03_04:05:06')
+    (2009, 2, 3, 4, 5, 6)
+    >>> hkutils.parse_date('2009-02-03 04:05:06')
+    (2009, 2, 3, 4, 5, 6)
+    """
+
+    r = re.match('^(?P<year>\d\d\d\d)'
+                 '(-?(?P<month>\d\d)'
+                 '(-?(?P<day>\d\d)'
+                 '([_ ]?(?P<hour>\d\d)'
+                 '(:?(?P<minute>\d\d)'
+                 '(:?(?P<second>\d\d)'
+                 ')?)?)?)?)?$', date_str)
+    if r is None:
+        msg = ('Incorrect date specification: %s\n'
+               'Use the following format: yyyy[-mm[-dd[_HH[:MM[:SS]]]]]')
+        raise HkException(msg % (repr(date_str),))
+    year = int(r.group('year'))
+    month = int(r.group('month') or 1)
+    day = int(r.group('day') or 1)
+    hour = int(r.group('hour') or 0)
+    minute = int(r.group('minute') or 0)
+    second = int(r.group('second') or 0)
+    return year, month, day, hour, minute, second
 
 def copy_wo(src, dst):
     """Copy without overwriting.

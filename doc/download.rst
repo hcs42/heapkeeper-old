@@ -77,7 +77,7 @@ __ http://heapkeeper.org/releases/heapkeeper-0.7.zip
 __ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.7.tar.gz
 __ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.7.zip
 
-The main improvement of this release are creating a plugin infrastructure and
+The main improvements of this release are creating a plugin infrastructure and
 adding search functionality to hkweb.
 
 Major new features:
