@@ -68,7 +68,7 @@ Quick information
   page <download>`. The source code and the documentation is stored in the
   `Heapkeeper repository`_, which is hosted by GitHub_, and can be used with
   the Git_ version control system.
-* **Installation**: Heapkeeper requires Python_ 2.5, 2.6 or 2.7 installed;
+* **Installation**: Heapkeeper requires Python_ 2.6 or 2.7 installed;
   otherwise it can be executed without any specific installation steps.
 * **Documentation**: The home page and the documentation is written in
   reStructuredText_ format. Sphinx_ is used to generate HTML pages.
