@@ -51,16 +51,16 @@ Then download the latest version of Heapkeeper (either in `tar.gz`__ or in
 
 .. code-block:: sh
 
-    $ wget http://heapkeeper.org/releases/heapkeeper-0.7.tar.gz
+    $ wget http://heapkeeper.org/releases/heapkeeper-0.8.tar.gz
 
-__ http://heapkeeper.org/releases/heapkeeper-0.7.tar.gz
-__ http://heapkeeper.org/releases/heapkeeper-0.7.zip
+__ http://heapkeeper.org/releases/heapkeeper-0.8.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.8.zip
 
 Unzip the tar.gz or zip file. For Unix users:
 
 .. code-block:: sh
 
-    $ tar xzf heapkeeper-0.7.tar.gz
+    $ tar xzf heapkeeper-0.8.tar.gz
 
 Make Heapkeeper's directory the current one. Heapkeeper's shell (|hkshell|) can
 be started from here without any installation procedure. You can ask for
@@ -68,9 +68,9 @@ version information for example:
 
 .. code-block:: sh
 
-    $ cd heapkeeper-0.7
+    $ cd heapkeeper-0.8
     $ python src/hk.py --version
-    Heapkeeper version 0.7
+    Heapkeeper version 0.8
 
 Or you can execute the automatic test:
 
@@ -78,7 +78,7 @@ Or you can execute the automatic test:
 
     $ python src/test.py
     ----------------------------------------------------------------------
-    Ran 130 tests in 0.379s
+    Ran 131 tests in 0.379s
 
     OK
 
@@ -122,7 +122,9 @@ Start |hkshell|:
 .. code-block:: sh
 
     $ python src/hk.py
-
+    This is Heapkeeper's shell.
+    Type h() to get help.
+    Type q() to quit without saving.
     >>>
 
 The ``>>>`` sign indicates that we got a Python prompt where we can type any
@@ -325,7 +327,9 @@ will use the latter because it is often more convenient and also allows editing
 the posts. ::
 
     $ python src/hk.py
-
+    This is Heapkeeper's shell.
+    Type h() to get help.
+    Type q() to quit without saving.
     >>> import hkweb
     >>> hkweb.start(8080)
     Web service started.
@@ -749,7 +753,9 @@ Start Heapkeeper:
     $ python src/hk.py
     Warning: post directory does not exists: "myheap_posts"
     Post directory has been created.
-
+    This is Heapkeeper's shell.
+    Type h() to get help.
+    Type q() to quit without saving.
     >>>
 
 The |dl| command can be used to download new emails and convert them into
