@@ -23,6 +23,8 @@ Packaged releases
 | version  | date       | source      | HTML documentation |
 |          |            |             |                    |
 +==========+============+=============+====================+
+| `0.8`_   | 2010-10-17 | tgz__ zip__ | tgz__ zip__        |
++----------+------------+-------------+--------------------+
 | `0.7`_   | 2010-08-20 | tgz__ zip__ | tgz__ zip__        |
 +----------+------------+-------------+--------------------+
 | `0.6`_   | 2010-06-01 | tgz__ zip__ | tgz__ zip__        |
@@ -38,6 +40,10 @@ Packaged releases
 | `0.1`_   | 2008-10-16 | tgz__ zip__ |  --                |
 +----------+------------+-------------+--------------------+
 
+__ http://heapkeeper.org/releases/heapkeeper-0.8.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.8.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.8.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.8.zip
 __ http://heapkeeper.org/releases/heapkeeper-0.7.tar.gz
 __ http://heapkeeper.org/releases/heapkeeper-0.7.zip
 __ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.7.tar.gz
@@ -62,6 +68,54 @@ __ http://github.com/hcs42/heapkeeper/tarball/v0.2
 __ http://github.com/hcs42/heapkeeper/zipball/v0.2
 __ http://github.com/hcs42/heapkeeper/tarball/v0.1
 __ http://github.com/hcs42/heapkeeper/zipball/v0.1
+
+.. _`0.8`:
+
+Version 0.8
+^^^^^^^^^^^
+
+- **date:** 2010-10-17
+- **download:** tgz__, zip__
+- **download HTML documentation:** tgz__, zip__
+
+__ http://heapkeeper.org/releases/heapkeeper-0.8.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.8.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.8.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.8.zip
+
+The main improvements of this release are hkweb features: better search, faster
+post body folding, possibility to use authentication and add new child posts.
+
+Major new features:
+
+- New child posts can be added in hkweb.
+- hkweb supports authenticating users.
+- The search bar in hkweb can contain new target types: the user can search for
+  posts with certain tags, posts after/before a certain date, posts on a
+  certain heap, etc; and all these can be negated and combined. The "Issue
+  Tracker" plugin even adds an "issue" target type.
+- The search page shows the number of hits and has better unicode handling.
+- The "Chat" plugin implements real-time chat (instant messaging) in hkweb.
+- The "Users" plugin displays users' recent activity on hkweb pages.
+- The "Custom Heap Server" plugin can be started for all heaps.
+
+Major refactorings:
+
+- Folding of post bodies is hkweb is 50 times faster.
+
+Other major improvements:
+
+- hk-dev-utils can perform automatic tests on Heapkeeper in a more convenient
+  way than before.
+- test.py collects test modules dynamically (they used to be hardcoded).
+
+Major deprecation:
+
+- Post item augmentation is no longer supported. It became unnecessary due to
+  refactoring: if a post item is created, it does not need to be augmented any
+  more.
+- Post pages are deprecated. (Use thread pages instead.)
+- Old configuration formats are deprecated. (Use the new format instead.)
 
 .. _`0.7`:
 
