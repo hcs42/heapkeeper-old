@@ -213,7 +213,7 @@ function showPostBody(postId, count) {
         var showButton = $('#new-' + count + '-post-body-show-button-' +
             postId);
     }
-        
+
     postBody.show('fast');
     setButtonVisibility(showButton, 'hide');
 }
@@ -234,7 +234,7 @@ function hidePostBody(postId, count) {
         var showButton = $('#new-' + count + '-post-body-show-button-' +
             postId);
     }
-        
+
     postBody.hide('fast');
     setButtonVisibility(showButton, 'show');
 }
@@ -484,7 +484,7 @@ function addChildPost(postId) {
     // how hkshell's enew() works). This means that post summaries on
     // the page either represent real posts or newly created, yet
     // unsaved posts.
-    // 
+    //
     // New posts are created by copying existing posts, changing their
     // "id" attribute.
 
@@ -496,7 +496,7 @@ function addChildPost(postId) {
                     '#post-summary-' + postId + ' ~ .post-box').last()
 
     // Find new name for new post summary.
-    // `postId` and `count` will identify the new post. 
+    // `postId` and `count` will identify the new post.
     var count = findAvailableNewName(postId);
 
     // Add new post box.
@@ -510,7 +510,7 @@ function addChildPost(postId) {
     var newPostSummary = parentPostSummary.clone();
     newPostBox.append(newPostSummary);
 
-    // Change IDs in the clone for summary, container and buttons. 
+    // Change IDs in the clone for summary, container and buttons.
     renameToNew(newPostSummary, 'summary', postId, count);
     renameToNew(newPostSummary, 'body-show-button', postId, count);
     renameToNew(newPostSummary, 'body-container', postId, count);
@@ -623,7 +623,7 @@ function savePostNew(postId, count) {
     //
     // - postId (PostId)
     // - count (int)
-    
+
     var postBodyContainer = $('#new-' + count +
         '-post-body-container-' + postId);
     var textArea = $('textarea', postBodyContainer);
