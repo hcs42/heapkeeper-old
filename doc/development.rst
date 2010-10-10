@@ -386,7 +386,7 @@ Heapkeeper, it is something like ``0.3``.
 #. Update the Heapkeeper version number in the following files:
 
    - ``README``
-   - ``hklib.py``
+   - ``src/hklib.py``
    - ``doc/conf.py``
    - ``doc/tutorial.rst``
    - ``doc/download.rst``
@@ -401,8 +401,8 @@ Heapkeeper, it is something like ``0.3``.
 
 #. Execute the package maker script and push the package to the homepage::
 
-    $ hk-dev-utils/make_package
-    $ hk-dev-utils/pushrelease hcs@heapkeeper.org
+    $ hkdu-make-package
+    $ hkdu-pushrelease hcs@heapkeeper.org
 
 #. Download the uploaded package and perform the steps in the :doc:`tutorial`.
 
