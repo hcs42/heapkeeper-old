@@ -3494,29 +3494,10 @@ class GeneratorOptions(object):
 
 ##### PostDB configuration object #####
 
-# TODO The support for configuration file format 1 and 2 can be removed after
-# releasing 0.8.
-
 def unify_config(config):
     """Modifies the configuration object to conform to a unified format.
 
-    The `config` object may have 3 formats:
-
-    Format 1 (legacy)::
-
-        {'paths': {'mail': str,
-                   'html': str},
-         [Server,]
-         ['nicknames': {object: Nickname}]}
-
-    Format 2 (legacy)::
-
-        {'paths': {'heaps': HeapSequence,
-                   'html': str},
-         [Server,]
-         ['nicknames': {object: Nickname}]}
-
-    Format 3::
+    The `config` object has the following format::
 
         {'heaps': {HeapName: {'path': str,
                               ['id': str,]
@@ -3539,9 +3520,9 @@ def unify_config(config):
         Server:
 
             'server': {'host': str,
-                        'port': str(int),
-                        'username': str,
-                        ['password': str]}
+                       'port': str(int),
+                       'username': str,
+                       ['password': str]}
 
     Unified format::
 
@@ -3577,125 +3558,13 @@ def unify_config(config):
 
     path = config.get('paths', [])
     if 'heaps' in path:
-        hkutils.log("WARNING: the used config file format is deprecated.")
-        return unify_format_2(config)
+        raise hkutils.HkException(
+            'This config file format ("format 2") cannot be used any more.')
     elif 'mail' in path:
-        hkutils.log("WARNING: the used config file format is deprecated.")
-        return unify_format_1(config)
+        raise hkutils.HkException(
+            'This config file format ("format 1") cannot be used any more.')
     else:
         return unify_format_3(config)
-
-def unify_format_1(config):
-    """Converts the configuration object in format 1 into the unified
-    configuration format.
-
-    The `config` parameter is modified and returned.
-
-    **Argument:**
-
-    - `config` (|ConfigDict|)
-
-    **Returns:** |ConfigDict|
-    """
-
-    # We convert format 1 to format 2 and call the function that unifies
-    # format 2
-
-    # Conversion to format 2
-    assert isinstance(config['paths']['mail'], str)
-
-    # The default heap is called "defaultheap". An empty string would not be
-    # OK, because the HTML directory will contain directories whose name are
-    # the same as the names of heaps, and an empty string cannot be a directory
-    # name.
-    config['paths']['heaps'] = 'defaultheap:' + config['paths']['mail']
-
-    del config['paths']['mail']
-
-    # Unify format 2
-    return unify_format_2(config)
-
-def convert_nicknames_f12_to_f3(nicknames):
-    """Converts the `nicknames` dictionary given in format 1/2 into format 3.
-
-    **Argument:**
-
-    - `nicknames` ({object: str}) -- it will be converted to {str: str}
-    """
-
-    result = {}
-    for index, nickname_setting in nicknames.items():
-        assert isinstance(nickname_setting, str)
-        [nickname, email] = nickname_setting.split(' ', 1)
-        result[email] = nickname
-    nicknames.clear()
-    nicknames.update(result)
-
-def convert_heaps_f2_to_f3(heaps_str):
-    """Converts the "paths/heaps" configuration item that is in format 2 into
-    format 3.
-
-    **Argument:**
-
-    - `heaps_str` (str)
-
-    **Returns:** {str: {str: object}}
-    """
-
-    heaps_raw = heaps_str.split(';')
-    heaps = {}
-    for heap_raw in heaps_raw:
-        try:
-            heap_id, heap_dir = heap_raw.split(':')
-            heap_id = heap_id.strip()
-            heap_dir = heap_dir.strip()
-        except ValueError:
-            raise \
-                hkutils.HkException(
-                    'Heap specification is not in heap_id:heap_dir '
-                    'format: %s' %
-                    (heap_raw,))
-        heaps[heap_id] = {}
-        heaps[heap_id]['path'] = heap_dir
-    return heaps
-
-def unify_format_2(config):
-    """Converts the configuration object in format 2 into the unified
-    configuration format.
-
-    The `config` parameter is modified and returned.
-
-    **Argument:**
-
-    - `config` (|ConfigDict|)
-
-    **Returns:** |ConfigDict|
-    """
-
-    # We convert format 2 to format 3 and call the function that unifies
-    # format 3
-
-    # Conversion to format 3
-
-    assert isinstance(config['paths']['heaps'], str)
-    assert isinstance(config['paths']['html'], str)
-
-    # paths/heaps -> heaps/HeapName
-    config['heaps'] = convert_heaps_f2_to_f3(config['paths']['heaps'])
-    del config['paths']['heaps']
-
-    # paths/html -> paths/html_dir
-    config['paths']['html_dir'] = config['paths']['html']
-    del config['paths']['html']
-
-    # nicknames/object/<nickname email> -> nicknames/<email>/<nickname>
-    nicknames = config.get('nicknames')
-    if nicknames is not None:
-        convert_nicknames_f12_to_f3(nicknames)
-        config['nicknames'] = nicknames
-
-    # Unify format 3
-    return unify_format_3(config)
 
 def unify_str_to_str_dict(dictionary):
     """Checks if a dict assigns strings to strings.
