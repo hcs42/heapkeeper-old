@@ -30,6 +30,7 @@
 .. |g| replace:: :func:`g <hkshell.g>`
 .. |HeapId| replace:: :ref:`HeapId <hklib_HeapId>`
 .. |hkbodyparser| replace:: :mod:`hkbodyparser`
+.. |hkconfig| replace:: :mod:`hkconfig`
 .. |hkcustomlib| replace:: :mod:`hkcustomlib`
 .. |hkgen| replace:: :mod:`hkgen`
 .. |hklib| replace:: :mod:`hklib`

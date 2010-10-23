@@ -33,6 +33,8 @@ the file ``<module>.py``.
     It generates HTML output from the posts on the heaps.
 :mod:`hkshell`
     The interactive interface of Heapkeeper.
+:mod:`hkconfig`
+    It reads the Heapkeeper configuration files.
 :mod:`hkbodyparser`
     It parses the body of the posts.
 :mod:`hksearch`

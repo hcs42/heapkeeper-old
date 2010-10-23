@@ -251,6 +251,7 @@ import tempfile
 import time
 
 import hkutils
+import hkconfig
 import hklib
 import hkcustomlib
 import hkgen
@@ -1704,7 +1705,7 @@ def read_postdb(configfile):
         hkutils.log('Config file not found: "%s"' % (configfile,))
         sys.exit(1)
     configdict = hkutils.configparser_to_configdict(config)
-    hklib.unify_config(configdict)
+    hkconfig.unify_config(configdict)
     postdb = hklib.PostDB()
     postdb.read_config(configdict)
 

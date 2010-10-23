@@ -1,6 +1,8 @@
 // $ dot -Tpng -o images/module_deps.png module_deps.dot
 digraph {
     hkbodyparser -> hkutils;
+    hkconfig -> hkutils;
+    hklib -> hkconfig;
     hklib -> hkbodyparser;
     hklib -> hkutils;
     hksearch -> hkutils;
@@ -11,6 +13,7 @@ digraph {
     hkcustomlib -> hkutils;
     hkcustomlib -> hklib;
     hkcustomlib -> hkgen;
+    hkshell -> hkconfig;
     hkshell -> hkutils;
     hkshell -> hklib;
     hkshell -> hksearch;
