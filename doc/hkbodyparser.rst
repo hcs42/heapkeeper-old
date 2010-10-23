@@ -6,7 +6,7 @@
 .. automodule:: hkbodyparser
 
 Classes that represent the body
-===============================
+-------------------------------
 
 .. autoclass:: Segment
 
@@ -27,7 +27,7 @@ Classes that represent the body
     .. automethod:: __str__
 
 Parser functions
-================
+----------------
 
 .. autofunction:: segment_type_is
 .. autofunction:: segment_condition

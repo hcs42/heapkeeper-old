@@ -6,7 +6,7 @@
 .. automodule:: hksearch
 
 Search
-======
+------
 
 .. autofunction:: matches
 .. autofunction:: matches_any
