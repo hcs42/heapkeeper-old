@@ -47,11 +47,6 @@ the file ``<module>.py``.
     :mod:`hkshell`).
 :mod:`issue_tracker`
     Generates HTML output that is like an issue tracker.
-:mod:`hkrc_*`
-    Initialization files of the developers. These module are not really part of
-    Heapkeeper, but are kept in the Heapkeeper repository so that developers
-    and users can learn from them, and developers can test if they break each
-    other's hkrc.
 
 The central modules are :mod:`hklib` and :mod:`hkshell`. The former contains
 the core functionality of Heapkeeper, while the latter provides the primary
