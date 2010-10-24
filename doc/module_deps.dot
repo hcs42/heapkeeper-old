@@ -5,6 +5,8 @@ digraph {
     hklib -> hkconfig;
     hklib -> hkbodyparser;
     hklib -> hkutils;
+    hkemail -> hkutils;
+    hkemail -> hklib;
     hksearch -> hkutils;
     hksearch -> hklib;
     hkgen -> hkutils;
@@ -13,7 +15,7 @@ digraph {
     hkcustomlib -> hkutils;
     hkcustomlib -> hklib;
     hkcustomlib -> hkgen;
-    hkshell -> hkconfig;
+    hkshell -> hkemail;
     hkshell -> hkutils;
     hkshell -> hklib;
     hkshell -> hksearch;

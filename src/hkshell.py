@@ -252,6 +252,7 @@ import time
 
 import hkutils
 import hkconfig
+import hkemail
 import hklib
 import hkcustomlib
 import hkgen
@@ -1438,7 +1439,8 @@ def dl(from_=0, detailed_log=False, ps=False):
     else:
         heap_id = default_heap_var
 
-    email_downloader = hklib.EmailDownloader(postdb(), options.config, heap_id)
+    email_downloader = \
+        hkemail.EmailDownloader(postdb(), options.config, heap_id)
     email_downloader.connect()
     new_posts = email_downloader.download_new(int(from_), bool(detailed_log))
     email_downloader.close()

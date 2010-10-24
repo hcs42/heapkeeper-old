@@ -43,6 +43,8 @@ the file ``<module>.py``.
     The interactive interface of Heapkeeper.
 :mod:`hkconfig`
     It reads the Heapkeeper configuration files.
+:mod:`hkemail`
+    It downloads new emails.
 :mod:`hkbodyparser`
     It parses the body of the posts.
 :mod:`hksearch`

@@ -32,6 +32,7 @@
 .. |hkbodyparser| replace:: :mod:`hkbodyparser`
 .. |hkconfig| replace:: :mod:`hkconfig`
 .. |hkcustomlib| replace:: :mod:`hkcustomlib`
+.. |hkemail| replace:: :mod:`hkemail`
 .. |hkgen| replace:: :mod:`hkgen`
 .. |hklib| replace:: :mod:`hklib`
 .. |hksearch| replace:: :mod:`hksearch`

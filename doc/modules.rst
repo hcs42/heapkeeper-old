@@ -5,6 +5,7 @@ Module documentation
 
    hkutils
    hkconfig
+   hkemail
    hklib
    hkbodyparser
    hksearch
