@@ -9,14 +9,20 @@ __ http://github.com/hcs42/heapkeeper/
 
 ``README``, ``COPYING``
     Usual files about the program.
+``.gitignore``, ``pylintrc``
+    Configuration files for :ref:`git <gitref>` and :ref:`pylint`.
 ``doc/``
     Directory for documentation files. The ``rst`` files are text files with
     wiki-like syntax, and :ref:`Sphinx <development_sphinx>` can be used to
     generate HTML or other output from them.
-``*.py``
+``external/``
+    External tools bundled with Heapkeeper (e.g. JQuery).
+``plugins/``
+    Standard Heapkeeper plugins.
+``src/*.py``
     Python source files -- Heapkeeper itself.
-``*.css``
-    CSS files for the generated HTML files.
+``static/``
+    Static files (CSS, HTML and JavaScript) for Heapkeeper's web interface.
 
 Module structure
 ----------------
@@ -31,6 +37,8 @@ the file ``<module>.py``.
     download, store, and modify posts.
 :mod:`hkgen`
     It generates HTML output from the posts on the heaps.
+:mod:`hkweb`
+    It serves the heaps as dynamic HTML output.
 :mod:`hkshell`
     The interactive interface of Heapkeeper.
 :mod:`hkconfig`
@@ -45,21 +53,14 @@ the file ``<module>.py``.
     Contains functions and classes that are useful for the parametrization of
     functions in other modules (especially functions of :mod:`hklib` and
     :mod:`hkshell`).
-:mod:`issue_tracker`
-    Generates HTML output that is like an issue tracker.
 
-The central modules are :mod:`hklib` and :mod:`hkshell`. The former contains
-the core functionality of Heapkeeper, while the latter provides the primary
-user interface. :mod:`hkgen` is also an important module, it generates HTML
-pages from the post database. The general library functions that are not
-related to the concepts of Heapkeeper are collected in :mod:`hkutils`.
-
-Heapkeeper is a very customizable tool. :mod:`hkshell` can be customized
-primarily by writing Python functions. The functions and classes of
-:mod:`hkcustomlib` help to implement these custom functions. :mod:`hkgen` can
-be customized by deriving own generator classes from the one in :mod:`hkgen`
-and overriding some of its method. The :mod:`issue_tracker` is an example of
-such a derived generator.
+The central module is :mod:`hklib`, which implements the post database.
+Heapkeeper has two user interfaces: :mod:`hkshell` provides a command-line user
+interface, while :mod:`hkweb` provides a web interface. Both use :mod:`hkgen`
+to generate HTML pages to display the post database. There are some library
+modules that perform specific tasks, like :mod:`hkconfig`, :mod:`hkemail`,
+:mod:`hkbodyparser` and :mod:`hksearch`. The general library functions that are
+not related to the concepts of Heapkeeper are collected in :mod:`hkutils`.
 
 We use unit tests to test Heapkeeper's code, using the standard ``unittest``
 module. Each module has a corresponding module that tests it.

@@ -37,6 +37,8 @@ Python_ is the interpreter that executes Heapkeeper. Heapkeeper needs Python
 
 .. _`Python`: http://www.python.org/
 
+.. _gitref:
+
 Git
 ^^^
 
