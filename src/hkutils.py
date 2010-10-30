@@ -321,7 +321,7 @@ def is_textstruct(text):
                 if not is_textstruct(item):
                     return False
             return True
-        except: # pylint: disable-msg=W0702
+        except: # pylint: disable=W0702
             return False
 
 
@@ -765,8 +765,8 @@ def call(cmd):
 ##### Constants #####
 
 class NOT_SET:
-    # "Class has no __init__ method" # pylint: disable-msg=W0232
-    # "Too few public methods" # pylint: disable-msg=R0903
+    # "Class has no __init__ method" # pylint: disable=W0232
+    # "Too few public methods" # pylint: disable=R0903
     """A totally empty class that is used only as a constant.
 
     If the value of an option is ``NOT_SET``, is represents that the option is

@@ -15,17 +15,18 @@
 # typecheck
 # variables
 
+# Disable the message(s) with the given id(s).
+disable:
 # - 'design' is turned off because I think its messages are not useful for
 #   Heapkeeper.
+    design,
 # - 'similarities' is turned off because the pylint documentation says it is
 #   very CPU intensive, and I don't see it to be useful for Heapkeeper
 #   development anyway.
+    similarities,
 # - 'typecheck' is turned off because it raises exceptions. This is a bug in
 #   pylint, see http://www.logilab.org/ticket/19641
-disable-checker=design,similarities,typecheck
-
-# Disable the message(s) with the given id(s).
-disable-msg:
+    typecheck,
 # *Invalid name "%s" (should match %s)* Used when the name doesn't match the
 # regular expression associated to its type (constant, variable, class...).
     C0103,
@@ -70,7 +71,9 @@ disable-msg:
     W0622,
 # *No exception type(s) specified* Used when an except clause doesn't specify
 # exceptions type to catch.
-    W0702
+    W0702,
+# Locally disabling xxxxx
+    I0011
 
 [MISCELLANEOUS]
 

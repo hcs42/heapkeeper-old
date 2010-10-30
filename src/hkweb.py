@@ -75,7 +75,7 @@ log = []
 
 def default_deny(realm, username, password, redirect_url):
     # Unused arguments 'password', 'realm', 'redirect_url'
-    # pylint: disable-msg=W0613
+    # pylint: disable=W0613
     hkutils.log('Access denied for user %s.' % username)
     return 'Authentication needed!'
 
@@ -96,7 +96,7 @@ def make_auth(verifier, realm="Heapkeeper",
 
     def decorator(func, *args, **keywords):
         # Unused arguments 'args', 'keywords'
-        # pylint: disable-msg=W0613
+        # pylint: disable=W0613
         def f(*args, **keywords):
             username = None
             password = None
@@ -130,7 +130,7 @@ def make_auth(verifier, realm="Heapkeeper",
     return decorator
 
 def make_minimal_verifier(correct_username, correct_password):
-    # Unused argument 'realm' # pylint: disable-msg=W0613
+    # Unused argument 'realm' # pylint: disable=W0613
     def minimal_verifier(username, password, realm):
         """A minimalistic verifier with a hardcoded user/password pair."""
 
@@ -139,7 +139,7 @@ def make_minimal_verifier(correct_username, correct_password):
     return minimal_verifier
 
 def account_verifier(username, password, realm):
-    # Unused argument 'realm' # pylint: disable-msg=W0613
+    # Unused argument 'realm' # pylint: disable=W0613
     """A verifier that uses the account list in the config file."""
 
     accounts = hkshell.options.config['accounts']
@@ -293,7 +293,7 @@ class WebGenerator(hkgen.Generator):
               (js_file,)) for js_file in self.js_files]
 
     def print_additional_header(self, post_id=None):
-        # Unused arguments 'self', 'post_id' # pylint: disable-msg=W0613
+        # Unused arguments 'self', 'post_id' # pylint: disable=W0613
         """Provided as a hook to be used by plugins.
 
         This is the method to overwrite when altering the generator to
@@ -305,7 +305,7 @@ class WebGenerator(hkgen.Generator):
         return ''
 
     def print_additional_footer(self, post_id=None):
-        # Unused arguments 'self', 'post_id' # pylint: disable-msg=W0613
+        # Unused arguments 'self', 'post_id' # pylint: disable=W0613
         """Provided as a hook to be used by plugins.
 
         See docstring of `print_additional_header` for notes on how to
@@ -876,7 +876,7 @@ class GetPostBody(AjaxServer):
         AjaxServer.__init__(self)
 
     def execute(self, post_id, args):
-        # Unused argument 'postitem' # pylint: disable-msg=W0613
+        # Unused argument 'postitem' # pylint: disable=W0613
         """Gets the post body.
 
         **Argument:**
@@ -926,7 +926,7 @@ class SetRawPost(AjaxServer):
 
         old_parent = post.parent()
 
-        # Catch "Exception" # pylint: disable-msg=W0703
+        # Catch "Exception" # pylint: disable=W0703
         try:
             post.read_str(new_post_text)
         except Exception, e:

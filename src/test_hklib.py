@@ -1876,7 +1876,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         # Testing the `yield_inner` parameter
 
         def test(root, expected_result):
-            # function already defined # pylint: disable-msg=E0102
+            # function already defined # pylint: disable=E0102
             """Tests whether the the :func:`PostDB.walk_thread` function
             returns the given result when executed with the given root."""
 

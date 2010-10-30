@@ -273,6 +273,7 @@ class Callbacks(object):
       Default value: :func:`hkcustomlib.edit_files`.
     """
 
+    # Unused arguments # pylint: disable=W0613
     def __init__(self,
                  gen_indices=hkcustomlib.gen_indices,
                  edit_files=hkcustomlib.edit_files):
@@ -304,6 +305,7 @@ class Options(object):
       ``None``, the user will be asked what to do. Default value: ``None``.
     """
 
+    # Unused arguments # pylint: disable=W0613
     def __init__(self,
                  postdb=hkutils.NOT_SET,
                  config=hkutils.NOT_SET,
@@ -440,6 +442,7 @@ class Event(object):
     - `postset` (|PostSet|) -- The postset associated with the event.
     """
 
+    # Unused arguments # pylint: disable=W0613
     def __init__(self,
                  type,
                  command=None,

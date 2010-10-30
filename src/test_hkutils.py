@@ -41,7 +41,7 @@ class Test__OptionHandling(unittest.TestCase):
 
     @staticmethod
     def f(a, b, c=1, d=2):
-        # Unused arguments # pylint: disable-msg=W0613
+        # Unused arguments # pylint: disable=W0613
         pass
 
     def test_arginfo(self):
@@ -49,7 +49,7 @@ class Test__OptionHandling(unittest.TestCase):
         """Tests :func:`hkutils.arginfo`."""
 
         def f(a, b, c=1, d=2):
-            # Unused arguments # pylint: disable-msg=W0613
+            # Unused arguments # pylint: disable=W0613
             pass
         self.assertEqual(hkutils.arginfo(f), (['a', 'b'], {'c':1, 'd':2}))
         f2 = Test__OptionHandling.f
@@ -60,7 +60,7 @@ class Test__OptionHandling(unittest.TestCase):
         """Tests :func:`hkutils.set_defaultoptions`."""
 
         def f(other1, a, b=1, c=2, other2=None):
-            # Unused arguments # pylint: disable-msg=W0613
+            # Unused arguments # pylint: disable=W0613
             pass
 
         options = {'a':0, 'b': 1}
@@ -69,13 +69,13 @@ class Test__OptionHandling(unittest.TestCase):
 
         options = {'b': 1}
         def try_():
-            # Function already defined # pylint: disable-msg=E0102
+            # Function already defined # pylint: disable=E0102
             hkutils.set_defaultoptions(options, f, ['other1', 'other2'])
         self.assertRaises(hkutils.HkException, try_)
 
         options = {'a':0, 'b': 1, 'other': 2}
         def try_():
-            # Function already defined # pylint: disable-msg=E0102
+            # Function already defined # pylint: disable=E0102
             hkutils.set_defaultoptions(options, f, ['other1', 'other2'])
         self.assertRaises(hkutils.HkException, try_)
 
@@ -84,7 +84,7 @@ class Test__OptionHandling(unittest.TestCase):
         """Tests :func:`hkutils.set_dict_items`."""
 
         class A:
-            # Class has no __init__ method # pylint: disable-msg=W0232
+            # Class has no __init__ method # pylint: disable=W0232
             pass
         a = A()
         d = {'self': 0, 'something': 1, 'notset': hkutils.NOT_SET}
@@ -92,13 +92,13 @@ class Test__OptionHandling(unittest.TestCase):
         self.assertEqual(a.something, 1)
 
         def f():
-            # Statement seems to have no effect # pylint: disable-msg=W0104
+            # Statement seems to have no effect # pylint: disable=W0104
             a.self
         self.assertRaises(AttributeError, f)
 
         def f():
-            # Function already defined # pylint: disable-msg=E0102
-            # Statement seems to have no effect # pylint: disable-msg=W0104
+            # Function already defined # pylint: disable=E0102
+            # Statement seems to have no effect # pylint: disable=W0104
             a.notset
         self.assertRaises(AttributeError, f)
 
@@ -108,6 +108,7 @@ class Test__OptionHandling(unittest.TestCase):
 
         NOT_SET = hkutils.NOT_SET
         class A(object):
+            # Unused arguments # pylint: disable=W0613
             def __init__(self, x1=NOT_SET, x2=NOT_SET, x3=0, x4=0):
                 super(A, self).__init__()
                 hkutils.set_dict_items(self, locals())

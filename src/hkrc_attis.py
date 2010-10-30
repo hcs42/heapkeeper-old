@@ -316,7 +316,7 @@ def size(post, pure=True):
         counter += len(line.decode('utf-8'))
     return counter
 
-# Usuned argument # pylint: disable-msg=W0613
+# Usuned argument # pylint: disable=W0613
 @hkshell.hkshell_cmd()
 def statcontrib(base=None):
     """Prints some statistics on contribution to the Heap."""

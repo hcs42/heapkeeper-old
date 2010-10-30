@@ -44,7 +44,7 @@ session_pos = {}
 
 
 class SendChatMessage:
-    # "Class has no __init__ method" # pylint: disable-msg=W0232
+    # "Class has no __init__ method" # pylint: disable=W0232
 
     @hkweb.auth
     def POST(self):
@@ -57,7 +57,7 @@ class SendChatMessage:
         return "Line '%s' accepted in channel '%s'." % (line, channel)
 
 class PollChatMessage:
-    # "Class has no __init__ method" # pylint: disable-msg=W0232
+    # "Class has no __init__ method" # pylint: disable=W0232
 
     @hkweb.auth
     def GET(self, session_id):
@@ -99,7 +99,7 @@ def index_new_init(self, postdb):
     self.options.cssfiles.append('plugins/chat/static/css/chat.css')
 
 def print_chat(self):
-    # Unused argument 'self' # pylint: disable-msg=W0613
+    # Unused argument 'self' # pylint: disable=W0613
     return ('<div id="chatbox">\n',
             """
                 <div id="chatmessages"></div>

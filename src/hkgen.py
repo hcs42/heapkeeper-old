@@ -811,7 +811,7 @@ class Generator(object):
 
     # TODO test
     def get_postsummary_fields_inner(self, postitem):
-        # Unused argument 'postitem' # pylint: disable-msg=W0613
+        # Unused argument 'postitem' # pylint: disable=W0613
         """Returns the fields of the post summary when the pos position is
         ``'inner'``.
 
@@ -834,7 +834,7 @@ class Generator(object):
 
     # TODO test
     def get_postsummary_fields_flat(self, postitem):
-        # Unused argument 'postitem' # pylint: disable-msg=W0613
+        # Unused argument 'postitem' # pylint: disable=W0613
         """Returns the fields of the post summary when the pos position is
         ``"flat"``.
 

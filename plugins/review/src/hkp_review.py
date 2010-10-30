@@ -110,7 +110,7 @@ class SetPostReviewed(hkweb.AjaxServer):
         hkweb.AjaxServer.__init__(self)
 
     def execute(self, post_id, args):
-        # Unused argument 'postitem' # pylint: disable-msg=W0613
+        # Unused argument 'postitem' # pylint: disable=W0613
         """Sets the post to reviewed.
 
         **Argument:**
@@ -146,7 +146,7 @@ def start(review_command_name='r'):
     def __init__(self, postdb):
 
         # __init__ method from base class 'PostPageGenerator' is not called
-        # pylint: disable-msg=W0231
+        # pylint: disable=W0231
         old_init(self, postdb)
 
         self.js_files.append('/plugins/review/static/js/hkp_review.js')

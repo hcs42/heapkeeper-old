@@ -133,7 +133,7 @@ class Test__1(unittest.TestCase):
 
         @hkshell.add_events('f_cmd1')
         def f():
-            # function already defined # pylint: disable-msg=E0102
+            # function already defined # pylint: disable=E0102
             hkshell.event(type='f_body', command='f_cmd2')
             return 1
 
@@ -227,7 +227,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
         # Redirect the output of hkshell to nowhere.
         class NullOutput():
-            # Class has no __init__ method # pylint: disable-msg=W0232
+            # Class has no __init__ method # pylint: disable=W0232
             def write(self, str):
                 pass
         hkshell.options.output = NullOutput()
@@ -336,7 +336,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
     def _test_TouchedPostPrinter(self, on, off):
 
         class MyOutput():
-            # Class has no __init__ method # pylint: disable-msg=W0232
+            # Class has no __init__ method # pylint: disable=W0232
             @staticmethod
             def write(str):
                 output_list.append(str)
@@ -468,7 +468,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         """Tests :func:`hkshell.ls`."""
 
         class MyOutput():
-            # Class has no __init__ method # pylint: disable-msg=W0232
+            # Class has no __init__ method # pylint: disable=W0232
             @staticmethod
             def write(str):
                 output_list.append(str)

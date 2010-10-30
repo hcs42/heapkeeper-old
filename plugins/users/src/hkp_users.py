@@ -42,7 +42,7 @@ def index_new_init(self, postdb):
     self.options.cssfiles.append('plugins/users/static/css/users.css')
 
 def print_userlist(self):
-    # Unused argument 'self' # pylint: disable-msg=W0613
+    # Unused argument 'self' # pylint: disable=W0613
     last_access = hkweb.last_access
     now = datetime.datetime.now()
     userlist = []

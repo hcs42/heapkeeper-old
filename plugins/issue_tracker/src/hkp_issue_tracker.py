@@ -43,7 +43,7 @@ class IssueTrackerGenerator(hk_issue_tracker.Generator, hkweb.WebGenerator):
 
     def __init__(self, postdb, heap_id):
         # "hk_issue_tracker.Generator.__init__" is not called
-        # pylint: disable-msg=W0231
+        # pylint: disable=W0231
         hkweb.WebGenerator.__init__(self, postdb)
         self._heap_id = heap_id
         static_dir = 'plugins/issue_tracker/static'
