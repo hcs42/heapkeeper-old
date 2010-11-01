@@ -157,7 +157,8 @@ class EmailDownloader(object):
                 if (content_type not in
                     ('multipart/mixed',
                      'multipart/alternative',
-                     'multipart/signed')):
+                     'multipart/signed',
+                     'multipart/related')):
                     hkutils.log('WARNING: unknown type of multipart '
                                 'message: %s\n%s' %
                                 (content_type, header + text))
