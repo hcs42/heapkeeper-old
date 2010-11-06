@@ -287,7 +287,6 @@ class WebGenerator(hkgen.BaseGenerator):
                 '</center>\n')
 
     def print_js_links(self):
-        print "x"
         return \
             [('<script type="text/javascript" src="%s"></script>\n' %
               (js_file,)) for js_file in self.js_files]
