@@ -1230,32 +1230,6 @@ class Generator(object):
                 xpostitems)
         return self.print_postitems(xpostitems)
 
-    # TODO: remove this function after releasing 0.8
-    def print_post_page(self, post):
-        """This function is deprecated.
-
-        Prints a post page.
-
-        **Argument:**
-
-        - `post` (|Post|)
-
-        **Returns:** |HtmlText|
-        """
-
-        hkutils.log("WARNING: hkgen.Generator.print_post_page is "
-                    "deprecated.")
-
-        # We create a thread structure that contains only out post.
-        threadst = {None: [post.post_id()]}
-
-        xpostitems = self.walk_thread(threadstruct=threadst)
-        xpostitems = \
-            itertools.imap(
-                self.set_postitem_attr('print_post_body'),
-                xpostitems)
-        return self.print_postitems(xpostitems)
-
     # Printing HTML headers and footers
 
     # TODO: test
@@ -1521,36 +1495,6 @@ class Generator(object):
             self.write_page(
                 filename=post.htmlthreadbasename(),
                 html_body=self.print_thread_page(post))
-
-    # TODO: remove this function after releasing 0.8
-    def write_post_pages(self, write_all=False):
-        """This function is deprecated.
-
-        Writes the post pages into ``'<heap_id>/<post_index>.html'``.
-
-        **Argument:**
-
-        - `write_all` (bool) -- If ``True``, the function writes all post
-          pages. Otherwise it writes only those whose posts are in cycles and
-          were modified.
-        """
-
-        hkutils.log("WARNING: hkgen.Generator.write_post_pages is "
-                    "deprecated.")
-
-        hkutils.log('Generating post pages...')
-
-        if write_all:
-            posts = self._postdb.roots()
-        else:
-            posts_in_cycles = self._postdb.cycles()
-            posts = self.outdated_post_pages(posts_in_cycles)
-
-        for post in posts:
-            self.options.html_title = post.subject()
-            self.write_page(
-                filename=post.htmlfilebasename(),
-                html_body=self.print_post_page(post))
 
     # TODO: test
     def write_all(self):

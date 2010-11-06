@@ -55,7 +55,6 @@ Generator
     .. automethod:: enclose_threads
     .. automethod:: print_main_index_page
     .. automethod:: print_thread_page
-    .. automethod:: print_post_page
     .. automethod:: print_html_header
     .. automethod:: print_html_footer
     .. automethod:: print_html_page
@@ -66,7 +65,6 @@ Generator
     .. automethod:: outdated_post_pages
     .. automethod:: write_main_index_page
     .. automethod:: write_thread_pages
-    .. automethod:: write_post_pages
     .. automethod:: write_all
 
 GivenPostsGenerator
