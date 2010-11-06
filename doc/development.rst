@@ -103,7 +103,7 @@ because there are some warnings we don't care about (or at least not now).
 
 Installation procedure for Unix users::
 
-    $ sudo easy_install 'pylint==0.19'
+    $ sudo easy_install 'pylint==0.21'
 
 It is recommended to use the ``hk_pylint`` wrapper (part of
 :ref:`hk-dev-utils`) to execute pylint on Heapkeeper::
