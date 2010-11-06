@@ -55,6 +55,46 @@ import hkutils
 import hklib
 
 
+##### GeneratorOptions #####
+
+class GeneratorOptions(object):
+
+    """Options that are used by |Generator|.
+
+    This class follows the :ref:`options_pattern` pattern.
+
+    **Data attributes:**
+
+    - `shortsubject` (bool) -- If ``True`, the posts that have the same subject
+      as their parent will show a dash instead of their subject. Default:
+      ``False``.
+    - `shorttags` (bool) -- If ``True``, the posts that have the same tags as
+      their parent will show a dash instead of their tags. Default: ``False``.
+    - `html_title` (str) -- The string to print as the ``<title>`` of the HTML
+      file. Default: ``'Heap index'``.
+    - `html_h1` (str) -- The string to print as the title (<h1>) of the HTML
+      file. Default: ``'Heap index'``.
+    - `cssfiles` (str) -- The name of the CSS files that should be referenced.
+    - `files_to_copy` ([str]) -- List of files that should be copied from the
+      directory of the heaps or from the current directory to the HTML
+      directory. Default: []
+    """
+
+    # Unused arguments # pylint: disable=W0613
+    def __init__(self,
+                 shortsubject=False,
+                 shorttags=False,
+                 html_title='Heap index',
+                 html_h1='Heap index',
+                 cssfiles=['../static/css/heapindex.css'],
+                 files_to_copy=['static/css/heapindex.css']):
+
+        super(GeneratorOptions, self).__init__()
+        hkutils.set_dict_items(self, locals())
+
+
+##### Main generator #####
+
 class Generator(object):
 
     """A Generator object can generate various HTML strings and files from the
@@ -84,7 +124,7 @@ class Generator(object):
 
         super(Generator, self).__init__()
         self._postdb = postdb
-        self.options = hklib.GeneratorOptions()
+        self.options = GeneratorOptions()
 
         # Here, path is relative to the to-be HTML
         self.options.cssfiles = ['../static/css/heapindex.css']
@@ -1503,6 +1543,8 @@ class Generator(object):
         self.write_main_index_page()
         self.write_thread_pages()
 
+
+##### Other generators #####
 
 class GivenPostsGenerator(Generator):
     """Creates a page that shows the given posts.

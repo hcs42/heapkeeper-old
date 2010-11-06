@@ -23,7 +23,7 @@
 .. |FeatureState| replace:: :ref:`FeatureState <hkshell_FeatureState>`
 .. |forall| replace:: :class:`forall <hklib.PostSetForallDelegate>`
 .. |Generator2| replace:: :class:`Generator <hkgen.Generator>`
-.. |GeneratorOptions| replace:: :class:`GeneratorOptions <hklib.GeneratorOptions>`
+.. |GeneratorOptions| replace:: :class:`GeneratorOptions <hkgen.GeneratorOptions>`
 .. |Generator| replace:: :class:`Generator <hklib.Generator>`
 .. |GenIndicesFun| replace:: :ref:`GenIndicesFun <hkshell_GenIndicesFun>`
 .. |gh| replace:: :func:`gh <hkshell.gh>`

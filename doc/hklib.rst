@@ -195,10 +195,3 @@ PostSet
     .. automethod:: __call__
     .. automethod:: is_root
     .. automethod:: __getattr__
-
-Generator
----------
-
-.. autoclass:: GeneratorOptions
-
-    .. automethod:: __init__

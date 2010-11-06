@@ -5,6 +5,13 @@
 
 .. automodule:: hkgen
 
+GeneratorOptions
+----------------
+
+.. autoclass:: GeneratorOptions
+
+    .. automethod:: __init__
+
 Generator
 ---------
 
