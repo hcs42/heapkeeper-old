@@ -165,8 +165,6 @@ General commands
 .. autofunction:: x()
 .. autofunction:: rl()
 .. autofunction:: g()
-.. autofunction:: gi()
-.. autofunction:: ga()
 .. autofunction:: gen_page(pps)
 .. autofunction:: opp()
 .. autofunction:: ls(pps=None, show_author=True, show_tags=False, show_date=True, indent=2)

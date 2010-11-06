@@ -1248,28 +1248,8 @@ def rl():
     postdb().reload()
 
 @hkshell_cmd(add_events=True)
-def gi():
-    """Generates the index pages.
-
-    Deprecated. Use |g| instead.
-    """
-
-    hkutils.log('WARNING: using hkshell.gi() is deprecated. Use g() instead.')
-    gen_indices()
-
-@hkshell_cmd(add_events=True)
 def g():
     """Generates the index pages."""
-    gen_indices()
-
-@hkshell_cmd(add_events=True)
-def ga():
-    """Generates the index pages.
-
-    Deprecated. Use |g| instead.
-    """
-
-    hkutils.log('WARNING: using hkshell.ga() is deprecated. Use g() instead.')
     gen_indices()
 
 @hkshell_cmd()
