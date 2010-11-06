@@ -263,12 +263,11 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
 
         call_count = [0]
 
-        def gen_indices(postdb):
+        def gen_indices():
             call_count[0] += 1
-            self.assertEqual(postdb, self._postdb)
 
         # Initializing hkshell
-        hkshell.options.callbacks.gen_indices = gen_indices
+        hkshell.gen_indices = gen_indices
         self.init_hkshell()
 
         # Before turning it on
@@ -436,6 +435,33 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEqual(self.subjects(), ['', '', '', '', ''])
         self.assertEqual(self.tags(), [[], [], [], [], []])
 
+    def test_editor_to_editor_list(self):
+
+        """Tests :func:`hkshell.editor_to_editor_list`."""
+
+        def check(input, output):
+            self.assertEqual(
+                hkshell.editor_to_editor_list(input),
+                output)
+
+        check('vim', ['vim'])
+        check('vim arg', ['vim', 'arg'])
+        check('vim arg1 arg2', ['vim', 'arg1', 'arg2'])
+        check(' vim  arg1  arg2 ', ['vim', 'arg1', 'arg2'])
+        check(r'vim long\ argument', ['vim', 'long argument'])
+        check(r'vim argument\\with\\backspace',
+              ['vim', r'argument\with\backspace'])
+
+        # Incorrect editor variables
+
+        self.assertRaises(
+            hkshell.IncorrectEditorException,
+            lambda: hkshell.editor_to_editor_list('vim\\'))
+
+        self.assertRaises(
+            hkshell.IncorrectEditorException,
+            lambda: hkshell.editor_to_editor_list('vim \\x'))
+
     def test_p(self):
         """Tests :func:`hkshell.p`."""
 
@@ -512,7 +538,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.init_hkshell()
 
         # If we edit the file, a new post is created.
-        hkshell.options.callbacks.edit_files = \
+        hkshell.edit_files = \
             lambda files: set(files) # As if everything were edited
         post = hkshell.enew(dt=0)
         self.assert_(
@@ -520,7 +546,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEqual(self.pop_log(), 'Post created.')
 
         # If we don't edit it, no new post is created.
-        hkshell.options.callbacks.edit_files = \
+        hkshell.edit_files = \
             lambda files: set() # As if nothing were edited
         post = hkshell.enew(dt=0)
         self.assertEqual(self.pop_log(), 'No change in the data base.')
@@ -539,13 +565,13 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
             return editor
 
         # Calling enew with default arguments
-        hkshell.options.callbacks.edit_files = \
+        hkshell.edit_files = \
             check_content('Author: \nSubject: \n\n\n')
         post = hkshell.enew(dt=0)
         self.assertEqual(self.pop_log(), 'Post created.')
 
         # Testing the `author` argument
-        hkshell.options.callbacks.edit_files = \
+        hkshell.edit_files = \
             check_content('Author: author\nSubject: \n\n\n')
         post = hkshell.enew(author='author', dt=0)
         self.assertEqual(self.pop_log(), 'Post created.')
@@ -555,7 +581,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         parent.set_subject('subject0')
         parent.add_tag('tag1')
         parent.add_tag('tag2')
-        hkshell.options.callbacks.edit_files = \
+        hkshell.edit_files = \
             check_content(
                 'Author: \nSubject: subject0\n'
                 'Tag: tag1\nTag: tag2\nParent: my_heap/0\n\n\n')
@@ -563,13 +589,13 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         self.assertEqual(self.pop_log(), 'Post created.')
 
         # Testing the `prefix` argument
-        hkshell.options.callbacks.edit_files = lambda files: set(files)
+        hkshell.edit_files = lambda files: set(files)
         post = hkshell.enew(prefix='myprefix', dt=0)
         self.assert_(post.post_index().startswith('myprefix'))
         self.assertEqual(self.pop_log(), 'Post created.')
 
         # Testing the `dt` argument
-        hkshell.options.callbacks.edit_files = lambda files: set(files)
+        hkshell.edit_files = lambda files: set(files)
         dt = datetime.datetime(2000, 1, 1, 20, 0, 0)
         post = hkshell.enew(prefix='myprefix', dt=dt)
         self.assertEqual(self.pop_log(), 'Post created.')

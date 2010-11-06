@@ -18,6 +18,9 @@
 
 """|hkcustomlib| is a module that can be used to customize Heapkeeper."""
 
+# TODO This module (and its test module and its documentation module) should be
+# removed after releasing v0.9.
+
 
 import os
 import subprocess
@@ -29,7 +32,9 @@ import hkgen
 ##### Generation #####
 
 def gen_indices(postdb):
-    """Generates index pages using the default options.
+    """DEPRECATED. Generates index pages using the default options.
+
+    Please use :func:`hkshell.gen_indices` instead.
 
     **Type:** |GenIndicesFun|
     """
@@ -40,7 +45,9 @@ def gen_indices(postdb):
 ##### Misc #####
 
 def default_editor():
-    """Returns the default editor of the operating system.
+    """DEPRECATED. Returns the default editor of the operating system.
+
+    Please use :func:`hkshell.default_editor` instead.
 
     On Unix systems, the default is ``vi``. On Windows, it is ``notepad``.
     On other operating systems, the function returns ``None.``
@@ -57,7 +64,10 @@ def default_editor():
 
 class IncorrectEditorException(hkutils.HkException):
 
-    """Raised when the editor variable is incorrect."""
+    """DEPRECATED. Raised when the editor variable is incorrect.
+
+    Please use :class:`hkshell.IncorrectEditorException` instead.
+    """
 
     def __init__(self, editor, message):
         """Constructor."""
@@ -67,7 +77,10 @@ class IncorrectEditorException(hkutils.HkException):
         super(IncorrectEditorException, self).__init__('Incorrect editor.')
 
 def editor_to_editor_list(editor):
-    r"""Converts an editor variable to a list of program name and arguments.
+    r"""DEPRECATED. Converts an editor variable to a list of program name and
+    arguments.
+
+    Please use :func:`hkshell.editor_to_editor_list` instead.
 
     **Argument:**
 
@@ -119,7 +132,9 @@ def editor_to_editor_list(editor):
     return editor_list
 
 def edit_files(files):
-    """Opens an editor in which the user edits the given files.
+    """DEPRECATED. Opens an editor in which the user edits the given files.
+
+    Please use :func:`hkshell.edit_files` instead.
 
     It invokes the editor program stored in the ``EDITOR`` environment
     variable. If ``EDITOR`` is undefined or empty, it invokes the default

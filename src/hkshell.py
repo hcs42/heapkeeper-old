@@ -246,23 +246,28 @@ import functools
 import optparse
 import os
 import re
+import subprocess
 import sys
 import tempfile
 import time
 
 import hkutils
+import hkcustomlib
 import hkconfig
 import hkemail
 import hklib
-import hkcustomlib
 import hkgen
 
 
 ##### Callbacks #####
 
+# TODO Remove this function after releasing 0.9.
 class Callbacks(object):
 
-    """Stores callback functions or objects that are used by |hkshell|.
+    """DEPRECATED. Stores callback functions or objects that are used by
+    |hkshell|.
+
+    Override hkshell functions instead of setting them as callbacks.
 
     The attributes are mentioned as functions, but they can be objects with
     `__call__` method, as well.
@@ -286,6 +291,7 @@ class Callbacks(object):
 
 ##### Options #####
 
+# TODO Remove the `callbacks` item after releasing 0.9.
 class Options(object):
 
     """Stores various options regarding how |hkshell| works.
@@ -296,8 +302,9 @@ class Options(object):
     - `output` (|Writable|) -- When |hkshell| wants to print something, it
       calls `output`'s write method.
       Default value: ``sys.stdout``
-    - `callbacks` (|Callbacks|) -- Callback functions to be called on various
-      occasions. Default value: the default |Callbacks| object.
+    - `callbacks` (|Callbacks|) -- DEPRECATED. Callback functions to be called
+       on various occasions. Override hkshell functions instead. Default value:
+       the default |Callbacks| object.
     - `shell_banner` (str) -- A banner that is printed when the Python shell
       starts. If ``None``, the default text is printed with the interpreter
       information.
@@ -319,7 +326,26 @@ class Options(object):
                  save_on_ctrl_d=None):
 
         super(Options, self).__init__()
-        hkutils.set_dict_items(self, locals())
+
+        # TODO after releasing 0.9, add this line and remove the following code
+        # hkutils.set_dict_items(self, locals())
+
+        # We remove the 'callbacks' data member so that __getattr__ is called
+        locals2 = locals().copy()
+        locals2['callbacks_deprecated'] = locals2['callbacks']
+        del locals2['callbacks']
+        hkutils.set_dict_items(self, locals2)
+
+    # TODO remove this function after releasing 0.9
+    def __getattr__(self, name):
+        if name == 'callbacks':
+            print ('WARNING: hkshell.Callbacks is deprecated, and '
+                    'it does not work any more. Please override '
+                    'hkshell functions instead.')
+            return self.callbacks_deprecated
+        else:
+            return object.__getattr__(self, name)
+
 
 # The functions and methods of |hkshell| read the value of specific options
 # from this object. The users of |hkshell| are allowed to change this object in
@@ -958,8 +984,10 @@ def write(s):
     options.output.write(s)
 
 def gen_indices():
-    """Generates index pages."""
-    options.callbacks.gen_indices(postdb())
+    """Generates index and thread pages."""
+
+    g = hkgen.Generator(postdb())
+    g.write_all()
 
 def tagset(tags):
     """Converts the argument to a set that contains the given tags.
@@ -980,6 +1008,142 @@ def tagset(tags):
     else:
         raise hkutils.HkException, \
               'Cannot convert object to tagset: %s' % (tags,)
+
+
+##### Editing files with a text editor #####
+
+def default_editor():
+    """Returns the default editor of the operating system.
+
+    On Unix systems, the default is ``vi``. On Windows, it is ``notepad``.
+    On other operating systems, the function returns ``None.``
+
+    **Returns:** str
+    """
+
+    if os.name == 'posix':
+        return 'vi'
+    elif os.name == 'nt':
+        return 'notepad'
+    else:
+        return None
+
+class IncorrectEditorException(hkutils.HkException):
+
+    """Raised when the editor variable is incorrect."""
+
+    def __init__(self, editor, message):
+        """Constructor."""
+        value = ('Incorrect editor variable:\n'
+                 '    %s\n'
+                 '%s' % (editor, message))
+        super(IncorrectEditorException, self).__init__('Incorrect editor.')
+
+def editor_to_editor_list(editor):
+    r"""Converts an editor variable to a list of program name and arguments.
+
+    **Argument:**
+
+    - `editor` (str)
+
+    **Returns:** [str]
+
+    **Examples:** ::
+
+        >>> editor_to_editor_list('gvim')
+        ['gvim']
+        >>> editor_to_editor_list('vim arg1 arg2')
+        ['vim', 'arg1', 'arg2']
+        >>> editor_to_editor_list('vim long\\ argument')
+        ['vim', 'long argument']
+        >>> editor_to_editor_list('vim argument\\\\with\\\\backslash')
+        ['vim', 'argument\\with\\backslash']
+    """
+
+    editor_list = []
+    current_arg = []
+    i = 0
+    while i < len(editor):
+        # If a backslash is found, the next character has to be a space or a
+        # backslash, and it should be added to the current argument.
+        if editor[i] == '\\':
+            if len(editor) <=  i + 1:
+                msg = 'Unescaped backslash should not be the final character.'
+                raise IncorrectEditorException(editor, msg)
+            i += 1
+            if editor[i] in [' ', '\\']:
+                current_arg.append(editor[i])
+            else:
+                msg = 'Unexpected character after backslash.'
+                raise IncorrectEditorException(editor, msg)
+        # If a space is found, a new argument should be started.
+        elif editor[i] == ' ':
+            if current_arg != []:
+                editor_list.append(''.join(current_arg))
+                current_arg = []
+        # Otherwise the current character has to be added to the current
+        # argument.
+        else:
+            current_arg.append(editor[i])
+        i += 1
+    if current_arg != []:
+        editor_list.append(''.join(current_arg))
+        current_arg = []
+    return editor_list
+
+def edit_files(files):
+    """Opens an editor in which the user edits the given files.
+
+    It invokes the editor program stored in the ``EDITOR`` environment
+    variable. If ``EDITOR`` is undefined or empty, it invokes the default
+    editor on the system using the :func:`default_editor` function.
+
+    **Type:** |EditFileFun|
+    """
+
+    old_content = {}
+    for file in files:
+        old_content[file] = hkutils.file_to_string(file, return_none=True)
+
+    editor = os.getenv('HEAPKEEPER_EDITOR')
+
+    # if HEAPKEEPER_EDITOR is not set, get EDITOR
+    if editor is None or editor == '':
+        editor = os.getenv('EDITOR')
+
+    # if EDITOR is not set, get the default editor
+    if editor is None or editor == '':
+        editor = default_editor()
+
+    # if not even the default is set, print an error message
+    if editor is None:
+        hkutils.log(
+           'Cannot determine the default editor based on the operating\n'
+           'system. Please set the EDITOR environment variable to the editor\n'
+           'you want to use or set hkshell.options.callback.edit_files to\n'
+           'call your editor of choice.')
+        return False
+
+    try:
+        editor = editor_to_editor_list(editor)
+    except IncorrectEditorException:
+        hkutils.log(
+            'The editor variable is incorrect:\n' +
+            editor +
+            'Please set the EDITOR environment variable to the editor\n'
+            'you want to use or set hkshell.options.callback.edit_files to\n'
+            'call your editor of choice.')
+        return False
+
+    subprocess.call(editor + files)
+
+    def did_file_change(file):
+        new_content = hkutils.file_to_string(file, return_none=True)
+        return old_content[file] != new_content
+
+    changed_files = filter(did_file_change, files)
+    return changed_files
+
 
 ##### Commands #####
 
@@ -1285,7 +1449,7 @@ def edit_posts(pps):
         # Editing the post files of given posts
         postdb().save()
         postfilenames = [ post.postfilename() for post in posts ]
-        changed_files = options.callbacks.edit_files(postfilenames)
+        changed_files = edit_files(postfilenames)
 
         # Calculating postfilename_to_post
         postfilename_to_post = {}
@@ -1392,7 +1556,7 @@ def enew(prefix='', author='', parent=None, heap_id=None, dt=None):
         post_str = post.postfile_str(force_print=set(['Author', 'Subject']))
         os.write(tmp_file_fd, post_str)
         os.close(tmp_file_fd)
-        changed_files = options.callbacks.edit_files([tmp_file_name])
+        changed_files = edit_files([tmp_file_name])
         if len(changed_files) > 0:
             post = hklib.Post.from_file(tmp_file_name)
             return add_post_to_heap(post, prefix, heap_id)

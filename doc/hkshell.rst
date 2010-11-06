@@ -139,6 +139,13 @@ Generic functionality
 .. autofunction:: gen_indices
 .. autofunction:: tagset
 
+Editing files with a text editor
+--------------------------------
+
+.. autofunction:: default_editor
+.. autofunction:: editor_to_editor_list
+.. autofunction:: edit_files
+
 .. _hkshell_commands:
 
 Commands
