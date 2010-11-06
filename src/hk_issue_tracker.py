@@ -20,27 +20,7 @@
 
 """Module for issue tracking with Heapkeeper.
 
-If you want to use it, the simplest way is to append its invocation to your
-`gen_indices` function in your hkrc::
-
-    import hkshell
-    import hkcustomlib
-
-    def gen_indices(postdb):
-
-        # Default index.html:
-        hkcustomlib.gen_indices(postdb)
-
-        # Own index pages
-        # ...
-
-        # Issue tracker
-        genopts = hklib.GeneratorOptions()
-        genopts.postdb = postdb
-        generator = hk_issue_tracker.create_generator(genopts)
-        generator.gen_indices(genopts)
-
-    hkshell.options.callbacks.gen_indices = gen_indices
+If you want to use it, the simplest way is to use the "Issue Tracker" plugin.
 """
 
 
