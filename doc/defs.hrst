@@ -16,7 +16,6 @@
 .. |ConfigItem| replace:: :ref:`ConfigItem <hkutils_ConfigItem>`
 .. |dl| replace:: :func:`dl <hkshell.dl>`
 .. |d| replace:: :func:`d <hkshell.d>`
-.. |EditFileFun| replace:: :ref:`EditFileFun <hkshell_EditFileFun>`
 .. |enew_str| replace:: :func:`enew_str <hkshell.enew_str>`
 .. |enew| replace:: :func:`enew <hkshell.enew>`
 .. |Event| replace:: :class:`Event <hkshell.Event>`
@@ -30,7 +29,6 @@
 .. |HeapId| replace:: :ref:`HeapId <hklib_HeapId>`
 .. |hkbodyparser| replace:: :mod:`hkbodyparser`
 .. |hkconfig| replace:: :mod:`hkconfig`
-.. |hkcustomlib| replace:: :mod:`hkcustomlib`
 .. |hkemail| replace:: :mod:`hkemail`
 .. |hkgen| replace:: :mod:`hkgen`
 .. |hklib| replace:: :mod:`hklib`

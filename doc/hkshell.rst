@@ -8,8 +8,6 @@
 Options
 -------
 
-.. autoclass:: Callbacks()
-
 .. autoclass:: Options()
 
     There is an :class:`Options` object called ``hkshell.options``. The

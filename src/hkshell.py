@@ -151,15 +151,6 @@ types in the documentation so we can talk about them easily.
 
   Real type: fun(|PostDB|))
 
-.. _hkshell_EditFileFun:
-
-- **EditFileFun(filename)** -- Function that opens an editor with the given
-  file. It should return ``True`` or ``False`` when the user finished editing
-  the file. If the file was changed, it should return ``True``, otherwise
-  ``False``.
-
-  Real type: fun(str), returns bool
-
 .. _hkshell_Writable:
 
 - **Writable(filename)** -- Object that has a `write(str)` method.
@@ -252,46 +243,14 @@ import tempfile
 import time
 
 import hkutils
-import hkcustomlib
 import hkconfig
 import hkemail
 import hklib
 import hkgen
 
 
-##### Callbacks #####
-
-# TODO Remove this function after releasing 0.9.
-class Callbacks(object):
-
-    """DEPRECATED. Stores callback functions or objects that are used by
-    |hkshell|.
-
-    Override hkshell functions instead of setting them as callbacks.
-
-    The attributes are mentioned as functions, but they can be objects with
-    `__call__` method, as well.
-
-    **Data attributes:**
-
-    - `gen_indices` (|GenIndicesFun|) -- Function to be used for generating
-      index pages. Default value: :func:`hkcustomlib.gen_indices`.
-    - `edit_files` (|EditFileFun|) -- Function to be used for editing posts.
-      Default value: :func:`hkcustomlib.edit_files`.
-    """
-
-    # Unused arguments # pylint: disable=W0613
-    def __init__(self,
-                 gen_indices=hkcustomlib.gen_indices,
-                 edit_files=hkcustomlib.edit_files):
-
-        super(Callbacks, self).__init__()
-        hkutils.set_dict_items(self, locals())
-
-
 ##### Options #####
 
-# TODO Remove the `callbacks` item after releasing 0.9.
 class Options(object):
 
     """Stores various options regarding how |hkshell| works.
@@ -302,9 +261,6 @@ class Options(object):
     - `output` (|Writable|) -- When |hkshell| wants to print something, it
       calls `output`'s write method.
       Default value: ``sys.stdout``
-    - `callbacks` (|Callbacks|) -- DEPRECATED. Callback functions to be called
-       on various occasions. Override hkshell functions instead. Default value:
-       the default |Callbacks| object.
     - `shell_banner` (str) -- A banner that is printed when the Python shell
       starts. If ``None``, the default text is printed with the interpreter
       information.
@@ -326,31 +282,12 @@ class Options(object):
                  save_on_ctrl_d=None):
 
         super(Options, self).__init__()
-
-        # TODO after releasing 0.9, add this line and remove the following code
-        # hkutils.set_dict_items(self, locals())
-
-        # We remove the 'callbacks' data member so that __getattr__ is called
-        locals2 = locals().copy()
-        locals2['callbacks_deprecated'] = locals2['callbacks']
-        del locals2['callbacks']
-        hkutils.set_dict_items(self, locals2)
-
-    # TODO remove this function after releasing 0.9
-    def __getattr__(self, name):
-        if name == 'callbacks':
-            print ('WARNING: hkshell.Callbacks is deprecated, and '
-                    'it does not work any more. Please override '
-                    'hkshell functions instead.')
-            return self.callbacks_deprecated
-        else:
-            return object.__getattr__(self, name)
-
+        hkutils.set_dict_items(self, locals())
 
 # The functions and methods of |hkshell| read the value of specific options
 # from this object. The users of |hkshell| are allowed to change this object in
 # order to achieve the behaviour they need.
-options = Options(callbacks=Callbacks())
+options = Options()
 
 
 ##### Commands #####
@@ -1094,11 +1031,17 @@ def editor_to_editor_list(editor):
 def edit_files(files):
     """Opens an editor in which the user edits the given files.
 
-    It invokes the editor program stored in the ``EDITOR`` environment
-    variable. If ``EDITOR`` is undefined or empty, it invokes the default
-    editor on the system using the :func:`default_editor` function.
+    It invokes the editor program stored in the ``HEAPKEEPER_EDITOR``
+    environment variable. It that is undefined or empty, it tried the
+    ``EDITOR`` environment variable. If ``EDITOR`` is undefined or empty, it
+    invokes the default editor on the system using the :func:`default_editor`
+    function. The function returns when the user finished editing the file.
 
-    **Type:** |EditFileFun|
+    **Argument:**
+
+    - `files` (str) -- The list of files to be edited.
+
+    **Returns:** bool -- Whether the file was changed or not.
     """
 
     old_content = {}

@@ -51,10 +51,6 @@ the file ``<module>.py``.
     It searches in the post database.
 :mod:`hk`
     A small module whose only task is to invoke :mod:`hkshell`.
-:mod:`hkcustomlib`
-    Contains functions and classes that are useful for the parametrization of
-    functions in other modules (especially functions of :mod:`hklib` and
-    :mod:`hkshell`).
 
 The central module is :mod:`hklib`, which implements the post database.
 Heapkeeper has two user interfaces: :mod:`hkshell` provides a command-line user
@@ -214,12 +210,8 @@ The module dependencies are shown in the following picture:
 
 Since :mod:`hkutils` contains general library functions, it does not use any
 other modules of Heapkeeper, but all the other modules may use it.
-:mod:`hkshell`, :mod:`hkgen` and :mod:`hkcustomlib` all use :mod:`hklib`, since
-:mod:`hklib` implements the data types that make the heap. :mod:`hkshell`
-uses :mod:`hkcustomlib` only for setting sensible default values for certain
-callback functions. :mod:`hkcustomlib` implements a callback function to
-generate posts that invokes :mod:`hkgen`, but sometimes :mod:`hkshell` calls
-into :mod:`hkgen` directly.
+:mod:`hkshell` and :mod:`hkgen` both use :mod:`hklib`, since
+:mod:`hklib` implements the data types that make the heap.
 
 .. _testing:
 

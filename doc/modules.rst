@@ -10,7 +10,6 @@ Module documentation
    hkbodyparser
    hksearch
    hkgen
-   hkcustomlib
    hkshell
    hkweb
    hk
