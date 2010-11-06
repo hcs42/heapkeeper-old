@@ -139,6 +139,15 @@ import hkbodyparser
 
 heapkeeper_version = '0.8+'
 
+# Checking that the user has the appropriate Python version
+major, minor, micro, releaselevel, _serial = sys.version_info
+if (major != 2 or minor < 5):
+    print ('ERROR: Heapkeeper ' + heapkeeper_version +
+           ' runs only with Python 2.x, where x >= 5.')
+    print ('The following Python version was detected: ' +
+           '%s.%s.%s %s' % (major, minor, micro, releaselevel))
+    sys.exit(0)
+
 
 ##### Post #####
 
