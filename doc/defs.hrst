@@ -7,6 +7,7 @@
 
 .. |aTr| replace:: :func:`aTr <hkshell.aTr>`
 .. |aT| replace:: :func:`aT <hkshell.aT>`
+.. |BaseGenerator| replace:: :class:`BaseGenerator <hklib.BaseGenerator>`
 .. |Body| replace:: :class:`Body <hkbodyparser.Body>`
 .. |Callbacks| replace:: :class:`Callbacks <hkshell.Callbacks>`
 .. |cat| replace:: :func:`cat <hkshell.cat>`
@@ -22,9 +23,7 @@
 .. |expf| replace:: :func:`expf <hklib.PostSet.expf>`
 .. |FeatureState| replace:: :ref:`FeatureState <hkshell_FeatureState>`
 .. |forall| replace:: :class:`forall <hklib.PostSetForallDelegate>`
-.. |Generator2| replace:: :class:`Generator <hkgen.Generator>`
 .. |GeneratorOptions| replace:: :class:`GeneratorOptions <hkgen.GeneratorOptions>`
-.. |Generator| replace:: :class:`Generator <hklib.Generator>`
 .. |GenIndicesFun| replace:: :ref:`GenIndicesFun <hkshell_GenIndicesFun>`
 .. |gh| replace:: :func:`gh <hkshell.gh>`
 .. |g| replace:: :func:`g <hkshell.g>`
@@ -77,6 +76,7 @@
 .. |sh| replace:: :func:`sh <hkshell.sh>`
 .. |sSr| replace:: :func:`sSr <hkshell.sSr>`
 .. |sS| replace:: :func:`sS <hkshell.sS>`
+.. |StaticGenerator| replace:: :class:`StaticGenerator <hklib.StaticGenerator>`
 .. |s| replace:: :func:`s <hkshell.s>`
 .. |Tag| replace:: :ref:`Tag <hkshell_Tag>`
 .. |TextStruct| replace:: :ref:`TextStruct <hkutils_TextStruct>`

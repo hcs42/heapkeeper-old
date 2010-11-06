@@ -986,7 +986,7 @@ def write(s):
 def gen_indices():
     """Generates index and thread pages."""
 
-    g = hkgen.Generator(postdb())
+    g = hkgen.StaticGenerator(postdb())
     g.write_all()
 
 def tagset(tags):

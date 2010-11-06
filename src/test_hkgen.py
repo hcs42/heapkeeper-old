@@ -38,9 +38,9 @@ import hkgen
 import test_hklib
 
 
-class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
+class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
 
-    """Tests |Generator|."""
+    """Tests |BaseGenerator|."""
 
     def setUp(self):
         """Creates a temporary working directory."""
@@ -50,8 +50,16 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         self.create_threadst()
 
         self._orig_workingdir = os.getcwd()
-        self._generator = hkgen.Generator(self._postdb)
+        self._generator = self.create_generator()
         self.create_postitems()
+
+    def create_generator(self):
+        """Returns a generator object to be used for the testing.
+
+        **Returns:** |BaseGenerator|
+        """
+
+        return hkgen.BaseGenerator(self._postdb)
 
     def tearDown(self):
         """Deletes the temporary working directory."""
@@ -61,7 +69,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def get_ouv(self):
         """Returns often used variables.
 
-        **Return:** (|PostDB|, |Generator|, function)
+        **Return:** (|PostDB|, |BaseGenerator|, function)
         """
 
         return self._postdb, self._generator, self.p
@@ -101,7 +109,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         return hkutils.file_to_string(long_filename)
 
     def test_escape(self):
-        """Tests :func:`hkgen.Generator.escape`."""
+        """Tests :func:`hkgen.BaseGenerator.escape`."""
 
         _postdb, g, _p = self.get_ouv()
 
@@ -115,7 +123,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
         test('a&b', 'a&amp;b')
 
     def test_print_link(self):
-        """Tests :func:`hkgen.Generator.link`."""
+        """Tests :func:`hkgen.BaseGenerator.link`."""
 
         postdb, g, p = self.get_ouv()
 
@@ -127,7 +135,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             '<a href="%22mylink%22">mystuff</a>')
 
     def test_enclose(self):
-        """Tests :func:`hkgen.Generator.enclose`."""
+        """Tests :func:`hkgen.BaseGenerator.enclose`."""
 
         postdb, g, p = self.get_ouv()
 
@@ -258,7 +266,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             '</div>\n')
 
     def test_section(self):
-        """Tests :func:`hkgen.Generator.section`."""
+        """Tests :func:`hkgen.BaseGenerator.section`."""
 
         postdb, g, p = self.get_ouv()
 
@@ -275,7 +283,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
              g.section_end()))
 
     def test_format_timestamp(self):
-        """Tests :func:`hkgen.Generator.format_timestamp`."""
+        """Tests :func:`hkgen.BaseGenerator.format_timestamp`."""
 
         postdb, g, p = self.get_ouv()
 
@@ -285,7 +293,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
             '(2008-08-20)')
 
     def test_print_postitem_inner(self):
-        """Tests :func:`hkgen.Generator.print_postitem_inner`."""
+        """Tests :func:`hkgen.BaseGenerator.print_postitem_inner`."""
 
         postdb, g, p = self.get_ouv()
         def enc(class_, content):
@@ -338,7 +346,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                 closing_comment=True))
 
     def test_print_postitem_flat(self):
-        """Tests :func:`hkgen.Generator.print_postitem_flat`."""
+        """Tests :func:`hkgen.BaseGenerator.print_postitem_flat`."""
 
         postdb, g, p = self.get_ouv()
         def enctd(class_, content, tag):
@@ -428,7 +436,7 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
                 newlines=True))
 
     def test_print_postitems(self):
-        """Tests :func:`hkgen.Generator.print_postitem`."""
+        """Tests :func:`hkgen.BaseGenerator.print_postitem`."""
 
         postdb, g, p = self.get_ouv()
         postitems = list(self.postitems)
@@ -439,13 +447,26 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
              g.print_postitem(postitems[2]),
              g.print_postitem(postitems[3])])
 
+
+class Test_StaticGenerator(Test_BaseGenerator):
+
+    """Tests |StaticGenerator|."""
+
+    def create_generator(self):
+        """Returns a generator object to be used for the testing.
+
+        **Returns:** |StaticGenerator|
+        """
+
+        return hkgen.StaticGenerator(self._postdb)
+
     def test_write_main_index_page(self):
         """Tests the following functions:
 
-        - :func:`hkgen.Generator.print_main_index_page`
-        - :func:`hkgen.Generator.print_html_page`
-        - :func:`hkgen.Generator.write_pages`
-        - :func:`hkgen.Generator.write_main_index_page`
+        - :func:`hkgen.StaticGenerator.print_main_index_page`
+        - :func:`hkgen.StaticGenerator.print_html_page`
+        - :func:`hkgen.StaticGenerator.write_pages`
+        - :func:`hkgen.StaticGenerator.write_main_index_page`
         """
 
         postdb, g, p = self.get_ouv()
@@ -486,8 +507,8 @@ class Test_Generator(unittest.TestCase, test_hklib.PostDBHandler):
     def test_write_thread_pages(self):
         """Tests the following functions:
 
-        - :func:`hkgen.Generator.print_thread_page`
-        - :func:`hkgen.Generator.write_thread_pages`
+        - :func:`hkgen.StaticGenerator.print_thread_page`
+        - :func:`hkgen.StaticGenerator.write_thread_pages`
         """
 
         postdb, g, p = self.get_ouv()

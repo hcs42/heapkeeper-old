@@ -43,7 +43,7 @@ Explanation
 Used in
 
    * :class:`hklib.Html`
-   * :class:`hklib.Generator`
+   * :class:`hklib.BaseGenerator`
 
 .. _lazy_data_calculation_pattern:
 

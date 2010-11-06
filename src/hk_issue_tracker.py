@@ -36,7 +36,7 @@ import hkshell
 
 ##### Index page generation #####
 
-class Generator(hkgen.Generator):
+class Generator(hkgen.StaticGenerator):
 
     def __init__(self, postdb):
         super(Generator, self).__init__(postdb)

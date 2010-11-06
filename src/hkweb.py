@@ -241,12 +241,12 @@ def get_web_args():
 
 ##### Generator classes #####
 
-class WebGenerator(hkgen.Generator):
-    """A Generator that is modified according to the needs of dynamic web page
-    generation."""
+class WebGenerator(hkgen.BaseGenerator):
+    """A WebGenerator is a BaseGenerator that is modified according to the
+    needs of dynamic web page generation."""
 
     def __init__(self, postdb):
-        hkgen.Generator.__init__(self, postdb)
+        hkgen.BaseGenerator.__init__(self, postdb)
         self.options.cssfiles.append("static/css/hkweb.css")
         self.options.favicon = '/static/images/heap.png'
         self.js_files = ['/external/jquery.js',
@@ -391,8 +391,8 @@ class PostPageGenerator(WebGenerator):
         """Returns the fields of the post summary when the pos position is
         ``"inner"``.
 
-        The function gets the usual buttons from |Generator| and adds its own
-        buttons.
+        The function gets the usual buttons from |BaseGenerator| and adds its
+        own buttons.
 
         **Argument:**
 
@@ -402,7 +402,7 @@ class PostPageGenerator(WebGenerator):
         """
 
         old_fields = \
-            hkgen.Generator.get_postsummary_fields_inner(self, postitem)
+            hkgen.BaseGenerator.get_postsummary_fields_inner(self, postitem)
         new_fields = [self.print_hkweb_summary_buttons]
         return tuple(list(old_fields) + new_fields)
 
@@ -437,7 +437,7 @@ class PostPageGenerator(WebGenerator):
         **Returns:** |HtmlText|
         """
 
-        body = hkgen.Generator.print_postitem_body(self, postitem)
+        body = hkgen.BaseGenerator.print_postitem_body(self, postitem)
 
         heap_id, post_index = postitem.post.post_id()
         post_id = heap_id + '-' + post_index

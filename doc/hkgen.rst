@@ -12,10 +12,10 @@ GeneratorOptions
 
     .. automethod:: __init__
 
-Generator
----------
+Base generator
+--------------
 
-.. autoclass:: Generator
+.. autoclass:: BaseGenerator
 
     **Methods:**
 
@@ -65,6 +65,15 @@ Generator
     .. automethod:: print_html_header
     .. automethod:: print_html_footer
     .. automethod:: print_html_page
+
+Static generator
+----------------
+
+.. autoclass:: StaticGenerator
+
+    **Methods:**
+
+    .. automethod:: __init__
     .. automethod:: settle_files_to_copy
     .. automethod:: write_page
     .. automethod:: is_file_newer
@@ -73,6 +82,12 @@ Generator
     .. automethod:: write_main_index_page
     .. automethod:: write_thread_pages
     .. automethod:: write_all
+
+.. autoclass:: Generator
+
+    **Methods:**
+
+    .. automethod:: __init__
 
 GivenPostsGenerator
 -------------------

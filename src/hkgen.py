@@ -59,7 +59,7 @@ import hklib
 
 class GeneratorOptions(object):
 
-    """Options that are used by |Generator|.
+    """Options that are used by generators.
 
     This class follows the :ref:`options_pattern` pattern.
 
@@ -95,14 +95,13 @@ class GeneratorOptions(object):
 
 ##### Main generator #####
 
-class Generator(object):
+class BaseGenerator(object):
 
-    """A Generator object can generate various HTML strings and files from the
-    post database.
+    """A BaseGenerator object can generate various HTML strings and files from
+    the post database.
 
-    Currently it can generate three kinds of HTML files: index pages, thread
-    pages and post pages, but can be modified so that it will generate other
-    kind of pages.
+    It can generate two kinds of HTML files by default: index pages and thread
+    pages.
 
     **Data attributes:**
 
@@ -122,16 +121,9 @@ class Generator(object):
         - `postdb` (|PostDB|)
         """
 
-        super(Generator, self).__init__()
+        super(BaseGenerator, self).__init__()
         self._postdb = postdb
         self.options = GeneratorOptions()
-
-        # Here, path is relative to the to-be HTML
-        self.options.cssfiles = ['../static/css/heapindex.css']
-
-        # Here it is relative to the current directory
-        self.options.files_to_copy = ['static/css/heapindex.css',
-                                      'static/images/thread.png']
 
         # html_h1 is the same as html_title by default
         self.options.html_h1 = None
@@ -254,7 +246,7 @@ class Generator(object):
 
         **Example:** ::
 
-            >>> generator = hkgen.Generator(postdb())
+            >>> generator = hkgen.BaseGenerator(postdb())
 
             >>> text = generator.enclose('mycontent', 'div', 'chapter')
             >>> print hkutils.textstruct_to_str(text)
@@ -1020,8 +1012,8 @@ class Generator(object):
         from those that are present only in the expanded post set. Those that
         are present only in the expanded set (``posts.exp() - posts``) will be
         enclosed in ``'post_inactive'`` span. Other than this, the
-        :func:`Generator.print_postitem` method will be used to print both type
-        of posts.
+        :func:`BaseGenerator.print_postitem` method will be used to print both
+        type of posts.
 
         **Argument:**
 
@@ -1341,7 +1333,32 @@ class Generator(object):
                 html_body,
                 self.print_html_footer())
 
-    # General page writer
+
+##### Other generators #####
+
+class StaticGenerator(BaseGenerator):
+
+    """A StaticGenerator object can generate static HTML pages.
+
+    It can generate two kinds of HTML files: index pages and thread pages.
+    """
+
+    def __init__(self, postdb):
+        """Constructor.
+
+        **Arguments:**
+
+        - `postdb` (|PostDB|)
+        """
+
+        BaseGenerator.__init__(self, postdb)
+
+        # Here, path is relative to the to-be HTML
+        self.options.cssfiles = ['../static/css/heapindex.css']
+
+        # Here it is relative to the current directory
+        self.options.files_to_copy = ['static/css/heapindex.css',
+                                      'static/images/thread.png']
 
     # TODO test
     def settle_files_to_copy(self):
@@ -1544,9 +1561,28 @@ class Generator(object):
         self.write_thread_pages()
 
 
-##### Other generators #####
+# TODO: remove this class after releasing 0.9
+class Generator(StaticGenerator):
 
-class GivenPostsGenerator(Generator):
+    """DEPRECATED A Generator object can generate static HTML pages.
+
+    It can generate two kinds of HTML files: index pages and thread pages.
+    """
+
+    def __init__(self, postdb):
+        """Constructor.
+
+        **Arguments:**
+
+        - `postdb` (|PostDB|)
+        """
+
+        hkutils.log('WARNING: This class (hkgen.Generator) is deprecated.\n'
+                    'Use BaseGenerator or StaticGenerator instead.')
+        StaticGenerator.__init__(self, postdb)
+
+
+class GivenPostsGenerator(StaticGenerator):
     """Creates a page that shows the given posts.
 
     The page will contain the given posts, embedded in their thread structure.
