@@ -166,37 +166,37 @@ class BaseGenerator(object):
                       hkutils.textstruct_to_str(text))
 
     # TODO: test
-    def escape_link(self, link):
-        """Escapes a link by replacing the double quotes to ``%22``.
+    def escape_url(self, url):
+        """Escapes a url by replacing the double quotes to ``%22``.
 
         **Argument:**
 
-        - `link` (|HtmlText|)
+        - `url` (|HtmlText|)
 
         **Returns:** |HtmlText|
         """
 
-        return hkutils.textstruct_to_str(link).replace('"', '%22')
+        return hkutils.textstruct_to_str(url).replace('"', '%22')
 
-    def print_link(self, link, content):
+    def print_link(self, url, content):
         """Creates a link that encloses the given content.
 
         **Arguments:**
 
-        - `link` (|TextStruct|)
+        - `url` (|TextStruct|)
         - `content` (|HtmlText|)
 
         **Returns:** |HtmlText|
 
         **Example:** ::
 
-            >>> generator.print_link('mylink', 'mystuff'),
-            '<a href="mylink">mystuff</a>'
+            >>> generator.print_link('myurl', 'mystuff'),
+            '<a href="myurl">mystuff</a>'
         """
 
         if content == '':
             return ''
-        return ('<a href="', self.escape_link(link), '">', content, '</a>')
+        return ('<a href="', self.escape_url(url), '">', content, '</a>')
 
     # TODO: test
     def print_comment(self, content):

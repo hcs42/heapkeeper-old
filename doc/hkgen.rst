@@ -21,7 +21,7 @@ Base generator
 
     .. automethod:: __init__
     .. automethod:: escape
-    .. automethod:: escape_link
+    .. automethod:: escape_url
     .. automethod:: print_link
     .. automethod:: print_comment
     .. automethod:: enclose
