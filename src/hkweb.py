@@ -36,11 +36,13 @@ hkweb can be started from the |hkshell| in the following way:
 
 
 import base64
+import datetime
 import exceptions
 import itertools
 import json
+import re
+import socket
 import sys
-import datetime
 import threading
 import web as webpy
 
@@ -964,26 +966,53 @@ class Fetch(object):
 class Server(threading.Thread):
     """Implements the hkweb server thread."""
 
-    def __init__(self, port):
+    def __init__(self, port, retries=0):
         super(Server, self).__init__()
         self.daemon = True
         self._port = port
+        self._retries = retries
 
     def run(self):
 
-        # Passing the port parameter to web.py is ugly, but the mailing list
-        # entries I have found so far suggest this, and it does the job. A
-        # wrapper around sys would be the answer, which should be done anyway
-        # to control logging (there sys.stderr should be diverted).
-        sys.argv = (None, str(self._port),)
-        webapp = webpy.application(urls, globals())
-        self.webapp = webapp
-        webapp.run()
+        first = self._port
+        last = self._port + self._retries
+        found = False
+
+        while self._port <= last:
+            # Passing the port parameter to web.py is ugly, but the mailing
+            # list entries I have found so far suggest this, and it does the
+            # job. A wrapper around sys would be the answer, which should be
+            # done anyway to control logging (there sys.stderr should be
+            # diverted).
+            sys.argv = (None, str(self._port),)
+            webapp = webpy.application(urls, globals())
+            self.webapp = webapp
+
+            try:
+                hkutils.log('Starting web service...')
+                webapp.run()
+
+                # I'm not sure this line will ever be executed
+                found = True
+
+            except socket.error, e:
+                # We don't want to catch exceptions that are not about an
+                # address already being in use
+                if re.search('Address already in use', str(e)):
+                    self._port += 1
+                else:
+                    exc_info = sys.exc_info()
+                    raise exc_info[0], exc_info[1], exc_info[2]
+
+        if not found:
+            s = ('No free port found by hkweb in the %s..%s interval' %
+                 (first, last))
+            raise hkutils.HkException(s)
 
 
 ##### Interface functions #####
 
-def start(port=8080):
+def start(port=8080, retries=0):
     """Starts the hkweb web server.
 
     **Argument:**
@@ -992,9 +1021,8 @@ def start(port=8080):
     """
 
     options = hkshell.options
-    options.web_server = Server(port)
+    options.web_server = Server(port, retries)
     options.web_server.start()
-    hkutils.log('Web service started.')
 
 def insert_urls(new_urls):
     """Inserts the given urls before the already handles URLs.
