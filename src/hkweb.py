@@ -782,9 +782,6 @@ class AjaxServer(WebpyServer):
     def __init__(self):
         WebpyServer.__init__(self)
 
-    def GET(self, name_uni):
-        return self.POST(name_uni)
-
     def POST(self, name_uni):
         # RFC4627: "The MIME media type for JSON text is application/json."
         webpy.header('Content-type','application/json')
