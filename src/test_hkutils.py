@@ -178,10 +178,10 @@ class Test__TextStruct(unittest.TestCase):
 
         """Tests :func:`hkutils.is_textstruct`."""
 
-        self.assert_(hkutils.is_textstruct(''))
-        self.assert_(hkutils.is_textstruct('text'))
-        self.assert_(hkutils.is_textstruct([]))
-        self.assert_(hkutils.is_textstruct(['text1', ('2', ['3']), '4']))
+        self.assertTrue(hkutils.is_textstruct(''))
+        self.assertTrue(hkutils.is_textstruct('text'))
+        self.assertTrue(hkutils.is_textstruct([]))
+        self.assertTrue(hkutils.is_textstruct(['text1', ('2', ['3']), '4']))
 
         # Testing something that is not a TextStruct
         self.assertFalse(hkutils.is_textstruct(0))
@@ -500,19 +500,19 @@ class Test__Misc(unittest.TestCase):
     def test_quote_shell_arg(self):
         """Tests :func:`hkutils.quote_shell_arg`."""
 
-        self.assertEquals(
+        self.assertEqual(
             hkutils.quote_shell_arg('text'),
             'text')
 
-        self.assertEquals(
+        self.assertEqual(
             hkutils.quote_shell_arg('te xt'),
             "'te xt'")
 
-        self.assertEquals(
+        self.assertEqual(
             hkutils.quote_shell_arg('te "x" t'),
             "'te \"x\" t'")
 
-        self.assertEquals(
+        self.assertEqual(
             hkutils.quote_shell_arg("te 'x' t"),
             "'te '\"'\"'x'\"'\"' t'")
 

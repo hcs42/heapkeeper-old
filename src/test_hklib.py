@@ -1351,7 +1351,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
              'new_heap': new_heap_dir})
 
         # The post was read
-        self.assert_(postdb.post('new_heap/1') != None)
+        self.assertTrue(postdb.post('new_heap/1') != None)
 
         # The html_dir was set
         self.assertEqual(postdb.html_dir(), html_dir)
@@ -1481,7 +1481,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
                  ('new_heap', '3')]))
         self.assertFalse(os.path.exists(postfile3))
         postdb.save()
-        self.assert_(os.path.exists(postfile3))
+        self.assertTrue(os.path.exists(postfile3))
 
         # Deleting a post
         self.assertEqual(set([p1, p2, p3]), set(postdb.posts()))
@@ -1555,7 +1555,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         # The subject of p1 is unchanged, x.mail is loaded
         self.assertEqual(p1.subject(), 'sub1')
-        self.assert_(postdb.post('my_heap/11') is p1)
+        self.assertTrue(postdb.post('my_heap/11') is p1)
         self.assertEqual(
             hkutils.file_to_string(p1.postfilename()),
             'Subject: sub1\n\n\n')
@@ -1567,11 +1567,11 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         postdb = self._postdb
 
         p1 = postdb.add_new_post(hklib.Post.from_str(''), 'my_heap')
-        self.assert_(postdb.post('my_heap/5') is p1)
+        self.assertTrue(postdb.post('my_heap/5') is p1)
 
         # Testing the `post_index` parameter
         p2 = postdb.add_new_post(hklib.Post.from_str(''), 'my_heap', '11')
-        self.assert_(postdb.post('my_heap/11') is p2)
+        self.assertTrue(postdb.post('my_heap/11') is p2)
 
         # Testing the `prefix` parameter
         p3 = \
@@ -1579,14 +1579,14 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
                 hklib.Post.from_str(''),
                 'my_heap',
                 prefix='my_prefix_')
-        self.assert_(postdb.post('my_heap/my_prefix_1') is p3)
+        self.assertTrue(postdb.post('my_heap/my_prefix_1') is p3)
 
         p4 = \
             postdb.add_new_post(
                 hklib.Post.from_str(''),
                 'my_heap',
                 prefix='my_prefix_')
-        self.assert_(postdb.post('my_heap/my_prefix_2') is p4)
+        self.assertTrue(postdb.post('my_heap/my_prefix_2') is p4)
 
     def test_all(self):
         """Tests the following functions:
@@ -1611,7 +1611,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
                  postdb.post('my_other_heap/0')])
         all_1 = postdb.all()
         all_2 = postdb.all()
-        self.assert_(all_1 is all_2)
+        self.assertTrue(all_1 is all_2)
         self.assertEqual(all_posts_1, all_1)
 
         # If we modify the post database, `all` should return a different
@@ -1644,7 +1644,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
              self.i(1): [self.i(2)]}
         ts1 = postdb.threadstruct()
         ts2 = postdb.threadstruct()
-        self.assert_(ts1 is ts2)
+        self.assertTrue(ts1 is ts2)
         self.assertEqual(ts1, expected_ts_1)
 
         # If we modify the post database, `threadstruct` should return a
@@ -1972,11 +1972,11 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         for child, parent in parents.items():
             postdb.post(child).set_parent(parent)
         self.assertEqual(postdb.threadstruct(), threadstruct)
-        self.assert_(postdb.cycles().is_set(cycles))
+        self.assertTrue(postdb.cycles().is_set(cycles))
         if cycles == []:
             self.assertFalse(postdb.has_cycle())
         else:
-            self.assert_(postdb.has_cycle())
+            self.assertTrue(postdb.has_cycle())
 
     def test__threadstruct_cycle_1(self):
         """Tests the following functions:
@@ -2064,7 +2064,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         roots1 = postdb.roots()
         roots2 = postdb.roots()
-        self.assert_(roots1 is roots2)
+        self.assertTrue(roots1 is roots2)
         self.assertEqual(roots1, [p(0), po(0), p(4)])
 
         # If we modify the post database, `root` should return a different
@@ -2093,7 +2093,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
 
         threads1 = postdb.threads()
         threads2 = postdb.threads()
-        self.assert_(threads1 is threads2)
+        self.assertTrue(threads1 is threads2)
         self.assertEqual(
             threads1,
             {p(0): postdb.postset([p(0), p(1), p(2), p(3)]),
@@ -2210,7 +2210,7 @@ class Test_PostDB(unittest.TestCase, PostDBHandler):
         postdb.move(p0, 'my_other_heap/moved3', placeholder=True)
 
         # Checking the placeholder post
-        self.assertEquals(
+        self.assertEqual(
             postdb.postset(postdb.real_posts()).collect.is_deleted(),
             postdb.postset('my_other_heap/moved2'))
 
@@ -2306,12 +2306,12 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         ps1 = hklib.PostSet(postdb, set())
 
         self.assertNotEquals(ps1, set())
-        self.assert_(ps1 != set())
+        self.assertTrue(ps1 != set())
         self.assertFalse(ps1 == set())
-        self.assert_(ps1.is_set(set()))
+        self.assertTrue(ps1.is_set(set()))
 
         self.assertEqual(ps1, hklib.PostSet(postdb, []))
-        self.assert_(ps1 == hklib.PostSet(postdb, []))
+        self.assertTrue(ps1 == hklib.PostSet(postdb, []))
         self.assertFalse(ps1 != hklib.PostSet(postdb, []))
 
     def test_copy(self):
@@ -2331,22 +2331,22 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         p3 = self.p(3)
 
         ps1 = ps_all.copy()
-        self.assert_(ps1 == ps_all)
+        self.assertTrue(ps1 == ps_all)
         self.assertFalse(ps1 != ps_all)
         self.assertFalse(ps1 is ps_all)
 
         ps1.remove(p1)
         self.assertFalse(ps1 == ps_all)
-        self.assert_(ps1 != ps_all)
+        self.assertTrue(ps1 != ps_all)
 
-        self.assert_(ps_all.is_set(set([p1, p2, p3])))
-        self.assert_(ps1.is_set(set([p2, p3])))
-        self.assert_(ps_all._postdb is ps1._postdb)
+        self.assertTrue(ps_all.is_set(set([p1, p2, p3])))
+        self.assertTrue(ps1.is_set(set([p2, p3])))
+        self.assertTrue(ps_all._postdb is ps1._postdb)
 
         ps2 = ps_all.empty_clone()
-        self.assert_(ps_all.is_set(set([p1, p2, p3])))
-        self.assert_(ps2.is_set(set([])))
-        self.assert_(ps_all._postdb is ps2._postdb)
+        self.assertTrue(ps_all.is_set(set([p1, p2, p3])))
+        self.assertTrue(ps2.is_set(set([])))
+        self.assertTrue(ps_all._postdb is ps2._postdb)
 
     def test__1(self):
         """Tests the following functions:
@@ -2424,9 +2424,9 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
 
         ## Testing `__eq__` and `__ne__`
 
-        self.assert_(ps1 != ps2)
-        self.assert_(ps2 == ps3)
-        self.assert_(ps2 == ps4)
+        self.assertTrue(ps1 != ps2)
+        self.assertTrue(ps2 == ps3)
+        self.assertTrue(ps2 == ps4)
 
         self.assertFalse(ps1 == ps2)
         self.assertFalse(ps2 != ps3)
@@ -2434,11 +2434,11 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
 
         ## Testing `is_set`
 
-        self.assert_(ps0.is_set(set([p1])))
-        self.assert_(ps0.is_set([p1]))
-        self.assert_(ps0.is_set(p1))
-        self.assert_(ps1.is_set([p1, p2]))
-        self.assert_(ps2.is_set(ps3))
+        self.assertTrue(ps0.is_set(set([p1])))
+        self.assertTrue(ps0.is_set([p1]))
+        self.assertTrue(ps0.is_set(p1))
+        self.assertTrue(ps1.is_set([p1, p2]))
+        self.assertTrue(ps2.is_set(ps3))
 
         # If the argument of `is_set` is a tuple, it is assumed to be a post id
         self.assertRaises(
@@ -2455,7 +2455,7 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         ps3l = [p2, p3]
 
         def test(postset, s):
-            self.assert_(postset.is_set(s))
+            self.assertTrue(postset.is_set(s))
 
         # &, intersection
 
@@ -2550,9 +2550,9 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         ## Testing `clear` and `update`
 
         ps1.clear()
-        self.assert_(ps1.is_set([]))
+        self.assertTrue(ps1.is_set([]))
         ps1.update(set([p1, p2]))
-        self.assert_(ps1.is_set([p1, p2]))
+        self.assertTrue(ps1.is_set([p1, p2]))
 
     def test_get_attr(self):
         """Tests :func:`hklib.PostSet.__get_attr__`."""
@@ -2610,20 +2610,20 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
         p3.set_tags(['t1'])
 
         ps1 = postdb.all().collect.has_tag('t1')
-        self.assert_(ps1.is_set([p1, p3]))
+        self.assertTrue(ps1.is_set([p1, p3]))
         ps2 = postdb.all().collect(lambda p: False)
-        self.assert_(ps2.is_set([]))
+        self.assertTrue(ps2.is_set([]))
         ps3 = postdb.all().collect(lambda p: True)
-        self.assert_(ps3.is_set([p(0), p(1), p(2), p(3), p(4), po(0)]))
+        self.assertTrue(ps3.is_set([p(0), p(1), p(2), p(3), p(4), po(0)]))
         ps4 = postdb.all().collect(lambda p: p.has_tag('t1'))
-        self.assert_(ps4.is_set([p1, p3]))
+        self.assertTrue(ps4.is_set([p1, p3]))
 
         self.assertRaises(
             AssertionError,
             lambda: postdb.all().collect(lambda p: None))
 
         ps_roots = postdb.all().collect.is_root()
-        self.assert_(ps_roots.is_set([p(0), po(0), p(4)]))
+        self.assertTrue(ps_roots.is_set([p(0), po(0), p(4)]))
 
     def _test_exp(self, methodname):
         """Tests the PostSet's method that has the given name.
@@ -2657,10 +2657,10 @@ class Test_PostSet(unittest.TestCase, PostDBHandler):
             ps = hklib.PostSet(self._postdb, posts_1)
 
             # Testing that the real output is the expected output.
-            self.assert_(eval('ps.' + methodname + '()').is_set(posts_2))
+            self.assertTrue(eval('ps.' + methodname + '()').is_set(posts_2))
 
             # Testing that the exp() method did not change ps
-            self.assert_(ps.is_set(posts_1))
+            self.assertTrue(ps.is_set(posts_1))
 
         return test_exp_2
 

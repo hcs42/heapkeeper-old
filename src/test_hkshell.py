@@ -182,20 +182,20 @@ class Test__2(unittest.TestCase, test_hklib.PostDBHandler):
         hkshell.append_listener(mod_listener)
 
         # Using the listener
-        self.assert_(mod_listener.touched_posts().is_set([]))
+        self.assertTrue(mod_listener.touched_posts().is_set([]))
         my_cmd(lambda: None)
-        self.assert_(mod_listener.touched_posts().is_set([]))
+        self.assertTrue(mod_listener.touched_posts().is_set([]))
         my_cmd(lambda: p(0).set_subject("other"))
-        self.assert_(mod_listener.touched_posts().is_set([p(0)]))
+        self.assertTrue(mod_listener.touched_posts().is_set([p(0)]))
         my_cmd(lambda: p(1).set_subject("other"))
         my_cmd(lambda: p(2).set_subject("other"))
-        self.assert_(mod_listener.touched_posts().is_set([p(2)]))
+        self.assertTrue(mod_listener.touched_posts().is_set([p(2)]))
 
         def f():
             p(0).set_subject("other2")
             p(1).set_subject("other2")
         my_cmd(f)
-        self.assert_(mod_listener.touched_posts().is_set([p(0), p(1)]))
+        self.assertTrue(mod_listener.touched_posts().is_set([p(0), p(1)]))
 
         # Removing the listener
         hkshell.remove_listener(mod_listener)
@@ -541,7 +541,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         hkshell.edit_files = \
             lambda files: set(files) # As if everything were edited
         post = hkshell.enew(dt=0)
-        self.assert_(
+        self.assertTrue(
             hkshell.modification_listener.touched_posts().is_set([post]))
         self.assertEqual(self.pop_log(), 'Post created.')
 
@@ -551,7 +551,8 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         post = hkshell.enew(dt=0)
         self.assertEqual(self.pop_log(), 'No change in the data base.')
         self.assertEqual(post, None)
-        self.assert_(hkshell.modification_listener.touched_posts().is_set([]))
+        self.assertTrue(
+            hkshell.modification_listener.touched_posts().is_set([]))
 
         def check_content(expected_content):
             """Returns an editor which (instead of editing the file) checks
@@ -591,7 +592,7 @@ class Test__3(unittest.TestCase, test_hklib.PostDBHandler):
         # Testing the `prefix` argument
         hkshell.edit_files = lambda files: set(files)
         post = hkshell.enew(prefix='myprefix', dt=0)
-        self.assert_(post.post_index().startswith('myprefix'))
+        self.assertTrue(post.post_index().startswith('myprefix'))
         self.assertEqual(self.pop_log(), 'Post created.')
 
         # Testing the `dt` argument
