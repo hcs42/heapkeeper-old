@@ -38,11 +38,11 @@ class Segment(object):
     - `'is_meta'` (bool) -- Whether the text is meta text or not. (Meta text is
       text written between brackets)
     - `text` (str) -- The (unaltered) text of the segment.
-    - `key` (str | ``None``) -- If the segment is a meta text, this is the
-      meta key. Otherwise it is ``None``.
-    - `value` (str | ``None``) -- If the segment is a meta text, this is the
-      meta value. If the segment is a heap link, this is the id of the post.
-      Otherwise it is ``None``.
+    - `key` (str | ``None``) -- If the segment is the first segment of a meta
+      text, this is the meta key. Otherwise it is ``None``.
+    - `value` (str | ``None``) -- If the segment is the first segment of a meta
+      text, this is the meta value. If the segment is a heap link, this is the
+      id of the post. Otherwise it is ``None``.
     - `protocol` (str | ``None``) -- If the segment is a link, this is its
       protocol. Otherwise it is ``None.``
     """
