@@ -114,6 +114,7 @@ def date_match(target_type, post, pattern):
 target_types = \
     {'whole': whole_target_matches,
      'heap': lambda post, pattern: matches(pattern, post.heap_id()),
+     'postid': lambda post, pattern: matches(pattern, post.post_id_str()),
      'author': lambda post, pattern: matches(pattern, post.author()),
      'subject': lambda post, pattern: matches(pattern, post.subject()),
      'tag': lambda post, pattern: matches_any(pattern, post.tags()),
