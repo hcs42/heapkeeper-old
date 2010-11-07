@@ -123,7 +123,7 @@ class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
         test('a&b', 'a&amp;b')
 
     def test_print_link(self):
-        """Tests :func:`hkgen.BaseGenerator.link`."""
+        """Tests :func:`hkgen.BaseGenerator.print_link`."""
 
         postdb, g, p = self.get_ouv()
 
