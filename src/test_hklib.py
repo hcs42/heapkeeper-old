@@ -721,7 +721,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         # meta without value
         self.assertEqual(
             hklib.Post.from_str('\n\n[key]').meta_dict(),
-            {'key': None})
+            {'key': ''})
 
         # no meta because it is no alone in the line
         self.assertEqual(
@@ -742,7 +742,7 @@ class Test_Post(unittest.TestCase, PostDBHandler):
         # two metas
         self.assertEqual(
             hklib.Post.from_str('\n\n[key]\n[key2 value2]').meta_dict(),
-            {'key': None, 'key2': 'value2'})
+            {'key': '', 'key2': 'value2'})
 
         # same meta key twice
         self.assertEqual(

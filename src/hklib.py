@@ -948,14 +948,10 @@ class Post(object):
 
         if self._meta_dict is None:
             self._meta_dict = {}
-            for line in self.body().split('\n'):
-                match = re.match(r'\[ *([^ ]*)( (.*))?\]$', line)
-                if match:
-                    key = match.group(1).strip()
-                    value = match.group(3)
-                    if value is not None:
-                        value = value.strip()
-                    self._meta_dict[key] = value
+            body_object = self.body_object()
+            for segment in body_object.segments:
+                if segment.is_meta and segment.key is not None:
+                    self._meta_dict[segment.key] = segment.value
 
     # body object
     def body_object(self):
