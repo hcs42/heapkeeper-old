@@ -70,8 +70,6 @@ urls = [
     r'/search.*', 'Search',
     ]
 
-log = []
-
 
 ##### HTTP basic authentication #####
 
