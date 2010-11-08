@@ -32,6 +32,9 @@ hkweb can be started from the |hkshell| in the following way:
 
 |hkweb| is executed in a separate daemon thread. When |hkshell| is closed, the
 |hkweb| thread is automatically stopped.
+
+Currently only one hkweb instance can execute well at a time, because we have
+some global variables.
 """
 
 
@@ -55,6 +58,7 @@ import hkshell
 
 ##### Global variables #####
 
+# Stores which URL is served by which server
 urls = [
     r'/', 'Index',
     r'/(external/[A-Za-z0-9_./-]+)', 'Fetch',
@@ -79,16 +83,17 @@ def default_deny(realm, username, password, redirect_url):
     hkutils.log('Access denied for user %s.' % username)
     return 'Authentication needed!'
 
-def make_auth(verifier, realm="Heapkeeper",
-              deny=default_deny, redirect_url="/"):
-    """Creates a decorator that allows the decorated function to run
-    only after a successful HTTP basic authentication. The
-    authentication is performed by a supplied verifier function.
+def make_auth(verifier, realm="Heapkeeper", deny=default_deny,
+              redirect_url="/"):
+    """Creates a decorator that allows the decorated function to run only after
+    a successful HTTP basic authentication.
+
+    The authentication is performed by a supplied verifier function.
 
     **Arguments:**
 
-    - `verifier` (fun(str, str, str)) -- Verifies if the
-      authentication is valid and returns the result as bool.
+    - `verifier` (fun(str, str, str)) -- Verifies if the authentication is
+      valid and returns the result as bool.
     - `realm` (str) -- The user will see this in the login box.
     - `deny` (fun(str, str, str, str)) -- Function called on failure.
     - `redirect_url` (str) -- Unsuccessful auth throws the user here.
@@ -130,9 +135,28 @@ def make_auth(verifier, realm="Heapkeeper",
     return decorator
 
 def make_minimal_verifier(correct_username, correct_password):
+    """Returns a minimalistic username/password verifier.
+
+    **Arguments:**
+
+    - `correct_username` (str)
+    - `correct_password` (str)
+
+    **Returns:** fun(str, str, str) -> bool
+    """
+
     # Unused argument 'realm' # pylint: disable=W0613
     def minimal_verifier(username, password, realm):
-        """A minimalistic verifier with a hardcoded user/password pair."""
+        """A minimalistic verifier with a hardcoded user/password pair.
+
+        **Arguments:**
+
+        - `username` (str)
+        - `password` (str)
+        - `realm` (str)
+
+        **Returns:** bool
+        """
 
         return (username == correct_username and
                 password == correct_password)
@@ -140,7 +164,17 @@ def make_minimal_verifier(correct_username, correct_password):
 
 def account_verifier(username, password, realm):
     # Unused argument 'realm' # pylint: disable=W0613
-    """A verifier that uses the account list in the config file."""
+    """A verifier that uses the account list in the config file.
+
+    **Arguments:**
+
+    - `username` (str)
+    - `password` (str)
+    - `realm` (str)
+
+    **Returns:** bool
+    """
+
 
     accounts = hkshell.options.config['accounts']
     if username in accounts:
@@ -149,19 +183,18 @@ def account_verifier(username, password, realm):
     return False
 
 def enable_authentication(username=None, password=None):
-    """Enables authentication with single or account-based
-    username/password pair.
+    """Enables authentication with single username/password pair or
+    account-based pairs.
 
-    If username is omitted, authentication will be based on account
-    data specified in the config file. If both username and password
-    are specified, these will be the only acceptable username/password
-    pair. If password is omitted, it will be the same as the username
-    (not recommended).
+    If username is omitted, authentication will be based on account data
+    specified in the config file. If both username and password are specified,
+    these will be the only acceptable username/password pair. If password is
+    omitted, it will be the same as the username (not recommended).
 
     **Argument:**
 
-    - `username` (str)
-    - `password` (str)
+    - `username` (str | ``None``)
+    - `password` (str | ``None``)
     """
 
     global auth
@@ -174,14 +207,19 @@ def enable_authentication(username=None, password=None):
 
 # By default, auth is an identity decorator, that is, authentication
 # is disabled. Enable it using `hkweb.enable_authentication()`.
-
 auth = lambda f: f
 
 # This dict keeps track of the time of the last access by users.
 last_access = {}
 
 def add_auth(server, auth_decorator):
-    """Add authentication to a web.py server class."""
+    """Add authentication to a web.py server class.
+
+    **Arguments:**
+
+    - `server` (:class:`WebpyServer`)
+    - `auth_decorator` ()
+    """
 
     server._postdb = hkshell.postdb()
     server.original_GET = getattr(server, 'GET', None)
@@ -190,20 +228,6 @@ def add_auth(server, auth_decorator):
         server.GET = auth_decorator(server.original_GET)
     if server.original_POST:
         server.POST = auth_decorator(server.original_POST)
-
-def last():
-    """Display the time of the last access in a conveniently
-    interpretable ("human-readable") format."""
-
-    access_datetimes = last_access.values()
-    if len(access_datetimes) == 0:
-        hkutils.log("Access list is empty.")
-        return
-    access_datetimes.sort()
-    last_datetime = access_datetimes[-1]
-    now_datetime = datetime.datetime.now()
-    last_str = hkutils.humanize_timedelta(now_datetime - last_datetime)
-    hkutils.log("Last access was %s ago." % (last_str,))
 
 
 ##### Utility functions #####
@@ -238,14 +262,36 @@ def get_web_args():
                       '%s' % (key, value))
     return result
 
+def last():
+    """Display the time of the last access in a conveniently interpretable
+    ("human-readable") format."""
+
+    access_datetimes = last_access.values()
+    if len(access_datetimes) == 0:
+        hkutils.log("Access list is empty.")
+        return
+    access_datetimes.sort()
+    last_datetime = access_datetimes[-1]
+    now_datetime = datetime.datetime.now()
+    last_str = hkutils.humanize_timedelta(now_datetime - last_datetime)
+    hkutils.log("Last access was %s ago." % (last_str,))
+
 
 ##### Generator classes #####
 
 class WebGenerator(hkgen.BaseGenerator):
-    """A WebGenerator is a BaseGenerator that is modified according to the
+
+    """A WebGenerator is a |BaseGenerator| that is modified according to the
     needs of dynamic web page generation."""
 
     def __init__(self, postdb):
+        """Constructor.
+
+        **Argument:**
+
+        - `postdb` (|PostDB|)
+        """
+
         hkgen.BaseGenerator.__init__(self, postdb)
         self.options.cssfiles.append("static/css/hkweb.css")
         self.options.favicon = '/static/images/heap.png'
@@ -255,6 +301,8 @@ class WebGenerator(hkgen.BaseGenerator):
 
     def print_html_head_content(self):
         """Prints the content in the HTML header.
+
+        It links the CSS files and the favicon.
 
         **Returns:** |HtmlText|
         """
@@ -270,11 +318,23 @@ class WebGenerator(hkgen.BaseGenerator):
         return (stylesheets, favicon)
 
     def print_postitem_link(self, postitem):
-        """Prints the thread link of the post item in hkweb-compatible form."""
+        """Prints the thread link of the post item.
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |HtmlText|
+        """
 
         return ('/posts/', postitem.post.post_id_str())
 
     def print_searchbar(self):
+        """Prints a search bar.
+
+        **Returns:** |HtmlText|
+        """
+
         return ('<center>\n'
                 '<div class="searchbar-container">\n'
                 '  <form id="searchbar-container-form" action="/search"'
@@ -287,6 +347,12 @@ class WebGenerator(hkgen.BaseGenerator):
                 '</center>\n')
 
     def print_js_links(self):
+        """Prints links to the JavaScript files that should be included in the
+        page.
+
+        **Returns:** |HtmlText|
+        """
+
         return \
             [('<script type="text/javascript" src="%s"></script>\n' %
               (js_file,)) for js_file in self.js_files]
@@ -299,6 +365,13 @@ class WebGenerator(hkgen.BaseGenerator):
         add something before the main content of the page. Always call
         the original function when overwriting this function to
         preserve the functionality of any previously started plugins.
+
+        **Arguments:**
+
+        - `post_id` (|PostId| | ``None``) -- The post id of the post whose page
+          is being printed.
+
+        **Returns:** |HtmlText|
         """
 
         return ''
@@ -309,18 +382,39 @@ class WebGenerator(hkgen.BaseGenerator):
 
         See docstring of `print_additional_header` for notes on how to
         use this.
+
+        **Arguments:**
+
+        - `post_id` (|PostId| | ``None``) -- The post id of the post whose page
+          is being printed.
+
+        **Returns:** |HtmlText|
         """
 
         return ''
 
 
 class IndexGenerator(WebGenerator):
-    """Generator that generates the index page."""
+
+    """Generator that generates the index page, which contains all posts of
+    all heaps in one section."""
 
     def __init__(self, postdb):
+        """Constructor.
+
+        **Argument:**
+
+        - `postdb` (|PostDB|)
+        """
+
         WebGenerator.__init__(self, postdb)
 
     def print_main(self):
+        """Prints the main part of the page.
+
+        **Returns:** |HtmlText|
+        """
+
         return (self.print_searchbar(),
                 self.print_additional_header(),
                 self.print_main_index_page(),
@@ -329,6 +423,7 @@ class IndexGenerator(WebGenerator):
 
 
 class PostPageGenerator(WebGenerator):
+
     """Generator that generates post pages.
 
     The generated post pages show the thread of the post. With the help of
@@ -336,9 +431,34 @@ class PostPageGenerator(WebGenerator):
     """
 
     def __init__(self, postdb):
+        """Constructor.
+
+        **Argument:**
+
+        - `postdb` (|PostDB|)
+        """
+
         WebGenerator.__init__(self, postdb)
 
     def set_post_id(self, post_id):
+        """Sets the post id of the post that is being printed.
+
+        The function will refuse the set the post id if the post does not
+        exists, is deleted or is in a cycle.
+
+        The function adds JavaScript code to
+        ``self.options.html_body_attributes`` so that the browser will scroll
+        to the post with the given id.
+
+        **Argument:**
+
+        - `post_id` (|PrePostId|) -- The id
+
+        **Returns:** ``None`` | str -- If ``None``, the operation was
+        successful; otherwise the return value is a string that contains the
+        error message.
+        """
+
         post = self._postdb.post(post_id)
         if post is None:
             return 'No such post: "%s"' % (post_id,)
@@ -358,6 +478,15 @@ class PostPageGenerator(WebGenerator):
         self._post = post
 
     def print_post_page(self, post_id):
+        """Prints the post page of the given post.
+
+        **Argument:**
+
+        - `post_id` (|PrePostId|)
+
+        **Returns:** |HtmlText|
+        """
+
         result = self.set_post_id(post_id)
         if result is not None:
             return result
@@ -387,7 +516,7 @@ class PostPageGenerator(WebGenerator):
                 self.print_thread_page(self._root))
 
     def get_postsummary_fields_inner(self, postitem):
-        """Returns the fields of the post summary when the pos position is
+        """Returns the fields of the post summary when the position is
         ``"inner"``.
 
         The function gets the usual buttons from |BaseGenerator| and adds its
@@ -406,11 +535,12 @@ class PostPageGenerator(WebGenerator):
         return tuple(list(old_fields) + new_fields)
 
     def print_hkweb_summary_buttons(self, postitem):
-        """Prints the post id of the post item.
+        """Prints the buttons of a post summary.
 
         **Argument:**
 
-        - `postitem` (|PostItem|)
+        - `postitem` (|PostItem|) -- The post item to which the summary
+          belongs.
 
         **Returns:** |HtmlText|
         """
@@ -427,7 +557,7 @@ class PostPageGenerator(WebGenerator):
                  attributes=' style="display: none;"'))
 
     def print_postitem_body(self, postitem):
-        """Prints the body the post item.
+        """Prints the body of the post item.
 
         **Argument:**
 
@@ -481,6 +611,15 @@ class PostPageGenerator(WebGenerator):
                    id='post-body-container-' + post_id)
 
     def print_main(self, postid):
+        """Prints the main part of the page.
+
+        **Argument:**
+
+        - `postid` (|PostId|)
+
+        **Returns:** |HtmlText|
+        """
+
         return (self.print_searchbar(),
                 self.print_additional_header(postid),
                 self.print_post_page(postid),
@@ -490,7 +629,17 @@ class PostPageGenerator(WebGenerator):
 
 class SearchPageGenerator(PostPageGenerator):
 
+    """Generator that implements a search page."""
+
     def __init__(self, postdb, preposts):
+        """Constructor.
+
+        **Arguments:**
+
+        - `postdb` (|PostDB|)
+        - `preposts` (|PrePostId|)
+        """
+
         PostPageGenerator.__init__(self, postdb)
         self.posts = postdb.postset(preposts)
         self.options.html_title = 'Search page'
@@ -546,10 +695,27 @@ class SearchPageGenerator(PostPageGenerator):
 
 class PostBodyGenerator(WebGenerator):
 
+    """Generates the body of a given post."""
+
     def __init__(self, postdb):
+        """Constructor.
+
+        **Argument:**
+
+        - `postdb` (|PostDB|)
+        """
+
         WebGenerator.__init__(self, postdb)
 
     def print_post_body(self, post_id):
+        """Prints the body of a given post.
+
+        **Argument:**
+
+        - `post_id` (|PrePostId|)
+
+        **Returns:** |HtmlText|
+        """
 
         post = self._postdb.post(post_id)
         if post is None:
@@ -565,25 +731,33 @@ class PostBodyGenerator(WebGenerator):
 
 
 class WebpyServer(object):
+
     """Base class for webservers."""
 
     def __init__(self):
+        """Constructor."""
+
         add_auth(self, auth)
         self._postdb = hkshell.postdb()
 
 class HkPageServer(WebpyServer):
+
     """Base class for webservers that serve a "usual" HTML page that is
     generated by a Heapkeeper generator."""
 
     def __init__(self):
+        """Constructor."""
+
         WebpyServer.__init__(self)
 
     def serve_html(self, content, generator):
-        """Creates a HTML page that contains the given content.
+        """Serves a HTML page that contains the given content.
 
         **Argument:**
 
         - `content` (|HtmlText|)
+        - `generator` (|BaseGenerator|) -- Generator to be used for generating
+           the HTML headers and footers.
 
         **Returns:** str
         """
@@ -595,26 +769,44 @@ class HkPageServer(WebpyServer):
 
 
 class Index(HkPageServer):
-    """Serves the index page that shows all posts."""
+
+    """Serves the index page that shows all posts.
+
+    Served URL: ``/``
+    """
 
     def __init__(self):
+        """Constructor."""
         HkPageServer.__init__(self)
 
     def GET(self):
+        """Serves a HTTP GET request.
+
+        **Returns:** str
+        """
+
         generator = IndexGenerator(self._postdb)
         content = generator.print_main()
         return self.serve_html(content, generator)
 
 
 class Post(HkPageServer):
+
     """Serves the post pages.
 
-    Served URL: ``/post/<heap>/<post index>``"""
+    Served URL: ``/post/<heap>/<post index>``
+    """
 
     def __init__(self):
+        """Constructor."""
         HkPageServer.__init__(self)
 
     def GET(self, name):
+        """Serves a HTTP GET request.
+
+        **Returns:** str
+        """
+
         post_id = hkutils.uutf8(name)
         generator = PostPageGenerator(self._postdb)
         content = generator.print_main(post_id)
@@ -622,14 +814,21 @@ class Post(HkPageServer):
 
 
 class Search(HkPageServer):
+
     """Serves the search pages.
 
-    Served URL: ``/search``"""
+    Served URL: ``/search``
+    """
 
     def __init__(self):
+        """Constructor."""
         HkPageServer.__init__(self)
 
     def main(self):
+        """Serves a HTTP GET or POST request.
+
+        **Returns:** str
+        """
 
         try:
             args = get_web_args()
@@ -692,6 +891,15 @@ class Search(HkPageServer):
         return self.serve_html(content, generator)
 
     def get_posts(self, args):
+        """Gets the post to be displayed.
+
+        If the ``posts`` query parameter is specified, the posts described in
+        that will be returned. If the ``term`` query parameter is specified,
+        the result of that query will be returned. Otherwise ``None`` will be
+        returned.
+
+        **Returns:** |PostSet| | ``None``
+        """
 
         posts = args.get('posts')
         if posts is not None:
@@ -704,21 +912,44 @@ class Search(HkPageServer):
         return None # only the search bar will be shown
 
     def GET(self):
+        """Serves a HTTP GET request.
+
+        **Returns:** str
+        """
+
         return self.main()
 
     def POST(self):
+        """Serves a HTTP POST request.
+
+        **Returns:** str
+        """
+
         return self.main()
 
 
-class ShowJSon(HkPageServer):
-    """Serves the search pages.
+##### Helper servers ######
 
-    Served URL: ``/showjson``"""
+class ShowJSon(HkPageServer):
+
+    """Serves a page that displays the JSON parameters given to that page.
+
+    Intended only for developers.
+
+    Served URL: ``/showjson``
+    """
 
     def __init__(self):
+        """Constructor."""
+
         HkPageServer.__init__(self)
 
     def GET(self):
+        """Serves a HTTP GET request.
+
+        **Returns:** str
+        """
+
         input = webpy.input()
         try:
             args = get_web_args()
@@ -730,18 +961,31 @@ class ShowJSon(HkPageServer):
         return self.serve_html(content, generator)
 
     def POST(self):
+        """Serves a HTTP POST request.
+
+        **Returns:** str
+        """
+
         return self.GET()
 
 
 class RawPostBody(WebpyServer):
+
     """Serves raw post bodies.
 
-    Served URL: ``/raw-post-bodies/<heap>/<post index>``"""
+    Served URL: ``/raw-post-bodies/<heap>/<post index>``
+    """
 
     def __init__(self):
+        """Constructor."""
         WebpyServer.__init__(self)
 
     def GET(self, name):
+        """Serves a HTTP GET request.
+
+        **Returns:** str
+        """
+
         webpy.header('Content-type', 'text/plain')
         webpy.header('Transfer-Encoding', 'chunked')
         post_id = hkutils.uutf8(name)
@@ -753,14 +997,22 @@ class RawPostBody(WebpyServer):
 
 
 class RawPostText(WebpyServer):
+
     """Serves raw post text.
 
-    Served URL: ``/raw-post-text/<heap>/<post index>``"""
+    Served URL: ``/raw-post-text/<heap>/<post index>``
+    """
 
     def __init__(self):
+        """Constructor."""
         WebpyServer.__init__(self)
 
     def GET(self, name):
+        """Serves a HTTP GET request.
+
+        **Returns:** str
+        """
+
         webpy.header('Content-type', 'text/plain')
         webpy.header('Transfer-Encoding', 'chunked')
         post_id = hkutils.uutf8(name)
@@ -771,15 +1023,30 @@ class RawPostText(WebpyServer):
         return content
 
 
+##### AJAX servers #####
+
 class AjaxServer(WebpyServer):
+
     """Base class for classes that serve AJAX requests.
 
-    The concrete classes should implement the `execute` method."""
+    The concrete classes should implement the `execute` method.
+    """
 
     def __init__(self):
+        """Constructor."""
         WebpyServer.__init__(self)
 
     def POST(self, name_uni):
+        """Serves a HTTP POST request.
+
+        **Argument:**
+
+        - `name_uni` (unicode) -- The part of the requested URL that is after
+          the name of the page.
+
+        **Returns:** str
+        """
+
         # RFC4627: "The MIME media type for JSON text is application/json."
         webpy.header('Content-type','application/json')
         webpy.header('Transfer-Encoding','chunked')
@@ -793,11 +1060,14 @@ class AjaxServer(WebpyServer):
 
 
 class SetPostBody(AjaxServer):
+
     """Sets the body of the given post.
 
-    Served URL: ``/set-post-body/<heap>/<post index>``"""
+    Served URL: ``/set-post-body/<heap>/<post index>``
+    """
 
     def __init__(self):
+        """Constructor."""
         AjaxServer.__init__(self)
 
     def execute(self, post_id, args):
@@ -863,15 +1133,18 @@ class SetPostBody(AjaxServer):
 
 
 class GetPostBody(AjaxServer):
+
     """Gets the body of the given post.
 
-    Served URL: ``/get-post-body/<heap>/<post index>``"""
+    Served URL: ``/get-post-body/<heap>/<post index>``
+    """
 
     def __init__(self):
+        """Constructor."""
         AjaxServer.__init__(self)
 
     def execute(self, post_id, args):
-        # Unused argument 'postitem' # pylint: disable=W0613
+        # Unused argument 'args' # pylint: disable=W0613
         """Gets the post body.
 
         **Argument:**
@@ -894,11 +1167,14 @@ class GetPostBody(AjaxServer):
 
 
 class SetRawPost(AjaxServer):
+
     """Sets the raw content of the given post.
 
-    Served URL: ``/set-raw-post/<heap>/<post index>``"""
+    Served URL: ``/set-raw-post/<heap>/<post index>``
+    """
 
     def __init__(self):
+        """Constructor."""
         AjaxServer.__init__(self)
 
     def execute(self, post_id, args):
@@ -951,6 +1227,15 @@ class Fetch(object):
     """Serves the files that should be served unchanged."""
 
     def GET(self, name):
+        """Serves a HTTP GET request.
+
+        **Argument:**
+
+        - `name` (unicode) -- The name of the URL that was requested.
+
+        **Returns:** str
+        """
+
         filename = hkutils.uutf8(name)
         return hkutils.file_to_string(filename)
 
@@ -958,15 +1243,25 @@ class Fetch(object):
 ##### Main server class #####
 
 class Server(threading.Thread):
+
     """Implements the hkweb server thread."""
 
     def __init__(self, port, retries=0):
+        """
+
+        **Arguments:**
+
+        - `port` (int) -- Port to listen on.
+        - `retries` (int) -- Number of retries.
+        """
+
         super(Server, self).__init__()
         self.daemon = True
         self._port = port
         self._retries = retries
 
     def run(self):
+        """Called by the threading framework to start the thread."""
 
         first = self._port
         last = self._port + self._retries

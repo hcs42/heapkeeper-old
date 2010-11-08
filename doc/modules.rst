@@ -12,4 +12,5 @@ Module documentation
    hkgen
    hkcustomlib
    hkshell
+   hkweb
    hk

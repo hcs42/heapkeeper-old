@@ -22,4 +22,9 @@ digraph {
     hkshell -> hkgen;
     hkshell -> hkcustomlib;
     hk -> hkshell;
+    hkweb -> hkutils;
+    hkweb -> hklib;
+    hkweb -> hkgen;
+    hkweb -> hksearch;
+    hkweb -> hkshell;
 }
