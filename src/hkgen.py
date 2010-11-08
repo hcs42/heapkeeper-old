@@ -103,6 +103,9 @@ class BaseGenerator(object):
     It can generate two kinds of HTML files by default: index pages and thread
     pages.
 
+    This is only a base class and cannot be used as is; it has "abstract
+    methods" that should be overridden, otherwise they will throw an exception.
+
     **Data attributes:**
 
     - `_postdb` (|PostDB|) -- The post database.
@@ -792,7 +795,11 @@ class BaseGenerator(object):
 
     # TODO: test
     def print_postitem_link(self, postitem):
+        # Unused argument 'postitem' # pylint: disable=W0613
         """Prints the link to the post of the post item.
+
+        This is an abstract method that should be overridden; otherwise it will
+        throw an exception.
 
         **Argument:**
 
@@ -801,15 +808,9 @@ class BaseGenerator(object):
         **Returns:** |TextStruct|
         """
 
-        post = postitem.post
-        root = self._postdb.root(post)
-        if root is None:
-            return ('../', post.htmlfilebasename())
-        else:
-
-            heap_id, post_index = post.post_id()
-            return (('../', self._postdb.root(post).htmlthreadbasename()),
-                    '#post-summary-', heap_id, '-', post_index)
+        s = ('hkgen.BaseGenerator.print_postitem_link: this method should be '
+             'overridden')
+        raise hkutils.HkException(s)
 
     # TODO: test
     def print_postitem_begin(self, postitem):
@@ -1268,13 +1269,15 @@ class BaseGenerator(object):
     def print_html_head_content(self):
         """Prints the content in the HTML header.
 
+        This is an abstract method that should be overridden, otherwise it will
+        raise an exception.
+
         **Returns:** |HtmlText|
         """
 
-        return \
-            ['    <link rel="stylesheet" href="%s" type="text/css" />\n' %
-             (css,)
-             for css in self.options.cssfiles]
+        s = ('hkgen.BaseGenerator.print_html_head_content: this method should '
+             'be overridden')
+        raise hkutils.HkException(s)
 
     # TODO: test
     def print_html_header(self):
@@ -1359,6 +1362,44 @@ class StaticGenerator(BaseGenerator):
         # Here it is relative to the current directory
         self.options.files_to_copy = ['static/css/heapindex.css',
                                       'static/images/thread.png']
+
+    # TODO: test
+    def print_html_head_content(self):
+        """Prints the content in the HTML header.
+
+        It links the CSS files.
+
+        **Returns:** |HtmlText|
+        """
+
+        return \
+            ['    <link rel="stylesheet" href="%s" type="text/css" />\n' %
+             (css,)
+             for css in self.options.cssfiles]
+
+    # TODO: test
+    def print_postitem_link(self, postitem):
+        """Prints the link to the post of the post item.
+
+        The link will have the following form:
+        ``../<heap>/thread_<postindex>.html#post-summary-<heap>-<postindex>``
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |TextStruct|
+        """
+
+        post = postitem.post
+        root = self._postdb.root(post)
+        if root is None:
+            return ('../', post.htmlfilebasename())
+        else:
+
+            heap_id, post_index = post.post_id()
+            return (('../', self._postdb.root(post).htmlthreadbasename()),
+                    '#post-summary-', heap_id, '-', post_index)
 
     # TODO test
     def settle_files_to_copy(self):

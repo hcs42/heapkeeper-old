@@ -38,6 +38,16 @@ import hkgen
 import test_hklib
 
 
+class BaseGenerator(hkgen.BaseGenerator):
+
+    """This is a class that defines the abstract methods of |BaseGenerator| so
+    that it can be tested."""
+
+    def print_postitem_link(self, postitem):
+        # Unused argument 'postitem' # pylint: disable=W0613
+        return postitem.post.post_id_str()
+
+
 class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
 
     """Tests |BaseGenerator|."""
@@ -59,7 +69,7 @@ class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
         **Returns:** |BaseGenerator|
         """
 
-        return hkgen.BaseGenerator(self._postdb)
+        return BaseGenerator(self._postdb)
 
     def tearDown(self):
         """Deletes the temporary working directory."""
@@ -304,9 +314,7 @@ class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem = hklib.PostItem('begin', p(0), 0)
         postitem.post.set_tags(['tag1', 'tag2'])
 
-        post_link = \
-            g.print_link('../my_heap/thread_0.html#post-summary-my_heap-0',
-                         '&lt;my_heap/0&gt;')
+        post_link = g.print_link('my_heap/0', '&lt;my_heap/0&gt;')
         thread_link = g.print_link('../my_heap/thread_0.html',
                                    '<img src="../static/images/thread.png" />')
         expected_header = \
@@ -361,9 +369,7 @@ class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
         postitem = hklib.PostItem('flat', p(0), 0)
         postitem.post.set_tags(['tag1', 'tag2'])
 
-        post_link = \
-            g.print_link('../my_heap/thread_0.html#post-summary-my_heap-0',
-                         '&lt;my_heap/0&gt;')
+        post_link = g.print_link('my_heap/0', '&lt;my_heap/0&gt;')
         expected_header = \
             g.enclose(
                 (enctd('author', 'author0', 'td'), '\n',
@@ -415,9 +421,7 @@ class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
 
         hkutils.add_method(g, 'print_postitem_date', print_postitem_date)
 
-        post_link = \
-            g.print_link('../my_heap/thread_0.html#post-summary-my_heap-0',
-                         '&lt;my_heap/0&gt;')
+        post_link = g.print_link('my_heap/0', '&lt;my_heap/0&gt;')
         expected_header = \
             [enctd('author', 'author0', 'td'), '\n',
              enctd('subject', 'subject0', 'td'), '\n',
@@ -459,6 +463,18 @@ class Test_StaticGenerator(Test_BaseGenerator):
         """
 
         return hkgen.StaticGenerator(self._postdb)
+
+    def test_print_postitem_flat(self):
+        """Inherited test case that we don't want to execute because it would
+        fail."""
+
+        pass
+
+    def test_print_postitem_inner(self):
+        """Inherited test case that we don't want to execute because it would
+        fail."""
+
+        pass
 
     def test_write_main_index_page(self):
         """Tests the following functions:
