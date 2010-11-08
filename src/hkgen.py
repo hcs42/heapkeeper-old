@@ -715,7 +715,7 @@ class BaseGenerator(object):
 
     # TODO test
     def print_postitem_body_core(self, postitem):
-        """Prints the core of the body the post item.
+        """Prints the core of the body of the post item.
 
         **Argument:**
 
@@ -845,7 +845,7 @@ class BaseGenerator(object):
     # TODO test
     def get_postsummary_fields_inner(self, postitem):
         # Unused argument 'postitem' # pylint: disable=W0613
-        """Returns the fields of the post summary when the pos position is
+        """Returns the fields of the post summary when the position is
         ``'inner'``.
 
         **Argument:**
