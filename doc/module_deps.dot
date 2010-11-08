@@ -4,27 +4,13 @@ digraph {
     hkconfig -> hkutils;
     hklib -> hkconfig;
     hklib -> hkbodyparser;
-    hklib -> hkutils;
-    hkemail -> hkutils;
     hkemail -> hklib;
-    hksearch -> hkutils;
     hksearch -> hklib;
-    hkgen -> hkutils;
-    hkgen -> hkbodyparser;
     hkgen -> hklib;
-    hkcustomlib -> hkutils;
-    hkcustomlib -> hklib;
-    hkcustomlib -> hkgen;
     hkshell -> hkemail;
-    hkshell -> hkutils;
-    hkshell -> hklib;
     hkshell -> hksearch;
     hkshell -> hkgen;
-    hkshell -> hkcustomlib;
-    hk -> hkshell;
-    hkweb -> hkutils;
-    hkweb -> hklib;
-    hkweb -> hkgen;
     hkweb -> hksearch;
-    hkweb -> hkshell;
+    hkweb -> hkshell; // written explicitly deliberately
+    hk -> hkshell;
 }
