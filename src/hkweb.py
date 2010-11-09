@@ -293,6 +293,12 @@ class WebGenerator(hkgen.BaseGenerator):
         """
 
         hkgen.BaseGenerator.__init__(self, postdb)
+        WebGenerator.init(self)
+
+    def init(self):
+        # Argument count differs from overridden method # pylint: disable=W0221
+        """Initializator."""
+
         self.options.cssfiles.append("static/css/hkweb.css")
         self.options.favicon = '/static/images/heap.png'
         self.js_files = ['/external/jquery.js',

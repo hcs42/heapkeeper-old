@@ -124,7 +124,17 @@ class BaseGenerator(object):
         - `postdb` (|PostDB|)
         """
 
-        super(BaseGenerator, self).__init__()
+        object.__init__(self)
+        BaseGenerator.init(self, postdb)
+
+    def init(self, postdb):
+        """Initializator.
+
+        **Arguments:**
+
+        - `postdb` (|PostDB|)
+        """
+
         self._postdb = postdb
         self.options = GeneratorOptions()
 
@@ -1355,6 +1365,11 @@ class StaticGenerator(BaseGenerator):
         """
 
         BaseGenerator.__init__(self, postdb)
+        StaticGenerator.init(self)
+
+    def init(self):
+        # Argument count differs from overridden method # pylint: disable=W0221
+        """Initializator."""
 
         # Here, path is relative to the to-be HTML
         self.options.cssfiles = ['../static/css/heapindex.css']
