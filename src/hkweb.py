@@ -1140,7 +1140,7 @@ class SetPostBody(AjaxServer):
             new_post_summary = generator.print_postitems([postitem])
             new_post_summary = hkutils.textstruct_to_str(new_post_summary)
             return { 'new_post_summary': new_post_summary,
-                     'new_post_id': '-'.join(post.post_id())}
+                     'new_post_id': post.post_id_str()}
 
 
 class GetPostBody(AjaxServer):

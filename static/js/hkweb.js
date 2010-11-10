@@ -636,7 +636,7 @@ function savePostNew(postId, count) {
             return;
         }
 
-        var newPostId = result.new_post_id;
+        var newPostId = postIdStrToPostId(result.new_post_id);
         var postSummary = $('#new-' + count + '-post-summary-' + postId);
         postSummary.replaceWith(result.new_post_summary);
         addEventHandlersToPostSummary(newPostId);
