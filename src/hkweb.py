@@ -67,9 +67,9 @@ urls = [
     r'/posts/(.*)', 'Post',
     r'/raw-post-bodies/(.*)', 'RawPostBody',
     r'/raw-post-text/(.*)', 'RawPostText',
-    r'/set-post-body/(.*)', 'SetPostBody',
-    r'/get-post-body/(.*)', 'GetPostBody',
-    r'/set-raw-post/(.*)', 'SetRawPost',
+    r'/set-post-body', 'SetPostBody',
+    r'/get-post-body', 'GetPostBody',
+    r'/set-raw-post', 'SetRawPost',
     r'/show-json', 'ShowJSon',
     r'/search.*', 'Search',
     ]
@@ -1041,14 +1041,10 @@ class AjaxServer(WebpyServer):
     def __init__(self):
         """Constructor."""
         WebpyServer.__init__(self)
+        self._get_request_allowed = False
 
-    def POST(self, name_uni):
+    def POST(self):
         """Serves a HTTP POST request.
-
-        **Argument:**
-
-        - `name_uni` (unicode) -- The part of the requested URL that is after
-          the name of the page.
 
         **Returns:** str
         """
@@ -1056,38 +1052,51 @@ class AjaxServer(WebpyServer):
         # RFC4627: "The MIME media type for JSON text is application/json."
         webpy.header('Content-type','application/json')
         webpy.header('Transfer-Encoding','chunked')
-        name = hkutils.uutf8(name_uni)
         try:
             args = get_web_args()
         except hkutils.HkException, e:
             return str(e)
-        result = self.execute(name, args)
+        result = self.execute(args)
         return json.dumps(result)
+
+    def GET(self):
+        """Serves a HTTP GET request.
+
+        **Returns:** str
+        """
+
+        if self._get_request_allowed:
+            return self.POST()
+        else:
+            return 'GET request is not allowed for this page'
 
 
 class SetPostBody(AjaxServer):
 
     """Sets the body of the given post.
 
-    Served URL: ``/set-post-body/<heap>/<post index>``
+    Served URL: ``/set-post-body``
     """
 
     def __init__(self):
         """Constructor."""
         AjaxServer.__init__(self)
 
-    def execute(self, post_id, args):
+    def execute(self, args):
         """Sets the post body.
 
         **Argument:**
 
-        - `args` ({'new_body_text': str, 'new_count': int})
+        - `args` ({'post_id': |PrePostId|, 'new_body_text': str, 'new_count':
+          int, 'new': object})
 
-        **Returns:** {'error': str} | {'new': str}
+        **Returns:** {'error': str} | {'new_body_html': str} |
+        {'new_post_summary': str, 'new_post_id': str}
         """
 
         postdb = self._postdb
 
+        post_id = args.get('post_id')
         new = args.get('new')
         if new is None:
             post = postdb.post(post_id)
@@ -1130,36 +1139,34 @@ class SetPostBody(AjaxServer):
             postitem.print_children_post_id = True
             new_post_summary = generator.print_postitems([postitem])
             new_post_summary = hkutils.textstruct_to_str(new_post_summary)
-            return \
-                {
-                    'new_post_summary': new_post_summary,
-                    'new_post_id': '-'.join(post.post_id())
-                }
-
+            return { 'new_post_summary': new_post_summary,
+                     'new_post_id': '-'.join(post.post_id())}
 
 
 class GetPostBody(AjaxServer):
 
     """Gets the body of the given post.
 
-    Served URL: ``/get-post-body/<heap>/<post index>``
+    Served URL: ``/get-post-body``
     """
 
     def __init__(self):
         """Constructor."""
         AjaxServer.__init__(self)
+        self._get_request_allowed = True
 
-    def execute(self, post_id, args):
+    def execute(self, args):
         # Unused argument 'args' # pylint: disable=W0613
         """Gets the post body.
 
         **Argument:**
 
-        - `args` ({})
+        - `args` ({'post_id': |PrePostId|})
 
         **Returns:** {'error': str} | {'body_html': str}
         """
 
+        post_id = args.get('post_id')
         post = self._postdb.post(post_id)
         if post is None:
             return {'error': 'No such post: "%s"' % (post_id,)}
@@ -1176,23 +1183,25 @@ class SetRawPost(AjaxServer):
 
     """Sets the raw content of the given post.
 
-    Served URL: ``/set-raw-post/<heap>/<post index>``
+    Served URL: ``/set-raw-post``
     """
 
     def __init__(self):
         """Constructor."""
         AjaxServer.__init__(self)
 
-    def execute(self, post_id, args):
+    def execute(self, args):
         """Sets the raw content of the given post.
 
         **Argument:**
 
-        - `args` ({'new_post_text': str})
+        - `args` ({'post_id': |PrePostId|,
+                   'new_post_text': str})
 
         **Returns:** {'error': str} | {'new_post_summary': str}
         """
 
+        post_id = args.get('post_id')
         post = self._postdb.post(post_id)
         if post is None:
             return {'error': 'No such post: "%s"' % (post_id,)}
