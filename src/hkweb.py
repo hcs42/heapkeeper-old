@@ -35,6 +35,10 @@ hkweb can be started from the |hkshell| in the following way:
 
 Currently only one hkweb instance can execute well at a time, because we have
 some global variables.
+
+The :doc:`clientservercommunication` page describes how the server side
+(implemented in this module) and client side (mostly implemented in
+``hkweb.js``) of hkweb communicate.
 """
 
 

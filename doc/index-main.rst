@@ -110,4 +110,5 @@ Documentation
   * :doc:`keyprinciples`
   * :doc:`patterns`
   * :doc:`architecture`
+  * :doc:`clientservercommunication`
   * :doc:`modules`

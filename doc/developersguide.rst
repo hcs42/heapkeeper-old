@@ -33,4 +33,5 @@ The concrete implementation concepts and details of Heapkeeper.
 .. toctree::
 
     architecture
+    clientservercommunication
     modules
