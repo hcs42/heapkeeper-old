@@ -24,8 +24,8 @@ function setPostReviewed(postId) {
     // - postId (postId)
 
     ajaxQuery(
-        "/set-post-reviewed/" + postIdToPostIdStr(getRootPostId()),
-        {},
+        "/set-post-reviewed",
+        {'post_id': postIdToPostIdStr(getRootPostId())},
         function() {
             location.reload();
         });

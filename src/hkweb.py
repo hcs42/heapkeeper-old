@@ -1035,7 +1035,8 @@ class AjaxServer(WebpyServer):
 
     """Base class for classes that serve AJAX requests.
 
-    The concrete classes should implement the `execute` method.
+    This is only a base class and cannot be used as is; it has "abstract
+    methods" that should be overridden, otherwise they will throw an exception.
     """
 
     def __init__(self):
@@ -1069,6 +1070,23 @@ class AjaxServer(WebpyServer):
             return self.POST()
         else:
             return 'GET request is not allowed for this page'
+
+    def execute(self, args):
+        # Unused argument # pylint: disable=W0613
+        """Sets the post body.
+
+        This is an abstract method that should be overridden; otherwise it will
+        throw an exception.
+
+        **Argument:**
+
+        - `args` ({string: json_object})
+
+        **Returns:** json_object
+        """
+
+        s = ('hkweb.AjaxServer.execute: this method should be overridden')
+        raise hkutils.HkException(s)
 
 
 class SetPostBody(AjaxServer):

@@ -104,22 +104,23 @@ def set_to_reviewed(prepost=None):
 class SetPostReviewed(hkweb.AjaxServer):
     """Sets the given post to reviewed.
 
-    Served URL: ``/set-post-reviewed/<heap>/<post index>``"""
+    Served URL: ``/set-post-reviewed``"""
 
     def __init__(self):
         hkweb.AjaxServer.__init__(self)
 
-    def execute(self, post_id, args):
-        # Unused argument 'postitem' # pylint: disable=W0613
+    def execute(self, args):
+        # Unused argument # pylint: disable=W0613
         """Sets the post to reviewed.
 
         **Argument:**
 
-        - `args` ({})
+        - `args` ({'post_id': |PrePostId|})
 
         **Returns:** {'error': str} | {}
         """
 
+        post_id = args.get('post_id')
         post = self._postdb.post(post_id)
         if post is None:
             return {'error': 'No such post: "%s"' % (post_id,)}
@@ -138,7 +139,7 @@ def start(review_command_name='r'):
     """
 
     hkshell.register_cmd(review_command_name, set_to_reviewed)
-    hkweb.insert_urls(['/set-post-reviewed/(.*)',
+    hkweb.insert_urls(['/set-post-reviewed',
                        'hkp_review.SetPostReviewed'])
 
     old_init = hkweb.PostPageGenerator.__init__

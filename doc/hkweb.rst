@@ -143,6 +143,7 @@ AJAX servers
 
     .. automethod:: __init__
     .. automethod:: POST
+    .. automethod:: execute
 
 .. autoclass:: SetPostBody
 
