@@ -54,12 +54,12 @@ def print_userlist(self):
     return ('<div id="userlist">\n', 'Active users:\n',
             '<ul>\n', userlist, '</ul>\n', '</div>\n')
 
-def index_print_additional_header(self):
-    return (index_old_print_additional_header(self),
+def index_print_additional_header(self, info):
+    return (index_old_print_additional_header(self, info),
             print_userlist(self))
 
-def postpage_print_additional_header(self, postid):
-    return (postpage_old_print_additional_header(self, postid),
+def postpage_print_additional_header(self, info):
+    return (postpage_old_print_additional_header(self, info),
             print_userlist(self))
 
 def start():

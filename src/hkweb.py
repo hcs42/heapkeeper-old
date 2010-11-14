@@ -367,8 +367,8 @@ class WebGenerator(hkgen.BaseGenerator):
             [('<script type="text/javascript" src="%s"></script>\n' %
               (js_file,)) for js_file in self.js_files]
 
-    def print_additional_header(self, post_id=None):
-        # Unused arguments 'self', 'post_id' # pylint: disable=W0613
+    def print_additional_header(self, info):
+        # Unused arguments # pylint: disable=W0613
         """Provided as a hook to be used by plugins.
 
         This is the method to overwrite when altering the generator to
@@ -376,27 +376,25 @@ class WebGenerator(hkgen.BaseGenerator):
         the original function when overwriting this function to
         preserve the functionality of any previously started plugins.
 
-        **Arguments:**
+        **Argument:**
 
-        - `post_id` (|PostId| | ``None``) -- The post id of the post whose page
-          is being printed.
+        - `info` (dict) -- Extra information about the page being printed.
 
         **Returns:** |HtmlText|
         """
 
         return ''
 
-    def print_additional_footer(self, post_id=None):
-        # Unused arguments 'self', 'post_id' # pylint: disable=W0613
+    def print_additional_footer(self, info):
+        # Unused arguments # pylint: disable=W0613
         """Provided as a hook to be used by plugins.
 
         See docstring of `print_additional_header` for notes on how to
         use this.
 
-        **Arguments:**
+        **Argument:**
 
-        - `post_id` (|PostId| | ``None``) -- The post id of the post whose page
-          is being printed.
+        - `info` (dict) -- Extra information about the page being printed.
 
         **Returns:** |HtmlText|
         """
@@ -426,9 +424,9 @@ class IndexGenerator(WebGenerator):
         """
 
         return (self.print_searchbar(),
-                self.print_additional_header(),
+                self.print_additional_header({}),
                 self.print_main_index_page(),
-                self.print_additional_footer(),
+                self.print_additional_footer({}),
                 self.print_js_links())
 
 
@@ -631,9 +629,9 @@ class PostPageGenerator(WebGenerator):
         """
 
         return (self.print_searchbar(),
-                self.print_additional_header(postid),
+                self.print_additional_header({'postid': postid}),
                 self.print_post_page(postid),
-                self.print_additional_footer(postid),
+                self.print_additional_footer({'postid': postid}),
                 self.print_js_links())
 
 

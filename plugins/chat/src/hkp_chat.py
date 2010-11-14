@@ -125,13 +125,13 @@ def threadid_js(post_id=None):
 #            threadid_js(),
 #            print_js_links)
 
-def postpage_print_additional_header(self, postid):
-    return (postpage_old_print_additional_header(self, postid),
-            threadid_js(postid),
+def postpage_print_additional_header(self, info):
+    return (postpage_old_print_additional_header(self, info),
+            threadid_js(info['postid']),
             print_chat(self))
 
-def index_print_additional_header(self):
-    return (index_old_print_additional_header(self),
+def index_print_additional_header(self, info):
+    return (index_old_print_additional_header(self, info),
             threadid_js(),
             print_chat(self))
 
