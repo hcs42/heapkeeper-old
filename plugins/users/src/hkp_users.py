@@ -33,16 +33,8 @@ import hkutils
 import hkweb
 
 
-def postpage_new_init(self, postdb):
-    postpage_old_init(self, postdb)
-    self.options.cssfiles.append('plugins/users/static/css/users.css')
-
-def index_new_init(self, postdb):
-    index_old_init(self, postdb)
-    self.options.cssfiles.append('plugins/users/static/css/users.css')
-
-def print_userlist(self):
-    # Unused argument 'self' # pylint: disable=W0613
+def print_userlist(generator):
+    # Unused argument  # pylint: disable=W0613
     last_access = hkweb.last_access
     now = datetime.datetime.now()
     userlist = []
@@ -54,32 +46,28 @@ def print_userlist(self):
     return ('<div id="userlist">\n', 'Active users:\n',
             '<ul>\n', userlist, '</ul>\n', '</div>\n')
 
-def index_print_additional_header(self, info):
-    return (index_old_print_additional_header(self, info),
-            print_userlist(self))
-
-def postpage_print_additional_header(self, info):
-    return (postpage_old_print_additional_header(self, info),
-            print_userlist(self))
-
 def start():
     """Starts the plugin."""
 
-    global postpage_old_init
-    global index_old_init
-    global postpage_old_print_additional_header
-    global index_old_print_additional_header
+    # Adding code to the init method of the Generator classes
+    def init2(self, postdb):
+        # unused argument # pylint: disable=W0613
+        self.options.cssfiles.append('plugins/users/static/css/users.css')
+    hkutils.append_fun_to_method(hkweb.IndexGenerator, 'init', init2)
+    hkutils.append_fun_to_method(hkweb.PostPageGenerator, 'init', init2)
 
-    postpage_old_init = hkweb.PostPageGenerator.__init__
-    index_old_init = hkweb.IndexGenerator.__init__
-    postpage_old_print_additional_header = \
-        hkweb.PostPageGenerator.print_additional_header
-    index_old_print_additional_header = \
-        hkweb.IndexGenerator.print_additional_header
-
-    hkweb.IndexGenerator.__init__ = index_new_init
-    hkweb.PostPageGenerator.__init__ = postpage_new_init
-    hkweb.IndexGenerator.print_additional_header = \
-        index_print_additional_header
-    hkweb.PostPageGenerator.print_additional_header = \
-        postpage_print_additional_header
+    # Adding code to the print_additional_header method of the Generator
+    # classes
+    def print_additional_header2(self, info):
+        # unused argument # pylint: disable=W0613
+        return print_userlist(self)
+    hkutils.append_fun_to_method(
+        hkweb.IndexGenerator,
+        'print_additional_header',
+        fun=print_additional_header2,
+        resultfun=lambda r1, r2: (r1, r2))
+    hkutils.append_fun_to_method(
+        hkweb.PostPageGeneratorGenerator,
+        'print_additional_header',
+        fun=print_additional_header2,
+        resultfun=lambda r1, r2: (r1, r2))
