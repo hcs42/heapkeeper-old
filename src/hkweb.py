@@ -416,6 +416,12 @@ class IndexGenerator(WebGenerator):
         """
 
         WebGenerator.__init__(self, postdb)
+        IndexGenerator.init(self)
+
+    def init(self):
+        # Argument count differs from overridden method # pylint: disable=W0221
+        """Initializator."""
+        pass
 
     def print_main(self):
         """Prints the main part of the page.
@@ -447,6 +453,12 @@ class PostPageGenerator(WebGenerator):
         """
 
         WebGenerator.__init__(self, postdb)
+        PostPageGenerator.init(self)
+
+    def init(self):
+        # Argument count differs from overridden method # pylint: disable=W0221
+        """Initializator."""
+        pass
 
     def set_post_id(self, post_id):
         """Sets the post id of the post that is being printed.
@@ -649,7 +661,12 @@ class SearchPageGenerator(PostPageGenerator):
         """
 
         PostPageGenerator.__init__(self, postdb)
-        self.posts = postdb.postset(preposts)
+        SearchPageGenerator.init(self, preposts)
+
+    def init(self, preposts):
+        # Argument count differs from overridden method # pylint: disable=W0221
+        """Initializator."""
+        self.posts = self._postdb.postset(preposts)
         self.options.html_title = 'Search page'
 
     def print_search_page_core(self):
@@ -714,6 +731,12 @@ class PostBodyGenerator(WebGenerator):
         """
 
         WebGenerator.__init__(self, postdb)
+        PostBodyGenerator.init(self)
+
+    def init(self):
+        # Argument count differs from overridden method # pylint: disable=W0221
+        """Initializator."""
+        pass
 
     def print_post_body(self, post_id):
         """Prints the body of a given post.
