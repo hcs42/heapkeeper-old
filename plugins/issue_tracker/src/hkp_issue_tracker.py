@@ -72,20 +72,21 @@ class BaseITGenerator(hkgen.BaseGenerator):
 
     # Calculations about issues
 
-    def is_hh_post(self, post):
-        return post.heap_id() == 'hh' or post.has_tag('hh')
+    def post_has_issue_tag(self, post):
+        return (post.has_tag('prop') or
+                post.has_tag('issue') or
+                post.has_tag('bug') or
+                post.has_tag('feature'))
 
     def is_thread_issue(self, root):
         for post in self._postdb.postset(root).expf():
-            if (self.is_hh_post(post) and
-                not post.has_tag('post syntax') and
-                (post.has_tag('prop') or post.has_tag('issue') or
-                 post.has_tag('bug') or post.has_tag('feature'))):
+            if (post.heap_id() == self._heap_id and
+                self.post_has_issue_tag(post)):
                 return True
         return False
 
     def is_post_wanted(self, post):
-        return (self.is_hh_post(post) and not post.has_tag('post syntax') and
+        return (post.heap_id() == self._heap_id and
                 not post.has_tag('meta'))
 
     def is_review_needed(self, post):
@@ -93,8 +94,7 @@ class BaseITGenerator(hkgen.BaseGenerator):
 
     def is_thread_open(self, root):
         openness = 0
-        if (root.has_tag('prop') or root.has_tag('issue') or
-            root.has_tag('bug') or root.has_tag('feature')):
+        if (self.post_has_issue_tag(root)):
             openness += 1
         for post in self._postdb.postset(root).expf():
             if 'open' in post.meta_dict():
