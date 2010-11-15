@@ -367,6 +367,50 @@ class Test__Misc(unittest.TestCase):
         hkutils.add_method(a, 'add', add_method)
         self.assertEqual(a.add(2), 3)
 
+    def test_append_fun_to_method(self):
+
+        """Tests :func:`hkutils.append_fun_to_method`."""
+
+        # Basic test
+
+        class MyClass(object):
+            def my_method(self, a):
+                l.append(['my_method', a])
+                return a * 2
+
+        def my_fun(self, a):
+            # unused argument # pylint: disable= W0613
+            l.append(['my_fun', a])
+
+        hkutils.append_fun_to_method(MyClass, 'my_method', my_fun)
+        a = MyClass()
+        l = []
+        l.append(['result', a.my_method(2)])
+        self.assertEqual(
+            l,
+            [['my_method', 2], ['my_fun', 2], ['result', 4]])
+
+        # Testing the `resultfun` parameter
+
+        class MyClass2(object):
+            def my_method(self, a):
+                l.append(['my_method', a])
+                return a * 2
+
+        def my_fun2(self, a):
+            # unused argument # pylint: disable= W0613
+            l.append(['my_fun', a])
+            return a * 4
+
+        hkutils.append_fun_to_method(MyClass2, 'my_method', my_fun2,
+                                     resultfun=lambda r1, r2: (r1, r2))
+        a = MyClass2()
+        l = []
+        l.append(['result', a.my_method(2)])
+        self.assertEqual(
+            l,
+            [['my_method', 2], ['my_fun', 2], ['result', (4, 8)]])
+
     def test_insert_sep(self):
         """Tests :func:`hkutils.insert_sep`."""
 
