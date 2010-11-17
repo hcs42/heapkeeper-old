@@ -15,23 +15,14 @@
 
 // Copyright (C) 2010 Csaba Hoch
 
-function assertEqual(actual, expected) {
-    if (actual != expected) {
-        hk_unittest_result +=
-            'Test fail: the following values are not equal:\n' +
-            'Actual:\n' +
-            actual + '\n' +
-            'Expected:\n' +
-            expected + '\n\n';
-    }
+HkwebTest = TestCase("HkwebTest");
+
+HkwebTest.prototype.test_PostIdStr = function() {
+    assertEquals(postIdToPostIdStr('my_heap-1'), 'my_heap/1');
+    assertEquals(postIdStrToPostId('my_heap/1'), 'my_heap-1');
 }
 
-function test_PostIdStr() {
-    assertEqual(postIdToPostIdStr('my_heap-1'), 'my_heap/1');
-    assertEqual(postIdStrToPostId('my_heap/1'), 'my_heap-1');
-}
-
-function test_url_and_dict_to_http_query() {
+HkwebTest.prototype.test_url_and_dict_to_http_query = function() {
 
     // Test template:
     //
@@ -42,8 +33,8 @@ function test_url_and_dict_to_http_query() {
 
     function test_core(url, args, expected_escaped, expected_unescaped) {
         actual_result = url_and_dict_to_http_query(url, args),
-        assertEqual(actual_result, expected_escaped);
-        assertEqual(unescape(actual_result), expected_unescaped);
+        assertEquals(actual_result, expected_escaped);
+        assertEquals(unescape(actual_result), expected_unescaped);
     }
 
     // Basic test
@@ -76,22 +67,3 @@ function test_url_and_dict_to_http_query() {
         'myurl?key=%00%7B%22key2%22%3A42%7D',
         'myurl?key=\x00{"key2":42}');
 }
-
-var hk_unittest_result = '';
-
-function do_test() {
-    // Executes the unit tests.
-
-    test_PostIdStr();
-    test_url_and_dict_to_http_query();
-
-    if (hk_unittest_result == '') {
-        hk_unittest_result = 'All tests passed.';
-    }
-
-    $('#result').text('Test result:\n\n' + hk_unittest_result);
-}
-
-$(document).ready(function() {
-    do_test();
-});

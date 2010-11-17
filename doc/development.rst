@@ -154,6 +154,40 @@ links to the detailed results)::
 
 __ http://nedbatchelder.com/code/coverage/
 
+.. _jstestdriver:
+
+JsTestDriver
+^^^^^^^^^^^^
+
+`JsTestDriver`__ is a unit testing tool for JavaScript, written in Java.
+
+It can be installed and used in the following way:
+
+#. Make sure you have at least Java 1.6::
+
+       $ java -version
+
+#. Download JsTestDriver into the ``"external"`` directory from here__::
+
+       $ wget http://js-test-driver.googlecode.com/files/JsTestDriver-1.2.2.jar \
+              -O external/JsTestDriver.jar
+
+#. Start the JsTestDriver server::
+
+       $ java -jar external/JsTestDriver.jar --port 9876 \
+              --config etc/jsTestDriver/jsTestDriver.conf
+
+#. Create a tab in a browser and open this__ URL.
+
+#. Now you can execute the tests.
+
+Step 5 is integrated into :ref:`hk-dev-utils`, which also checks step 3
+and step 4 and tells the user to perform them if they have not been.
+
+__ http://code.google.com/p/js-test-driver/
+__ http://js-test-driver.googlecode.com/files/JsTestDriver-1.2.2.jar
+__ http://localhost:9876/capture
+
 .. _margitka:
 
 margitka
@@ -180,7 +214,8 @@ __ http://lwn.net/Articles/140350/
 hk-dev-utils
 ^^^^^^^^^^^^
 
-`hk-dev-utils`__ is a set of scripts to help Heapkeeper developers.
+`hk-dev-utils`__ is a set of scripts to help Heapkeeper developers. Its most
+important feature is to perform several tests on Heapkeeper.
 
 hk-dev-utils can be downloaded from GitHub, no installation is needed::
 

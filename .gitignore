@@ -11,3 +11,4 @@ hkrc.py
 *.cfg
 *.pyc
 *.pyo
+external/JsTestDriver.jar
