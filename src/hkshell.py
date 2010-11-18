@@ -66,12 +66,12 @@ tool to the user's needs.
 
 Starting hkshell::
 
-    $ python hk.py
+    $ python src/hk.py
 
 This example downloads new emails, generates the index pages and exits after
 saving the post database::
 
-    $ python hk.py -c 'dl()' -c 'g()' -c 'x()'
+    $ python src/hk.py -c 'dl()' -c 'g()' -c 'x()'
 
 Positional arguments
 ::::::::::::::::::::
@@ -79,7 +79,7 @@ Positional arguments
 Currently the ``-c`` markers may be omitted and the positional arguments (the
 ones without ``-<character>`` and ``--<word>``) will be executed as commands::
 
-    $ python hk.py 'dl()' 'g()' 'x()'
+    $ python src/hk.py 'dl()' 'g()' 'x()'
 
 Always use ``-c`` in scripts that you want to keep, because this behaviour may
 be changed in the future if we want to use positional arguments for something

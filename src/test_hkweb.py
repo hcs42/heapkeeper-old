@@ -21,7 +21,7 @@
 
 Usage:
 
-    $ python test_hkweb.py
+    $ python src/test_hkweb.py
 """
 
 

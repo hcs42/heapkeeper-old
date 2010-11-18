@@ -235,7 +235,7 @@ All tests can be executed using the :mod:`test` module:
 
 .. code-block:: none
 
-    $ python test.py
+    $ python src/test.py
 
 .. rubric:: Footnotes
 

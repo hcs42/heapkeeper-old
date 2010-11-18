@@ -21,7 +21,7 @@
 
 Usage:
 
-    $ python test_hksearch.py
+    $ python src/test_hksearch.py
 """
 
 

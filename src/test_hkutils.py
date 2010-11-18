@@ -22,7 +22,7 @@
 
 Usage:
 
-    $ python test_hkutils.py
+    $ python src/test_hkutils.py
 """
 
 

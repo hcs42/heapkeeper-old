@@ -21,7 +21,7 @@
 
 Usage:
 
-    $ python test_hkconfig.py
+    $ python src/test_hkconfig.py
 """
 
 
