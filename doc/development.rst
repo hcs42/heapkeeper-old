@@ -126,30 +126,42 @@ Installation procedure on Debian and Ubuntu Linux::
     $ sudo apt-get install python-dev python-setuptools
     $ sudo easy_install coverage
 
-Measuring the code coverage of Heapkeeper's automatic tests::
+Measuring the code coverage of Heapkeeper's automatic tests
+(``hkdu-list-sources`` is part of :ref:`hk-dev-utils`)::
 
     $ cd <Heapkeeper directory>
     $ coverage erase
-    $ coverage run test.py
+    $ coverage run src/test.py
     ----------------------------------------------------------------------
     Ran 96 tests in 0.221s
 
     OK
-    $ coverage report hk{utils,lib,gen,shell,customlib}.py
-    Name          Stmts   Exec  Cover
-    ---------------------------------
-    hkcustomlib      68     39    57%
-    hkgen           368    263    71%
-    hklib           868    696    80%
-    hkshell         461    307    66%
-    hkutils         117     95    81%
-    ---------------------------------
-    TOTAL          1882   1400    74%
+    $ coverage report $(hkdu-list-sources | grep -E '^(src|plugin).*py$' | grep -v test)
+    Name                                                    Stmts   Exec  Cover
+    ---------------------------------------------------------------------------
+    plugins/chat/src/hkp_chat                                  67      0     0%
+    plugins/custom_heap_server/src/hkp_custom_heap_server      30      0     0%
+    plugins/issue_tracker/src/hkp_issue_tracker               250     94    37%
+    plugins/review/src/hkp_review                              55      0     0%
+    plugins/users/src/hkp_users                                22      0     0%
+    src/hk                                                     10      0     0%
+    src/hkbodyparser                                          199    198    99%
+    src/hkconfig                                               36     34    94%
+    src/hkcustomlib                                            65     36    55%
+    src/hkemail                                               193     20    10%
+    src/hkgen                                                 433    334    77%
+    src/hklib                                                 913    862    94%
+    src/hksearch                                               50     49    98%
+    src/hkshell                                               563    393    69%
+    src/hkutils                                               212    173    81%
+    src/hkweb                                                 443    153    34%
+    ---------------------------------------------------------------------------
+    TOTAL                                                    3541   2346    66%
 
 Displaying the covered code in HTML (the module names in the index.html are
 links to the detailed results)::
 
-    $ coverage html -d coverage-html hk{utils,lib,gen,shell,customlib}.py
+    $ coverage html -d coverage-html $(hkdu-list-sources | grep -E '^(src|plugin).*py$' | grep -v test)
     $ <your browser of choice> coverage-html/index.html
 
 __ http://nedbatchelder.com/code/coverage/
