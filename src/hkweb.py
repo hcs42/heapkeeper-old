@@ -225,7 +225,6 @@ def add_auth(server, auth_decorator):
     - `auth_decorator` ()
     """
 
-    server._postdb = hkshell.postdb()
     server.original_GET = getattr(server, 'GET', None)
     server.original_POST = getattr(server, 'POST', None)
     if server.original_GET:
