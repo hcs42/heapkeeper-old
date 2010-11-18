@@ -12,5 +12,10 @@ digraph {
     hkshell -> hkgen;
     hkweb -> hksearch;
     hkweb -> hkshell; // written explicitly deliberately
+    hkp_chat -> hkweb;
+    hkp_custom_heap_server -> hkweb;
+    hkp_issue_tracker -> hkweb;
+    hkp_review -> hkweb;
+    hkp_users -> hkweb;
     hk -> hkshell;
 }
