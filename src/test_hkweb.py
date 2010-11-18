@@ -36,12 +36,12 @@ import test_hkgen
 
 class Test_WebGenerator(test_hkgen.Test_BaseGenerator):
 
-    """Tests |WebGenerator|."""
+    """Tests :class:`hkweb.WebGenerator`."""
 
     def create_generator(self):
         """Returns a generator object to be used for the testing.
 
-        **Returns:** |WebGenerator|
+        **Returns:** :class:`hkweb.WebGenerator`
         """
 
         return hkweb.WebGenerator(self._postdb)
@@ -83,6 +83,100 @@ class Test_WebGenerator(test_hkgen.Test_BaseGenerator):
         fail."""
 
         pass
+
+
+class Test_IndexGenerator(Test_WebGenerator):
+
+    """Tests :class:`hkweb.IndexGenerator`."""
+
+    def create_generator(self):
+        """Returns a generator object to be used for the testing.
+
+        **Returns:** :class:`hkweb.IndexGenerator`
+        """
+
+        return hkweb.IndexGenerator(self._postdb)
+
+    def test_print_main(self):
+        """Tests :func:`hkweb.IndexGenerator.print_main`."""
+
+        # We don't actually examine the result, but we at least test that no
+        # exception occurs.
+
+        postdb, g, p = self.get_ouv()
+        g.print_main()
+
+
+class Test_PostPageGenerator(Test_WebGenerator):
+
+    """Tests :class:`hkweb.PostPageGenerator`."""
+
+    def create_generator(self):
+        """Returns a generator object to be used for the testing.
+
+        **Returns:** :class:`hkweb.PostPageGenerator`
+        """
+
+        return hkweb.PostPageGenerator(self._postdb)
+
+    def test_print_main(self):
+        """Tests :func:`hkweb.PostPageGenerator.print_main`."""
+
+        # We don't actually examine the result, but we at least test that no
+        # exception occurs.
+
+        postdb, g, p = self.get_ouv()
+        g.print_main('my_heap/0')
+
+
+class Test_SearchPageGenerator(Test_PostPageGenerator):
+
+    """Tests :class:`hkweb.SearchPageGenerator`."""
+
+    def create_generator(self):
+        """Returns a generator object to be used for the testing.
+
+        **Returns:** :class:`hkweb.SearchPageGenerator`
+        """
+
+        return hkweb.SearchPageGenerator(self._postdb, ['my_heap/0'])
+
+    def test_print_search_page(self):
+        """Tests :func:`hkweb.SearchPageGenerator.print_search_page`."""
+
+        # We don't actually examine the result, but we at least test that no
+        # exception occurs.
+
+        postdb, g, p = self.get_ouv()
+        g.print_search_page()
+
+
+class Test_PostBodyGenerator(Test_WebGenerator):
+
+    """Tests :class:`hkweb.PostBodyGenerator`."""
+
+    def create_generator(self):
+        """Returns a generator object to be used for the testing.
+
+        **Returns:** :class:`hkweb.PostBodyGenerator`
+        """
+
+        return hkweb.PostBodyGenerator(self._postdb)
+
+    def test_print_post_body(self):
+        """Tests :func:`hkweb.PostBodyGenerator.print_post_body`."""
+
+        postdb, g, p = self.get_ouv()
+
+        # Basic test
+        self.assertTextStructsAreEqual(
+            g.print_post_body('my_heap/0'),
+            '<pre class="post-body-content">body0\n</pre>')
+
+        # Testing a non-existig post
+        self.assertTextStructsAreEqual(
+            g.print_post_body('my_heap/nosuchpost'),
+            'No such post: "my_heap/nosuchpost"')
 
 
 if __name__ == '__main__':

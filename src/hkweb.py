@@ -620,7 +620,7 @@ class PostPageGenerator(WebGenerator):
 
         **Argument:**
 
-        - `postid` (|PostId|)
+        - `postid` (|PrePostId|)
 
         **Returns:** |HtmlText|
         """
