@@ -52,6 +52,7 @@ import socket
 import sys
 import threading
 import web as webpy
+import web.wsgiserver
 
 import hkutils
 import hklib
@@ -1289,19 +1290,21 @@ class Server(threading.Thread):
 
     """Implements the hkweb server thread."""
 
-    def __init__(self, port, retries=0):
+    def __init__(self, port, retries=0, silent=False):
         """
 
         **Arguments:**
 
         - `port` (int) -- Port to listen on.
         - `retries` (int) -- Number of retries.
+        - `silent` (bool) -- If ``True``, no text will be printed.
         """
 
         super(Server, self).__init__()
         self.daemon = True
         self._port = port
         self._retries = retries
+        self._silent = silent
 
     def run(self):
         """Called by the threading framework to start the thread."""
@@ -1321,7 +1324,8 @@ class Server(threading.Thread):
             self.webapp = webapp
 
             try:
-                hkutils.log('Starting web service...')
+                if not self._silent:
+                    hkutils.log('Starting web service...')
                 webapp.run()
 
                 # I'm not sure this line will ever be executed
@@ -1344,17 +1348,45 @@ class Server(threading.Thread):
 
 ##### Interface functions #####
 
-def start(port=8080, retries=0):
+# True if we use a lock when starting the web server. It can only be used when
+# we monkey patch web.py, so it is set to true by monkey_patch_hkweb.
+hkweb_using_server_starting_lock = True
+
+# Lock used when starting the web server. If None, it means that the lock is
+# not currently used. Otherwise it is a threading.Lock instance.
+hkweb_server_starting_lock = None
+
+def start(port=8080, retries=0, silent=False):
     """Starts the hkweb web server.
 
     **Argument:**
 
     - `port` (int) -- The port to listen on.
+    - `retries` (int) -- Number of retries.
+    - `silent` (bool) -- If ``True``, no text will be printed.
     """
 
+    global hkweb_server_starting_lock
+
+    def readyfun():
+        # Releasing the lock because the web server has been
+        # started
+        if hkweb_using_server_starting_lock:
+            hkweb_server_starting_lock.release()
+    web.wsgiserver.CherryPyWSGIServer.ready_callbacks.append(readyfun)
+
+    if hkweb_using_server_starting_lock:
+        hkweb_server_starting_lock = threading.Lock()
+        hkweb_server_starting_lock.acquire()
+
     options = hkshell.options
-    options.web_server = Server(port, retries)
+    options.web_server = Server(port, retries, silent)
     options.web_server.start()
+
+    if hkweb_using_server_starting_lock:
+        hkweb_server_starting_lock.acquire()
+        hkweb_server_starting_lock.release()
+        hkweb_server_starting_lock = None
 
 def insert_urls(new_urls):
     """Inserts the given urls before the already handles URLs.

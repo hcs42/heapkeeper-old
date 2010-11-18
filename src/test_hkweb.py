@@ -27,10 +27,13 @@ Usage:
 
 from __future__ import with_statement
 
+import os
 import unittest
 
 import hkutils
+import hkshell
 import hkweb
+import test_hklib
 import test_hkgen
 
 
@@ -177,6 +180,92 @@ class Test_PostBodyGenerator(Test_WebGenerator):
         self.assertTextStructsAreEqual(
             g.print_post_body('my_heap/nosuchpost'),
             'No such post: "my_heap/nosuchpost"')
+
+
+class Test_Index(unittest.TestCase, test_hklib.PostDBHandler):
+
+    """Tests :class:`hkweb.Index`."""
+
+    def setUp(self):
+        """Creates a temporary working directory."""
+
+        self.setUpDirs()
+        self.create_postdb()
+        self.create_threadst()
+
+        self._orig_workingdir = os.getcwd()
+        os.chdir(self._dir)
+
+        self._generator = self.create_generator()
+        self.start_hkshell()
+        hkweb.start(retries=20, silent=True)
+        self._server = self.create_server()
+
+    def create_generator(self):
+        """Returns a generator object to be used for the testing.
+
+        **Returns:** :class:`hkweb.WebGenerator`
+        """
+
+        return hkweb.IndexGenerator(self._postdb)
+
+    def start_hkshell(self):
+        """Starts hkshell."""
+
+        config_file = os.path.join(self._dir, 'test.cfg')
+        config_str = \
+            ('[paths]\n'
+             'html_dir=my_html_dir\n'
+             '\n'
+             '[heaps/my_heap]\n'
+             'heap_id=my_heap\n'
+             'name=My heap\n'
+             'path=my_heap_dir\n')
+        hkutils.string_to_file(config_str, config_file)
+
+        cmdl_options, args = \
+            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell',
+                                '--hkrc', 'NONE'])
+        hkshell.main(cmdl_options, args)
+        hkshell.options.postdb = self._postdb
+
+        self.assertEqual(
+            self.pop_log(),
+            'Warning: post directory does not exists: "my_heap_dir"\n'
+            'Post directory has been created.\n'
+            'Warning: HTML directory does not exists: "my_html_dir"\n'
+            'HTML directory has been created.')
+
+    def create_server(self):
+        """Returns a server object to be used for the testing.
+
+        **Returns:** :class:`hkweb.Index`
+        """
+
+        return hkweb.Index()
+
+    def tearDown(self):
+        """Deletes the temporary working directory."""
+        os.chdir(self._orig_workingdir)
+        self.tearDownDirs()
+
+    def get_ouv(self):
+        """Returns often used variables.
+
+        **Returns:** (|PostDB|, :class:`hkweb.WebGenerator`,
+        :class:`Index`, function)
+        """
+
+        return self._postdb, self._generator, self._server, self.p
+
+    def test_serve_html(self):
+        """Tests :func:`hkweb.Index.serve_html`."""
+
+        postdb, g, server, p = self.get_ouv()
+
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request('/').data,
+            g.print_html_page(g.print_main()))
 
 
 if __name__ == '__main__':

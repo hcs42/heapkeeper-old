@@ -82,7 +82,7 @@ class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
     def get_ouv(self):
         """Returns often used variables.
 
-        **Return:** (|PostDB|, |BaseGenerator|, function)
+        **Returns:** (|PostDB|, |BaseGenerator|, function)
         """
 
         return self._postdb, self._generator, self.p
@@ -98,19 +98,6 @@ class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
              hklib.PostItem(pos='begin', post=self.p(1), level=1),
              hklib.PostItem(pos='end', post=self.p(1), level=1),
              hklib.PostItem(pos='end', post=self.p(0), level=0)]
-
-    def assertTextStructsAreEqual(self, text1, text2):
-        """Asserts that the given text structures are equal.
-
-        **Arguments:**
-
-        - `text1` (|TextStruct|)
-        - `text2` (|TextStruct|)
-        """
-
-        self.assertEqual(
-            hkutils.textstruct_to_str(text1),
-            hkutils.textstruct_to_str(text2))
 
     def file_content(self, filename):
         """Returns the content of the given file in the HTML directory.

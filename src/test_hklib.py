@@ -231,6 +231,19 @@ class PostDBHandler(object):
         self._log = []
         return '\n'.join(log)
 
+    def assertTextStructsAreEqual(self, text1, text2):
+        """Asserts that the given text structures are equal.
+
+        **Arguments:**
+
+        - `text1` (|TextStruct|)
+        - `text2` (|TextStruct|)
+        """
+
+        self.assertEqual(
+            hkutils.textstruct_to_str(text1),
+            hkutils.textstruct_to_str(text2))
+
 
 class Test_Post(unittest.TestCase, PostDBHandler):
 
