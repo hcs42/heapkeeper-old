@@ -66,8 +66,11 @@ class BaseITGenerator(hkgen.BaseGenerator):
         self._heap_id = heap_id
         self.options.html_title = 'Heapkeeper issue tracker'
         self.options.html_h1 = 'Heapkeeper issue tracker'
-        self.options.cssfiles.append('../static/css/issues.css')
-        self.options.files_to_copy.append('static/css/issues.css')
+
+        static_dir = 'plugins/issue_tracker/static'
+        self.options.cssfiles.append(static_dir + '/css/issues.css')
+        self.options.favicon = static_dir + '/images/it.png'
+        self.options.files_to_copy.append(static_dir + '/css/issues.css')
         self.options.flat_issues = True
 
     # Calculations about issues
@@ -526,9 +529,7 @@ class WebITGenerator(BaseITGenerator, hkweb.WebGenerator):
 
     def init(self):
         # Argument count differs from overridden method # pylint: disable=W0221
-        static_dir = 'plugins/issue_tracker/static'
-        self.options.cssfiles.append(static_dir + '/css/issues.css')
-        self.options.favicon = static_dir + '/images/it.png'
+        pass
 
     def print_main(self):
         self.calc()

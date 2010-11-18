@@ -150,6 +150,6 @@ def start(review_command_name='r'):
         # pylint: disable=W0231
         old_init(self, postdb)
 
-        self.js_files.append('/plugins/review/static/js/hkp_review.js')
+        self.options.js_files.append('plugins/review/static/js/hkp_review.js')
 
     hkweb.PostPageGenerator.__init__ = __init__

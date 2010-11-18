@@ -47,6 +47,9 @@ class BaseGenerator(hkgen.BaseGenerator):
         # Unused argument 'postitem' # pylint: disable=W0613
         return postitem.post.post_id_str()
 
+    def get_static_path(self, filename):
+        return '{' + filename + '}'
+
 
 class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
 
@@ -451,6 +454,28 @@ class Test_BaseGenerator(unittest.TestCase, test_hklib.PostDBHandler):
              g.print_postitem(postitems[2]),
              g.print_postitem(postitems[3])])
 
+    def test_print_html_head_content(self):
+        """Tests :func:`hkgen.BaseGenerator.print_html_head_content`."""
+
+        postdb, g, p = self.get_ouv()
+
+        # We overwrite some options of the generator so that we can use these
+        # in our test cases. Since different subclasses of BaseGenerator have
+        # different options, this way testing will be easier because we can
+        # hardcode these values in the tests.
+        g.options.js_files = ['static/js/myjs.js']
+        g.options.cssfiles = ['static/css/mycss1.css', 'static/css/mycss2.css']
+        g.options.favicon = 'static/images/myicon.ico'
+
+        self.assertTextStructsAreEqual(
+            g.print_html_head_content(),
+            ('    <link rel="stylesheet" href="{static/css/mycss1.css}" '
+             'type="text/css" />\n'
+             '    <link rel="stylesheet" href="{static/css/mycss2.css}" '
+             'type="text/css" />\n'
+             '    <link rel="shortcut icon" '
+             'href="{static/images/myicon.ico}">\n'))
+
 
 class Test_StaticGenerator(Test_BaseGenerator):
 
@@ -463,6 +488,32 @@ class Test_StaticGenerator(Test_BaseGenerator):
         """
 
         return hkgen.StaticGenerator(self._postdb)
+
+    def test_print_html_head_content(self):
+        """Tests the following functions:
+
+        - :func:`hkgen.StaticGenerator.get_static_path`
+        - :func:`hkgen.BaseGenerator.print_html_head_content`
+        """
+
+        postdb, g, p = self.get_ouv()
+
+        # We overwrite some options of the generator so that we can use these
+        # in our test cases. Since different subclasses of BaseGenerator have
+        # different options, this way testing will be easier because we can
+        # hardcode these values in the tests.
+        g.options.js_files = ['static/js/myjs.js']
+        g.options.cssfiles = ['static/css/mycss1.css', 'static/css/mycss2.css']
+        g.options.favicon = 'static/images/myicon.ico'
+
+        self.assertTextStructsAreEqual(
+            g.print_html_head_content(),
+            ('    <link rel="stylesheet" href="../static/css/mycss1.css" '
+             'type="text/css" />\n'
+             '    <link rel="stylesheet" href="../static/css/mycss2.css" '
+             'type="text/css" />\n'
+             '    <link rel="shortcut icon" '
+             'href="../static/images/myicon.ico">\n'))
 
     def test_print_postitem_flat(self):
         """Inherited test case that we don't want to execute because it would

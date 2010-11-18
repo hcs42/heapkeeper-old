@@ -303,29 +303,26 @@ class WebGenerator(hkgen.BaseGenerator):
         # Argument count differs from overridden method # pylint: disable=W0221
         """Initializator."""
 
-        self.options.cssfiles.append("static/css/hkweb.css")
-        self.options.favicon = '/static/images/heap.png'
-        self.js_files = ['/external/jquery.js',
-                         '/external/json2.js',
-                         '/static/js/hkweb.js']
+        self.options.cssfiles.append('static/css/hkweb.css')
+        self.options.js_files = ['external/jquery.js',
+                                 'external/json2.js',
+                                 'static/js/hkweb.js']
 
-    def print_html_head_content(self):
-        """Prints the content in the HTML header.
+    def get_static_path(self, filename):
+        """Returns the path that can be included in the generated HTML pages.
 
-        It links the CSS files and the favicon.
+        In case of WebGenerator, the string ``/`` will be prepended to the
+        given filename.
 
-        **Returns:** |HtmlText|
+        **Argument:**
+
+        - `filename` (str) -- A filename relative to the root directory of
+        Heapkeeper.
+
+        **Returns:** str
         """
 
-        stylesheets = \
-            ['    <link rel="stylesheet" href="/%s" type="text/css" />\n' %
-             (css,)
-             for css in self.options.cssfiles]
-
-        favicon = ('    <link rel="shortcut icon" href="%s">\n' %
-                   (self.options.favicon))
-
-        return (stylesheets, favicon)
+        return '/' + filename
 
     def print_postitem_link(self, postitem):
         """Prints the thread link of the post item.
@@ -355,17 +352,6 @@ class WebGenerator(hkgen.BaseGenerator):
                 '  </form>\n'
                 '</div>\n'
                 '</center>\n')
-
-    def print_js_links(self):
-        """Prints links to the JavaScript files that should be included in the
-        page.
-
-        **Returns:** |HtmlText|
-        """
-
-        return \
-            [('<script type="text/javascript" src="%s"></script>\n' %
-              (js_file,)) for js_file in self.js_files]
 
     def print_additional_header(self, info):
         # Unused arguments # pylint: disable=W0613

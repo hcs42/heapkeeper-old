@@ -46,6 +46,32 @@ class Test_WebGenerator(test_hkgen.Test_BaseGenerator):
 
         return hkweb.WebGenerator(self._postdb)
 
+    def test_print_html_head_content(self):
+        """Tests the following functions:
+
+        - :func:`hkweb.WebGenerator.get_static_path`
+        - :func:`hkgen.BaseGenerator.print_html_head_content`
+        """
+
+        postdb, g, p = self.get_ouv()
+
+        # We overwrite some options of the generator so that we can use these
+        # in our test cases. Since different subclasses of BaseGenerator have
+        # different options, this way testing will be easier because we can
+        # hardcode these values in the tests.
+        g.options.js_files = ['static/js/myjs.js']
+        g.options.cssfiles = ['static/css/mycss1.css', 'static/css/mycss2.css']
+        g.options.favicon = 'static/images/myicon.ico'
+
+        self.assertTextStructsAreEqual(
+            g.print_html_head_content(),
+            ('    <link rel="stylesheet" href="/static/css/mycss1.css" '
+             'type="text/css" />\n'
+             '    <link rel="stylesheet" href="/static/css/mycss2.css" '
+             'type="text/css" />\n'
+             '    <link rel="shortcut icon" '
+             'href="/static/images/myicon.ico">\n'))
+
     def test_print_postitem_flat(self):
         """Inherited test case that we don't want to execute because it would
         fail."""
