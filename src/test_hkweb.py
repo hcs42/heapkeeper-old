@@ -37,6 +37,8 @@ import test_hklib
 import test_hkgen
 
 
+##### Generator classes #####
+
 class Test_WebGenerator(test_hkgen.Test_BaseGenerator):
 
     """Tests :class:`hkweb.WebGenerator`."""
@@ -181,6 +183,8 @@ class Test_PostBodyGenerator(Test_WebGenerator):
             g.print_post_body('my_heap/nosuchpost'),
             'No such post: "my_heap/nosuchpost"')
 
+
+##### Server classes #####
 
 class Test_Index(unittest.TestCase, test_hklib.PostDBHandler):
 

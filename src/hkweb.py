@@ -746,7 +746,6 @@ class PostBodyGenerator(WebGenerator):
 
 ##### Server classes #####
 
-
 class WebpyServer(object):
 
     """Base class for webservers."""
