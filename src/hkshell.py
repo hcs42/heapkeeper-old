@@ -1942,6 +1942,8 @@ def parse_args(args=None):
     (cmdl_options, args) = parser.parse_args(args)
     return cmdl_options, args
 
+hkshell_started = False
+
 def main(cmdl_options, args):
     """Initializes |hkshell|.
 
@@ -1993,6 +1995,8 @@ def main(cmdl_options, args):
     if cmdl_options.no_shell:
         return
 
+    hkshell_started = True
+
     while True:
 
         # Creating a shell to the user
@@ -2024,3 +2028,5 @@ def main(cmdl_options, args):
             break
         else:
             break
+
+    hkshell_started = False

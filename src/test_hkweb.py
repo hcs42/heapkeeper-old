@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
-# Copyright (C) 2010 Csaba Hoch
+# Copyright (C) 2010-2011 Csaba Hoch
 
 """Tests the hkweb module.
 
@@ -186,9 +186,9 @@ class Test_PostBodyGenerator(Test_WebGenerator):
 
 ##### Server classes #####
 
-class Test_Index(unittest.TestCase, test_hklib.PostDBHandler):
+class Test__servers(unittest.TestCase, test_hklib.PostDBHandler):
 
-    """Tests :class:`hkweb.Index`."""
+    """Tests server classes in |hkweb|."""
 
     def setUp(self):
         """Creates a temporary working directory."""
@@ -200,21 +200,14 @@ class Test_Index(unittest.TestCase, test_hklib.PostDBHandler):
         self._orig_workingdir = os.getcwd()
         os.chdir(self._dir)
 
-        self._generator = self.create_generator()
         self.start_hkshell()
-        hkweb.start(retries=20, silent=True)
-        self._server = self.create_server()
-
-    def create_generator(self):
-        """Returns a generator object to be used for the testing.
-
-        **Returns:** :class:`hkweb.WebGenerator`
-        """
-
-        return hkweb.IndexGenerator(self._postdb)
+        self.start_hkweb()
 
     def start_hkshell(self):
-        """Starts hkshell."""
+        """Starts hkshell if it is not started."""
+
+        if hkshell.hkshell_started:
+            return
 
         config_file = os.path.join(self._dir, 'test.cfg')
         config_str = \
@@ -240,36 +233,71 @@ class Test_Index(unittest.TestCase, test_hklib.PostDBHandler):
             'Warning: HTML directory does not exists: "my_html_dir"\n'
             'HTML directory has been created.')
 
-    def create_server(self):
-        """Returns a server object to be used for the testing.
-
-        **Returns:** :class:`hkweb.Index`
-        """
-
-        return hkweb.Index()
+    def start_hkweb(self):
+        """Starts hkweb if it is not started."""
+        if hkweb.hkweb_ports == []:
+            hkweb.start(retries=20, silent=True)
 
     def tearDown(self):
         """Deletes the temporary working directory."""
         os.chdir(self._orig_workingdir)
         self.tearDownDirs()
 
-    def get_ouv(self):
-        """Returns often used variables.
+    def test_Index(self):
+        """Tests :class:`hkweb.Index`."""
 
-        **Returns:** (|PostDB|, :class:`hkweb.WebGenerator`,
-        :class:`Index`, function)
-        """
-
-        return self._postdb, self._generator, self._server, self.p
-
-    def test_serve_html(self):
-        """Tests :func:`hkweb.Index.serve_html`."""
-
-        postdb, g, server, p = self.get_ouv()
+        gen = hkweb.IndexGenerator(self._postdb)
 
         self.assertTextStructsAreEqual(
             hkshell.options.web_server.webapp.request('/').data,
-            g.print_html_page(g.print_main()))
+            gen.print_html_page(gen.print_main()))
+
+    def test_Post(self):
+        """Tests :class:`hkweb.Post`."""
+
+        gen = hkweb.PostPageGenerator(self._postdb)
+
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request('/posts/my_heap/0').data,
+            gen.print_html_page(gen.print_main('my_heap/0')))
+
+    def test_Search_get_posts(self):
+        """Tests :func:`hkweb.Search.get_posts`."""
+
+        s = hkweb.Search()
+        postdb = self._postdb
+
+        self.assertEqual(
+            s.get_posts({'posts': ['my_heap/0', 'my_heap/3']}),
+            postdb.postset(['my_heap/0', 'my_heap/3']))
+
+        self.assertEqual(
+            s.get_posts({'term': '3'}),
+            postdb.postset(['my_heap/3']))
+
+    def test_Search(self):
+        """Tests :class:`hkweb.Search`."""
+
+        gen = hkweb.SearchPageGenerator(self._postdb, 'my_heap/3')
+
+        numbers = ('Posts found: 1<br/>All posts shown: 4')
+        numbers_box = gen.enclose(numbers, 'div', 'info-box')
+        main_content = (numbers_box, gen.print_search_page())
+
+        js_code = \
+            ('<script  type="text/javascript" language="JavaScript">\n'
+             '$("#searchbar-term").val("3");\n'
+             '$("#searchbar-term").focus();\n'
+             '</script>\n')
+
+        content = (gen.print_searchbar(),
+                   main_content,
+                   gen.print_js_links(),
+                   js_code)
+
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request('/search?term=3').data,
+            gen.print_html_page(content))
 
 
 if __name__ == '__main__':

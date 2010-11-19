@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
-# Copyright (C) 2009-2010 Csaba Hoch
+# Copyright (C) 2009-2011 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
 """Module for dynamic web output in Heapkeeper.
@@ -810,7 +810,7 @@ class Post(HkPageServer):
 
     """Serves the post pages.
 
-    Served URL: ``/post/<heap>/<post index>``
+    Served URL: ``/posts/<heap>/<post index>``
     """
 
     def __init__(self):
@@ -919,7 +919,7 @@ class Search(HkPageServer):
 
         posts = args.get('posts')
         if posts is not None:
-            return posts
+            return self._postdb.postset(posts)
 
         term = args.get('term')
         if term is not None:
@@ -1342,6 +1342,7 @@ class Server(threading.Thread):
         if not found:
             s = ('No free port found by hkweb in the %s..%s interval' %
                  (first, last))
+            hkweb_server_starting_lock.release()
             raise hkutils.HkException(s)
 
 
@@ -1355,6 +1356,8 @@ hkweb_using_server_starting_lock = True
 # not currently used. Otherwise it is a threading.Lock instance.
 hkweb_server_starting_lock = None
 
+hkweb_ports = []
+
 def start(port=8080, retries=0, silent=False):
     """Starts the hkweb web server.
 
@@ -1363,6 +1366,9 @@ def start(port=8080, retries=0, silent=False):
     - `port` (int) -- The port to listen on.
     - `retries` (int) -- Number of retries.
     - `silent` (bool) -- If ``True``, no text will be printed.
+
+    **Returns**: int | ``None`` -- The port on which the server started to
+    listen. If ``None``, it was not started..
     """
 
     global hkweb_server_starting_lock
@@ -1372,6 +1378,7 @@ def start(port=8080, retries=0, silent=False):
         # started
         if hkweb_using_server_starting_lock:
             hkweb_server_starting_lock.release()
+            final_port[0] = options.web_server._port
     web.wsgiserver.CherryPyWSGIServer.ready_callbacks.append(readyfun)
 
     if hkweb_using_server_starting_lock:
@@ -1379,6 +1386,7 @@ def start(port=8080, retries=0, silent=False):
         hkweb_server_starting_lock.acquire()
 
     options = hkshell.options
+    final_port = [None]
     options.web_server = Server(port, retries, silent)
     options.web_server.start()
 
@@ -1386,6 +1394,10 @@ def start(port=8080, retries=0, silent=False):
         hkweb_server_starting_lock.acquire()
         hkweb_server_starting_lock.release()
         hkweb_server_starting_lock = None
+
+    if final_port[0] is not None:
+        hkweb_ports.append(final_port[0])
+    return final_port[0]
 
 def insert_urls(new_urls):
     """Inserts the given urls before the already handles URLs.
