@@ -404,7 +404,7 @@ Heapkeeper, it is something like ``0.3``.
 #. Execute the package maker script and push the package to the homepage::
 
     $ hkdu-make-package
-    $ hkdu-pushrelease hcs@heapkeeper.org
+    $ hkdu-pushrelease info@heapkeeper.org
 
 #. Download the uploaded package and perform the steps in the :doc:`tutorial`.
 
@@ -422,7 +422,7 @@ Heapkeeper, it is something like ``0.3``.
 #. Push the new documentation to the home page::
 
     $ cd doc; make clean && make html; cd ..
-    $ hk-dev-utils/pushdoc hcs@heapkeeper.org
+    $ hkdu-pushdoc info@heapkeeper.org
 
 #. Check out ``_master`` and fast forward it to the new release::
 
