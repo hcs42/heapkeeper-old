@@ -77,8 +77,11 @@ class PostDBHandler(object):
         os.mkdir(self._html_dir)
         os.mkdir(self._html_myheap_dir)
         os.mkdir(self._html_myotherheap_dir)
+        self.setUpLogs()
 
-        # We use a custom log function
+    def setUpLogs(self):
+        """Sets up a custom log function which can be read using the
+        :func:`pop_log` function."""
         self._log = []
         self._old_log_fun = hkutils.log_fun
         def log_fun(*args):
@@ -90,6 +93,11 @@ class PostDBHandler(object):
         left."""
 
         shutil.rmtree(self._dir)
+        self.tearDownLogs()
+
+    def tearDownLogs(self):
+        """Checks that there are no unread logs and sets the original logging
+        function."""
 
         # Setting the original logging function back
         self.assertEqual(self._log, [])

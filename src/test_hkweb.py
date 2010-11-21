@@ -228,13 +228,7 @@ class Test__servers(unittest.TestCase, test_hklib.PostDBHandler):
     def setUp(self):
         """Creates a temporary working directory."""
 
-        self.setUpDirs()
-        self.create_postdb()
-        self.create_threadst()
-
-        self._orig_workingdir = os.getcwd()
-        os.chdir(self._dir)
-
+        self.setUpLogs()
         self.start_hkshell()
         self.start_hkweb()
 
@@ -244,29 +238,13 @@ class Test__servers(unittest.TestCase, test_hklib.PostDBHandler):
         if hkshell.hkshell_started:
             return
 
-        config_file = os.path.join(self._dir, 'test.cfg')
-        config_str = \
-            ('[paths]\n'
-             'html_dir=my_html_dir\n'
-             '\n'
-             '[heaps/my_heap]\n'
-             'heap_id=my_heap\n'
-             'name=My heap\n'
-             'path=my_heap_dir\n')
-        hkutils.string_to_file(config_str, config_file)
+        config_file = os.path.join('examples', 'basic', 'config.cfg')
 
         cmdl_options, args = \
-            hkshell.parse_args(['--configfile', 'test.cfg', '--noshell',
+            hkshell.parse_args(['--configfile', config_file, '--noshell',
                                 '--hkrc', 'NONE'])
         hkshell.main(cmdl_options, args)
-        hkshell.options.postdb = self._postdb
-
-        self.assertEqual(
-            self.pop_log(),
-            'Warning: post directory does not exists: "my_heap_dir"\n'
-            'Post directory has been created.\n'
-            'Warning: HTML directory does not exists: "my_html_dir"\n'
-            'HTML directory has been created.')
+        self._postdb = hkshell.options.postdb
 
     def start_hkweb(self):
         """Starts hkweb if it is not started."""
@@ -275,8 +253,7 @@ class Test__servers(unittest.TestCase, test_hklib.PostDBHandler):
 
     def tearDown(self):
         """Deletes the temporary working directory."""
-        os.chdir(self._orig_workingdir)
-        self.tearDownDirs()
+        self.tearDownLogs()
 
     def test_Index(self):
         """Tests :class:`hkweb.Index`."""

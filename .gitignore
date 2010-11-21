@@ -8,7 +8,7 @@ releases
 # files
 
 hkrc.py
-*.cfg
+./*.cfg
 *.pyc
 *.pyo
 external/JsTestDriver.jar
