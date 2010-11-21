@@ -11,7 +11,10 @@ conventions.
 
 .. toctree::
 
-    development
+    tools
+    communication
+    workflow
+    reading
     codingconventions
 
 Concepts

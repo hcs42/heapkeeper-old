@@ -78,8 +78,8 @@ Quick information
   development; look at the `commit history`__ or the `impact graph`__ of the
   repository.
 * **Contact**: We have a
-  :email:`mailing list, <heapkeeper-heap@googlegroups.com>` and a :ref:`heap
-  based on that mailing list <heapkeeper_heap>`.
+  :email:`mailing list, <heapkeeper-heap@googlegroups.com>` and a :doc:`heap
+  based on that mailing list <communication>`.
 
 .. .. The :email:`...` object should not be broken into several lines, because
 .. .. then it does not work.
@@ -105,7 +105,10 @@ Documentation
 
 * :doc:`developersguide`
 
-  * :doc:`development`
+  * :doc:`tools`
+  * :doc:`communication`
+  * :doc:`workflow`
+  * :doc:`reading`
   * :doc:`codingconventions`
   * :doc:`keyprinciples`
   * :doc:`patterns`
