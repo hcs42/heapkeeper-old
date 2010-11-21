@@ -248,6 +248,8 @@ def get_web_args():
 
     result = {}
     for key, value in webpy.input().items():
+        key = hkutils.uutf8(key)
+        value = hkutils.uutf8(value)
         try:
 
             # If `value` starts with the JSON escape character, a JSON object
@@ -947,45 +949,6 @@ class Search(HkPageServer):
 
 ##### Helper servers ######
 
-class ShowJSon(HkPageServer):
-
-    """Serves a page that displays the JSON parameters given to that page.
-
-    Intended only for developers.
-
-    Served URL: ``/showjson``
-    """
-
-    def __init__(self):
-        """Constructor."""
-
-        HkPageServer.__init__(self)
-
-    def GET(self):
-        """Serves a HTTP GET request.
-
-        **Returns:** str
-        """
-
-        input = webpy.input()
-        try:
-            args = get_web_args()
-        except hkutils.HkException, e:
-            return str(e)
-        generator = IndexGenerator(self._postdb)
-        content = ("JSon dictionary of the query parameters: ",
-                    generator.escape(repr(args)))
-        return self.serve_html(content, generator)
-
-    def POST(self):
-        """Serves a HTTP POST request.
-
-        **Returns:** str
-        """
-
-        return self.GET()
-
-
 class RawPostBody(WebpyServer):
 
     """Serves raw post bodies.
@@ -1054,6 +1017,29 @@ class AjaxServer(WebpyServer):
         """Constructor."""
         WebpyServer.__init__(self)
         self._get_request_allowed = False
+        self._result_type = 'json'
+
+    def main(self):
+        """Serves the request by calling the `execute` method.
+
+        **Returns:** str
+        """
+
+        args = get_web_args()
+        result = self.execute(args)
+        if self._result_type == 'json':
+            # RFC4627: "The MIME media type for JSON text is application/json."
+            webpy.header('Content-type','application/json')
+            webpy.header('Transfer-Encoding','chunked')
+            return json.dumps(result)
+        elif self._result_type == 'str':
+            webpy.header('Content-type', 'text/html')
+            webpy.header('Transfer-Encoding','chunked')
+            result = hkutils.textstruct_to_str(result)
+            return hkgen.BaseGenerator(self._postdb).escape(result)
+        else:
+            msg = 'Unknown _result_type: %s' % (self._result_type,)
+            raise hkutils.HkException(msg)
 
     def POST(self):
         """Serves a HTTP POST request.
@@ -1061,15 +1047,12 @@ class AjaxServer(WebpyServer):
         **Returns:** str
         """
 
-        # RFC4627: "The MIME media type for JSON text is application/json."
-        webpy.header('Content-type','application/json')
-        webpy.header('Transfer-Encoding','chunked')
         try:
-            args = get_web_args()
+            return self.main()
         except hkutils.HkException, e:
-            return str(e)
-        result = self.execute(args)
-        return json.dumps(result)
+            webpy.header('Content-type', 'text/html')
+            webpy.header('Transfer-Encoding', 'chunked')
+            return hkgen.BaseGenerator(self._postdb).escape(str(e))
 
     def GET(self):
         """Serves a HTTP GET request.
@@ -1098,6 +1081,36 @@ class AjaxServer(WebpyServer):
 
         s = ('hkweb.AjaxServer.execute: this method should be overridden')
         raise hkutils.HkException(s)
+
+
+class ShowJSon(AjaxServer):
+
+    """Serves a page that displays the JSON parameters given to that page.
+
+    Intended only for developers.
+
+    Served URL: ``/showjson``
+    """
+
+    def __init__(self):
+        """Constructor."""
+
+        AjaxServer.__init__(self)
+        self._get_request_allowed = True
+        self._result_type = 'str'
+
+    def execute(self, args):
+        """Shows the arguments.
+
+        **Argument:**
+
+        - `args` ({str: object})
+
+        **Returns:** str
+        """
+
+        return ("JSon dictionary of the query parameters: ",
+                 repr(args))
 
 
 class SetPostBody(AjaxServer):

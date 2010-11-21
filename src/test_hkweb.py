@@ -369,6 +369,36 @@ class Test__servers(unittest.TestCase, test_hklib.PostDBHandler):
             hkshell.options.web_server.webapp.request(url).data,
             gen.print_html_page(content))
 
+    def test_ShowJSon(self):
+        """Tests :class:`hkweb.ShowJSon`."""
+
+        bp = 'JSon dictionary of the query parameters: ' # boilerplate
+
+        # Basic test
+        url = '/show-json?key=value'
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request(url).data,
+            bp + "{'key': 'value'}")
+
+        # Testing incorrect arguments
+        url = '/show-json?key=%00NotCorrectJsonObject'
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request(url).data,
+            ('Error: the "key" parameter is not a valid JSON object: ' +
+             '\x00NotCorrectJsonObject'))
+
+        # Testing empty parameter list
+        url = '/show-json'
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request(url).data,
+            bp + "{}")
+
+        # Testing special characters
+        url = '/show-json?key=%00"value <br>\\n"'
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request(url).data,
+            bp + "{'key': 'value &lt;br&gt;\\n'}")
+
 
 if __name__ == '__main__':
     hkutils.set_log(False)
