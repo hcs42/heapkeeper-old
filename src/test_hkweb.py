@@ -434,6 +434,16 @@ class Test__servers(unittest.TestCase, test_hklib.PostDBHandler):
             hkshell.options.web_server.webapp.request(url).data,
             bp + "{'key': 'value &lt;br&gt;\\n'}")
 
+    def test_Fetch(self):
+        """Tests :class:`hkweb.Post`."""
+
+        gen = hkweb.PostPageGenerator(self._postdb)
+
+        url = '/static/test/test_file.txt'
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request(url).data,
+            'test_file_contents\n')
+
 
 if __name__ == '__main__':
     hkutils.set_log(False)

@@ -117,6 +117,9 @@ def update_path_with_plugin_src_dirs():
 
 update_path_with_plugin_src_dirs()
 
+# Setting up the hk_dir variable that points to Heapkeeper's main directory
+hk_dir = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
+
 ##### Performance measurement #####
 
 pm_last_time = datetime.datetime.now()

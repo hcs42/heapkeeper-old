@@ -47,6 +47,7 @@ import datetime
 import exceptions
 import itertools
 import json
+import os
 import re
 import socket
 import sys
@@ -1305,6 +1306,7 @@ class Fetch(object):
             name = 'static/images/favicon.ico'
 
         filename = hkutils.uutf8(name)
+        filename = os.path.join(hkutils.hk_dir, filename)
         return hkutils.file_to_string(filename)
 
 
