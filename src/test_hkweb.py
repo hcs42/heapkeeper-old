@@ -278,6 +278,8 @@ class Test__servers(unittest.TestCase, test_hklib.PostDBHandler):
     def test_Search(self):
         """Tests :class:`hkweb.Search`."""
 
+        ## Testing search term for an existing post
+
         gen = hkweb.SearchPageGenerator(self._postdb, 'my_heap/3')
 
         numbers = ('Posts found: 1<br/>All posts shown: 4')
@@ -297,6 +299,74 @@ class Test__servers(unittest.TestCase, test_hklib.PostDBHandler):
 
         self.assertTextStructsAreEqual(
             hkshell.options.web_server.webapp.request('/search?term=3').data,
+            gen.print_html_page(content))
+
+        ## Testing search specified by 'posts'
+
+        gen = hkweb.SearchPageGenerator(self._postdb, 'my_heap/3')
+
+        numbers = ('Posts found: 1<br/>All posts shown: 4')
+        numbers_box = gen.enclose(numbers, 'div', 'info-box')
+        main_content = (numbers_box, gen.print_search_page())
+
+        js_code = \
+            ('<script  type="text/javascript" language="JavaScript">\n'
+             '$("#searchbar-term").focus();\n'
+             '</script>\n')
+
+        content = (gen.print_searchbar(),
+                   main_content,
+                   gen.print_js_links(),
+                   js_code)
+
+        url = '/search?posts=%00["my_heap/3"]'
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request(url).data,
+            gen.print_html_page(content))
+
+        ## Testing search page with no search term
+
+        gen = hkweb.SearchPageGenerator(self._postdb, [])
+
+        js_code = \
+            ('<script  type="text/javascript" language="JavaScript">\n'
+             '$("#searchbar-term").focus();\n'
+             '</script>\n')
+
+        content = (gen.print_searchbar(),
+                   '',
+                   gen.print_js_links(),
+                   js_code)
+
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request('/search').data,
+            gen.print_html_page(content))
+
+        ## Testing search page with specifying a non-existent post
+
+        url = '/search?posts=%00["nosuchpost"]'
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request(url).data,
+            'Post not found: nosuchpost')
+
+        ## Testing search term for an existing post
+
+        gen = hkweb.SearchPageGenerator(self._postdb, [])
+
+        js_code = \
+            ('<script  type="text/javascript" language="JavaScript">\n'
+             '$("#searchbar-term").val("nosuchpost");\n'
+             '$("#searchbar-term").focus();\n'
+             '</script>\n')
+
+        content = (gen.print_searchbar(),
+                   'No post found.',
+                   gen.print_js_links(),
+                   js_code)
+
+        url = '/search?term=nosuchpost'
+        self.assertTextStructsAreEqual(
+            hkshell.options.web_server.webapp.request(url).data,
             gen.print_html_page(content))
 
 
