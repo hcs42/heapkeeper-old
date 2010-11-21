@@ -68,6 +68,7 @@ urls = [
     r'/', 'Index',
     r'/(external/[A-Za-z0-9_./-]+)', 'Fetch',
     r'/(static/[A-Za-z0-9_./-]+)', 'Fetch',
+    r'/(favicon.ico)', 'Fetch',
     r'/(plugins/[A-Za-z0-9_.-]+/static/[A-Za-z0-9_./-]+)', 'Fetch',
     r'/posts/(.*)', 'Post',
     r'/raw-post-bodies/(.*)', 'RawPostBody',
@@ -1278,6 +1279,9 @@ class Fetch(object):
 
         **Returns:** str
         """
+
+        if name == 'favicon.ico':
+            name = 'static/images/favicon.ico'
 
         filename = hkutils.uutf8(name)
         return hkutils.file_to_string(filename)
