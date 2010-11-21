@@ -239,15 +239,23 @@ def add_auth(server, auth_decorator):
 
 JSON_ESCAPE_CHAR = '\x00'
 
-def get_web_args():
+def get_web_args(query_params=None):
     """Gets the arguments transferred as a JSON object from the web.py module.
+
+    **Argument:**
+
+    - `query_params` ([(unicode, unicode)] | ``None``) -- The query parameters.
+      If ``None``, the function will get them from ``web.py``.
 
     **Returns:** json_object -- It will contain UTF-8 encoded strings instead
     of unicode objects.
     """
 
+    if query_params is None:
+        query_params = webpy.input().items()
+
     result = {}
-    for key, value in webpy.input().items():
+    for key, value in query_params:
         key = hkutils.uutf8(key)
         value = hkutils.uutf8(value)
         try:

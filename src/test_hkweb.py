@@ -37,6 +37,41 @@ import test_hklib
 import test_hkgen
 
 
+##### Utility functions #####
+
+class Test__utility(unittest.TestCase):
+
+    """Tests utility functions in |hwkeb|."""
+
+    def test_get_web_args(self):
+        """Tests :func:`hkweb.get_web_args`."""
+
+        # Basic test
+        self.assertEqual(
+            hkweb.get_web_args([(u'key', u'value')]),
+            {'key': 'value'})
+
+        # Testing empty value
+        self.assertEqual(
+            hkweb.get_web_args([(u'key', u'')]),
+            {'key': ''})
+
+        # Testing multiple keys
+        self.assertEqual(
+            hkweb.get_web_args([(u'key1', u'value1'), (u'key2', u'value2')]),
+            {'key1': 'value1', 'key2': 'value2'})
+
+        # Testing string given as a JSon object
+        self.assertEqual(
+            hkweb.get_web_args([(u'key', u'\0"value"')]),
+            {'key': 'value'})
+
+        # Testing string given as a JSon object
+        self.assertEqual(
+            hkweb.get_web_args([(u'key', u'\0{"key1": ["value2"]}')]),
+            {'key': {'key1': ['value2']}})
+
+
 ##### Generator classes #####
 
 class Test_WebGenerator(test_hkgen.Test_BaseGenerator):
