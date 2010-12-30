@@ -90,12 +90,12 @@ class PollChatMessage:
 
 def postpage_new_init(self, postdb):
     postpage_old_init(self, postdb)
-    self.js_files.append('/plugins/chat/static/js/hkp_chat.js')
+    self.options.js_files.append('plugins/chat/static/js/hkp_chat.js')
     self.options.cssfiles.append('plugins/chat/static/css/chat.css')
 
 def index_new_init(self, postdb):
     index_old_init(self, postdb)
-    self.js_files.append('/plugins/chat/static/js/hkp_chat.js')
+    self.options.js_files.append('plugins/chat/static/js/hkp_chat.js')
     self.options.cssfiles.append('plugins/chat/static/css/chat.css')
 
 def print_chat(self):
@@ -125,13 +125,13 @@ def threadid_js(post_id=None):
 #            threadid_js(),
 #            print_js_links)
 
-def postpage_print_additional_header(self, postid):
-    return (postpage_old_print_additional_header(self, postid),
-            threadid_js(postid),
+def postpage_print_additional_header(self, info):
+    return (postpage_old_print_additional_header(self, info),
+            threadid_js(info['postid']),
             print_chat(self))
 
-def index_print_additional_header(self):
-    return (index_old_print_additional_header(self),
+def index_print_additional_header(self, info):
+    return (index_old_print_additional_header(self, info),
             threadid_js(),
             print_chat(self))
 

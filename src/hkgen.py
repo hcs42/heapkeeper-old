@@ -74,10 +74,15 @@ class GeneratorOptions(object):
       file. Default: ``'Heap index'``.
     - `html_h1` (str) -- The string to print as the title (<h1>) of the HTML
       file. Default: ``'Heap index'``.
-    - `cssfiles` (str) -- The name of the CSS files that should be referenced.
+    - `cssfiles` ([str]) -- The names of the CSS files that should be
+      referenced.
     - `files_to_copy` ([str]) -- List of files that should be copied from the
       directory of the heaps or from the current directory to the HTML
       directory. Default: []
+    - `js_files` ([str]) -- The names of the JavaScript files that should be
+      referenced.
+    - `favicon` (str) -- The name of the favicon file that should be
+      referenced.
     """
 
     # Unused arguments # pylint: disable=W0613
@@ -86,8 +91,10 @@ class GeneratorOptions(object):
                  shorttags=False,
                  html_title='Heap index',
                  html_h1='Heap index',
-                 cssfiles=['../static/css/heapindex.css'],
-                 files_to_copy=['static/css/heapindex.css']):
+                 cssfiles=[],
+                 files_to_copy=[],
+                 js_files=[],
+                 favicon=''):
 
         super(GeneratorOptions, self).__init__()
         hkutils.set_dict_items(self, locals())
@@ -102,6 +109,9 @@ class BaseGenerator(object):
 
     It can generate two kinds of HTML files by default: index pages and thread
     pages.
+
+    This is only a base class and cannot be used as is; it has "abstract
+    methods" that should be overridden, otherwise they will throw an exception.
 
     **Data attributes:**
 
@@ -121,7 +131,17 @@ class BaseGenerator(object):
         - `postdb` (|PostDB|)
         """
 
-        super(BaseGenerator, self).__init__()
+        object.__init__(self)
+        BaseGenerator.init(self, postdb)
+
+    def init(self, postdb):
+        """Initializator.
+
+        **Arguments:**
+
+        - `postdb` (|PostDB|)
+        """
+
         self._postdb = postdb
         self.options = GeneratorOptions()
 
@@ -132,6 +152,10 @@ class BaseGenerator(object):
         self.options.shorttags = True
         self.options.localtime_fun = time.localtime
         self.options.html_body_attributes = ''
+        self.options.cssfiles = ['static/css/heapindex.css']
+        self.options.files_to_copy = ['static/css/heapindex.css',
+                                      'static/images/thread.png']
+        self.options.favicon = 'static/images/heap.png'
 
     # Printing general HTML
 
@@ -293,6 +317,25 @@ class BaseGenerator(object):
                 comment_str, newline,
                 content,
                 '</', tag, '>', comment_str, closing_comment_str, newline)
+
+    def get_static_path(self, filename):
+        # Unused arguments # pylint: disable=W0613
+        """Returns the path that can be included in the generated HTML pages.
+
+        This is an abstract method that should be overridden; otherwise it will
+        throw an exception.
+
+        **Argument:**
+
+        - `filename` (str) -- A filename relative to the root directory of
+        Heapkeeper.
+
+        **Returns:** str
+        """
+
+        s = ('hkgen.BaseGenerator.get_static_path: this method should be '
+             'overridden')
+        raise hkutils.HkException(s)
 
     def section_begin(self, sectionid, sectiontitle):
         """Prints the beginning of a section.
@@ -712,7 +755,7 @@ class BaseGenerator(object):
 
     # TODO test
     def print_postitem_body_core(self, postitem):
-        """Prints the core of the body the post item.
+        """Prints the core of the body of the post item.
 
         **Argument:**
 
@@ -792,7 +835,11 @@ class BaseGenerator(object):
 
     # TODO: test
     def print_postitem_link(self, postitem):
+        # Unused argument 'postitem' # pylint: disable=W0613
         """Prints the link to the post of the post item.
+
+        This is an abstract method that should be overridden; otherwise it will
+        throw an exception.
 
         **Argument:**
 
@@ -801,15 +848,9 @@ class BaseGenerator(object):
         **Returns:** |TextStruct|
         """
 
-        post = postitem.post
-        root = self._postdb.root(post)
-        if root is None:
-            return ('../', post.htmlfilebasename())
-        else:
-
-            heap_id, post_index = post.post_id()
-            return (('../', self._postdb.root(post).htmlthreadbasename()),
-                    '#post-summary-', heap_id, '-', post_index)
+        s = ('hkgen.BaseGenerator.print_postitem_link: this method should be '
+             'overridden')
+        raise hkutils.HkException(s)
 
     # TODO: test
     def print_postitem_begin(self, postitem):
@@ -844,7 +885,7 @@ class BaseGenerator(object):
     # TODO test
     def get_postsummary_fields_inner(self, postitem):
         # Unused argument 'postitem' # pylint: disable=W0613
-        """Returns the fields of the post summary when the pos position is
+        """Returns the fields of the post summary when the position is
         ``'inner'``.
 
         **Argument:**
@@ -1264,17 +1305,35 @@ class BaseGenerator(object):
 
     # Printing HTML headers and footers
 
-    # TODO: test
-    def print_html_head_content(self):
-        """Prints the content in the HTML header.
+    def print_js_links(self):
+        """Prints links to the JavaScript files that should be included in the
+        page.
 
         **Returns:** |HtmlText|
         """
 
         return \
+            [('<script type="text/javascript" src="%s"></script>\n' %
+              (self.get_static_path(js_file),))
+             for js_file in self.options.js_files]
+
+    # TODO: test
+    def print_html_head_content(self):
+        """Prints the content in the HTML header.
+
+        It links the CSS files.
+
+        **Returns:** |HtmlText|
+        """
+
+        css_links = \
             ['    <link rel="stylesheet" href="%s" type="text/css" />\n' %
-             (css,)
+             (self.get_static_path(css),)
              for css in self.options.cssfiles]
+        favicon = ('    <link rel="shortcut icon" href="%s">\n' %
+                   (self.get_static_path(self.options.favicon)),)
+
+        return (css_links, favicon)
 
     # TODO: test
     def print_html_header(self):
@@ -1352,13 +1411,53 @@ class StaticGenerator(BaseGenerator):
         """
 
         BaseGenerator.__init__(self, postdb)
+        StaticGenerator.init(self)
 
-        # Here, path is relative to the to-be HTML
-        self.options.cssfiles = ['../static/css/heapindex.css']
+    def init(self):
+        # Argument count differs from overridden method # pylint: disable=W0221
+        """Initializator."""
 
-        # Here it is relative to the current directory
-        self.options.files_to_copy = ['static/css/heapindex.css',
-                                      'static/images/thread.png']
+        pass
+
+    def get_static_path(self, filename):
+        """Returns the path that can be included in the generated HTML pages.
+
+        In case of StaticGenerator, the string ``../`` will be prepended to the
+        given filename.
+
+        **Argument:**
+
+        - `filename` (str) -- A filename relative to the root directory of
+        Heapkeeper.
+
+        **Returns:** str
+        """
+
+        return '../' + filename
+
+    # TODO: test
+    def print_postitem_link(self, postitem):
+        """Prints the link to the post of the post item.
+
+        The link will have the following form:
+        ``../<heap>/thread_<postindex>.html#post-summary-<heap>-<postindex>``
+
+        **Argument:**
+
+        - `postitem` (|PostItem|)
+
+        **Returns:** |TextStruct|
+        """
+
+        post = postitem.post
+        root = self._postdb.root(post)
+        if root is None:
+            return ('../', post.htmlfilebasename())
+        else:
+
+            heap_id, post_index = post.post_id()
+            return (('../', self._postdb.root(post).htmlthreadbasename()),
+                    '#post-summary-', heap_id, '-', post_index)
 
     # TODO test
     def settle_files_to_copy(self):

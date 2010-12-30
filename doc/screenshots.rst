@@ -10,7 +10,7 @@ Using Heapkeeper's shell to download new posts and modify them:
 
 .. .. Text in the screenshot:
 
-.. .. $ python hk.py
+.. .. $ python src/hk.py
 .. .. Importing hkrc...
 .. .. Importing hkrc OK
 .. ..

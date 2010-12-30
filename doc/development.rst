@@ -126,33 +126,79 @@ Installation procedure on Debian and Ubuntu Linux::
     $ sudo apt-get install python-dev python-setuptools
     $ sudo easy_install coverage
 
-Measuring the code coverage of Heapkeeper's automatic tests::
+Measuring the code coverage of Heapkeeper's automatic tests
+(``hkdu-list-sources`` is part of :ref:`hk-dev-utils`)::
 
     $ cd <Heapkeeper directory>
     $ coverage erase
-    $ coverage run test.py
+    $ coverage run src/test.py
     ----------------------------------------------------------------------
     Ran 96 tests in 0.221s
 
     OK
-    $ coverage report hk{utils,lib,gen,shell,customlib}.py
-    Name          Stmts   Exec  Cover
-    ---------------------------------
-    hkcustomlib      68     39    57%
-    hkgen           368    263    71%
-    hklib           868    696    80%
-    hkshell         461    307    66%
-    hkutils         117     95    81%
-    ---------------------------------
-    TOTAL          1882   1400    74%
+    $ coverage report $(hkdu-list-sources | grep -E '^(src|plugin).*py$' | grep -v test)
+    Name                                                    Stmts   Exec  Cover
+    ---------------------------------------------------------------------------
+    plugins/chat/src/hkp_chat                                  67      0     0%
+    plugins/custom_heap_server/src/hkp_custom_heap_server      30      0     0%
+    plugins/issue_tracker/src/hkp_issue_tracker               250     94    37%
+    plugins/review/src/hkp_review                              55      0     0%
+    plugins/users/src/hkp_users                                22      0     0%
+    src/hk                                                     10      0     0%
+    src/hkbodyparser                                          199    198    99%
+    src/hkconfig                                               36     34    94%
+    src/hkcustomlib                                            65     36    55%
+    src/hkemail                                               193     20    10%
+    src/hkgen                                                 433    334    77%
+    src/hklib                                                 913    862    94%
+    src/hksearch                                               50     49    98%
+    src/hkshell                                               563    393    69%
+    src/hkutils                                               212    173    81%
+    src/hkweb                                                 443    153    34%
+    ---------------------------------------------------------------------------
+    TOTAL                                                    3541   2346    66%
 
 Displaying the covered code in HTML (the module names in the index.html are
 links to the detailed results)::
 
-    $ coverage html -d coverage-html hk{utils,lib,gen,shell,customlib}.py
+    $ coverage html -d coverage-html $(hkdu-list-sources | grep -E '^(src|plugin).*py$' | grep -v test)
     $ <your browser of choice> coverage-html/index.html
 
 __ http://nedbatchelder.com/code/coverage/
+
+.. _jstestdriver:
+
+JsTestDriver
+^^^^^^^^^^^^
+
+`JsTestDriver`__ is a unit testing tool for JavaScript, written in Java.
+
+It can be installed and used in the following way:
+
+#. Make sure you have at least Java 1.6::
+
+       $ java -version
+
+#. Download JsTestDriver into the ``"external"`` directory from here__::
+
+       $ wget http://js-test-driver.googlecode.com/files/JsTestDriver-1.2.2.jar \
+              -O external/JsTestDriver.jar
+
+#. Start the JsTestDriver server::
+
+       $ java -jar external/JsTestDriver.jar --port 9876 \
+              --config etc/jsTestDriver/jsTestDriver.conf
+
+#. Create a tab in a browser and open this__ URL.
+
+#. Now you can execute the tests.
+
+Step 5 is integrated into :ref:`hk-dev-utils`, which also checks step 3
+and step 4 and tells the user to perform them if they have not been.
+
+__ http://code.google.com/p/js-test-driver/
+__ http://js-test-driver.googlecode.com/files/JsTestDriver-1.2.2.jar
+__ http://localhost:9876/capture
 
 .. _margitka:
 
@@ -180,7 +226,8 @@ __ http://lwn.net/Articles/140350/
 hk-dev-utils
 ^^^^^^^^^^^^
 
-`hk-dev-utils`__ is a set of scripts to help Heapkeeper developers.
+`hk-dev-utils`__ is a set of scripts to help Heapkeeper developers. Its most
+important feature is to perform several tests on Heapkeeper.
 
 hk-dev-utils can be downloaded from GitHub, no installation is needed::
 

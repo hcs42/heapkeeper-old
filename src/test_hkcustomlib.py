@@ -22,7 +22,7 @@
 
 Usage:
 
-    $ python test_hklib.py
+    $ python src/test_hklib.py
 """
 
 

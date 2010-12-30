@@ -37,6 +37,7 @@
 .. |hksearch| replace:: :mod:`hksearch`
 .. |hkshell| replace:: :mod:`hkshell`
 .. |hkutils| replace:: :mod:`hkutils`
+.. |hkweb| replace:: :mod:`hkweb`
 .. |HtmlStr| replace:: :ref:`HtmlStr <hklib_HtmlStr>`
 .. |HtmlText| replace:: :ref:`HtmlText <hklib_HtmlText>`
 .. |Index| replace:: :class:`Index <hklib.Index>`

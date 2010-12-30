@@ -21,7 +21,7 @@
 
 Usage:
 
-    $ python test_hkbodyparser.py
+    $ python src/test_hkbodyparser.py
 """
 
 

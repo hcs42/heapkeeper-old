@@ -21,7 +21,7 @@
 
 Usage:
 
-    $ python test_hkemail.py
+    $ python src/test_hkemail.py
 """
 
 

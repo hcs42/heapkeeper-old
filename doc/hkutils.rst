@@ -67,6 +67,7 @@ Miscellaneous
 .. autofunction:: copy_wo
 .. autofunction:: plural
 .. autofunction:: add_method
+.. autofunction:: append_fun_to_method(class_, methodname, fun, resultfun=lambda res1, res2: res1)
 .. autofunction:: insert_sep
 .. autofunction:: configparser_to_configdict
 .. autofunction:: quote_shell_arg

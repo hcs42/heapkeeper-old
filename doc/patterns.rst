@@ -1,8 +1,8 @@
-Patterns
-========
+Design and code patterns
+========================
 
-This file contains design patterns and code patterns that are used in the Heap
-system.
+This page describes design patterns and code patterns that are used in
+Heapkeeper.
 
 .. _creating_a_long_string_pattern:
 
@@ -42,8 +42,7 @@ Explanation
 
 Used in
 
-   * :class:`hklib.Html`
-   * :class:`hklib.BaseGenerator`
+   * :class:`hkgen.BaseGenerator`
 
 .. _lazy_data_calculation_pattern:
 
@@ -156,12 +155,10 @@ Code example
 
           """Description.
 
-          Data attributes:
-          option1 --- Description.
-              Type: int
-          option2 --- Description.
-              Type: str
-              Default value: ''
+          **Data attributes:**
+
+          - `option1` (int) -- Description.
+          - `option2` (str) --- Description. Default value: ``''``.
           """
 
           def __init__(self,
@@ -200,8 +197,7 @@ Explanation
 
 Used in
 
-   * :class:`hklib.GeneratorOptions`
-   * :class:`hklib.Section`
-   * :class:`hklib.Index`
-   * :class:`hkcustomlib.DateOptions` (not yet)
-   * :class:`hkshell.Options` (not yet)
+   * :class:`hkgen.GeneratorOptions`
+   * :class:`hklib.PostDBEvent`
+   * :class:`hkshell.Options`
+   * :class:`hkshell.Event`

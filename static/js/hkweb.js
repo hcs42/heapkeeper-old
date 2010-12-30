@@ -309,21 +309,22 @@ function setPostContentRequest(postId, newPostText, mode, callback, count) {
 
     if (mode == 'body') {
         ajaxQuery(
-            "/set-post-body/" + postIdToPostIdStr(postId),
-            {'new_body_text': newPostText},
+            "/set-post-body",
+            {'post_id': postIdToPostIdStr(postId),
+             'new_body_text': newPostText},
             callback);
     } else if (mode == 'raw') {
         ajaxQuery(
-            "/set-raw-post/" + postIdToPostIdStr(postId),
-            {'new_post_text': newPostText},
+            "/set-raw-post",
+            {'post_id': postIdToPostIdStr(postId),
+             'new_post_text': newPostText},
             callback);
     } else if (mode == 'new') {
         ajaxQuery(
-            "/set-post-body/" + postIdToPostIdStr(postId),
-            {
-                'new_body_text': newPostText,
-                'new': 1
-            },
+            "/set-post-body",
+            {'post_id': postIdToPostIdStr(postId),
+             'new_body_text': newPostText,
+             'new': 1},
             callback);
     }
 }
@@ -338,8 +339,8 @@ function getPostBodyRequest(postId, callback) {
     //   `result` is the information returned by the server.
 
     ajaxQuery(
-        "/get-post-body/" + postIdToPostIdStr(postId),
-        {},
+        "/get-post-body",
+        {'post_id': postIdToPostIdStr(postId)},
         callback);
 }
 
@@ -635,7 +636,7 @@ function savePostNew(postId, count) {
             return;
         }
 
-        var newPostId = result.new_post_id;
+        var newPostId = postIdStrToPostId(result.new_post_id);
         var postSummary = $('#new-' + count + '-post-summary-' + postId);
         postSummary.replaceWith(result.new_post_summary);
         addEventHandlersToPostSummary(newPostId);

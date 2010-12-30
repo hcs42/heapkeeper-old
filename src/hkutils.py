@@ -627,6 +627,54 @@ def add_method(obj, methodname, fun):
     method = types.MethodType(fun, obj, type(obj))
     setattr(obj, methodname, method)
 
+def append_fun_to_method(class_, methodname, fun,
+                         resultfun=lambda res1, res2: res1):
+    """Appends a function to the method of a class.
+
+    More precisely, the method of the class will be replaced with a new method,
+    which first calls the original method, then executes the given function
+    (`fun`). The calculation of the return value can be customized using the
+    `resultfun` parameter.
+
+    **Arguments:**
+
+    - `class_` (class) -- The class whose method will be modified.
+    - `methodname` (str) -- The name of the method to be modified.
+    - `fun` (fun) -- The function to be executed after the original method.
+      `fun` will get the same parameter list as the original method, with
+      `self` included.
+    - `resultfun` ((object, object) -> object) -- Function to be used to
+      compute the return value of the method. Its first argument is the return
+      value of the original method, while the second argument is the return
+      value of `fun`. The new method will return the value returned by
+      `resultfun`. By default, `resultfun` returns the result of the original
+      method.
+
+    **Example:** ::
+
+        >>> class MyClass(object):
+        ...     def my_method(self, a):
+        ...         print 'my_method printout'
+        ...         return a * 2
+        ...
+        >>> def my_fun(self, a):
+        ...     print 'my_fun printout'
+        ...
+        >>> hkutils.append_fun_to_method(MyClass, 'my_method', my_fun)
+        >>> a = MyClass()
+        >>> a.my_method(2)
+        my_method printout
+        my_fun printout
+        4
+    """
+
+    old_method = getattr(class_, methodname)
+    def new_method(*args, **kw):
+        result1 = old_method(*args, **kw)
+        result2 = fun(*args, **kw)
+        return resultfun(result1, result2)
+    setattr(class_, methodname, new_method)
+
 def insert_sep(seq, separator):
     """Returns a list which is the concatenation of the elements in `seq`.
     `separator` is used as a separator between elements.

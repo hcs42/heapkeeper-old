@@ -74,6 +74,8 @@ Static generator
     **Methods:**
 
     .. automethod:: __init__
+    .. automethod:: print_html_head_content
+    .. automethod:: print_postitem_link
     .. automethod:: settle_files_to_copy
     .. automethod:: write_page
     .. automethod:: is_file_newer

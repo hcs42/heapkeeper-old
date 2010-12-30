@@ -4,22 +4,18 @@ digraph {
     hkconfig -> hkutils;
     hklib -> hkconfig;
     hklib -> hkbodyparser;
-    hklib -> hkutils;
-    hkemail -> hkutils;
     hkemail -> hklib;
-    hksearch -> hkutils;
     hksearch -> hklib;
-    hkgen -> hkutils;
-    hkgen -> hkbodyparser;
     hkgen -> hklib;
-    hkcustomlib -> hkutils;
-    hkcustomlib -> hklib;
-    hkcustomlib -> hkgen;
     hkshell -> hkemail;
-    hkshell -> hkutils;
-    hkshell -> hklib;
     hkshell -> hksearch;
     hkshell -> hkgen;
-    hkshell -> hkcustomlib;
+    hkweb -> hksearch;
+    hkweb -> hkshell; // written explicitly deliberately
+    hkp_chat -> hkweb;
+    hkp_custom_heap_server -> hkweb;
+    hkp_issue_tracker -> hkweb;
+    hkp_review -> hkweb;
+    hkp_users -> hkweb;
     hk -> hkshell;
 }
