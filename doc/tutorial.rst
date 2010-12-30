@@ -46,21 +46,26 @@ Downloading Heapkeeper
 
 First make sure you have Python 2.6 or 2.7.
 
+To be able to use the web interface, you also need to install web.py version
+0.34. Unix users can do that with the following command::
+
+    $ sudo easy_install 'web.py==0.34'
+
 Then download the latest version of Heapkeeper (either in `tar.gz`__ or in
 `zip`__). For Unix users:
 
 .. code-block:: sh
 
-    $ wget http://heapkeeper.org/releases/heapkeeper-0.8.tar.gz
+    $ wget http://heapkeeper.org/releases/heapkeeper-0.9.tar.gz
 
-__ http://heapkeeper.org/releases/heapkeeper-0.8.tar.gz
-__ http://heapkeeper.org/releases/heapkeeper-0.8.zip
+__ http://heapkeeper.org/releases/heapkeeper-0.9.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.9.zip
 
 Unzip the tar.gz or zip file. For Unix users:
 
 .. code-block:: sh
 
-    $ tar xzf heapkeeper-0.8.tar.gz
+    $ tar xzf heapkeeper-0.9.tar.gz
 
 Make Heapkeeper's directory the current one. Heapkeeper's shell (|hkshell|) can
 be started from here without any installation procedure. You can ask for
@@ -68,9 +73,9 @@ version information for example:
 
 .. code-block:: sh
 
-    $ cd heapkeeper-0.8
+    $ cd heapkeeper-0.9
     $ python src/hk.py --version
-    Heapkeeper version 0.8
+    Heapkeeper version 0.9
 
 Or you can execute the automatic test:
 
