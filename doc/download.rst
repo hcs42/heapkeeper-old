@@ -23,6 +23,8 @@ Packaged releases
 | version  | date       | source      | HTML documentation |
 |          |            |             |                    |
 +==========+============+=============+====================+
+| `0.9`_   | 2010-12-31 | tgz__ zip__ | tgz__ zip__        |
++----------+------------+-------------+--------------------+
 | `0.8`_   | 2010-10-17 | tgz__ zip__ | tgz__ zip__        |
 +----------+------------+-------------+--------------------+
 | `0.7`_   | 2010-08-20 | tgz__ zip__ | tgz__ zip__        |
@@ -40,6 +42,10 @@ Packaged releases
 | `0.1`_   | 2008-10-16 | tgz__ zip__ |  --                |
 +----------+------------+-------------+--------------------+
 
+__ http://heapkeeper.org/releases/heapkeeper-0.9.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.9.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.9.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.9.zip
 __ http://heapkeeper.org/releases/heapkeeper-0.8.tar.gz
 __ http://heapkeeper.org/releases/heapkeeper-0.8.zip
 __ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.8.tar.gz
@@ -68,6 +74,53 @@ __ http://github.com/hcs42/heapkeeper/tarball/v0.2
 __ http://github.com/hcs42/heapkeeper/zipball/v0.2
 __ http://github.com/hcs42/heapkeeper/tarball/v0.1
 __ http://github.com/hcs42/heapkeeper/zipball/v0.1
+
+.. _`0.9`:
+
+Version 0.9
+^^^^^^^^^^^
+
+- **date:** 2010-12-31
+- **download:** tgz__, zip__
+- **download HTML documentation:** tgz__, zip__
+
+__ http://heapkeeper.org/releases/heapkeeper-0.9.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-0.9.zip
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.9.tar.gz
+__ http://heapkeeper.org/releases/heapkeeper-htmldoc-0.9.zip
+
+This release is mainly about refactorings and using the JsTestDriver unit
+testing tool.
+
+Major new features:
+
+- The "postid" target was added to the search.
+- hkweb can find a free port to listen on.
+- hkweb is more secure by not always accepting GET requests.
+
+Major refactorings:
+
+- New modules hkconfig and hkemail have been extracted from hklib.
+- All code of the issue tracker has been moved into the "Issue Tracker" plugin
+  from the Heapkeeper core.
+- hkgen.Generator was split into two classes: the part which deals with static
+  HTML has been extracted into the hkgen.StaticGenerator class.
+- Classes in hkweb were rearranged.
+- The CSS, JavaScript and favicon files are handled uniformly throughout hkgen,
+  hkweb, and the plugins.
+
+Other major improvements:
+
+- Documenting the hkweb module with docstrings.
+- The client-server communication of hkweb has been documented.
+- The JsTestDriver JavaScript unit testing tool is used for JavaScript unit tests.
+
+Major deprecation:
+
+- The old configuration formats are no longer supported.
+- The gi() and ga() hkshell commands are no longer supported.
+- The hkcustomlib module is deprecated.
+- Post page generation is deprecated.
 
 .. _`0.8`:
 
