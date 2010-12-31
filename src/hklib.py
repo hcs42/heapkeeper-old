@@ -137,7 +137,7 @@ import hkutils
 import hkbodyparser
 
 
-heapkeeper_version = '0.9'
+heapkeeper_version = '0.9+'
 
 # Checking that the user has the appropriate Python version
 major, minor, micro, releaselevel, _serial = sys.version_info
