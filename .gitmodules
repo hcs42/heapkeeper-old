@@ -1,0 +1,3 @@
+[submodule "webpy"]
+	path = webpy
+	url = git@github.com:hcs42/webpy.git
