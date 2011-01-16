@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 # This file is part of Heapkeeper.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Heapkeeper.  If not, see <http://www.gnu.org/licenses/>.
 
-# Copyright (C) 2009-2010 Csaba Hoch
+# Copyright (C) 2009-2011 Csaba Hoch
 # Copyright (C) 2009 Attila Nagy
 
 """|hkshell| is Heapkeeper's interactive shell.
@@ -1872,6 +1872,8 @@ def init():
     postpage_listener = PostPageListener(postdb())
     listeners.append(postpage_listener)
 
+hkrc_start_invoked = True
+
 def import_module(modname, warning):
     """Imports the `modname` module.
 
@@ -1886,8 +1888,13 @@ def import_module(modname, warning):
     try:
         if warning:
             hkutils.log('Importing %s...' % (modname,))
-        __import__(modname)
+        mod = __import__(modname)
         hkutils.log('Importing %s OK' % (modname,))
+        if hasattr(mod, 'start'):
+            if warning:
+                hkutils.log('Calling %s.start()...' % (modname,))
+            getattr(mod, 'start')()
+            hkutils.log('Calling %s.start() finished' % (modname,))
     except ImportError, e:
         if str(e) == ('No module named ' + modname):
             if warning:
