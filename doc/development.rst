@@ -24,18 +24,102 @@ Development tools
 
 .. highlight:: sh
 
-All the development tools we use are free and open source programs.
+All the development tools we use are free and open source programs. Some of
+them have to be downloaded and installed by the developer, some of them are
+included in the Heapkeeper repository.
 
-The following programs should be installed on a developer's computer: Python_,
-Git_ and Sphinx_.
+Quick setup
+^^^^^^^^^^^
+
+A quick setup for Heapkeeper development follows. This works in Ubuntu Linux,
+but may apply for other systems with modifications. Only the commands are
+spelled out, not their output.
+
+First install :ref:`Python <development_python>`, :ref:`virtualenv` and
+:ref:`git <gitref>` and check their versions::
+
+    $ sudo apt-get install python python-dev python-setuptools
+    $ sudo apt-get install virtualenv
+    $ sudo apt-get install git-core
+    $ git --version
+    git version 1.7.0.4 # should be at least 1.5.3
+    $ python --version
+    Python 2.6.6 # should be at least 2.6
+
+Create a directory that will contain everything related to Heapkeeper's
+development::
+
+    $ mkdir heapkeeper-dev
+    $ cd heapkeeper-dev
+
+Set up :ref:`virtualenv`::
+
+    $ virtualenv python
+    $ echo '#!/bin/sh' >> start-development
+    $ echo "export PATH=`pwd`/python/bin:$PATH" >> start-development
+    $ chmod +x start-development
+    $ . start-development
+
+This ``start-development`` script should be always executed before starting
+Heapkeeper development, because it will set the environment variables so that
+the virtual Python environment will be used. Check the output of ``which
+python``::
+
+    $ which python
+    [...]/heapkeeper-dev/python/bin/python
+
+Install :ref:`Sphinx <development_sphinx>`, :ref:`pylint`, :ref:`coverage.py
+<coveragepy>`::
+
+    $ easy_install 'sphinx==0.6.5'
+    $ easy_install 'pylint==0.21'
+    $ easy_install coverage
+
+Clone the repositories of Heapkeeper, the :ref:`Heapkeeper Development
+Utilities <hk-dev-utils>` and :ref:`margitka` (the last one is optional)::
+
+    $ git clone git://github.com/hcs42/heapkeeper.git
+    $ git clone git://github.com/hcs42/hk-dev-utils.git
+    $ git clone git://github.com/attish/margitka.git
+
+Check that your Java is at least 1.6 and download :ref:`JsTestDriver
+<jstestdriver>`::
+
+    $ java -version
+    java version "1.6.0_20"
+    OpenJDK Runtime Environment (IcedTea6 1.9.2) (6b20-1.9.2-0ubuntu2)
+    OpenJDK 64-Bit Server VM (build 19.0-b09, mixed mode)
+    $ wget http://js-test-driver.googlecode.com/files/JsTestDriver-1.2.2.jar \
+           -O heapkeeper/external/JsTestDriver.jar
+
+Read the SETUP section in ``hk-dev-utils/README`` and perform the steps
+described.
+
+Update the :ref:`web.py <webpy>` submodule::
+
+    $ cd heapkeeper
+    $ git submodules init
+    $ git submodules update
+
+.. _development_python:
 
 Python
 ^^^^^^
 
 Python_ is the interpreter that executes Heapkeeper. Heapkeeper needs Python
-2.5, 2.6 or 2.7.
+2.6 or 2.7.
 
 .. _`Python`: http://www.python.org/
+
+.. _virtualenv:
+
+virtualenv
+^^^^^^^^^^
+
+virtualenv__ is used for creating a virtual Python environment that contains
+the appropriate versions of the tools and libraries used by Heapkeeper.
+
+__ http://pypi.python.org/pypi/virtualenv
 
 .. _gitref:
 
