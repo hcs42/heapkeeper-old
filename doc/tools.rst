@@ -18,8 +18,8 @@ First install :ref:`Python <development_python>`, :ref:`virtualenv` and
 :ref:`git <gitref>` and check their versions::
 
     $ sudo apt-get install python python-dev python-setuptools
-    $ sudo apt-get install virtualenv
     $ sudo apt-get install git-core
+    $ sudo easy_install virtualenv
     $ git --version
     git version 1.7.0.4 # should be at least 1.5.3
     $ python --version
@@ -35,7 +35,7 @@ Set up :ref:`virtualenv`::
 
     $ virtualenv python
     $ echo '#!/bin/sh' >> start-development
-    $ echo "export PATH=`pwd`/python/bin:$PATH" >> start-development
+    $ echo "export PATH=`pwd`/python/bin:\$PATH" >> start-development
     $ chmod +x start-development
     $ . start-development
 
@@ -77,8 +77,8 @@ described.
 Update the :ref:`web.py <webpy>` submodule::
 
     $ cd heapkeeper
-    $ git submodules init
-    $ git submodules update
+    $ git submodule init
+    $ git submodule update
 
 Used tools
 ----------
